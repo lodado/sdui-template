@@ -145,7 +145,6 @@ expect(denormalized).toEqual(document)
 **Key Methods**:
 
 - `updateLayout()`: Update document
-- `updateNodeLayout()`: Update node layout
 - `updateNodeState()`: Update node state
 - `subscribeNode()`: Subscribe to node
 - `subscribeVersion()`: Subscribe to version
@@ -290,7 +289,7 @@ expect(denormalized).toEqual(document)
 
 1. Render single root node
 2. Render nested child nodes
-3. Update node layout
+3. Update node state
 4. Component override by type
 5. Component override by ID
 6. Handle invalid document
@@ -298,6 +297,7 @@ expect(denormalized).toEqual(document)
 8. Handle deep nesting
 9. Subscription system
 10. Store reset
+11. Zod schema validation
 
 **Test Structure**:
 
@@ -416,7 +416,7 @@ describe('Scenario Name', () => {
 
 ## Known Limitations
 
-- No SSR support (client only)
+- SSR support (works without serialization)
 - No persistence (users handle)
 - No default styles (users provide)
 - No default components (users provide)

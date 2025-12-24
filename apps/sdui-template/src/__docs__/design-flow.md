@@ -43,8 +43,7 @@ apps/sdui-template/
 │   │   ├── index.ts
 │   │   ├── document.ts             # SduiLayoutDocument
 │   │   ├── node.ts                 # SduiLayoutNode
-│   │   ├── state.ts                # BaseLayoutState, LayoutPosition
-│   │   └── grid.ts                 # GridLayoutConfig
+│   │   └── state.ts                # BaseLayoutState
 │   │
 │   ├── store/                      # State management
 │   │   ├── index.ts
@@ -88,7 +87,7 @@ apps/sdui-template/
 ├── __tests__/                      # Tests
 │   ├── scenario/
 │   │   ├── render-document.test.tsx
-│   │   ├── update-layout.test.tsx
+│   │   ├── update-state.test.tsx
 │   │   └── component-override.test.tsx
 │   └── utils/
 │       └── test-utils.tsx
@@ -182,9 +181,9 @@ INITIAL
    - 3-level nested structure
    - Verify all nodes render in correct hierarchy
 
-3. **Update Node Layout**
+3. **Update Node State**
 
-   - Update one node's layout
+   - Update one node's state
    - Verify only that node re-renders
 
 4. **Component Override by Type**

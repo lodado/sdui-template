@@ -108,9 +108,10 @@ function Page({ pageData }) {
 
 | Feature             | Description                         | Priority |
 | ------------------- | ----------------------------------- | -------- |
-| **Layout Updates**  | Programmatically update layouts     | P1       |
+| **State Updates**   | Programmatically update component state | P1       |
 | **Variable System** | Manage and access global variables  | P1       |
 | **Error Handling**  | Handle invalid documents gracefully | P1       |
+| **Schema Validation** | Optional Zod schema validation for state | P1       |
 
 ### Could Have Features
 
@@ -156,10 +157,10 @@ function Page({ pageData }) {
 3. Check and handle error information
 4. Display fallback UI if needed
 
-### Layout Update Flow
+### State Update Flow
 
-1. User interaction (drag, resize, etc.)
-2. Call `store.updateNodeLayout()`
+1. User interaction or programmatic update
+2. Call `store.updateNodeState()`
 3. Subscription system notifies only changed nodes
 4. Only affected components re-render
 
@@ -193,30 +194,20 @@ interface SduiLayoutNode {
 }
 ```
 
-### Layout State
+### Component State
 
 ```typescript
 interface BaseLayoutState {
-  layout: {
-    x: number // Grid X coordinate
-    y: number // Grid Y coordinate
-    w: number // Width
-    h: number // Height
-    minW?: number // Minimum width (optional)
-    minH?: number // Minimum height (optional)
-    maxW?: number // Maximum width (optional)
-    maxH?: number // Maximum height (optional)
-    static?: boolean // Fixed position (optional)
-  }
-  grid?: GridLayoutConfig // Grid configuration (optional)
-  edit?: {
-    // Edit state (optional)
-    isDragging?: boolean
-    isResizing?: boolean
-    isEdited?: boolean
-  }
+  // Flexible state structure - users define their own state shape
+  // Examples:
+  // - { count: number, label: string }
+  // - { checked: boolean, value: string }
+  // - { data: any[], loading: boolean }
+  [key: string]: unknown
 }
 ```
+
+**Note**: State structure is flexible and user-defined. Use Zod schemas with `useSduiNodeSubscription` for type safety and validation.
 
 ## API Overview
 
@@ -248,7 +239,7 @@ const { rootId, nodes } = useSduiLayoutStores((state) => ({ rootId: state.rootId
 
 // Action calls
 const store = useSduiLayoutAction()
-store.updateNodeLayout('node-1', { x: 2, y: 0 })
+store.updateNodeState('node-1', { count: 5 })
 
 // Node subscription
 const { node, state } = useSduiNodeSubscription({
@@ -281,7 +272,7 @@ The following items are not included in this library's scope:
 - ❌ Data fetching (users handle)
 - ❌ Authentication/Authorization (users handle)
 - ❌ Persistence (localStorage, IndexedDB, etc., users handle)
-- ❌ Server-side rendering (client only)
+- ✅ Server-side rendering support (works without serialization)
 
 ## Success Criteria
 

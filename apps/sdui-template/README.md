@@ -7,10 +7,10 @@ Server-Driven UI Template Library for React. A flexible and powerful template sy
 - 🎯 **Server-Driven UI**: Define layouts from server-side configuration
 - ⚡ **Performance Optimized**: ID-based subscription system for minimal re-renders
 - 🔄 **Normalize/Denormalize**: Efficient data structure using normalizr
-- 📐 **Layout Support**: Built-in support for grid-based layouts
-- 🎨 **Type Safe**: Full TypeScript support
+- 🎨 **Type Safe**: Full TypeScript support with optional Zod schema validation
 - 🧩 **Modular**: Clean architecture with separated concerns
 - 🚀 **Next.js Compatible**: Works seamlessly with Next.js App Router
+- 🔧 **Flexible State Management**: Update component state programmatically
 
 ## Installation
 
@@ -40,37 +40,22 @@ const document = {
   root: {
     id: "root",
     type: "Container",
-    state: {
-      layout: {
-        x: 0,
-        y: 0,
-        w: 12,
-        h: 1,
-      },
-    },
+    state: {},
     children: [
       {
         id: "card-1",
         type: "Card",
         state: {
-          layout: {
-            x: 0,
-            y: 0,
-            w: 6,
-            h: 2,
-          },
+          title: "Card 1",
+          content: "First card content",
         },
       },
       {
         id: "card-2",
         type: "Card",
         state: {
-          layout: {
-            x: 6,
-            y: 0,
-            w: 6,
-            h: 2,
-          },
+          title: "Card 2",
+          content: "Second card content",
         },
       },
     ],
@@ -106,7 +91,7 @@ const document = {
     id: "root",
     type: "Card",
     state: {
-      layout: { x: 0, y: 0, w: 12, h: 1 },
+      title: "My Card",
     },
   },
 };
@@ -138,18 +123,17 @@ function MyComponent({ nodeId }: { nodeId: string }) {
   const { state, childrenIds } = useSduiNodeSubscription({ nodeId });
 
   const handleUpdate = () => {
-    store.updateNodeLayout(nodeId, {
-      x: state?.layout.x || 0,
-      y: (state?.layout.y || 0) + 1,
-      w: state?.layout.w || 12,
-      h: state?.layout.h || 1,
+    // Update component state
+    store.updateNodeState(nodeId, {
+      ...state,
+      count: (state?.count || 0) + 1,
     });
   };
 
   return (
     <div>
-      <div>Position: ({state?.layout.x}, {state?.layout.y})</div>
-      <button onClick={handleUpdate}>Move Down</button>
+      <div>Count: {state?.count || 0}</div>
+      <button onClick={handleUpdate}>Increment</button>
       {childrenIds.map((childId) => (
         <MyComponent key={childId} nodeId={childId} />
       ))}
@@ -243,7 +227,7 @@ Returns store instance for calling actions.
 
 ```tsx
 const store = useSduiLayoutAction();
-store.updateNodeLayout(nodeId, { x: 0, y: 0 });
+store.updateNodeState(nodeId, { count: 5 });
 ```
 
 #### `useSduiNodeSubscription(params: { nodeId: string, schema?: ZodSchema }): NodeData`
@@ -270,7 +254,6 @@ Main store class for managing SDUI layout state.
 **Methods:**
 
 - `updateLayout(document: SduiLayoutDocument): void` - Update layout document
-- `updateNodeLayout(nodeId: string, layout: Partial<LayoutPosition>): void` - Update node layout
 - `updateNodeState(nodeId: string, state: Partial<BaseLayoutState>): void` - Update node state
 - `updateVariables(variables: Record<string, unknown>): void` - Update global variables
 - `getNodeById(nodeId: string): SduiLayoutNode | undefined` - Get node by ID
@@ -288,8 +271,6 @@ import type {
   SduiLayoutDocument,
   SduiLayoutNode,
   BaseLayoutState,
-  LayoutPosition,
-  GridLayoutConfig,
   ComponentFactory,
   RenderNodeFn,
   SduiLayoutStoreState,

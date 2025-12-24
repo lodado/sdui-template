@@ -73,9 +73,7 @@ The library consists of 6 main modules:
 
 - `SduiLayoutDocument`: SDUI document type
 - `SduiLayoutNode`: Node type
-- `BaseLayoutState`: Layout state type
-- `LayoutPosition`: Position and size type
-- `GridLayoutConfig`: Grid configuration type
+- `BaseLayoutState`: Component state type (flexible, user-defined)
 
 **Usage Example**:
 
@@ -114,7 +112,7 @@ import { SduiLayoutStore } from '@lodado/sdui-template'
 
 const store = new SduiLayoutStore()
 store.updateLayout(document)
-store.updateNodeLayout('node-1', { x: 2, y: 0 })
+store.updateNodeState('node-1', { count: 5 })
 ```
 
 ### 3. Normalization Module (`src/utils/normalize/`)
@@ -227,12 +225,12 @@ const customFactory: ComponentFactory = (id, renderNode) => {
    - Recursively render child nodes
 ```
 
-### Layout Update Flow
+### State Update Flow
 
 ```text
 1. User interaction or programmatic update
    ↓
-2. Call store.updateNodeLayout(nodeId, layout)
+2. Call store.updateNodeState(nodeId, state)
    ↓
 3. Store updates that node's state internally
    ↓
