@@ -1,5 +1,7 @@
 # @lodado/sdui-template
 
+> ⚠️ **For personal use - Feel free to use as you like**
+
 Server-Driven UI Template Library for React. A flexible and powerful template system for building server-driven user interfaces with dynamic layouts and components.
 
 ## Problem
