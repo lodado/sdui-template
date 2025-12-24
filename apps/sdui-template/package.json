@@ -1,5 +1,6 @@
 {
   "author": "lodado",
+  "version": "1.0.0",
   "bugs": {
     "url": "https://github.com/lodado/sdui-template/issues"
   },
@@ -100,6 +101,5 @@
   },
   "sideEffects": false,
   "source": "./src/index.ts",
-  "types": "./src/index.ts",
-  "version": "1.0.7"
+  "types": "./src/index.ts"
 }
