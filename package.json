@@ -1,0 +1,38 @@
+{
+  "name": "monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@9.0.6",
+  "scripts": {
+    "prepare": "husky install",
+    "storybook": "turbo run dev --no-cache --continue --concurrency=15",
+    "build": "turbo run build --concurrency=5",
+    "build-storybook": "turbo run build && turbo run build-storybook --concurrency=5",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "test": "turbo run test --concurrency=5",
+    "test:e2e": "turbo run test:e2e --concurrency=5",
+    "lint": "turbo run lint --concurrceny=5 -- --cache --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "release": "turbo run build && changeset version && changeset publish --concurrency=5",
+    "changeset": "changeset",
+    "patch-notes": "changeset"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.1",
+    "@commitlint/cli": "^17.8.1",
+    "@commitlint/config-conventional": "^17.8.1",
+    "eslint": "^8.57.0",
+    "eslint-config": "workspace:*",
+    "husky": "^8.0.3",
+    "lint-staged": "^14.0.1",
+    "prettier": "^2.8.8",
+    "turbo": "1.10.15"
+  },
+  "engines": {
+    "node": ">=18.19.0",
+    "pnpm": ">=9.0.6"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": "pnpm lint"
+  }
+}
