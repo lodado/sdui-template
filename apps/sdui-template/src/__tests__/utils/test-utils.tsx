@@ -4,12 +4,12 @@
  * Helper functions and fixtures for testing
  */
 
-import React from 'react'
 import { render, RenderResult } from '@testing-library/react'
+import React from 'react'
 
-import { SduiLayoutProvider } from '../../react/context'
-import { SduiLayoutRendererInner } from '../../react/components/SduiLayoutRenderer'
 import type { ComponentFactory } from '../../components/types'
+import { SduiLayoutRendererInner } from '../../react-wrapper/components/SduiLayoutRenderer'
+import { SduiLayoutProvider } from '../../react-wrapper/context'
 import type { SduiLayoutDocument } from '../../schema'
 import { SduiLayoutStore } from '../../store'
 import type { SduiLayoutStoreOptions } from '../../store/types'

@@ -13,3 +13,4 @@ export const componentMap: Record<string, ComponentFactory> = {
   GridLayout: GridLayoutFactory,
   Toggle: ToggleFactory,
 }
+

@@ -9,8 +9,8 @@
 
 import { useCallback, useRef } from 'react'
 
-import type { ComponentFactory, RenderNodeFn } from '../../components/types'
 import { defaultComponentFactory } from '../../components/componentMap'
+import type { ComponentFactory, RenderNodeFn } from '../../components/types'
 import { useSduiLayoutContext } from '../context'
 
 /**
@@ -23,7 +23,7 @@ import { useSduiLayoutContext } from '../context'
  */
 export const useRenderNode = (componentMap?: Record<string, ComponentFactory>): RenderNodeFn => {
   const { store } = useSduiLayoutContext()
-  const nodes = store.nodes
+  const { nodes } = store
 
   // renderNode 함수가 자기 자신을 참조할 수 있도록 ref 사용
   const renderNodeRef = useRef<RenderNodeFn | null>(null)

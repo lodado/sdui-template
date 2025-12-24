@@ -4,13 +4,13 @@
  * Tests for subscription-based re-renders
  */
 
-import React from 'react'
 import { screen, waitFor } from '@testing-library/react'
+import React from 'react'
 import { z } from 'zod'
 
-import { useSduiLayoutAction, useSduiNodeSubscription } from '../../react/hooks'
-import { createTestDocument, renderWithSduiLayout } from '../utils/test-utils'
 import type { ComponentFactory } from '../../components/types'
+import { useSduiLayoutAction, useSduiNodeSubscription } from '../../react-wrapper/hooks'
+import { createTestDocument, renderWithSduiLayout } from '../utils/test-utils'
 
 // Test component state schema
 const testComponentStateSchema = z.object({

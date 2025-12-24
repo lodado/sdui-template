@@ -5,14 +5,14 @@
  * Demonstrates how to validate component state using Zod schemas
  */
 
-import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
+import React from 'react'
 import { z } from 'zod'
 
-import { useSduiNodeSubscription, useSduiLayoutAction } from '../../react/hooks'
-import { renderWithSduiLayout, createTestDocument } from '../utils/test-utils'
-import type { BaseLayoutState } from '../../schema'
 import type { ComponentFactory } from '../../components/types'
+import { useSduiLayoutAction, useSduiNodeSubscription } from '../../react-wrapper/hooks'
+import type { BaseLayoutState } from '../../schema'
+import { createTestDocument, renderWithSduiLayout } from '../utils/test-utils'
 
 // ==================== Zod Schemas ====================
 
@@ -43,8 +43,8 @@ const Toggle: React.FC<{ nodeId: string }> = ({ nodeId }) => {
   // No null check needed: schema validation ensures state is always defined
   // If rawState is missing or validation fails, hook throws error (handled by error boundary)
   // TypeScript knows state is non-nullable (z.infer<TSchema>)
-  const checked = state.checked
-  const label = state.label
+  const { checked } = state
+  const { label } = state
 
   return (
     <div data-testid={`toggle-${nodeId}`}>

@@ -5,10 +5,10 @@
  * 전역 변수 관리를 담당합니다.
  */
 
-import { cloneDeep } from "lodash-es";
+import { cloneDeep } from 'lodash-es'
 
-import type { LayoutStateRepository } from "./LayoutStateRepository";
-import type { SubscriptionManager } from "./SubscriptionManager";
+import type { LayoutStateRepository } from './LayoutStateRepository'
+import type { SubscriptionManager } from './SubscriptionManager'
 
 /**
  * VariablesManager
@@ -18,8 +18,9 @@ import type { SubscriptionManager } from "./SubscriptionManager";
 export class VariablesManager {
   constructor(
     private repository: LayoutStateRepository,
-    private subscriptionManager: SubscriptionManager
-  ) {}
+    private subscriptionManager: SubscriptionManager,
+  ) // eslint-disable-next-line no-empty-function
+  {}
 
   /**
    * 전역 변수를 업데이트합니다.
@@ -29,10 +30,10 @@ export class VariablesManager {
    */
   updateVariables(variables: Record<string, unknown>): void {
     // 깊은 복사로 새 객체 생성 → version 증가 → 전체 리렌더
-    this.repository.updateVariables(cloneDeep(variables));
-    this.repository.setEdited(true);
-    this.repository.incrementVersion();
-    this.subscriptionManager.notifyVersion();
+    this.repository.updateVariables(cloneDeep(variables))
+    this.repository.setEdited(true)
+    this.repository.incrementVersion()
+    this.subscriptionManager.notifyVersion()
   }
 
   /**
@@ -44,14 +45,14 @@ export class VariablesManager {
    */
   updateVariable(key: string, value: unknown): void {
     // 깊은 복사로 새 객체 생성 → version 증가 → 전체 리렌더
-    const current = this.repository.state.variables;
+    const current = this.repository.state.variables
     this.repository.updateVariables({
       ...cloneDeep(current),
       [key]: cloneDeep(value),
-    });
-    this.repository.setEdited(true);
-    this.repository.incrementVersion();
-    this.subscriptionManager.notifyVersion();
+    })
+    this.repository.setEdited(true)
+    this.repository.incrementVersion()
+    this.subscriptionManager.notifyVersion()
   }
 
   /**
@@ -60,14 +61,11 @@ export class VariablesManager {
    * @param key - 삭제할 변수 키
    */
   deleteVariable(key: string): void {
-    const newVariables = cloneDeep(this.repository.state.variables);
-    delete newVariables[key];
-    this.repository.updateVariables(newVariables);
-    this.repository.setEdited(true);
-    this.repository.incrementVersion();
-    this.subscriptionManager.notifyVersion();
+    const newVariables = cloneDeep(this.repository.state.variables)
+    delete newVariables[key]
+    this.repository.updateVariables(newVariables)
+    this.repository.setEdited(true)
+    this.repository.incrementVersion()
+    this.subscriptionManager.notifyVersion()
   }
 }
-
-
-

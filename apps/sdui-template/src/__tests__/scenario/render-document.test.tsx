@@ -4,10 +4,10 @@
  * Tests for rendering SDUI documents
  */
 
-import React from 'react'
 import { render, screen } from '@testing-library/react'
+import React from 'react'
 
-import { SduiLayoutRenderer } from '../../react/components/SduiLayoutRenderer'
+import { SduiLayoutRenderer } from '../../react-wrapper/components/SduiLayoutRenderer'
 import { createNestedTestDocument, createTestDocument, renderWithProvider } from '../utils/test-utils'
 
 describe('SduiLayoutRenderer', () => {
@@ -64,7 +64,7 @@ describe('SduiLayoutRenderer', () => {
           state: {},
         }
 
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 10; i += 1) {
           current = {
             id: `level-${i}`,
             type: 'Container',

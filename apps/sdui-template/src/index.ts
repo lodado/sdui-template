@@ -28,31 +28,32 @@
  */
 
 // React Components
-export { SduiLayoutRenderer } from './react/components/SduiLayoutRenderer'
-export { SduiLayoutProvider } from './react/context/SduiLayoutContext'
+export { SduiLayoutRenderer } from './react-wrapper/components/SduiLayoutRenderer'
+export { SduiLayoutProvider } from './react-wrapper/context/SduiLayoutContext'
 
 // React Hooks
-export { useSduiLayoutAction, useSduiNodeSubscription, useRenderNode } from './react/hooks'
-export type { UseSduiNodeSubscriptionParams } from './react/hooks/useSduiNodeSubscription'
+export { useRenderNode, useSduiLayoutAction, useSduiNodeSubscription } from './react-wrapper/hooks'
+export type { UseSduiNodeSubscriptionParams } from './react-wrapper/hooks/useSduiNodeSubscription'
 
 // Store
 export { SduiLayoutStore } from './store/SduiLayoutStore'
-export type { SduiLayoutStoreState, SduiLayoutStoreOptions } from './store/types'
+export type { SduiLayoutStoreOptions, SduiLayoutStoreState } from './store/types'
 
 // Schema Types
 export type {
+  BaseLayoutState,
+  GridLayoutConfig,
+  LayoutPosition,
   SduiDocument,
-  SduiNode,
   SduiLayoutDocument,
   SduiLayoutNode,
-  BaseLayoutState,
-  LayoutPosition,
-  GridLayoutConfig,
+  SduiNode,
 } from './schema'
 
 // Component System Types
 export type { ComponentFactory, RenderNodeFn } from './components/types'
 
 // Normalization Utilities (optional, for advanced usage)
-export { normalizeSduiLayout, normalizeSduiNode, denormalizeSduiLayout, denormalizeSduiNode } from './utils/normalize'
+export { denormalizeSduiLayout, denormalizeSduiNode, normalizeSduiLayout, normalizeSduiNode } from './utils/normalize'
 export type { NormalizedSduiEntities } from './utils/normalize/types'
+

@@ -31,11 +31,11 @@ import React, { useMemo } from 'react'
 
 import { componentMap } from '../../components/componentMap'
 import type { ComponentFactory } from '../../components/types'
-import { SduiLayoutProvider } from '../context'
-import { useRenderNode } from '../hooks'
 import type { SduiLayoutDocument } from '../../schema'
 import { SduiLayoutStore } from '../../store'
 import type { SduiLayoutStoreOptions } from '../../store/types'
+import { SduiLayoutProvider } from '../context'
+import { useRenderNode } from '../hooks'
 
 interface SduiLayoutRendererProps {
   /** SDUI Layout Document */

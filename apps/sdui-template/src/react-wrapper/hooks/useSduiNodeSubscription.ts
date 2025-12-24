@@ -12,10 +12,10 @@
  */
 
 import { useEffect, useMemo, useReducer } from 'react'
-import type { ZodSchema, z } from 'zod'
+import type { z, ZodSchema } from 'zod'
 
-import { useSduiLayoutAction } from './useSduiLayoutAction'
 import type { BaseLayoutState, SduiLayoutNode } from '../../schema'
+import { useSduiLayoutAction } from './useSduiLayoutAction'
 
 /**
  * forceRender를 위한 reducer
@@ -60,28 +60,7 @@ export interface UseSduiNodeSubscriptionParams<
  * });
  * ```
  */
-// Overload for when schema is provided
-// If schema is provided and validation passes, state is always defined (never undefined)
-// If rawState is missing or validation fails, hook throws error (component won't render)
-export function useSduiNodeSubscription<TSchema extends ZodSchema<BaseLayoutState>>(
-  params: UseSduiNodeSubscriptionParams<TSchema> & { schema: TSchema },
-): {
-  node: SduiLayoutNode | undefined
-  type: string | undefined
-  state: z.infer<TSchema> // Non-nullable: if component renders, state is always defined
-  childrenIds: string[]
-  attributes: Record<string, unknown> | undefined
-  exists: boolean
-}
-// Overload for when schema is not provided
-export function useSduiNodeSubscription(params: UseSduiNodeSubscriptionParams & { schema?: undefined }): {
-  node: SduiLayoutNode | undefined
-  type: string | undefined
-  state: BaseLayoutState | undefined
-  childrenIds: string[]
-  attributes: Record<string, unknown> | undefined
-  exists: boolean
-}
+
 // Implementation
 export function useSduiNodeSubscription<TSchema extends ZodSchema<BaseLayoutState> = ZodSchema<BaseLayoutState>>(
   params: UseSduiNodeSubscriptionParams<TSchema>,

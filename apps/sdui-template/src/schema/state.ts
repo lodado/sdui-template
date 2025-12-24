@@ -48,3 +48,4 @@ export interface LayoutPosition {
  * Record<string, unknown>을 확장하여 SduiNode의 state 타입과 호환되도록 합니다.
  */
 export interface BaseLayoutState extends Record<string, unknown> {}
+

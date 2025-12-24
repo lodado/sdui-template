@@ -4,9 +4,10 @@
  * Document normalization and denormalization functions
  */
 
-export * from "./types";
-export * from "./normalize";
 export * from "./denormalize";
+export * from "./normalize";
+export * from "./types";
+
 
 
 
