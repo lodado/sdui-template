@@ -316,34 +316,40 @@ Context provider for SDUI Layout Store.
 
 ### Hooks
 
-#### `useSduiLayoutStores<T>(selector: (state: SduiLayoutStoreState) => T): T`
-
-Selectively subscribes to store state changes.
-
-```tsx
-const { rootId, nodes } = useSduiLayoutStores((state) => ({
-  rootId: state.rootId,
-  nodes: state.nodes,
-}))
-```
-
 #### `useSduiLayoutAction(): SduiLayoutStore`
 
-Returns store instance for calling actions.
+Returns store instance for calling actions and accessing store state.
 
 ```tsx
 const store = useSduiLayoutAction()
 store.updateNodeState(nodeId, { count: 5 })
+
+// Access store state directly (if needed)
+const { rootId, nodes } = store.state
 ```
 
-#### `useSduiNodeSubscription(params: { nodeId: string, schema?: ZodSchema }): NodeData`
+#### `useSduiNodeSubscription<T>(params: { nodeId: string, schema?: ZodSchema }): NodeData`
 
-Subscribes to a specific node's changes.
+Subscribes to a specific node's changes and returns node information.
+
+**Parameters:**
+
+- `nodeId: string` - Node ID to subscribe to
+- `schema?: ZodSchema` - Optional Zod schema for state validation and type inference
+
+**Returns:**
+
+- `node: SduiLayoutNode | undefined` - Node entity
+- `type: string | undefined` - Node type
+- `state: T` - Layout state (inferred from schema if provided, otherwise `BaseLayoutState`)
+- `childrenIds: string[]` - Array of child node IDs
+- `attributes: Record<string, unknown> | undefined` - Node attributes
+- `exists: boolean` - Whether the node exists
 
 ```tsx
-const { node, state, childrenIds } = useSduiNodeSubscription({
+const { node, state, childrenIds, attributes, exists } = useSduiNodeSubscription({
   nodeId: 'node-1',
-  schema: baseLayoutStateSchema, // optional
+  schema: baseLayoutStateSchema, // optional - validates and types state
 })
 ```
 
@@ -357,16 +363,48 @@ Returns a function to render child nodes (internal use).
 
 Main store class for managing SDUI layout state.
 
-**Methods:**
+**Getters:**
+
+- `state: SduiLayoutStoreState` - Current store state
+- `nodes: Record<string, SduiLayoutNode>` - Node entities
+- `layoutStates: Record<string, BaseLayoutState>` - Layout states
+- `layoutAttributes: Record<string, Record<string, unknown>>` - Layout attributes
+- `metadata: SduiLayoutDocument['metadata'] | undefined` - Document metadata
+- `getComponentOverrides(): Record<string, ComponentFactory>` - Get component overrides
+
+**Query Methods:**
+
+- `getNodeById(nodeId: string): SduiLayoutNode | undefined` - Get node by ID
+- `getNodeTypeById(nodeId: string): string | undefined` - Get node type by ID
+- `getChildrenIdsById(nodeId: string): string[]` - Get children IDs by node ID
+- `getLayoutStateById(nodeId: string): BaseLayoutState | undefined` - Get layout state by ID
+- `getAttributesById(nodeId: string): Record<string, unknown> | undefined` - Get attributes by ID
+- `getRootId(): string | undefined` - Get root node ID
+- `getDocument(): SduiLayoutDocument | null` - Convert current state to document
+
+**Update Methods:**
 
 - `updateLayout(document: SduiLayoutDocument): void` - Update layout document
 - `updateNodeState(nodeId: string, state: Partial<BaseLayoutState>): void` - Update node state
+- `updateNodeAttributes(nodeId: string, attributes: Partial<Record<string, unknown>>): void` - Update node attributes
 - `updateVariables(variables: Record<string, unknown>): void` - Update global variables
-- `getNodeById(nodeId: string): SduiLayoutNode | undefined` - Get node by ID
-- `getChildrenIdsById(nodeId: string): string[]` - Get children IDs
+- `updateVariable(key: string, value: unknown): void` - Update single variable
+- `deleteVariable(key: string): void` - Delete variable
+- `cancelEdit(documentId?: string): void` - Cancel edits and restore original document
+
+**Selection Methods:**
+
+- `setSelectedNodeId(nodeId?: string): void` - Set selected node ID
+
+**Subscription Methods:**
+
 - `subscribeNode(nodeId: string, callback: () => void): () => void` - Subscribe to node changes
 - `subscribeVersion(callback: () => void): () => void` - Subscribe to global changes
+
+**Utility Methods:**
+
 - `reset(): void` - Reset store to initial state
+- `clearCache(): void` - Clear cache and reset store
 
 ## TypeScript Types
 
@@ -377,10 +415,15 @@ import type {
   SduiLayoutDocument,
   SduiLayoutNode,
   BaseLayoutState,
+  LayoutPosition,
+  SduiDocument,
+  SduiNode,
   ComponentFactory,
   RenderNodeFn,
   SduiLayoutStoreState,
   SduiLayoutStoreOptions,
+  UseSduiNodeSubscriptionParams,
+  NormalizedSduiEntities,
 } from '@lodado/sdui-template'
 ```
 

@@ -1,420 +1,410 @@
+---
+description: implements
+---
+
 # Implementation Guide: SDUI Template Library
 
-## Overview
+## 1) PR Plan (table)
 
-This document provides step-by-step instructions for implementing the SDUI Template library. It guides you through what to implement at each step, how to test it, and what to watch out for.
+| PR# | Scope | Files | Risks | Tests Added | Acceptance Checks |
+|-----|-------|-------|-------|-------------|------------------|
+| PR1 | Contracts & Types | `src/schema/*`, `src/store/types.ts`, `src/components/types.ts` | Type compatibility | Type tests | TypeScript compiles, types exported |
+| PR2 | Scaffold | File tree, `src/index.ts`, empty shells | Structure changes | N/A | Files exist, exports work |
+| PR3 | Normalization | `src/utils/normalize/*` | Normalizr integration | Unit tests | Normalize → denormalize round-trip |
+| PR4 | Store Managers | `src/store/managers/*` | State consistency | Unit tests | Managers work independently |
+| PR5 | Store Core | `src/store/SduiLayoutStore.ts` | Integration | Integration tests | Store methods work |
+| PR6 | React Context | `src/react-wrapper/context/*` | Context usage | Integration tests | Provider works |
+| PR7 | Hooks | `src/react-wrapper/hooks/*` | Hook behavior | Integration tests | Hooks work with Provider |
+| PR8 | Renderer Component | `src/react-wrapper/components/*` | Component rendering | Scenario tests | Basic rendering works |
+| PR9 | Component System | `src/components/*` | Factory resolution | Unit tests | Override priority works |
+| PR10 | Scenario Tests | `__tests__/scenario/*` | Test coverage | 10+ scenario tests | All P0 tests pass |
 
-## Pre-Implementation Checklist
+**PR Size**: Each PR < 400 LOC net new
 
-### Required Checks
+**Shippable**: Each PR can be merged independently (except PR10 requires PR1-9)
 
-- [ ] TypeScript configuration complete
-- [ ] Test environment setup complete (Jest)
-- [ ] Build configuration complete (Rollup)
-- [ ] Dependencies installed (normalizr, lodash-es, zod, etc.)
+## 2) Contracts (types + JSDoc policy bullets)
 
-### Development Environment
+### TypeScript Types
 
-```bash
-# Install dependencies
-pnpm install
-
-# Run development mode
-pnpm run dev
-
-# Run tests
-pnpm test
-
-# Build
-pnpm run build
-```
-
-## Implementation Steps
-
-### Step 1: Type and Schema Definitions
-
-**Goal**: Define all domain types and interfaces
-
-**Files**:
-
-- `src/schema/base.ts`: Base node and document types
-- `src/schema/node.ts`: Layout node types
-- `src/schema/state.ts`: Layout state types
-- `src/schema/grid.ts`: Grid configuration types
-- `src/schema/document.ts`: Layout document types
-
-**Notes**:
-
-- Be careful with recursive type definitions
-- Add JSDoc comments to all fields
-- Mark optional fields with `?`
-
-**Tests**:
-
-- TypeScript compilation check
-- Type checking only
-
-### Step 2: Normalization Utility Implementation
-
-**Goal**: Convert documents to normalized entities
-
-**Files**:
-
-- `src/utils/normalize/normalize.ts`: Normalization function
-- `src/utils/normalize/denormalize.ts`: Denormalization function
-- `src/utils/normalize/types.ts`: Normalized entity types
-
-**Implementation Points**:
-
-- Define normalizr schema
-- Handle recursive structures
-- Separate state and attributes
-
-**Tests**:
-
-- Normalize → denormalize round-trip test
-- Various nested structure tests
-- Edge case tests (empty array, single node, etc.)
-
-**Example**:
-
+**Document Types**:
 ```typescript
-const document = createTestDocument({ /* ... */ })
-const { entities } = normalizeSduiLayout(document)
-const denormalized = denormalizeSduiLayout(entities.rootId, entities)
-expect(denormalized).toEqual(document)
+/**
+ * SDUI Layout Document
+ * 
+ * @description Root document structure containing version, metadata, root node, and optional variables
+ * @param version - Document version string (e.g., "1.0.0")
+ * @param metadata - Optional metadata (id, name, description)
+ * @param root - Root node (required, must have id)
+ * @param variables - Optional global variables accessible to all components
+ */
+interface SduiLayoutDocument {
+  version: string
+  metadata?: {
+    id?: string
+    name?: string
+    description?: string
+  }
+  root: SduiLayoutNode
+  variables?: Record<string, unknown>
+}
 ```
 
-### Step 3: Store Manager Implementation
+**Component Factory**:
+```typescript
+/**
+ * Component Factory
+ * 
+ * @description Function that creates a React component for a node
+ * @param id - Node ID
+ * @param renderNode - Function to render child nodes (Render Props pattern)
+ * @returns ReactNode - The rendered component
+ * 
+ * @policy - Must return stable reference when called with same id
+ * @policy - renderNode function is stable across renders
+ * @policy - Should handle missing children gracefully (renderNode returns null for non-existent IDs)
+ */
+type ComponentFactory = (id: string, renderNode: RenderNodeFn) => ReactNode
+```
 
-**Goal**: Implement manager classes responsible for each store concern
+### JSDoc Policy Bullets
 
-**Files**:
-
-- `src/store/managers/SubscriptionManager.ts`: Subscription management
-- `src/store/managers/LayoutStateRepository.ts`: State storage
-- `src/store/managers/DocumentManager.ts`: Document management
-- `src/store/managers/VariablesManager.ts`: Variable management
-
-**Implementation Points**:
-
-**SubscriptionManager**:
-
-- `Map<nodeId, Set<callbacks>>` structure
-- Subscribe/unsubscribe methods
-- Notification methods
-
-**LayoutStateRepository**:
-
-- State storage and retrieval
-- Version management
-- Edit state management
-
-**DocumentManager**:
-
-- Document caching
-- Metadata management
-- Original document storage
-
-**VariablesManager**:
-
-- Global variable management
-- Increment version on variable updates
-
-**Tests**:
-
-- Unit tests for each manager
-- Memory leak tests (subscription cleanup)
-- State consistency tests
-
-### Step 4: Store Core Implementation
-
-**Goal**: Main store class that integrates managers
-
-**Files**:
-
-- `src/store/SduiLayoutStore.ts`: Main store class
-- `src/store/types.ts`: Store type definitions
-
-**Implementation Points**:
-
-- Integrate managers using Facade pattern
-- Define public API
-- Error handling
-
-**Key Methods**:
-
-- `updateLayout()`: Update document
-- `updateNodeState()`: Update node state
-- `subscribeNode()`: Subscribe to node
-- `subscribeVersion()`: Subscribe to version
-- `getNodeById()`: Get node by ID
-- `reset()`: Reset store
-
-**Tests**:
-
-- Unit tests for store methods
-- Integration tests (with managers)
-- Error case tests
-
-### Step 5: React Context Implementation
-
-**Goal**: Provide store via React Context
-
-**Files**:
-
-- `src/react/context/SduiLayoutContext.tsx`: Context and Provider
-
-**Implementation Points**:
-
-- Create Context
-- Provider component
-- Error handling (when used outside Provider)
-
-**Tests**:
-
-- Provider integration test
-- Context access test
-- Error case test (using without Provider)
-
-### Step 6: Hook Implementation (Part 1)
-
-**Goal**: Implement state selection and action hooks
-
-**Files**:
-
-- `src/react/hooks/useSduiLayoutStores.ts`: State selection hook
-- `src/react/hooks/useSduiLayoutAction.ts`: Action hook
-
-**Implementation Points**:
-
-**useSduiLayoutStores**:
-
-- Select state with selector function
-- Detect changes via version subscription
-- Memoize results with `useMemo`
-
-**useSduiLayoutAction**:
-
-- Return store instance
-- Maintain stable reference
-
-**Tests**:
-
-- Integration tests with Provider
-- Selector memoization test
-- Re-render optimization test
-
-### Step 7: Hook Implementation (Part 2)
-
-**Goal**: Implement node subscription and rendering hooks
-
-**Files**:
-
-- `src/react/hooks/useSduiNodeSubscription.ts`: Node subscription hook
-- `src/react/hooks/useRenderNode.ts`: Render function hook
-
-**Implementation Points**:
+**SduiLayoutRenderer**:
+- **Responsibility**: Render SDUI documents as React component trees
+- **Parameter Constraints**: `document.root.id` must exist (validated internally)
+- **Return/Error Behavior**: Returns null on error, calls `onError` callback
+- **Side Effects**: Creates store instance, normalizes document, initializes subscriptions
+- **Behavior-Critical Policies**: Component override priority (ID > type > default), error handling (fallback to empty store)
 
 **useSduiNodeSubscription**:
+- **Responsibility**: Subscribe to node state changes and return node data
+- **Parameter Constraints**: `nodeId` must be string, `schema` optional ZodSchema
+- **Return/Error Behavior**: Returns node data, throws SchemaValidationError if schema validation fails
+- **Side Effects**: Subscribes to node changes, unsubscribes on unmount
+- **Behavior-Critical Policies**: Only subscribed node re-renders on state change, schema validation throws on failure
 
-- Subscribe to specific node
-- Return node data
-- Optional schema validation
-- Unsubscribe (useEffect cleanup)
+**SduiLayoutStore.updateNodeState**:
+- **Responsibility**: Update node state and notify subscribers
+- **Parameter Constraints**: `nodeId` must exist in store, `state` must be Partial<BaseLayoutState>
+- **Return/Error Behavior**: No return, throws NodeNotFoundError if nodeId not found
+- **Side Effects**: Updates state, notifies subscribers, increments version
+- **Behavior-Critical Policies**: Latest update wins (synchronous), only that node's subscribers notified
 
-**useRenderNode**:
+## 3) Implementation Notes (vertical slice + key decisions)
 
-- Generate render function
-- Resolve component overrides
-- Support recursive rendering
-- Maintain stable reference (useRef)
+### Minimal Vertical Slice
 
-**Tests**:
+**Goal**: Render single root node with custom component
 
-- Subscription behavior test
-- Unsubscribe test (prevent memory leaks)
-- Render function stability test
+**Implementation Steps**:
+1. Define types (SduiLayoutDocument, SduiLayoutNode)
+2. Implement normalization (normalizeSduiLayout)
+3. Create store (SduiLayoutStore with basic methods)
+4. Create React Context (SduiLayoutProvider)
+5. Create renderer component (SduiLayoutRenderer)
+6. Create hook (useSduiNodeSubscription)
+7. Render root node
 
-### Step 8: Renderer Component Implementation
-
-**Goal**: Main component that renders SDUI documents
-
-**Files**:
-
-- `src/react/components/SduiLayoutRenderer.tsx`: Renderer component
-
-**Implementation Points**:
-
-- Document validation
-- Store creation and initialization
-- Error handling (onError callback)
-- Add "use client" directive
-
-**Tests**:
-
-- Basic rendering scenario test
-- Error handling test
-- Component override test
-
-### Step 9: Component System Implementation
-
-**Goal**: Component mapping and factory system
-
-**Files**:
-
-- `src/components/componentMap.tsx`: Default component map
-- `src/components/types.ts`: Factory type definitions
-
-**Implementation Points**:
-
-- Default component map (empty)
-- Default factory function
-- Type definitions
-
-**Tests**:
-
-- Default factory behavior test
-- Override priority test
-
-### Step 10: Scenario Test Writing
-
-**Goal**: Test all P0 use cases
-
-**Files**:
-
-- `src/__tests__/scenario/*.test.tsx`: Scenario tests
-
-**Test List**:
-
-1. Render single root node
-2. Render nested child nodes
-3. Update node state
-4. Component override by type
-5. Component override by ID
-6. Handle invalid document
-7. Render empty children array
-8. Handle deep nesting
-9. Subscription system
-10. Store reset
-11. Zod schema validation
-
-**Test Structure**:
-
+**Demo Steps**:
 ```typescript
-describe('Scenario Name', () => {
-  describe('as is: initial state', () => {
-    describe('when: action', () => {
-      it('to be: expected result', () => {
-        // Test code
-      })
-    })
-  })
+// 1. Create document
+const document = {
+  version: '1.0.0',
+  root: {
+    id: 'root',
+    type: 'Card',
+    state: { title: 'Hello' }
+  }
+}
+
+// 2. Define component
+const CardFactory: ComponentFactory = (id) => {
+  const { state } = useSduiNodeSubscription({ nodeId: id })
+  return <div>{state.title}</div>
+}
+
+// 3. Render
+<SduiLayoutRenderer 
+  document={document} 
+  components={{ Card: CardFactory }} 
+/>
+```
+
+**Verification**: Root node renders with "Hello" text
+
+### Key Decisions
+
+**Decision 1: Subscription System Implementation**
+- **Choice**: Map<nodeId, Set<callbacks>> structure
+- **Rationale**: O(1) lookup, O(1) add/remove, efficient notifications
+- **Trade-off**: More complex than Context, but better performance
+
+**Decision 2: Normalization Library**
+- **Choice**: Use normalizr library
+- **Rationale**: Proven library, handles recursive structures efficiently
+- **Trade-off**: Additional dependency, but avoids reinventing wheel
+
+**Decision 3: Component Override Priority**
+- **Choice**: ID > type > default
+- **Rationale**: Maximum flexibility (instance-specific overrides)
+- **Trade-off**: More complex resolution, but better customization
+
+**Decision 4: Error Handling Strategy**
+- **Choice**: Call onError callback, continue with empty store
+- **Rationale**: Graceful degradation, user can handle errors
+- **Trade-off**: May hide errors, but better UX
+
+## 4) Scenario Tests (6-10) + EP/BVA justification
+
+### Scenario Test List
+
+1. **Render Single Root Node**
+   - **EP/BVA**: Node count = 1 (minimum valid document)
+   - **Justification**: Tests basic rendering path
+   - **Input**: Document with single root node
+   - **Expected**: Root component renders
+
+2. **Render Nested Child Nodes**
+   - **EP/BVA**: Nesting depth = 3 (typical nesting)
+   - **Justification**: Tests recursive rendering
+   - **Input**: Document with 3-level nesting
+   - **Expected**: All nodes render in hierarchy
+
+3. **Update Node State**
+   - **EP/BVA**: Single node update (minimum change)
+   - **Justification**: Tests subscription system isolation
+   - **Input**: Update one node's state
+   - **Expected**: Only that node re-renders
+
+4. **Component Override by Type**
+   - **EP/BVA**: One override (minimum override)
+   - **Justification**: Tests override resolution
+   - **Input**: Override for node type
+   - **Expected**: Overridden component used
+
+5. **Component Override by ID**
+   - **EP/BVA**: ID override with type override (priority test)
+   - **Justification**: Tests override priority
+   - **Input**: Both ID and type overrides
+   - **Expected**: ID override used (higher priority)
+
+6. **Handle Invalid Document**
+   - **EP/BVA**: Missing root.id (boundary case)
+   - **Justification**: Tests error handling
+   - **Input**: Document without root.id
+   - **Expected**: onError called, null rendered
+
+7. **Render Empty Children Array**
+   - **EP/BVA**: children = [] (empty array)
+   - **Justification**: Tests edge case handling
+   - **Input**: Document with empty children
+   - **Expected**: Root renders, no children
+
+8. **Handle Deep Nesting**
+   - **EP/BVA**: Nesting depth = 10 (deep nesting)
+   - **Justification**: Tests recursion limits
+   - **Input**: Document with 10 levels
+   - **Expected**: All nodes render, performance acceptable
+
+9. **Subscription System**
+   - **EP/BVA**: Multiple nodes, update one (isolation test)
+   - **Justification**: Tests subscription isolation
+   - **Input**: 3 nodes subscribed, update one
+   - **Expected**: Only updated node's subscribers notified
+
+10. **Store Reset**
+    - **EP/BVA**: Loaded store reset (state transition)
+    - **Justification**: Tests cleanup and state reset
+    - **Input**: Load document, then reset
+    - **Expected**: Store returns to initial state, subscriptions cleaned up
+
+### EP/BVA Justification
+
+**Node Count (0, 1, 10, 100, 1000)**:
+- 0: Invalid (must have root)
+- 1: Minimum valid
+- 10: Typical use case
+- 100: Large document
+- 1000: Stress test
+
+**Nesting Depth (0, 1, 5, 10, 20)**:
+- 0: Root only (no children)
+- 1: One level
+- 5: Typical nesting
+- 10: Deep nesting
+- 20: Stress test
+
+## 5) Deterministic Async/Race Strategy
+
+**Current Approach**: All operations synchronous (no async in MVP)
+
+**Strategy**: 
+- No async operations
+- No timers
+- No race conditions
+- All operations complete immediately
+
+**Future (if async added)**:
+- Use AbortController for cancellation
+- Deferred promises for race tests
+- Latest user intent wins
+- Sequence guards prevent stale updates
+
+**Race Test Design** (if async added):
+```typescript
+it('latest user intent wins', async () => {
+  const deferred1 = defer()
+  const deferred2 = defer()
+  
+  // Start first request
+  updateNodeState('node-1', { count: 1 })
+  deferred1.resolve()
+  
+  // Start second request (should win)
+  updateNodeState('node-1', { count: 2 })
+  deferred2.resolve()
+  
+  // Verify latest wins
+  expect(getState('node-1').count).toBe(2)
 })
 ```
 
-### Step 11: Public API and Exports
+## 6) Error/Empty/Loading UX
 
-**Goal**: Export all public APIs correctly
+### Error State Behavior
 
-**Files**:
+**Invalid Document**:
+- **Trigger**: Document missing root.id
+- **Behavior**: Call `onError` callback with InvalidDocumentError
+- **Recovery**: Create empty store, render null
+- **User Action**: Handle error via onError callback
 
-- `src/index.ts`: Main export file
-- `package.json`: Package configuration
+**Node Not Found**:
+- **Trigger**: Query/update non-existent nodeId
+- **Behavior**: Query returns `undefined`, update throws NodeNotFoundError
+- **Recovery**: User handles (library doesn't recover)
+- **User Action**: Check nodeId exists before update
 
-**Export Items**:
+**Schema Validation Failure**:
+- **Trigger**: Zod schema validation fails
+- **Behavior**: Throw SchemaValidationError in hook
+- **Recovery**: User handles (library doesn't recover)
+- **User Action**: Fix state structure or schema
 
-- Components: `SduiLayoutRenderer`, `SduiLayoutProvider`
-- Hooks: `useSduiLayoutStores`, `useSduiLayoutAction`, `useSduiNodeSubscription`
-- Store: `SduiLayoutStore`
-- Types: All public types
-- Utilities: `normalizeSduiLayout`, `denormalizeSduiLayout` (optional)
+### Empty State Behavior
 
-**Tests**:
+**No Children**:
+- **Trigger**: children: []
+- **Behavior**: Render root node only, no children
+- **Recovery**: N/A (not an error)
+- **User Action**: Provide empty state UI in component if needed
 
-- Export test (verify all items exported correctly)
-- Bundle size check (< 50KB gzipped)
-- Tree-shaking verification
+**Empty Store**:
+- **Trigger**: After reset or error
+- **Behavior**: Render null
+- **Recovery**: Load new document
+- **User Action**: Load valid document
 
-### Step 12: Documentation
+### Loading State Behavior
 
-**Goal**: Write documentation for users
+**Not Needed**: All operations synchronous (instant)
 
-**Files**:
+**Future (if async added)**:
+- **Trigger**: Document loading
+- **Behavior**: Show loading state (users implement)
+- **Recovery**: Display loaded content
+- **User Action**: Handle loading state in component
 
-- `README.md`: Usage guide
-- JSDoc comments: All public APIs
+## 7) Observability/Performance Notes
 
-**Documentation Content**:
+### Observability
 
+**Error Callbacks**:
+- `onError`: Called on document validation errors
+- User can log errors, send to monitoring service
+
+**No Internal Logging**:
+- Library doesn't log internally
+- Users can add logging via callbacks
+
+**Performance Measurement**:
+- Users can measure via React Profiler
+- Users can measure normalization time via performance API
+
+### Performance Notes
+
+**Bundle Size**:
+- Target: < 50KB (gzipped)
+- Measurement: Bundle analyzer
+- Optimization: Tree-shaking, remove unused dependencies
+
+**Render Performance**:
+- Target: < 100ms initial render (100 nodes)
+- Target: < 16ms re-render (single node)
+- Measurement: React Profiler
+- Optimization: Subscription-based re-rendering, memoization
+
+**Memory**:
+- Target: No leaks
+- Measurement: Memory profiler
+- Optimization: Subscription cleanup, store reset
+
+## 8) Docs/ADR Updates
+
+### Documentation Updates
+
+**README.md**:
 - Installation instructions
 - Quick start guide
 - API reference
 - Example code
 - Next.js App Router usage
-- Component override examples
 
-## Implementation Notes
+**JSDoc**:
+- All public APIs documented
+- Parameter descriptions
+- Return types
+- Error behavior
+- Side effects
 
-### Performance
+### ADR Updates
 
-- **Unsubscribe**: Must be called in `useEffect` cleanup
-- **Memoization**: Memoize selector results with `useMemo`
-- **Stable References**: Maintain stable references for store instance and render function
+**ADR 1: Subscription System** (see arch.md)
+- Decision: Custom subscription system over React Context
+- Rationale: Performance (only changed nodes re-render)
 
-### Memory Management
+**ADR 2: Normalization** (see arch.md)
+- Decision: Use normalizr library
+- Rationale: Proven library, efficient recursive handling
 
-- **Subscription Cleanup**: Unsubscribe required on component unmount
-- **Store Reset**: Use `reset()` method to clean up when needed
-- **Reference Removal**: Verify callback references are removed on unsubscribe
+**ADR 3: Error Handling** (new)
+- Decision: Call onError callback, continue with empty store
+- Rationale: Graceful degradation, user control
 
-### Error Handling
+## 9) Merge Readiness Checklist
 
-- **Validation**: Validate document before processing
-- **Error Callback**: Pass errors to `onError` callback
-- **Fallback**: Continue rendering if possible (with empty store)
+### Pre-flight Checklist
 
-### Type Safety
+- [x] Target branch: main (trunk-based)
+- [x] Feature flag: Not needed (library feature)
+- [x] Local dev environment: Reproducible (pnpm install)
+- [x] Baseline tests: Pass on main
 
-- **Strict Mode**: Use TypeScript strict mode
-- **Type Exports**: Export all public types
-- **JSDoc**: Add JSDoc comments to all public APIs
+### Merge Readiness Checklist
 
-## Testing Strategy
+- [x] All P0 scenario tests pass
+- [x] No flaky tests (all synchronous)
+- [x] Lint/build passes
+- [x] Keyboard-only flow works (API provided)
+- [x] Accessibility roles/aria match (API provided)
+- [x] Concurrency policy satisfied (latest intent wins, synchronous)
+- [x] No out-of-scope leakage
+- [x] TypeScript strict mode enabled
+- [x] No memory leaks (unsubscribe test)
+- [x] Bundle size < 50KB gzipped (measured)
+- [x] Next.js App Router compatible ("use client" directive)
 
-### Scenario First
-
-- Test behavior, not implementation details
-- Use "as is → when → to be" structure
-- Verify only observable behavior
-
-### Boundary Value Analysis
-
-- Node count: 0, 1, 10, 100, 1000
-- Nesting depth: 0, 1, 5, 10, 20
-- Layout position: Boundary value tests
-
-### Deterministic Async
-
-- All operations are synchronous (MVP)
-- No timing issues
-- Explicit unsubscribe tests
-
-## Merge Readiness Checklist
-
-- [ ] All P0 scenario tests pass
-- [ ] No flaky tests (all synchronous)
-- [ ] Lint/build passes
-- [ ] Keyboard-only flow works (API provided)
-- [ ] Accessibility roles/aria match (API provided)
-- [ ] Concurrency policy satisfied (latest intent wins, synchronous)
-- [ ] No out-of-scope leakage
-- [ ] TypeScript strict mode enabled
-- [ ] No memory leaks (unsubscribe test)
-- [ ] Bundle size < 50KB gzipped (measured)
-- [ ] Next.js App Router compatible ("use client" directive)
-
-## Known Limitations
+### Known Limitations
 
 - SSR support (works without serialization)
 - No persistence (users handle)
@@ -422,10 +412,28 @@ describe('Scenario Name', () => {
 - No default components (users provide)
 - No async operations (synchronous only)
 
-## Next Steps
+## 10) Rollout Plan (if applicable)
 
-After implementation:
+**Not Applicable**: Library package, not a service
 
-1. **Optimization** (`optimization.md`): Performance optimization and improvements
-2. **Documentation**: Complete README and API documentation
-3. **Deployment**: Deploy as npm package
+**Release Steps**:
+1. Version bump in package.json
+2. Build package
+3. Publish to npm
+4. Update documentation
+
+**Monitoring Signals**:
+- npm downloads
+- GitHub issues
+- Bundle size (npm package size)
+
+**Rollback Criteria**:
+- Critical bugs reported
+- Bundle size regression
+- Performance regression
+
+**Post-Release Validation**:
+- Verify npm package installs correctly
+- Verify types are available
+- Verify bundle size is acceptable
+- Monitor for issues

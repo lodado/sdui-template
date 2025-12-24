@@ -4,7 +4,7 @@
  * SDUI Render Node Hook
  *
  * Render Props Pattern을 위한 renderNode 함수를 생성하는 hook입니다.
- * nodes는 React 상태로 관리되므로 useSduiLayoutStores를 통해 가져옵니다.
+ * nodes는 store에서 직접 접근하여 사용합니다.
  */
 
 import { useCallback, useRef } from 'react'

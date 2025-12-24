@@ -1,27 +1,34 @@
+---
+description: architecture-design
+---
+
 # Architecture Design: SDUI Template Library
 
-## Overview
+## 1) Goals & Constraints
 
-This document explains the architecture of the SDUI Template library. It helps you understand how the library is structured and how each part interacts.
+### Top 3 Architecture Goals
 
-## Architecture Goals
-
-### Core Goals
-
-1. **Performance**: Subscription-based re-rendering updates only changed nodes
+1. **Performance**: Subscription-based re-rendering updates only changed nodes (maintain 60fps)
 2. **Modularity**: Clean separation allows easy component customization by users
-3. **Next.js Compatibility**: Works with minimal client bundle in App Router
+3. **Next.js Compatibility**: Works seamlessly with App Router, minimal client bundle
 
-### Constraints
+### Hard Constraints
 
-- **Runtime**: Browser (client components) + Node.js (server components)
+- **Runtime**: Browser (client components) + Node.js (server components for SSR)
 - **Tech Stack**: React 18+, TypeScript, Next.js 13+ App Router
 - **Deployment**: npm package, tree-shaking support, ESM + CJS exports
-- **Security**: XSS prevention, safe HTML rendering, SSR state serialization safety
+- **Security**: XSS prevention (React auto-escaping), safe HTML rendering, SSR state serialization safety
 
-## System Structure
+### Architecture Drivers (from NFR)
 
-### Overall Architecture Diagram
+- **Performance SLO**: Initial render < 100ms (100 nodes), re-render < 16ms (single node)
+- **Availability**: No crashes on invalid documents (graceful error handling)
+- **Data Integrity**: Normalized state consistency, subscription cleanup
+- **Accessibility**: API provided for keyboard navigation (users implement)
+
+## 2) System Context & Boundary
+
+### Context Diagram
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
@@ -61,189 +68,131 @@ This document explains the architecture of the SDUI Template library. It helps y
                     └─────────────────────┘
 ```
 
-## Module Structure
+**In-Scope Components**:
 
-The library consists of 6 main modules:
+- Document normalization/denormalization
+- State management and subscription system
+- React integration (components, hooks, context)
+- Component factory system
 
-### 1. Schema Module (`src/schema/`)
+**External Services**:
+
+- API servers (data source - users handle)
+- Storage systems (optional - users handle)
+
+**Data Stores**:
+
+- In-memory store (library manages)
+- Document cache (optional, library manages)
+
+## 3) Module Decomposition
+
+### Module 1: Schema Module (`src/schema/`)
 
 **Responsibility**: Domain models and type definitions
 
-**Provides**:
+**Public Interface**:
 
-- `SduiLayoutDocument`: SDUI document type
-- `SduiLayoutNode`: Node type
-- `BaseLayoutState`: Component state type (flexible, user-defined)
+- `SduiLayoutDocument` type
+- `SduiLayoutNode` type
+- `BaseLayoutState` type
+- `LayoutPosition` type
 
-**Usage Example**:
+**Private Decisions**:
 
-```typescript
-import type { SduiLayoutDocument } from '@lodado/sdui-template'
+- Internal type structure
+- Validation rules (if any)
 
-const document: SduiLayoutDocument = {
-  version: '1.0.0',
-  root: {
-    /* ... */
-  },
-}
-```
+**Owners**: Library maintainers
 
-### 2. Store Module (`src/store/`)
+### Module 2: Store Module (`src/store/`)
 
 **Responsibility**: State management and subscription system
 
-**Provides**:
+**Public Interface**:
 
-- `SduiLayoutStore`: Main store class
-- `SduiLayoutStoreState`: Store state type
-- `SduiLayoutStoreOptions`: Store options type
+- `SduiLayoutStore` class
+- `SduiLayoutStoreState` type
+- `SduiLayoutStoreOptions` type
 
-**Internal Structure**:
+**Private Decisions**:
 
-- `SubscriptionManager`: Subscription system management
-- `LayoutStateRepository`: State storage management
-- `DocumentManager`: Document caching and serialization
-- `VariablesManager`: Global variable management
+- Subscription implementation (Map<nodeId, Set<callbacks>>)
+- State storage structure (normalized entities)
+- Version management
+- Manager coordination (Facade pattern)
 
-**Usage Example**:
+**Owners**: Library maintainers
 
-```typescript
-import { SduiLayoutStore } from '@lodado/sdui-template'
+**Sub-modules**:
 
-const store = new SduiLayoutStore()
-store.updateLayout(document)
-store.updateNodeState('node-1', { count: 5 })
-```
+- `SubscriptionManager`: Subscription system
+- `LayoutStateRepository`: State storage
+- `DocumentManager`: Document caching
+- `VariablesManager`: Global variables
 
-### 3. Normalization Module (`src/utils/normalize/`)
+### Module 3: Normalization Module (`src/utils/normalize/`)
 
 **Responsibility**: Document normalization and denormalization
 
-**Provides**:
+**Public Interface**:
 
-- `normalizeSduiLayout()`: Convert document to normalized entities
-- `denormalizeSduiLayout()`: Convert normalized entities to document
-- `NormalizedSduiEntities`: Normalized entity type
+- `normalizeSduiLayout()` function
+- `denormalizeSduiLayout()` function
+- `normalizeSduiNode()` function (optional)
+- `denormalizeSduiNode()` function (optional)
+- `NormalizedSduiEntities` type
 
-**How It Works**:
+**Private Decisions**:
 
-- Converts recursive node structures to flat entities
-- Enables fast ID-based lookups
-- Separates state and attributes into separate entities
+- Normalizr schema structure
+- Entity separation strategy
+- Caching strategy (optional)
 
-**Usage Example**:
+**Owners**: Library maintainers
 
-```typescript
-import { normalizeSduiLayout } from '@lodado/sdui-template'
-
-const { entities } = normalizeSduiLayout(document)
-// entities.nodes, entities.layoutStates, entities.layoutAttributes
-```
-
-### 4. React Integration Module (`src/react/`)
+### Module 4: React Integration Module (`src/react-wrapper/`)
 
 **Responsibility**: React Context, hooks, component rendering
 
-**Provides**:
+**Public Interface**:
 
-- `SduiLayoutProvider`: Context Provider component
-- `SduiLayoutRenderer`: Main renderer component
-- `useSduiLayoutStores`: State selection hook
-- `useSduiLayoutAction`: Action hook
-- `useSduiNodeSubscription`: Node subscription hook
-- `useRenderNode`: Render function hook (internal)
+- `SduiLayoutProvider` component
+- `SduiLayoutRenderer` component
+- `useSduiLayoutAction` hook
+- `useSduiNodeSubscription` hook
+- `useRenderNode` hook (internal)
 
-**Usage Example**:
+**Private Decisions**:
 
-```typescript
-import { SduiLayoutRenderer, useSduiNodeSubscription } from '@lodado/sdui-template'
+- Context implementation
+- Hook memoization strategy
+- Component override resolution
+- Render function stability
 
-function MyComponent() {
-  const { state } = useSduiNodeSubscription({ nodeId: 'node-1' })
-  return <div>{/* ... */}</div>
-}
-```
+**Owners**: Library maintainers
 
-### 5. Component System Module (`src/components/`)
+### Module 5: Component System Module (`src/components/`)
 
 **Responsibility**: Component mapping and factory system
 
-**Provides**:
+**Public Interface**:
 
-- `ComponentFactory`: Component factory type
-- `RenderNodeFn`: Render node function type
-- `componentMap`: Default component map (empty)
-- `defaultComponentFactory`: Default factory function
+- `ComponentFactory` type
+- `RenderNodeFn` type
+- `componentMap` (default empty)
+- `defaultComponentFactory` function
 
-**How It Works**:
+**Private Decisions**:
 
-- Maps node types to component factories
-- Priority: ID override > type override > default factory
+- Factory resolution priority
+- Default component behavior
 
-**Usage Example**:
+**Owners**: Library maintainers
 
-```typescript
-import type { ComponentFactory } from '@lodado/sdui-template'
+## 4) Architectural Style + Trade-offs
 
-const customFactory: ComponentFactory = (id, renderNode) => {
-  return <CustomComponent id={id}>{/* children */}</CustomComponent>
-}
-```
-
-### 6. Test Module (`src/__tests__/`)
-
-**Responsibility**: Test utilities and scenario tests
-
-**Provides**:
-
-- `createTestDocument()`: Create test documents
-- `renderWithSduiLayout()`: Test rendering helper
-- Scenario tests: Tests for major use cases
-
-## Data Flow
-
-### Document Rendering Flow
-
-```text
-1. User passes document to SduiLayoutRenderer
-   ↓
-2. Document normalization (normalizeSduiLayout)
-   - Recursive node structure → flat entities
-   ↓
-3. Store creation and update
-   - Create SduiLayoutStore instance
-   - Update store with normalized entities
-   ↓
-4. Provide store via Context Provider
-   - Provide store to Context via SduiLayoutProvider
-   ↓
-5. Render root node
-   - SduiLayoutRendererInner renders root node
-   ↓
-6. Recursive child rendering
-   - Call component factory matching each node's type
-   - Recursively render child nodes
-```
-
-### State Update Flow
-
-```text
-1. User interaction or programmatic update
-   ↓
-2. Call store.updateNodeState(nodeId, state)
-   ↓
-3. Store updates that node's state internally
-   ↓
-4. SubscriptionManager notifies subscribers of that node
-   ↓
-5. Only subscribed components re-render
-   - useSduiNodeSubscription hook calls forceRender
-   - Only that component updates
-```
-
-## Architecture Style
-
-### Layered Architecture
+### Chosen Style: Layered Architecture
 
 ```text
 ┌─────────────────────────────────────┐
@@ -258,185 +207,360 @@ const customFactory: ComponentFactory = (id, renderNode) => {
 └─────────────────────────────────────┘
 ```
 
-**Why This Choice**:
+**Rationale**:
 
 - Clear separation between React integration and core logic
 - Each layer can be tested independently
-- Provides React-optimized API
+- Provides React-optimized API while keeping core logic framework-agnostic
+- Easy to extend (new hooks/components without changing core)
 
-## Key Design Decisions
+**Trade-offs**:
 
-### 1. Subscription-Based Re-rendering
-
-**Decision**: Use subscription system instead of React Context
-
-**Reason**:
-
-- Context re-renders the entire tree
-- Subscription system re-renders only changed nodes
-- Essential for performance optimization
+| Aspect                  | Pros                             | Cons                       | Risk                        |
+| ----------------------- | -------------------------------- | -------------------------- | --------------------------- |
+| Layered                 | Clear separation, testable       | Some indirection           | Low                         |
+| Subscription vs Context | Performance (only changed nodes) | More complex than Context  | Medium (mitigated by tests) |
+| Normalization           | Fast lookups, efficient updates  | Initial normalization cost | Low (caching available)     |
 
 **Alternatives Considered**:
 
-- React Context: Excluded due to performance issues
-- Zustand: Excluded due to additional dependency
+- **React Context**: Excluded - causes entire tree re-render (performance issue)
+- **Zustand/Redux**: Excluded - additional dependency, overkill for this use case
+- **Event-driven**: Excluded - not needed (synchronous operations)
+- **Micro-frontend**: Excluded - single package, no need
 
-### 2. Normalization Usage
+## 5) Data & State Architecture
 
-**Decision**: Use normalizr library
+### Data Ownership
 
-**Reason**:
+| Entity        | Owner Module          | Access Method                                 |
+| ------------- | --------------------- | --------------------------------------------- |
+| Document      | DocumentManager       | `updateLayout()`, `getDocument()`             |
+| Nodes         | LayoutStateRepository | `getNodeById()`, `nodes` getter               |
+| Layout States | LayoutStateRepository | `getLayoutStateById()`, `layoutStates` getter |
+| Variables     | VariablesManager      | `updateVariables()`, `variables` getter       |
+| Subscriptions | SubscriptionManager   | `subscribeNode()`, `subscribeVersion()`       |
 
-- Efficiently handles recursive structures
-- Enables fast ID-based lookups
-- Uses proven library
+**Data Flow**:
 
-**Alternatives Considered**:
+- Document → Normalization → Store (normalized entities)
+- Store → React Context → Components (via hooks)
+- Components → Store (via actions) → Notifications → Components (re-render)
 
-- Manual normalization: High error risk
-- Custom solution: Reinventing the wheel
+### State Taxonomy
 
-### 3. SSR Support
+**Server State** (from document):
 
-**Decision**: Support SSR with server/client component separation
+- `nodes`: Node entities (source of truth: document)
+- `layoutStates`: Component states (source of truth: document)
+- `variables`: Global variables (source of truth: document)
+- `metadata`: Document metadata (source of truth: document)
 
-**Reason**:
+**Client/UI State**:
 
-- Better initial load performance (SEO, FCP)
-- Progressive enhancement (works without JS)
-- Next.js App Router best practices
+- `selectedNodeId`: Selected node (ephemeral, UI-only)
+- `isEdited`: Edit flag (ephemeral, UI-only)
+- Subscription callbacks (ephemeral, component lifecycle)
 
-**Implementation**:
+**Derived State**:
 
-- Server component: Initialize store, serialize state
-- Client component: Hydrate store, enable interactivity
-- State serialization: Store state → JSON → HTML
-- Hydration: JSON → Store state → Subscribe system
+- `childrenIds`: Computed from `nodes[id].childrenIds`
+- Component factory resolution: Computed from overrides + componentMap
 
-**Alternatives Considered**:
+### Concurrency Rules
 
-- Client only: Simpler but worse initial performance
-- Full SSR: Too complex, subscription system is client-only
+**Current Approach (Synchronous)**:
 
-### 4. Component Override System
+- All operations synchronous (no async in MVP)
+- Latest update wins (no conflicts)
+- No race conditions (synchronous only)
 
-**Decision**: Priority order: ID > type > default
+**Future (if async added)**:
 
-**Reason**:
+- Latest user intent wins (cancellation via AbortController)
+- Sequence guards (prevent stale updates)
+- Idempotent operations (safe to retry)
 
-- Flexible customization
-- Allows instance-specific customization
+## 6) Key Flows (Sequence)
 
-**Alternatives Considered**:
+### Flow 1: Document Rendering (Happy Path)
 
-- Type only: Less flexible
-- No overrides: Too rigid
-
-## Performance Considerations
-
-### Optimization Strategy
-
-1. **Subscription-based re-rendering**: Updates only changed nodes
-2. **Memoization**: Appropriate memoization in hooks and components
-3. **Normalization caching**: Prevents re-normalizing same document
-4. **Stable references**: Maintain stable references for store instance and render function
-
-### Performance Goals
-
-- **Initial Rendering**: < 100ms for 100 nodes
-- **Re-rendering**: Updates only changed nodes (maintain 60fps)
-- **Bundle Size**: < 50KB (gzipped)
-
-## Security Considerations
-
-### XSS Prevention
-
-- Leverages React's automatic escaping
-- No `dangerouslySetInnerHTML` usage
-- Users control component rendering (library only provides structure)
-
-### Data Validation
-
-- Optional Zod schema validation
-- Users can validate provided documents
-
-## Extensibility
-
-### Future Extensible Areas
-
-1. **Schema Validation**: Enhanced Zod integration
-2. **Developer Tools**: React DevTools integration
-3. **Performance Monitoring**: Render time tracking
-4. **Async Operations**: AbortController support
-
-### Extension Points
-
-- Component override system
-- Error callbacks
-- Layout change callbacks
-- Store options
-
-## SSR Architecture
-
-### Server/Client Separation
-
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                    Server Layer                             │
-│  (Next.js Server Components)                                │
-│                                                             │
-│  - Document fetching (API/DB)                               │
-│  - Store initialization (read-only)                          │
-│  - State serialization                                      │
-│  - HTML generation                                          │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              │ serializedState (JSON)
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    Client Layer                             │
-│  (React Client Components)                                 │
-│                                                             │
-│  - State hydration                                          │
-│  - Subscription system initialization                        │
-│  - Interactive features                                     │
-│  - Event handlers                                           │
-└─────────────────────────────────────────────────────────────┘
+```
+User → SduiLayoutRenderer: document={doc}
+  → SduiLayoutRenderer: validate document
+  → SduiLayoutRenderer: create SduiLayoutStore
+  → SduiLayoutStore: normalizeSduiLayout(document)
+  → SduiLayoutStore: updateLayout(normalized)
+  → LayoutStateRepository: updateNodes(entities.nodes)
+  → LayoutStateRepository: updateLayoutStates(entities.layoutStates)
+  → SduiLayoutProvider: provide store via Context
+  → SduiLayoutRendererInner: render root node
+  → useRenderNode: resolve component factory
+  → ComponentFactory: render component with id
+  → useSduiNodeSubscription: subscribe to node
+  → SubscriptionManager: register callback
+  → Component: render with state
 ```
 
-### Data Flow (SSR)
+### Flow 2: State Update (Happy Path)
 
-```text
-1. Server Component receives document
-   ↓
-2. Create SduiLayoutStore (server instance)
-   ↓
-3. Store.updateLayout(document)
-   ↓
-4. Store.serializeState() → JSON
-   ↓
-5. Pass serializedState to Client Component
-   ↓
-6. Client Component creates new store
-   ↓
-7. Store.hydrateState(serializedState)
-   ↓
-8. Initialize subscription system
-   ↓
-9. Render with hydrated state
+```
+User → Component: user interaction
+  → Component: store.updateNodeState(nodeId, newState)
+  → SduiLayoutStore: updateNodeState(nodeId, newState)
+  → LayoutStateRepository: updateNodeLayoutState(nodeId, mergedState)
+  → SubscriptionManager: notifyNode(nodeId)
+  → SubscriptionManager: call registered callbacks
+  → useSduiNodeSubscription: forceRender()
+  → Component: re-render with new state
 ```
 
-### Key Design Decisions (SSR)
+### Flow 3: Error Handling (Failure Path)
 
-1. **State Serialization**: Only serializable state (no functions, no subscriptions)
-2. **Hydration Safety**: Validate serialized state before hydration
-3. **Progressive Enhancement**: Works without serializedState (client-only fallback)
-4. **Component Separation**: Server component for data, client component for interactivity
+```
+User → SduiLayoutRenderer: document={invalidDoc}
+  → SduiLayoutRenderer: validate document
+  → SduiLayoutRenderer: detect missing root.id
+  → SduiLayoutRenderer: catch error
+  → SduiLayoutRenderer: call onError(error)
+  → SduiLayoutRenderer: create empty store (fallback)
+  → SduiLayoutRenderer: return null
+  → User: handle error via onError callback
+```
 
-## Next Steps
+## 7) Interface Contracts
 
-Based on this architecture:
+### Internal Interfaces
 
-1. **Implementation Design** (`design-flow.md`): Detailed implementation plan (includes SSR)
+**Store → Managers**:
+
+```typescript
+interface SubscriptionManager {
+  subscribeNode(nodeId: string, callback: () => void): () => void
+  subscribeVersion(callback: () => void): () => void
+  notifyNode(nodeId: string): void
+  notifyVersion(): void
+}
+
+interface LayoutStateRepository {
+  getNodeById(nodeId: string): SduiLayoutNode | undefined
+  getLayoutStateById(nodeId: string): BaseLayoutState | undefined
+  updateNodes(nodes: Record<string, SduiLayoutNode>): void
+  updateNodeLayoutState(nodeId: string, state: BaseLayoutState): void
+}
+```
+
+**React → Store**:
+
+```typescript
+interface SduiLayoutStore {
+  // Query
+  getNodeById(nodeId: string): SduiLayoutNode | undefined
+  getChildrenIdsById(nodeId: string): string[]
+
+  // Update
+  updateLayout(document: SduiLayoutDocument): void
+  updateNodeState(nodeId: string, state: Partial<BaseLayoutState>): void
+
+  // Subscribe
+  subscribeNode(nodeId: string, callback: () => void): () => void
+  subscribeVersion(callback: () => void): () => void
+}
+```
+
+### External Interfaces
+
+**User → Library**:
+
+```typescript
+interface SduiLayoutRendererProps {
+  document: SduiLayoutDocument
+  components?: Record<string, ComponentFactory>
+  componentOverrides?: {
+    byNodeId?: Record<string, ComponentFactory>
+    byNodeType?: Record<string, ComponentFactory>
+  }
+  onError?: (error: Error) => void
+  onLayoutChange?: (document: SduiLayoutDocument) => void
+}
+```
+
+### Error Taxonomy
+
+- **InvalidDocumentError**: Document missing required fields
+- **NodeNotFoundError**: Node ID not found
+- **SchemaValidationError**: Zod schema validation failed
+
+**Error Handling Strategy**:
+
+- Errors caught internally
+- Passed to `onError` callback
+- Library continues if possible (fallback)
+- No exceptions thrown to user code
+
+### Timeouts/Retries
+
+- Not applicable (synchronous operations)
+- Future: If async added, use AbortController for cancellation
+
+### Pagination/Caching
+
+- No pagination (all nodes in memory)
+- Document caching optional (via DocumentManager)
+- Normalization caching optional (performance optimization)
+
+### Security/Auth Boundaries
+
+- No authentication (users handle)
+- XSS prevention: React auto-escaping (no dangerouslySetInnerHTML)
+- SSR safety: JSON serialization only (no functions)
+
+### Observability Hooks
+
+- Error callbacks: `onError` for user-facing errors
+- No internal logging (users can add via callbacks)
+- Performance: Users can measure via React Profiler
+
+## 8) Cross-Cutting Concerns
+
+### Logging / Metrics / Tracing
+
+- **Strategy**: Minimal - error callbacks only
+- **Implementation**: `onError` callback for user-facing errors
+- **No internal logging**: Users can add via callbacks if needed
+
+### Error Handling Strategy
+
+- **User-facing**: `onError` callback with Error object
+- **Internal**: Try-catch, fallback to empty store
+- **Recovery**: Continue rendering if possible, return null if not
+
+### Security & Privacy
+
+- **XSS Prevention**: React auto-escaping (no dangerouslySetInnerHTML)
+- **SSR Safety**: JSON serialization only (no functions, no circular refs)
+- **PII Handling**: Users handle (library doesn't process PII)
+- **Tokens/Secrets**: Users handle (library doesn't store secrets)
+
+### Performance Plan
+
+- **Budgets**: Bundle < 50KB, initial render < 100ms (100 nodes)
+- **Caching**: Document caching optional, normalization caching optional
+- **Batching**: Not needed (synchronous operations)
+- **Measurement**: React Profiler, bundle analyzer
+
+### Accessibility Plan
+
+- **Strategy**: API provided, users implement
+- **Keyboard Navigation**: Users handle in components
+- **ARIA**: Users handle in components
+- **Focus Management**: Users handle in components
+
+### Configuration & Feature Flags
+
+- **Store Options**: `componentOverrides` via constructor
+- **No feature flags**: Not needed (single package)
+- **Environment**: Detected automatically (browser vs server)
+
+## 9) Test Architecture
+
+### Test Pyramid
+
+```
+        /\
+       /  \     Unit Tests (P1)
+      /____\    - Pure helpers only
+     /      \
+    /________\  Integration Tests (P1)
+   /          \ - Manager integration
+  /____________\ Scenario Tests (P0)
+                 - 10+ scenario tests
+                 - EP/BVA sampling
+                 - Deterministic async
+```
+
+### Must-Have Test Portfolio
+
+**Scenario Tests (P0 - 10 tests)**:
+
+1. Render single root node
+2. Render nested child nodes (3 levels)
+3. Update node state (verify only that node re-renders)
+4. Component override by type
+5. Component override by ID (priority test)
+6. Handle invalid document (error callback)
+7. Render empty children array
+8. Handle deep nesting (10 levels)
+9. Subscription system (multiple nodes, verify isolation)
+10. Store reset (verify cleanup)
+
+**EP/BVA Sampling**:
+
+- Node count: 0, 1, 10, 100, 1000
+- Nesting depth: 0, 1, 5, 10, 20
+- Layout position: -1, 0, 5, 12, max
+- Layout width: 0, 1, 6, 12, max
+
+**Deterministic Tests**:
+
+- All synchronous (no timing issues)
+- Explicit unsubscribe tests (memory leak prevention)
+- No race conditions (synchronous only)
+
+**Contract Tests** (if needed):
+
+- Store → Manager interfaces
+- React → Store interfaces
+
+**Unit Tests (P1 - Optional)**:
+
+- Pure helpers: `normalizeSduiLayout`, `denormalizeSduiLayout`
+- Manager classes (if complex logic)
+
+## 10) ADR Summary + Next Steps
+
+### ADR 1: Subscription System over React Context
+
+**Decision**: Use custom subscription system instead of React Context
+
+**Context**: Need to re-render only changed nodes for performance
+
+**Decision**: Implement Map<nodeId, Set<callbacks>> subscription system
+
+**Consequences**: More complex than Context, but better performance
+
+### ADR 2: Normalization with Normalizr
+
+**Decision**: Use normalizr library for document normalization
+
+**Context**: Need efficient ID-based lookups for recursive structures
+
+**Decision**: Use normalizr (proven library)
+
+**Consequences**: Additional dependency, but proven and efficient
+
+### ADR 3: Layered Architecture
+
+**Decision**: Use layered architecture (React → Business Logic → Data)
+
+**Context**: Need clear separation, testability, extensibility
+
+**Decision**: Three-layer architecture
+
+**Consequences**: Some indirection, but clear separation and testability
+
+### ADR 4: SSR Support without Serialization
+
+**Decision**: Support SSR without state serialization (optional feature)
+
+**Context**: Same document produces same result on server and client
+
+**Decision**: Works without serialization, add only if profiling shows bottleneck
+
+**Consequences**: Simpler implementation, acceptable performance for most cases
+
+### Next Steps
+
+1. **Implementation Design** (`design-flow.md`): Detailed implementation plan
 2. **Implementation** (`implements.md`): Actual code implementation
 3. **Optimization** (`optimization.md`): Performance optimization

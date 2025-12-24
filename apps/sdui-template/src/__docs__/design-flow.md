@@ -1,38 +1,298 @@
+---
+description: design-flow
+---
+
 # Implementation Design: SDUI Template Library
 
-## Overview
+## 1) Deliverables + Done Criteria
 
-This document explains the implementation design of the SDUI Template library. It provides a detailed plan for how to implement it, what file structure to use, and what testing strategy to employ.
+### 1.1 Deliverables
 
-## Implementation Goals
+**UI Components**:
 
-### What to Provide
-
-**Components**:
-
-- `SduiLayoutProvider`: Provides store via Context Provider
-- `SduiLayoutRenderer`: Main component that renders SDUI documents
+- `SduiLayoutProvider`: Context Provider component
+- `SduiLayoutRenderer`: Main renderer component
 
 **Hooks**:
 
-- `useSduiLayoutStores`: Select store state
-- `useSduiLayoutAction`: Call store actions
-- `useSduiNodeSubscription`: Subscribe to specific nodes
-- `useRenderNode`: Generate node rendering function (internal)
+- `useSduiLayoutAction`: Action hook (returns store instance)
+- `useSduiNodeSubscription`: Node subscription hook
+- `useRenderNode`: Render function hook (internal)
 
-**Types**:
+**Types/Schemas**:
 
-- All public types and interfaces
+- `SduiLayoutDocument`: Document type
+- `SduiLayoutNode`: Node type
+- `BaseLayoutState`: State type
+- `ComponentFactory`: Factory type
+- `RenderNodeFn`: Render function type
+- `SduiLayoutStoreState`: Store state type
+- `SduiLayoutStoreOptions`: Store options type
 
 **Tests**:
 
-- Scenario tests (P0)
-- Unit tests (P1)
-- Integration tests (P1)
+- Scenario tests (P0): 10+ tests
+- Unit tests (P1): Optional for pure helpers
 
-## File Structure
+**Docs**:
 
-### Target Structure (FSD Compliant)
+- JSDoc for all public APIs
+- README.md with usage guide
+- ADR updates for key decisions
+
+**Optional**:
+
+- Storybook (not in MVP)
+- Fixtures (test utilities only)
+
+### 1.2 Done Criteria (non-negotiable)
+
+- [x] All P0 user flows implemented and have scenario tests
+- [x] Async flows are deterministic (no async in MVP, all synchronous)
+- [x] Accessibility basics covered (API provided, users implement)
+- [x] Error & empty states defined (onError callback, fallback handling)
+- [x] Logging/metrics hooks exist (onError callback)
+- [x] File structure follows team conventions
+- [x] TypeScript types exported correctly
+- [x] Next.js App Router compatible ("use client" directive)
+- [x] Bundle size < 50KB gzipped (measured)
+- [x] No memory leaks (unsubscribe tests)
+
+## 2) UI State & Interaction Rules
+
+### UI State Table
+
+| State   | Description              | Trigger             | Visual/Behavior                         |
+| ------- | ------------------------ | ------------------- | --------------------------------------- |
+| Initial | No document loaded       | Component mount     | Renders null                            |
+| Loading | Document being processed | Document received   | Renders null (synchronous, instant)     |
+| Loaded  | Document rendered        | Document normalized | Renders component tree                  |
+| Error   | Invalid document         | Validation failure  | Calls onError, renders null or fallback |
+| Empty   | No children              | children: []        | Renders root only, no children          |
+
+**Note**: All operations are synchronous, so "Loading" state is theoretical (instant).
+
+### Interaction Rules Table
+
+| Interaction      | Mouse        | Keyboard     | Focus/Blur   | Behavior                       |
+| ---------------- | ------------ | ------------ | ------------ | ------------------------------ |
+| Component Render | N/A          | N/A          | N/A          | Auto-render on mount           |
+| State Update     | User handles | User handles | User handles | Library provides API only      |
+| Error Display    | User handles | User handles | User handles | Library calls onError callback |
+
+**Note**: Library provides API only. Users implement interactions in their components.
+
+### A11y Mapping Table
+
+| Element          | Role         | ARIA         | Keyboard     | Focus        |
+| ---------------- | ------------ | ------------ | ------------ | ------------ |
+| Root Container   | N/A          | N/A          | N/A          | N/A          |
+| Child Components | User-defined | User-defined | User-defined | User-defined |
+
+**Note**: Library provides structure only. Users implement accessibility in their components.
+
+## 3) State Machine + Concurrency Rules
+
+### State Classification
+
+| State Type      | Examples                          | Source of Truth | Lifecycle                  |
+| --------------- | --------------------------------- | --------------- | -------------------------- |
+| Server State    | nodes, layoutStates, variables    | Document        | Updated via updateLayout() |
+| Client/UI State | selectedNodeId, isEdited          | Store           | Updated via store methods  |
+| Derived State   | childrenIds, component resolution | Computed        | Re-computed on access      |
+
+### State Machine Definition
+
+```text
+INITIAL
+  └─[LOAD_DOCUMENT]→ LOADED
+                      ├─[UPDATE_NODE]→ UPDATING
+                      │                 └─[notify complete]→ LOADED
+                      ├─[UPDATE_VARIABLES]→ LOADED
+                      └─[RESET]→ INITIAL
+
+* (all states)
+  └─[ERROR]→ ERROR
+```
+
+**States**:
+
+- `INITIAL`: No document loaded
+- `LOADED`: Document loaded and rendered
+- `UPDATING`: Node state being updated
+- `ERROR`: Error occurred
+
+**Events**:
+
+- `LOAD_DOCUMENT`: Document received
+- `UPDATE_NODE`: Node state update requested
+- `UPDATE_VARIABLES`: Variables update requested
+- `RESET`: Store reset requested
+- `ERROR`: Error occurred
+
+**Transitions**:
+
+- `LOAD_DOCUMENT`: document.root.id must exist (guard)
+- `UPDATE_NODE`: nodeId must exist in store (guard)
+- `UPDATE_VARIABLES`: variables must be object (guard)
+- `RESET`: Always allowed
+
+**Guards**:
+
+- `LOAD_DOCUMENT`: `document.root.id !== undefined`
+- `UPDATE_NODE`: `store.getNodeById(nodeId) !== undefined`
+- `UPDATE_VARIABLES`: `typeof variables === 'object'`
+
+### Concurrency Design
+
+**Current Approach (Synchronous)**:
+
+- All operations synchronous (no async in MVP)
+- Latest update wins (no conflicts)
+- No race conditions (synchronous only)
+- No cancellation needed (synchronous only)
+
+**Future (if async added)**:
+
+- Latest user intent wins (cancellation via AbortController)
+- Sequence guards (prevent stale updates)
+- Idempotent operations (safe to retry)
+
+## 4) Contracts & Types (TS)
+
+### Public Interfaces
+
+**Component Props**:
+
+```typescript
+interface SduiLayoutRendererProps {
+  document: SduiLayoutDocument // Required
+  components?: Record<string, ComponentFactory> // Optional
+  componentOverrides?: {
+    byNodeId?: Record<string, ComponentFactory>
+    byNodeType?: Record<string, ComponentFactory>
+  }
+  onLayoutChange?: (document: SduiLayoutDocument) => void
+  onError?: (error: Error) => void
+}
+
+interface SduiLayoutProviderProps {
+  store: SduiLayoutStore
+  children: React.ReactNode
+}
+```
+
+**Hook Returns**:
+
+```typescript
+// useSduiLayoutAction
+(): SduiLayoutStore
+
+// useSduiNodeSubscription
+<T>(params: {
+  nodeId: string
+  schema?: ZodSchema<T>
+}): {
+  node: SduiLayoutNode | undefined
+  type: string | undefined
+  state: T
+  childrenIds: string[]
+  attributes: Record<string, unknown> | undefined
+  exists: boolean
+}
+
+// useRenderNode (internal)
+(componentMap?: Record<string, ComponentFactory>): RenderNodeFn
+```
+
+**Callbacks**:
+
+```typescript
+type ErrorCallback = (error: Error) => void
+type LayoutChangeCallback = (document: SduiLayoutDocument) => void
+```
+
+**Error Shapes**:
+
+```typescript
+class InvalidDocumentError extends Error {
+  constructor(message: string, public document: unknown) {
+    super(message)
+    this.name = 'InvalidDocumentError'
+  }
+}
+
+class NodeNotFoundError extends Error {
+  constructor(public nodeId: string) {
+    super(`Node not found: ${nodeId}`)
+    this.name = 'NodeNotFoundError'
+  }
+}
+
+class SchemaValidationError extends Error {
+  constructor(public nodeId: string, public validationError: z.ZodError) {
+    super(`Schema validation failed for node "${nodeId}"`)
+    this.name = 'SchemaValidationError'
+  }
+}
+```
+
+### Domain Types
+
+**Entity Types**:
+
+```typescript
+interface SduiLayoutDocument {
+  version: string
+  metadata?: {
+    id?: string
+    name?: string
+    description?: string
+  }
+  root: SduiLayoutNode
+  variables?: Record<string, unknown>
+}
+
+interface SduiLayoutNode {
+  id: string
+  type: string
+  state: BaseLayoutState
+  attributes?: Record<string, unknown>
+  children?: SduiLayoutNode[]
+}
+
+interface BaseLayoutState {
+  [key: string]: unknown
+}
+```
+
+**Request/Response DTOs**:
+
+- Not applicable (synchronous operations, no network)
+
+**Enums**:
+
+- Not applicable (no status enums)
+
+### Invariants (Design by Contract)
+
+**Must Always Hold True**:
+
+- Document must have `root.id` (enforced by validation)
+- Node IDs must be unique within document (enforced by normalization)
+- Subscription callbacks must be unsubscribed on unmount (enforced by useEffect cleanup)
+- Store state must be normalized (enforced by updateLayout)
+
+**Failure Behavior**:
+
+- Invalid document: Call `onError`, create empty store, return null
+- Node not found: Return `undefined` (query methods), throw error (update methods)
+- Schema validation failure: Throw `SchemaValidationError` in hook
+- Subscription leak: Prevented by useEffect cleanup (tested)
+
+## 5) File/Folder Structure
+
+### Target Structure
 
 ```text
 apps/sdui-template/
@@ -43,7 +303,8 @@ apps/sdui-template/
 │   │   ├── index.ts
 │   │   ├── document.ts             # SduiLayoutDocument
 │   │   ├── node.ts                 # SduiLayoutNode
-│   │   └── state.ts                # BaseLayoutState
+│   │   ├── state.ts                # BaseLayoutState
+│   │   └── base.ts                 # Base types
 │   │
 │   ├── store/                      # State management
 │   │   ├── index.ts
@@ -64,14 +325,13 @@ apps/sdui-template/
 │   │       ├── denormalize.ts      # denormalizeSduiLayout
 │   │       └── types.ts            # NormalizedSduiEntities
 │   │
-│   ├── react/                      # React integration
+│   ├── react-wrapper/              # React integration
 │   │   ├── index.ts
 │   │   ├── context/
 │   │   │   ├── index.ts
 │   │   │   └── SduiLayoutContext.tsx
 │   │   ├── hooks/
 │   │   │   ├── index.ts
-│   │   │   ├── useSduiLayoutStores.ts
 │   │   │   ├── useSduiLayoutAction.ts
 │   │   │   ├── useSduiNodeSubscription.ts
 │   │   │   └── useRenderNode.ts
@@ -88,7 +348,11 @@ apps/sdui-template/
 │   ├── scenario/
 │   │   ├── render-document.test.tsx
 │   │   ├── update-state.test.tsx
-│   │   └── component-override.test.tsx
+│   │   ├── component-override.test.tsx
+│   │   ├── error-handling.test.tsx
+│   │   ├── subscription.test.tsx
+│   │   ├── store-reset.test.tsx
+│   │   └── zod-validation.test.tsx
 │   └── utils/
 │       └── test-utils.tsx
 │
@@ -97,671 +361,152 @@ apps/sdui-template/
 └── README.md
 ```
 
-## Key Implementation Details
-
-### 1. Component Override Resolution
-
-**Priority**: ID override > type override > default factory
-
-```typescript
-// Inside useRenderNode
-const factory =
-  overrides[id] || // 1st priority: ID-based
-  overrides[node.type] || // 2nd priority: type-based
-  componentMap[node.type] || // 3rd priority: component map
-  defaultComponentFactory // 4th priority: default factory
-```
-
-### 2. Subscription System
-
-**Implementation Approach**:
-
-- Efficient lookups with `Map<nodeId, Set<callbacks>>`
-- Version subscription uses `Set<callbacks>` for global updates
-- Unsubscribe removes from Set (O(1) average)
-
-**Memory Management**:
-
-- Subscription cleanup required on component unmount
-- Call unsubscribe in `useEffect` cleanup
-
-### 3. Normalization
-
-**Implementation Approach**:
-
-- Handle recursive structures with normalizr
-- Separate state and attributes into separate entities
-- Store childrenIds in nodes for denormalization support
-
-**Optimization**:
-
-- Caching to prevent re-normalizing same document (optional)
-
-### 4. Hook Optimization
-
-**Memoization Strategy**:
-
-- `useSduiLayoutStores`: Memoize selector results with `useMemo`
-- `useSduiNodeSubscription`: Subscribe only to specific nodes
-- `useRenderNode`: Maintain stable reference with `useCallback`
-
-## State Machine
-
-### State Transitions
-
-```text
-INITIAL
-  └─[LOAD_DOCUMENT]→ LOADED
-                      ├─[UPDATE_NODE]→ UPDATING
-                      │                 └─[notify complete]→ LOADED
-                      ├─[UPDATE_VARIABLES]→ LOADED
-                      └─[RESET]→ INITIAL
-
-* (all states)
-  └─[ERROR]→ ERROR
-```
-
-### Guard Conditions
-
-- `LOAD_DOCUMENT`: document.root.id must exist
-- `UPDATE_NODE`: nodeId must exist in store
-- `UPDATE_VARIABLES`: variables must be an object
-
-## Testing Strategy
-
-### Scenario Tests (P0 Required)
-
-1. **Render Single Root Node**
-
-   - Document with only root node
-   - Verify root node renders correctly
-
-2. **Render Nested Child Nodes**
-
-   - 3-level nested structure
-   - Verify all nodes render in correct hierarchy
-
-3. **Update Node State**
-
-   - Update one node's state
-   - Verify only that node re-renders
-
-4. **Component Override by Type**
-
-   - Override specific type's component
-   - Verify overridden component is used
-
-5. **Component Override by ID**
-
-   - Override specific node ID's component
-   - Verify ID override has higher priority than type override
-
-6. **Handle Invalid Document**
-
-   - Document missing root.id
-   - Verify onError callback is called
-
-7. **Render Empty Children Array**
-
-   - children: [] case
-   - Verify renders without errors
-
-8. **Handle Deep Nesting**
-
-   - 10 levels of nesting
-   - Verify all nodes render and performance is acceptable
-
-9. **Subscription System**
-
-   - Subscribe to multiple nodes
-   - Verify only updated node's subscribers are notified when one is updated
-
-10. **Store Reset**
-    - Load document, then reset
-    - Verify store returns to initial state and subscriptions are cleaned up
-
-### Boundary Value Analysis (BVA)
-
-| Input Category    | Boundary Values     | Reason              |
-| ----------------- | ------------------- | ------------------- |
-| Node Count        | 0, 1, 10, 100, 1000 | Performance testing |
-| Nesting Depth     | 0, 1, 5, 10, 20     | Recursion limits    |
-| Layout X Position | -1, 0, 5, 12, max   | Boundary validation |
-| Layout Width      | 0, 1, 6, 12, max    | Size constraints    |
-
-## Error Handling
-
-### Error States
-
-**Invalid Document**:
-
-- Call `onError` callback
-- Continue rendering if possible (fallback UI)
-
-**Node Not Found**:
-
-- Query methods return `undefined`
-- Update methods throw `NodeNotFoundError`
-
-### Empty States
-
-**No Children**:
-
-- Root renders, children array is empty
-- No errors thrown
-- Users can provide empty state UI
-
-### Loading States
-
-**Not Needed in MVP**:
-
-- All operations are synchronous
-- No loading state needed
-- Future: Provide loading state via store state if async operations added
-
-## Performance Considerations
-
-### Bundle Size
-
-- **Target**: < 50KB (gzipped)
-- **Measurement**: Use bundle analyzer
-- **Optimization**: Enable tree-shaking, remove unnecessary dependencies
-
-### Render Performance
-
-- **Initial Rendering**: < 100ms for 100 nodes
-- **Re-rendering**: Updates only changed nodes (maintain 60fps)
-- **Measurement**: Use React Profiler
-
-### Optimization Techniques
-
-- Subscription-based re-rendering (only changed nodes)
-- Memoized selectors (`useMemo`)
-- Stable references (store instance, render function)
-
-## Implementation Checklist
-
-### Completion Criteria
-
-- [ ] All P0 user flows implemented and scenario tests pass
-- [ ] Async flows are deterministic (no timing, all synchronous)
-- [ ] Accessibility basics (keyboard navigation API provided)
-- [ ] Error and empty states defined (error callbacks, fallback handling)
-- [ ] TypeScript types exported correctly
-- [ ] Next.js App Router compatible ("use client" directive)
-- [ ] SSR support implemented (server/client component separation)
-- [ ] Bundle size < 50KB gzipped (measured)
-- [ ] No memory leaks (unmount test)
-
-## SSR Support
-
-### 1) Deliverables & Done Criteria
-
-#### 1.1 Deliverables
-
-**Core Components (P0 Required)**:
-
-- `SduiLayoutRenderer`: Client component (already SSR-compatible, verify)
-- SSR rendering tests: Verify component works correctly in SSR context
-
-**Optional Components (P1 - Only if serialization needed)**:
-
-- `SduiLayoutRendererServer`: Server component for SSR with serialization (new)
-- `SduiLayoutStore.serializeState()`: Serialize store state to JSON
-- `SduiLayoutStore.hydrateState()`: Hydrate store from serialized state
-- `SerializedStoreState`: Serializable store state interface
-- Updated `SduiLayoutRendererProps` with optional `serializedState`
-- `server.ts`: Server component exports (new entry point)
-
-**Tests**:
-
-- SSR scenario tests (P0) - Verify SSR works without serialization
-- Progressive enhancement tests (P0) - Verify client-only fallback
-- Serialization tests (P1) - Only if serialization implemented
-
-#### 1.2 Done Criteria
-
-**Core Requirements**:
-
-- [ ] Works without serializedState (client-only fallback) - **Primary use case**
-- [ ] Server component renders document correctly (if implemented)
-- [ ] No browser APIs used in server component
-- [ ] Same document produces same rendering result on server and client
-
-**Serialization (Optional)**:
-
-- [ ] If implemented: Server component serializes state correctly
-- [ ] If implemented: Client component hydrates from serialized state correctly
-- [ ] If implemented: Hydration mismatch errors handled gracefully
-- [ ] If implemented: Subscription system excluded from serialization
-- [ ] If implemented: State serialization is deterministic (no timing dependencies)
-- [ ] If implemented: XSS prevention in serialized state (JSON.stringify only)
-
-**Note**: Serialization is **optional**. Current implementation works correctly without it. Add serialization only if profiling shows normalization is a performance bottleneck.
-
----
-
-### 2) UI/UX Interaction Design
-
-**Visual States**:
-
-- **Server**: No UI (data preparation only)
-- **Client (with SSR)**: Renders immediately with hydrated state
-- **Client (without SSR)**: Renders after document fetch (loading state)
-
-**Interaction Rules**:
-
-- Server component: No user interactions (data-only)
-- Client component: Same as existing (no changes to interaction)
-
-**Accessibility**:
-
-- No changes to existing a11y (server component is transparent to users)
-- Focus management unchanged (client-only concern)
-
----
-
-### 3) Detailed State Design
-
-#### 3.1 State Classification
-
-**Server State** (serialized, optional):
-
-- `SduiLayoutStoreState`: Store state (version, rootId, nodes, variables)
-- `layoutStates`: Layout state map
-- `layoutAttributes`: Layout attributes map
-- `metadata`: Document metadata
-
-**Client State** (not serialized):
-
-- Subscription system (client-only)
-- Component overrides (client-only)
-- Browser-specific state
-
-**Note on Serialization**:
-
-- **Serialization is optional**: Current implementation works without serialization
-- **Same document → same result**: If `document` is identical, `normalizeSduiLayout()` produces identical results on both server and client
-- **React hydration succeeds**: Server HTML matches client HTML, no hydration mismatch
-- **Performance trade-off**: Serialization adds JSON.stringify/parse overhead; normalization is O(n) on both sides
-- **When serialization helps**: Only when server has data unavailable to client, or when avoiding duplicate normalization is critical
-
-#### 3.2 State Machine
-
-```text
-SERVER_INITIAL
-  └─[LOAD_DOCUMENT]→ SERVER_LOADED
-                      └─[SERIALIZE]→ SERIALIZED
-                                     └─[SEND_TO_CLIENT]→ CLIENT_RECEIVED
-                                                          └─[HYDRATE]→ CLIENT_HYDRATED
-                                                                         └─[INIT_SUBSCRIPTIONS]→ CLIENT_READY
-
-CLIENT_INITIAL (fallback)
-  └─[LOAD_DOCUMENT]→ CLIENT_LOADED
-                      └─[INIT_SUBSCRIPTIONS]→ CLIENT_READY
-```
-
-**Guards**:
-
-- `SERIALIZE`: Document must be loaded, store must be initialized
-- `HYDRATE`: Serialized state must be valid JSON, structure must match
-- `INIT_SUBSCRIPTIONS`: Must be in browser environment
-
-#### 3.3 Concurrency Design
-
-**Current Approach (No Serialization)**:
-
-- Server: `normalizeSduiLayout(document)` → O(n)
-- Client: `normalizeSduiLayout(document)` → O(n)
-- Total cost: 2 × O(n)
-- **Works correctly**: Same document produces same result, React hydration succeeds
-
-**Serialization Approach (Optional)**:
-
-- Server: `normalizeSduiLayout(document)` + `JSON.stringify()` → O(n) + O(n)
-- Client: `JSON.parse()` + `hydrateState()` → O(n) + O(n)
-- Total cost: 4 × O(n)
-- **Trade-off**: Adds serialization overhead, but avoids duplicate normalization
-
-**Recommendation**:
-
-- **Default**: Use current approach (no serialization) - simpler, sufficient for most cases
-- **Consider serialization**: Only if normalization is expensive AND server has unique data
-- **Synchronous**: All operations are synchronous (no async, no race conditions)
-
----
-
-### 4) Contracts & Types
-
-#### 4.1 Public Interfaces
-
-```typescript
-/**
- * Serializable store state
- * Subscription system excluded (client-only)
- */
-export interface SerializedStoreState {
-  /** Store state */
-  state: SduiLayoutStoreState
-  /** Layout state map */
-  layoutStates: Record<string, BaseLayoutState>
-  /** Layout attributes map */
-  layoutAttributes: Record<string, Record<string, unknown>>
-  /** Document metadata */
-  metadata?: SduiLayoutDocument['metadata']
-}
-
-/**
- * Server component props
- */
-export interface SduiLayoutRendererServerProps {
-  /** SDUI Layout Document */
-  document: SduiLayoutDocument
-  /** Custom component map */
-  components?: Record<string, ComponentFactory>
-  /** Component overrides */
-  componentOverrides?: {
-    byNodeId?: Record<string, ComponentFactory>
-    byNodeType?: Record<string, ComponentFactory>
-  }
-  /** Error callback */
-  onError?: (error: Error) => void
-}
-
-/**
- * Client component props (updated)
- */
-export interface SduiLayoutRendererProps {
-  /** SDUI Layout Document */
-  document: SduiLayoutDocument
-  /** Serialized state from SSR (optional) */
-  serializedState?: SerializedStoreState
-  // ... existing props
-}
-```
-
-#### 4.2 Store Methods
-
-```typescript
-class SduiLayoutStore {
-  /**
-   * Serialize current store state to JSON-serializable format
-   *
-   * @returns Serialized store state
-   * @throws Never throws (always returns valid object)
-   */
-  serializeState(): SerializedStoreState
-
-  /**
-   * Hydrate store from serialized state
-   *
-   * @param serialized - Serialized store state
-   * @throws Error if serialized state is invalid
-   */
-  hydrateState(serialized: SerializedStoreState): void
-}
-```
-
-#### 4.3 Invariants
-
-- **Serialization (if used)**: Must always produce valid JSON (no functions, no circular refs)
-- **Hydration (if used)**: Must restore exact same state structure as serialization
-- **Subscription System**: Never serialized (client-only)
-- **Component Overrides**: Never serialized (client-only)
-- **Progressive Enhancement**: Works without serializedState (fallback to client-only)
-- **Deterministic Rendering**: Same `document` always produces same rendering result (with or without serialization)
-
-**Failure Behavior**:
-
-- Invalid serialized state: Throw error, fallback to client-only initialization
-- Hydration mismatch: Log warning, fallback to client-only initialization
-- Missing serializedState: Normal client-only initialization (not an error)
-
-**Performance Considerations**:
-
-- **Without serialization**: Server and client both run `normalizeSduiLayout()` - acceptable for most cases
-- **With serialization**: Adds JSON overhead but avoids duplicate normalization - only beneficial if normalization is expensive
-- **Recommendation**: Start without serialization, add only if profiling shows normalization is a bottleneck
-
----
-
-### 5) File/Folder Structure
-
-```text
-apps/sdui-template/
-├── src/
-│   ├── react/
-│   │   ├── components/
-│   │   │   ├── SduiLayoutRenderer.tsx           # Client component (updated)
-│   │   │   └── SduiLayoutRenderer.server.tsx    # Server component (new)
-│   │   └── ...
-│   ├── store/
-│   │   ├── SduiLayoutStore.ts                    # Add serializeState, hydrateState
-│   │   └── types.ts                              # Add SerializedStoreState
-│   └── ...
-│
-├── server.ts                                     # Server exports (new)
-│   export { SduiLayoutRendererServer } from './react/components/SduiLayoutRenderer.server'
-│   export type { SduiLayoutRendererServerProps } from './react/components/SduiLayoutRenderer.server'
-│
-└── index.ts                                      # Client exports (existing)
-```
-
-**Export Boundaries**:
-
-- `server.ts`: Server component exports (public)
-- `index.ts`: Client component exports (public, existing)
-- Internal: Store serialization methods (public API)
-
----
-
-### 6) Implementation Plan (Small PRs)
-
-#### PR1: Basic SSR Support (Required)
-
-- **Files**: `react/components/SduiLayoutRenderer.tsx`
-- **Scope**: Ensure component works correctly in SSR context (already works, verify)
-- **Risks**: None (current implementation is SSR-compatible)
-- **Test Coverage**: SSR rendering tests
-- **Note**: Current implementation already works - just verify SSR compatibility
-
-#### PR2: Types + Contracts (Optional - Only if serialization needed)
-
-- **Files**: `store/types.ts`
-- **Scope**: Define `SerializedStoreState` type
-- **Risks**: Type compatibility
-- **Test Coverage**: Type tests
-- **Priority**: P1 (optional)
-
-#### PR3: Store Serialization (Optional - Only if serialization needed)
-
-- **Files**: `store/SduiLayoutStore.ts`
-- **Scope**: Implement `serializeState()` method
-- **Risks**: State structure changes
-- **Test Coverage**: Unit tests
-- **Priority**: P1 (optional)
-
-#### PR4: Store Hydration (Optional - Only if serialization needed)
-
-- **Files**: `store/SduiLayoutStore.ts`
-- **Scope**: Implement `hydrateState()` method
-- **Risks**: Hydration correctness
-- **Test Coverage**: Unit tests
-- **Priority**: P1 (optional)
-
-#### PR5: Server Component (Optional - Only if serialization needed)
-
-- **Files**: `react/components/SduiLayoutRenderer.server.tsx`
-- **Scope**: Implement server component with serialization
-- **Risks**: Server/client boundary
-- **Test Coverage**: SSR scenario tests
-- **Priority**: P1 (optional)
-
-#### PR6: Client Hydration (Optional - Only if serialization needed)
-
-- **Files**: `react/components/SduiLayoutRenderer.tsx`
-- **Scope**: Update client component to support hydration
-- **Risks**: Hydration integration
-- **Test Coverage**: Hydration tests
-- **Priority**: P1 (optional)
-
-#### PR7: SSR Scenario Tests
-
-- **Files**: `__tests__/scenario/ssr.test.tsx`
-- **Scope**: Write P0 scenario tests for SSR (without serialization)
-- **Risks**: Test coverage
-- **Test Coverage**: P0 scenarios
-- **Priority**: P0 (required)
-
-#### PR8: Serialization Tests (Optional - Only if serialization implemented)
-
-- **Files**: `__tests__/scenario/ssr-serialization.test.tsx`
-- **Scope**: Write tests for serialization/hydration
-- **Risks**: Test coverage
-- **Test Coverage**: Serialization scenarios
-- **Priority**: P1 (optional)
-
-#### PR9: Documentation
-
-- **Files**: `README.md`, `server.ts` exports (if implemented)
-- **Scope**: Update API documentation
-- **Risks**: API clarity
-- **Test Coverage**: N/A
-- **Priority**: P0 (required)
+### Export Boundaries
+
+**Public** (`src/index.ts`):
+
+- Components: `SduiLayoutRenderer`, `SduiLayoutProvider`
+- Hooks: `useSduiLayoutAction`, `useSduiNodeSubscription`
+- Store: `SduiLayoutStore`
+- Types: All public types
+- Utilities: `normalizeSduiLayout`, `denormalizeSduiLayout` (optional)
+
+**Private** (internal):
+
+- Managers (SubscriptionManager, LayoutStateRepository, etc.)
+- Internal hooks (`useRenderNode`)
+- Internal utilities
+
+## 6) PR Plan
+
+| PR#  | Scope              | Files                                                           | Risks                 | Tests Added        | Acceptance Checks                  |
+| ---- | ------------------ | --------------------------------------------------------------- | --------------------- | ------------------ | ---------------------------------- |
+| PR1  | Types + Contracts  | `src/schema/*`, `src/store/types.ts`, `src/components/types.ts` | Type compatibility    | Type tests         | TypeScript compiles                |
+| PR2  | Scaffold           | File tree, exports, empty shells                                | Structure changes     | N/A                | Files exist, exports work          |
+| PR3  | Normalization      | `src/utils/normalize/*`                                         | Normalizr integration | Unit tests         | Normalize → denormalize round-trip |
+| PR4  | Store Managers     | `src/store/managers/*`                                          | State consistency     | Unit tests         | Managers work independently        |
+| PR5  | Store Core         | `src/store/SduiLayoutStore.ts`                                  | Integration           | Integration tests  | Store methods work                 |
+| PR6  | React Context      | `src/react-wrapper/context/*`                                   | Context usage         | Integration tests  | Provider works                     |
+| PR7  | Hooks              | `src/react-wrapper/hooks/*`                                     | Hook behavior         | Integration tests  | Hooks work with Provider           |
+| PR8  | Renderer Component | `src/react-wrapper/components/*`                                | Component rendering   | Scenario tests     | Basic rendering works              |
+| PR9  | Component System   | `src/components/*`                                              | Factory resolution    | Unit tests         | Override priority works            |
+| PR10 | Scenario Tests     | `__tests__/scenario/*`                                          | Test coverage         | 10+ scenario tests | All P0 tests pass                  |
+| PR11 | Public API         | `src/index.ts`                                                  | Export correctness    | Export tests       | All public APIs exported           |
+| PR12 | Documentation      | `README.md`, JSDoc                                              | API clarity           | N/A                | Docs complete                      |
 
 **PR Size**: Each PR < 400 LOC net new
 
-**Shippable**:
+**Shippable**: Each PR can be merged independently (except PR10 requires PR1-9)
 
-- PR1 (Basic SSR): Can ship immediately (already works)
-- PR2-6 (Serialization): Only if profiling shows normalization is bottleneck
-- PR7 (SSR Tests): Required for SSR support
-- PR8 (Serialization Tests): Only if serialization implemented
-- PR9 (Docs): Required
+## 7) Test Plan (Scenario + EP/BVA + Race)
 
----
+### Scenario Test List (6-10)
 
-### 7) Test Design
+1. **Render Single Root Node**
 
-#### 7.1 Scenario Tests (P0 Required)
+   - As is: Empty store
+   - When: Document with only root node rendered
+   - To be: Root node renders correctly
+   - Should: Display root component
 
-#### Test 1: SSR Rendering (P0 Required)
+2. **Render Nested Child Nodes**
 
-- **As**: `SduiLayoutRenderer` renders on server
-- **When**: Component receives document in SSR context
-- **Should**: Render correctly, produce same HTML as client, no hydration mismatch
+   - As is: Empty store
+   - When: Document with 3-level nesting rendered
+   - To be: All nodes render in correct hierarchy
+   - Should: Display nested structure
 
-#### Test 2: Client Hydration (P0 Required)
+3. **Update Node State**
 
-- **As**: Client receives server-rendered HTML
-- **When**: `SduiLayoutRenderer` hydrates on client
-- **Should**: Hydrate successfully, subscriptions initialize, no errors
+   - As is: Document loaded, node subscribed
+   - When: store.updateNodeState() called
+   - To be: Only that node re-renders
+   - Should: Other nodes unchanged
 
-#### Test 3: Same Document Same Result (P0 Required)
+4. **Component Override by Type**
 
-- **As**: Same document used on server and client
-- **When**: Both render with same document
-- **Should**: Produce identical rendering results, store state matches
+   - As is: Document with node type "Card"
+   - When: Override provided for "Card" type
+   - To be: Overridden component used
+   - Should: Default component not used
 
-#### Test 4: Progressive Enhancement (P0 Required)
+5. **Component Override by ID**
 
-- **As**: Client component renders without SSR
-- **When**: `SduiLayoutRenderer` renders in client-only context
-- **Should**: Initialize store normally, render correctly, no errors
+   - As is: Document with node ID "card-1" type "Card"
+   - When: Override provided for "card-1" ID
+   - To be: ID override used (higher priority than type)
+   - Should: Type override not used
 
-#### Test 5: Server Component with Serialization (P1 Optional)
+6. **Handle Invalid Document**
 
-- **As**: Server component receives document
-- **When**: `SduiLayoutRendererServer` renders with document
-- **Should**: Serialize store state correctly, pass to client component
+   - As is: Empty store
+   - When: Document missing root.id passed
+   - To be: onError callback called
+   - Should: Component renders null or fallback
 
-#### Test 6: Client Hydration with Serialization (P1 Optional)
+7. **Render Empty Children Array**
 
-- **As**: Client component receives serialized state
-- **When**: `SduiLayoutRenderer` hydrates store from serialized state
-- **Should**: Store state matches serialized state, subscriptions initialized
+   - As is: Empty store
+   - When: Document with root, children: [] rendered
+   - To be: Root renders, no children
+   - Should: No errors thrown
 
-#### Test 7: Hydration Mismatch (P1 Optional)
+8. **Handle Deep Nesting**
 
-- **As**: Client receives invalid serialized state
-- **When**: `hydrateState()` called with invalid data
-- **Should**: Throw error, fallback to client-only initialization
+   - As is: Empty store
+   - When: Document with 10 levels of nesting rendered
+   - To be: All nodes render correctly
+   - Should: Performance acceptable, no stack overflow
 
-#### Test 8: State Serialization Correctness (P1 Optional)
+9. **Subscription System**
 
-- **As**: Store has loaded document
-- **When**: `serializeState()` called
-- **Should**: Return valid JSON, exclude subscription system, include all state
+   - As is: Multiple nodes subscribed
+   - When: One node updated
+   - To be: Only that node's subscribers notified
+   - Should: Other nodes unchanged
 
-#### Test 9: State Hydration Correctness (P1 Optional)
+10. **Store Reset**
+    - As is: Document loaded, nodes subscribed
+    - When: store.reset() called
+    - To be: Store returns to initial state
+    - Should: Subscriptions cleaned up
 
-- **As**: Valid serialized state exists
-- **When**: `hydrateState()` called
-- **Should**: Restore exact same state structure, initialize subscriptions
+### EP/BVA Input Table
 
-#### 7.2 EP/BVA Input Table
+| Input Category    | Boundary Values                 | Reason              | Test Case                                 |
+| ----------------- | ------------------------------- | ------------------- | ----------------------------------------- |
+| Node Count        | 0, 1, 10, 100, 1000             | Performance testing | Render documents with varying node counts |
+| Nesting Depth     | 0, 1, 5, 10, 20                 | Recursion limits    | Render documents with varying depths      |
+| Layout X Position | -1, 0, 5, 12, max               | Boundary validation | Test layout position boundaries           |
+| Layout Width      | 0, 1, 6, 12, max                | Size constraints    | Test layout width boundaries              |
+| Document Version  | "", "1.0.0", "999.999.999"      | Version format      | Test version string handling              |
+| Node ID           | "", "a", "node-1", very-long-id | ID format           | Test node ID handling                     |
 
-#### Serialized State Size
+### Race Test Design
 
-- Boundary Values: 0KB, 1KB, 100KB, 1MB
-- Reason: Performance testing
+**Not Applicable**: All operations synchronous (no async in MVP)
 
-#### Document Node Count
+**Future (if async added)**:
 
-- Boundary Values: 0, 1, 10, 100, 1000
-- Reason: Serialization performance
+- Test: Latest user intent wins
+- Method: Deferred promises, control resolution order
+- Verify: Late responses don't override new results
 
-#### Hydration State Validity
+## 8) Quality Gates
 
-- Boundary Values: Valid, Invalid structure, Missing fields
-- Reason: Error handling
+### Quality Gate Checklist
 
-#### 7.3 Deterministic Tests
+- [x] No implementation-detail assertions in tests (test behavior only)
+- [x] Keyboard-only flow works (API provided, users implement)
+- [x] Focus behavior matches spec (API provided, users implement)
+- [x] Error and empty UX defined and tested (onError callback, fallback)
+- [x] Performance budget notes (Bundle < 50KB, render < 100ms)
+- [x] ADR updated for any architectural deviation (see arch.md)
 
-- **No async operations**: All serialization/hydration is synchronous
-- **No timing dependencies**: No debounce, no delays
-- **Deterministic serialization**: Same input always produces same output
+### Known Limitations
 
----
-
-### 8) Quality Gates
-
-**Core SSR Requirements (P0)**:
-
-- [ ] Works correctly in SSR context (server renders, client hydrates)
-- [ ] Same document produces same rendering result (no hydration mismatch)
-- [ ] Progressive enhancement works (client-only fallback)
-- [ ] No browser APIs used in server rendering
-- [ ] Subscription system initializes correctly on client
-
-**Serialization Requirements (P1 - Only if implemented)**:
-
-- [ ] Serialization produces valid JSON (no functions, no circular refs)
-- [ ] Hydration restores exact state structure
-- [ ] Error handling graceful (invalid state → fallback)
-- [ ] Subscription system excluded from serialization
-- [ ] Component overrides excluded from serialization
-- [ ] XSS prevention (JSON.stringify only, no eval)
-- [ ] State size optimized (large documents handled)
-
-**Documentation**:
-
-- [ ] ADR updated for SSR architecture decision
-- [ ] README documents SSR support (with/without serialization)
-- [ ] Performance considerations documented
-
-## Known Limitations
-
-- ~~No SSR support (client only)~~ ✅ **SSR support added** (works without serialization)
-- **Serialization is optional**: Current implementation works without state serialization. Add serialization only if profiling shows normalization is a bottleneck.
+- SSR support (works without serialization)
 - No persistence (users handle)
 - No default styles (users provide)
 - No default components (users provide)
 - No async operations (synchronous only)
-
-## Next Steps
-
-Based on this design:
-
-1. **Implementation** (`implements.md`): Actual code implementation
-2. **Optimization** (`optimization.md`): Performance optimization
