@@ -1,0 +1,210 @@
+---
+alwaysApply: false
+---
+
+/_text style_/
+.heading-heading-09 {
+font-size: 40px;
+font-family: Spoqa Han Sans Neo;
+font-weight: 700;
+letter-spacing: -0.30000001192092896px;
+line-height: 52px;
+}
+.heading-heading-08 {
+font-size: 36px;
+font-family: Spoqa Han Sans Neo;
+font-weight: 700;
+letter-spacing: -0.0030000001192092896em;
+line-height: 46px;
+}
+.heading-heading-07 {
+font-size: 32px;
+font-family: Spoqa Han Sans Neo;
+font-weight: 700;
+letter-spacing: -0.0030000001192092896em;
+line-height: 42px;
+}
+.heading-heading-06 {
+font-size: 28px;
+font-family: Spoqa Han Sans Neo;
+font-weight: 700;
+letter-spacing: -0.0030000001192092896em;
+line-height: 38px;
+}
+.heading-heading-05 {
+font-size: 24px;
+font-family: Spoqa Han Sans Neo;
+font-weight: 700;
+letter-spacing: -0.0030000001192092896em;
+line-height: 34px;
+}
+.heading-heading-04 {
+font-size: 20px;
+font-family: Spoqa Han Sans Neo;
+font-weight: 700;
+letter-spacing: -0.0030000001192092896em;
+line-height: 28px;
+}
+.heading-heading-03 {
+font-size: 16px;
+font-family: Spoqa Han Sans Neo;
+font-weight: 700;
+letter-spacing: -0.0030000001192092896em;
+line-height: 22px;
+}
+.heading-heading-02 {
+font-size: 14px;
+font-family: Spoqa Han Sans Neo;
+font-weight: 700;
+letter-spacing: -0.0030000001192092896em;
+line-height: 20px;
+}
+.heading-heading-01 {
+font-size: 12px;
+font-family: Spoqa Han Sans Neo;
+font-weight: 700;
+letter-spacing: -0.0030000001192092896em;
+line-height: 18px;
+}
+.heading-heading-00 {
+font-size: 11px;
+font-family: Spoqa Han Sans Neo;
+font-weight: 700;
+letter-spacing: -0.0030000001192092896em;
+line-height: 18px;
+}
+.body-body-03-b {
+font-size: 16px;
+font-family: Spoqa Han Sans Neo;
+font-weight: 700;
+letter-spacing: -0.0030000001192092896em;
+line-height: 24px;
+}
+.body-body-03-m {
+font-size: 16px;
+font-family: Spoqa Han Sans Neo;
+font-weight: 500;
+letter-spacing: -0.0030000001192092896em;
+line-height: 24px;
+}
+.body-body-03-long-r {
+font-size: 16px;
+font-family: Spoqa Han Sans Neo;
+font-weight: 400;
+letter-spacing: -0.0030000001192092896em;
+line-height: 28px;
+}
+.body-body-03-r {
+font-size: 16px;
+font-family: Spoqa Han Sans Neo;
+font-weight: 400;
+letter-spacing: -0.0030000001192092896em;
+line-height: 24px;
+}
+.body-body-02-b {
+font-size: 14px;
+font-family: Spoqa Han Sans Neo;
+font-weight: 700;
+letter-spacing: -0.0030000001192092896em;
+line-height: 20px;
+}
+.body-body-02-m {
+font-size: 14px;
+font-family: Spoqa Han Sans Neo;
+font-weight: 500;
+letter-spacing: -0.0030000001192092896em;
+line-height: 20px;
+}
+.body-body-02-long-r {
+font-size: 14px;
+font-family: Spoqa Han Sans Neo;
+font-weight: 400;
+letter-spacing: -0.0030000001192092896em;
+line-height: 24px;
+}
+.body-body-02-r {
+font-size: 14px;
+font-family: Spoqa Han Sans Neo;
+font-weight: 400;
+letter-spacing: -0.0030000001192092896em;
+line-height: 20px;
+}
+.body-body-01-b {
+font-size: 12px;
+font-family: Spoqa Han Sans Neo;
+font-weight: 700;
+letter-spacing: -0.0030000001192092896em;
+line-height: 18px;
+}
+.body-body-01-m {
+font-size: 12px;
+font-family: Spoqa Han Sans Neo;
+font-weight: 500;
+letter-spacing: -0.0030000001192092896em;
+line-height: 18px;
+}
+.body-body-01-long-r {
+font-size: 12px;
+font-family: Spoqa Han Sans Neo;
+font-weight: 400;
+letter-spacing: -0.0030000001192092896em;
+line-height: 20px;
+}
+.body-body-01-r {
+font-size: 12px;
+font-family: Spoqa Han Sans Neo;
+font-weight: 400;
+letter-spacing: -0.0030000001192092896em;
+line-height: 18px;
+}
+.detail-detail-02-r {
+font-size: 11px;
+font-family: Spoqa Han Sans Neo;
+font-weight: 400;
+letter-spacing: -0.30000001192092896px;
+line-height: 18px;
+}
+.detail-detail-01-m {
+font-size: 11px;
+font-family: Spoqa Han Sans Neo;
+font-weight: 500;
+letter-spacing: -0.30000001192092896px;
+line-height: 18px;
+}
+.detail-detail-00-m {
+font-size: 10px;
+font-family: Spoqa Han Sans Neo;
+font-weight: 400;
+letter-spacing: -0.30000001192092896px;
+line-height: 18px;
+}
+.code-code-01-m {
+font-size: 14px;
+font-family: Inconsolata;
+font-weight: 500;
+letter-spacing: 0.5px;
+line-height: 20px;
+}
+.code-code-01-b {
+font-size: 14px;
+font-family: Inconsolata;
+font-weight: 700;
+letter-spacing: 0.5px;
+line-height: 20px;
+}
+.code-code-00-m {
+font-size: 12px;
+font-family: Inconsolata;
+font-weight: 500;
+letter-spacing: 0.5px;
+line-height: 18px;
+}
+.code-code-00-b {
+font-size: 12px;
+font-family: Inconsolata;
+font-weight: 700;
+letter-spacing: 0px;
+line-height: 18px;
+}
+
+위 값이 하드코딩 되어있다면, className에 해당 값들을 각각 집어넣어라

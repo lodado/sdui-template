@@ -1,0 +1,17 @@
+---
+description: Accessibility Fundamentals — 스크린 리더 지원
+alwaysApply: true
+---
+
+## 목표
+스크린 리더 사용자가 화면 내용을 **정확하고 효율적으로** 이해할 수 있도록 한다.
+
+## 구현 가이드
+- **대체 텍스트(alt)**: 이미지/아이콘에 의미 있는 설명 제공
+- **ARIA 속성**: 시맨틱 보완 및 상태·역할 전달
+- **라이브 리전(aria-live)**: 동적 콘텐츠 변경을 즉시 알림
+- **레이블 연결**: form 요소에 label 또는 aria-label 사용
+- **탭 순서 제어(tabindex)**: 논리적 순서로 탐색 가능하게
+
+## 테스트
+- NVDA, JAWS, VoiceOver 등 주요 스크린 리더로 시나리오 테스트

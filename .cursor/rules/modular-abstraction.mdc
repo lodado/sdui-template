@@ -1,0 +1,36 @@
+---
+description: Always apply modularization and abstraction principles for maintainable frontend architecture
+alwaysApply: true
+---
+
+## Core Principles
+
+### 1. Side Effect Isolation
+
+- Treat code that depends on environment (time, network, browser API) as **side effects**.
+- Isolate side effects into separate modules or inject them as parameters.
+- In tests, mock side-effect modules to avoid flaky results.
+- Keep core functions as pure as possible.
+
+### 2. Component Layer Separation
+
+- Split each component into the following logical layers:
+  1. **UI (Render)** – Pure presentational JSX, no business logic.
+  2. **State** – State management hooks, selectors, store.
+  3. **Domain Logic** – Business rules and computations.
+  4. **Network (API)** – Data fetching/mutations, isolated into API modules.
+- Ensure that these layers communicate via explicit interfaces.
+
+### 3. Strategy Pattern & Dependency Injection
+
+- For business policies or algorithms that may change (e.g., payment calculation, discount rules):
+  - Define them as strategy interfaces.
+  - Implement strategies separately.
+  - Inject the strategy into components/hooks instead of hardcoding.
+- Components should depend only on the interface, not concrete implementations.
+
+### 4. Domain Policy Ownership
+
+- Avoid embedding business policy data directly in frontend code.
+- Fetch policies from backend whenever possible.
+- Frontend focuses on **how** to display/use the data, backend controls **what** policy applies.

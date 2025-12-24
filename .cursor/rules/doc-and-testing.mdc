@@ -1,0 +1,161 @@
+---
+description: Documentation and testing guidelines, scenario-first with EP/BVA sampling
+alwaysApply: false
+---
+
+## Documentation
+
+- After defining any function, method, or component:
+  - Write a **JSDoc** comment explaining:
+    - Purpose / responsibility
+    - Parameters (including constraints such as nullable, ranges, formats)
+    - Return value (including error or edge behavior)
+    - Side effects (network, storage, timers, DOM focus) if any
+  - Keep documentation concise but informative.
+- If the unit has behavior-critical policies (e.g., debounce, minChars, normalization, close-on-blur):
+  - Explicitly document these policies as bullet points in the JSDoc.
+
+---
+
+## Testing (Scenario-first + EP/BVA)
+
+### Core Philosophy
+
+- Prefer **user scenario-based tests** over action/state transition coverage.
+- The goal of testing is to **protect real user flows and failure modes**, not to exhaustively verify internal transitions.
+- Use:
+  - **EP (Equivalence Partitioning)** and
+  - **BVA (Boundary Value Analysis)**
+  strictly as tools to **select representative inputs within scenarios**.
+- Avoid full action/reducer/state-machine coverage unless:
+  - The unit is a shared, reusable state machine across multiple products, or
+  - There is a known history of defects requiring it.
+
+---
+
+### Mandatory Test Structure (REQUIRED)
+
+All tests **MUST** follow the scenario-based  
+**as is → when → to be/should** structure.
+
+This structure represents a **user-visible timeline** and is **not optional**.
+
+#### Required nesting
+
+```
+describe('<Unit>')
+  describe('as is: <initial state / policy>')
+    describe('when <user action or condition>')
+      it('to be: <expected result>, should <assertions>')
+```
+
+#### Semantics
+
+- **as is**
+  - Describes the initial user-visible state or configuration
+  - Examples:
+    - `minChars=2 and list is closed`
+    - `no item selected`
+    - `input is focused`
+- **when**
+  - Describes user actions or environmental conditions
+  - Examples:
+    - typing input
+    - keyboard navigation
+    - blur / click
+    - async resolution order
+- **to be / should**
+  - Describes **observable outcomes only**
+  - UI changes, callbacks, accessibility attributes
+  - No references to internal state, reducers, or actions
+
+---
+
+### EP / BVA Usage Rules (REQUIRED)
+
+- **EP (Equivalence Partitioning)** and **BVA (Boundary Value Analysis)**:
+  - MUST be applied at the **`when` level**
+  - MUST justify why a particular input value was chosen
+- Input values in tests must represent:
+  - an equivalence class (valid / invalid / error), or
+  - a boundary point (min-1, min, max, normalize edge, first/last index)
+- Tests MUST NOT:
+  - use arbitrary or random values without equivalence/boundary meaning
+  - enumerate multiple similar values without justification
+
+---
+
+### Required Test Portfolio (Default)
+
+Each component or feature MUST include, at minimum:
+
+1. **Scenario tests (P0, required)**
+   - 6–10 tests covering:
+     - success flow (mouse)
+     - success flow (keyboard)
+     - boundary just below threshold (e.g., `minChars - 1`)
+     - boundary at threshold (e.g., `minChars`)
+     - one negative scenario (empty or error)
+     - one async/race scenario if networked
+
+2. **Minimal unit tests (P1, optional but recommended)**
+   - Only for small pure helpers where scenarios are inefficient:
+     - normalization helpers
+     - meaningful/minChars checks (BVA: `min-1`, `min`, `min+1`)
+     - index clamping or navigation boundaries
+   - Action/reducer/state transition unit tests are **discouraged by default**
+
+---
+
+### Tooling
+
+- Use **vitest** (not jest).
+- Use **@testing-library/react** with **user-event** for UI tests.
+- Async behavior must be deterministic:
+  - Prefer `debounceMs=0` in scenario tests, or
+  - Explicitly use fake timers (`vi.useFakeTimers()` and flush)
+- For race conditions:
+  - Use deferred/promises to control resolution order
+  - Never rely on real network timing
+
+---
+
+### Assertions: What to Test
+
+- Assert **public, observable behavior only**:
+  - rendered UI (open/closed states, items, error/empty messages)
+  - controlled values (input value updates)
+  - public callbacks (e.g., `onSelect`)
+  - accessibility attributes (`role`, `aria-expanded`, `aria-activedescendant`)
+- Do NOT assert:
+  - internal reducer state
+  - dispatched actions
+  - hook call order
+  - implementation-specific details
+
+---
+
+### Async / Race Condition Rules
+
+- Any networked component MUST include at least one test where:
+  - an earlier request resolves after a later request
+  - the UI reflects **only the latest user intent**
+- Late responses MUST NOT override newer results.
+
+---
+
+### File & Naming Conventions (Recommended)
+
+- Scenario tests: `*.scenario.test.ts(x)`
+- Pure helper/unit tests: `*.unit.test.ts`
+- Keep scenario tests close to the component or feature they validate.
+
+---
+
+### Summary (Non-negotiable)
+
+- Tests are **user scenario first**
+- EP/BVA is **input selection**, not test explosion
+- `as is → when → to be/should` is **mandatory**
+- If a test does not describe a user-visible scenario,
+  it likely does not belong here

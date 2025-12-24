@@ -1,0 +1,21 @@
+---
+description: Always follow Feature-Sliced Design (FSD) architecture for project structure
+alwaysApply: true
+---
+
+## FSD Architecture Principles
+
+- Organize the project using Feature-Sliced Design (FSD):
+  1. **App** – Application entry point, global providers, routing, theming, and store setup.
+  2. **Pages** – Route-based pages containing layout + widgets/features/entities.
+  3. **Features** – Independent user-facing features (e.g., SearchBar, LoginButton).
+  4. **Entities** – Domain objects with related state, UI, and logic (e.g., User, Product).
+  5. **Shared** – Global reusable code: UI components, hooks, helpers, constants, API clients.
+
+## Rules to Follow
+
+- Place new code in the correct FSD layer according to its role.
+- Keep imports directional: upper layers can import from lower layers, not vice versa.
+- Avoid placing business logic in `shared` or `app`.
+- Each slice should be self-contained with its own UI, logic, and styles.
+- Use index files for public API of each slice, hide internal modules.

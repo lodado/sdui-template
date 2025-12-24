@@ -1,0 +1,119 @@
+---
+description: XSS & React Security — Cursor Rules
+alwaysApply: true
+---
+
+## Scope
+
+React(Next 포함) 웹앱에서 XSS, 외부 스크립트(SRI/CSP/nonce), 속성·URL 컨텍스트 보안을 일관 적용하기 위한 규칙.
+
+---
+
+## 1) React Escape 원칙
+
+DO:
+
+- JSX 동적 값은 `{}` 바인딩 → React가 `< > & " '` 자동 escape
+- 코드/태그 기호를 문자 그대로 표시: `{"<tag>"}` 또는 엔터티(`&lt;`, `&gt;`, `&amp;`, `&quot;`, `&#39;`)
+- 리치 텍스트 필요 시 DOMPurify 등으로 sanitize 후 렌더
+
+DON’T:
+
+- `dangerouslySetInnerHTML` / `innerHTML`에 검증 안 된 문자열 주입
+- 서버가 생성하는 HTML 문자열에서 미-escape 리터럴 그대로 출력
+
+---
+
+## 2) 속성(Attribute) & 이벤트 컨텍스트
+
+DO:
+
+- JSX 속성은 문자열 리터럴(`alt="…"`) 또는 표현식(`alt={value}`)으로 전달
+- URL 속성(`href`, `src`, `action`, `srcset` 등)
+  - 허용 스킴 화이트리스트: `http:`, `https:`, `mailto:`, `tel:` (선택: `blob:`)
+  - `new URL()`, `URLSearchParams`, `encodeURIComponent` 사용
+- 이벤트 바인딩은 **React props (`onClick={handler}`)** 로 처리
+- 스타일 값: 사용자 입력 직접 주입 금지 → 클래스 토큰/화이트리스트 매핑
+
+DON’T:
+
+- HTML 인라인 이벤트 문자열(`onclick="…"`) 사용
+- `javascript:` 스킴 허용, 위험 `data:` (특히 SVG) 허용
+- 사용자 입력을 `style` / `on*` 속성에 문자열로 삽입
+
+---
+
+## 3) 외부 스크립트(서드파티) 보안
+
+DO (우선순위):
+
+1. 가능하면 npm 설치 후 번들 포함(Vite/Next 빌드 결과로 서빙)
+2. CDN 필요 시:
+   - `<script src="…" nonce="…"></script>` + CSP(`script-src 'self' 'nonce-…' 'strict-dynamic'`)
+   - (해시 기반을 사용할 경우에만) `SRI integrity="sha384-…"` + `crossorigin="anonymous"`
+   - `target="_blank"` 사용 시 반드시 `rel="noopener noreferrer"`
+
+DON’T:
+
+- 출처/무결성/정책 없이 임의 CDN 스크립트 삽입
+- `eval` / `new Function` 등 문자열 실행 API 사용
+
+---
+
+## 4) Next.js 14(App Router) — nonce & CSP
+
+DO:
+
+- 요청별 nonce 생성 → CSP 헤더(`script-src 'self' 'nonce-<value>' 'strict-dynamic'`)에 포함
+- `middleware.ts`에서 요청마다 CSP + `x-nonce` 헤더 주입
+- 서버 컴포넌트에서 `headers().get('x-nonce')`로 읽어 클라이언트 트리에 전달 → `<Script nonce={nonce} … />`
+- 정적 자원은 `'self'` / 고정 경로로 서빙
+
+DON’T:
+
+- SSG/ISR/PPR 페이지에 nonce 의존(요청별 값 불일치 → 하이드레이션 mismatch)
+- 라우트 일부만 CSP/nonce 적용(프리페치 경로 불일치)
+
+---
+
+## 5) Axios/URL 조립
+
+DO:
+
+- 쿼리는 Axios `params` 또는 `URLSearchParams` / `encodeURIComponent` 사용
+- 문자열 이어붙이기 금지
+
+DON’T:
+
+- ``axios.get(`/search?q=${userInput}`)`` 같은 생 문자열 삽입
+
+---
+
+## 6) 체크리스트(배포 전)
+
+- [ ] JSX: 리터럴은 엔터티, 동적 값은 `{}` 바인딩
+- [ ] URL: 화이트리스트 스킴 + `new URL()` 조립, `javascript:` / 위험 `data:` 차단
+- [ ] 이벤트: HTML 인라인 이벤트 문자열 금지, React `onClick={handler}`만 사용
+- [ ] 외부 스크립트: 번들 포함 또는 CSP + nonce (해시 기반 시 SRI+crossorigin)
+- [ ] Next14: `middleware` nonce + 동일 nonce 전달, 정적 페이지 nonce 의존 금지
+- [ ] `dangerouslySetInnerHTML` → DOMPurify sanitize(SVG/MathML 금지)
+- [ ] 새 탭 링크: `target="_blank"` → `rel="noopener noreferrer"`
+
+---
+
+## 7) 스니펫
+
+```ts
+// URL 안전 조립
+const url = new URL('/search', location.origin);
+url.searchParams.set('q', userInput);
+a.href = url.toString();
+
+// DOMPurify 예시
+import DOMPurify from 'dompurify';
+const clean = DOMPurify.sanitize(unsafeHtml, {
+  USE_PROFILES: { html: true },
+  FORBID_TAGS: ['svg','math','script','style'],
+});
+return <div dangerouslySetInnerHTML={{ __html: clean }} />;
+```
