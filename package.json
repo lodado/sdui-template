@@ -11,7 +11,7 @@
     "clean": "turbo run clean && rm -rf node_modules",
     "test": "turbo run test --concurrency=5",
     "test:e2e": "turbo run test:e2e --concurrency=5",
-    "lint": "turbo run lint --concurrceny=5 -- --cache --fix",
+    "lint": "turbo run lint  -- --cache --fix",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "release": "turbo run build && changeset version && changeset publish --concurrency=5",
     "changeset": "changeset",
