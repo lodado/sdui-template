@@ -14,16 +14,16 @@ This document explains the architecture of the SDUI Template library. It helps y
 
 ### Constraints
 
-- **Runtime**: Browser only (Next.js client components)
+- **Runtime**: Browser (client components) + Node.js (server components)
 - **Tech Stack**: React 18+, TypeScript, Next.js 13+ App Router
 - **Deployment**: npm package, tree-shaking support, ESM + CJS exports
-- **Security**: XSS prevention, safe HTML rendering
+- **Security**: XSS prevention, safe HTML rendering, SSR state serialization safety
 
 ## System Structure
 
 ### Overall Architecture Diagram
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                    Consumer Application                      │
 │  (Next.js App Router / React App)                           │
@@ -206,7 +206,7 @@ const customFactory: ComponentFactory = (id, renderNode) => {
 
 ### Document Rendering Flow
 
-```
+```text
 1. User passes document to SduiLayoutRenderer
    ↓
 2. Document normalization (normalizeSduiLayout)
@@ -229,7 +229,7 @@ const customFactory: ComponentFactory = (id, renderNode) => {
 
 ### Layout Update Flow
 
-```
+```text
 1. User interaction or programmatic update
    ↓
 2. Call store.updateNodeLayout(nodeId, layout)
@@ -247,7 +247,7 @@ const customFactory: ComponentFactory = (id, renderNode) => {
 
 ### Layered Architecture
 
-```
+```text
 ┌─────────────────────────────────────┐
 │      React Integration Layer         │  ← Components, Hooks, Context
 │  (Consumer-facing API)               │
@@ -298,19 +298,27 @@ const customFactory: ComponentFactory = (id, renderNode) => {
 - Manual normalization: High error risk
 - Custom solution: Reinventing the wheel
 
-### 3. Client Only
+### 3. SSR Support
 
-**Decision**: No server component support
+**Decision**: Support SSR with server/client component separation
 
 **Reason**:
 
-- Simpler implementation
-- Smaller bundle size
-- Next.js server only needs to pass data
+- Better initial load performance (SEO, FCP)
+- Progressive enhancement (works without JS)
+- Next.js App Router best practices
+
+**Implementation**:
+
+- Server component: Initialize store, serialize state
+- Client component: Hydrate store, enable interactivity
+- State serialization: Store state → JSON → HTML
+- Hydration: JSON → Store state → Subscribe system
 
 **Alternatives Considered**:
 
-- SSR support: Increases complexity, unnecessary for MVP
+- Client only: Simpler but worse initial performance
+- Full SSR: Too complex, subscription system is client-only
 
 ### 4. Component Override System
 
@@ -370,10 +378,67 @@ const customFactory: ComponentFactory = (id, renderNode) => {
 - Layout change callbacks
 - Store options
 
+## SSR Architecture
+
+### Server/Client Separation
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                    Server Layer                             │
+│  (Next.js Server Components)                                │
+│                                                             │
+│  - Document fetching (API/DB)                               │
+│  - Store initialization (read-only)                          │
+│  - State serialization                                      │
+│  - HTML generation                                          │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              │ serializedState (JSON)
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Client Layer                             │
+│  (React Client Components)                                 │
+│                                                             │
+│  - State hydration                                          │
+│  - Subscription system initialization                        │
+│  - Interactive features                                     │
+│  - Event handlers                                           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Data Flow (SSR)
+
+```text
+1. Server Component receives document
+   ↓
+2. Create SduiLayoutStore (server instance)
+   ↓
+3. Store.updateLayout(document)
+   ↓
+4. Store.serializeState() → JSON
+   ↓
+5. Pass serializedState to Client Component
+   ↓
+6. Client Component creates new store
+   ↓
+7. Store.hydrateState(serializedState)
+   ↓
+8. Initialize subscription system
+   ↓
+9. Render with hydrated state
+```
+
+### Key Design Decisions (SSR)
+
+1. **State Serialization**: Only serializable state (no functions, no subscriptions)
+2. **Hydration Safety**: Validate serialized state before hydration
+3. **Progressive Enhancement**: Works without serializedState (client-only fallback)
+4. **Component Separation**: Server component for data, client component for interactivity
+
 ## Next Steps
 
 Based on this architecture:
 
-1. **Implementation Design** (`design-flow.md`): Detailed implementation plan
+1. **Implementation Design** (`design-flow.md`): Detailed implementation plan (includes SSR)
 2. **Implementation** (`implements.md`): Actual code implementation
 3. **Optimization** (`optimization.md`): Performance optimization

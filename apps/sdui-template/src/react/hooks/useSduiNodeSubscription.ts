@@ -12,7 +12,7 @@
  */
 
 import { useEffect, useMemo, useReducer } from 'react'
-import type { ZodSchema } from 'zod'
+import type { ZodSchema, z } from 'zod'
 
 import { useSduiLayoutAction } from './useSduiLayoutAction'
 import type { BaseLayoutState, SduiLayoutNode } from '../../schema'
@@ -47,7 +47,7 @@ export interface UseSduiNodeSubscriptionParams<
  * @returns 노드 정보 객체
  *   - `node`: 노드 엔티티 (SduiLayoutNode | undefined)
  *   - `type`: 노드 타입 (string | undefined)
- *   - `state`: 레이아웃 상태 (BaseLayoutState | undefined)
+ *   - `state`: 레이아웃 상태 (스키마가 제공되면 z.infer<TSchema>, 아니면 BaseLayoutState)
  *   - `childrenIds`: 자식 노드 ID 배열 (string[])
  *   - `attributes`: 노드 속성 (Record<string, unknown> | undefined)
  *   - `exists`: 노드 존재 여부 (boolean)
@@ -60,12 +60,35 @@ export interface UseSduiNodeSubscriptionParams<
  * });
  * ```
  */
+// Overload for when schema is provided
+// If schema is provided and validation passes, state is always defined (never undefined)
+// If rawState is missing or validation fails, hook throws error (component won't render)
+export function useSduiNodeSubscription<TSchema extends ZodSchema<BaseLayoutState>>(
+  params: UseSduiNodeSubscriptionParams<TSchema> & { schema: TSchema },
+): {
+  node: SduiLayoutNode | undefined
+  type: string | undefined
+  state: z.infer<TSchema> // Non-nullable: if component renders, state is always defined
+  childrenIds: string[]
+  attributes: Record<string, unknown> | undefined
+  exists: boolean
+}
+// Overload for when schema is not provided
+export function useSduiNodeSubscription(params: UseSduiNodeSubscriptionParams & { schema?: undefined }): {
+  node: SduiLayoutNode | undefined
+  type: string | undefined
+  state: BaseLayoutState | undefined
+  childrenIds: string[]
+  attributes: Record<string, unknown> | undefined
+  exists: boolean
+}
+// Implementation
 export function useSduiNodeSubscription<TSchema extends ZodSchema<BaseLayoutState> = ZodSchema<BaseLayoutState>>(
   params: UseSduiNodeSubscriptionParams<TSchema>,
 ): {
   node: SduiLayoutNode | undefined
   type: string | undefined
-  state: BaseLayoutState | undefined
+  state: TSchema extends ZodSchema<any> ? z.infer<TSchema> | undefined : BaseLayoutState | undefined
   childrenIds: string[]
   attributes: Record<string, unknown> | undefined
   exists: boolean
@@ -99,16 +122,27 @@ export function useSduiNodeSubscription<TSchema extends ZodSchema<BaseLayoutStat
 
   // 스키마가 있으면 검증
   const validatedState = useMemo(() => {
-    if (!rawState) return undefined
-    if (!schema) return rawState
+    if (!schema) {
+      // 스키마가 없으면 rawState 반환 (없을 수 있음)
+      return rawState
+    }
 
+    // 스키마가 제공되면 rawState가 없으면 throw
+    if (!rawState) {
+      throw new Error(`State not found for node "${nodeId}". Schema was provided but state is missing.`)
+    }
+
+    // 스키마 검증 실패 시 throw
     const result = schema.safeParse(rawState)
     if (!result.success) {
       throw new Error(`State validation failed for node "${nodeId}": ${result.error.message}`)
     }
 
+    // 검증 성공 시 항상 정의된 데이터 반환
     return result.data
-  }, [rawState, schema, nodeId])
+  }, [rawState, schema, nodeId]) as TSchema extends ZodSchema<any>
+    ? z.infer<TSchema> | undefined
+    : BaseLayoutState | undefined
 
   return {
     node,
@@ -119,4 +153,3 @@ export function useSduiNodeSubscription<TSchema extends ZodSchema<BaseLayoutStat
     exists: !!node,
   }
 }
-

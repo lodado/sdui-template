@@ -11,24 +11,13 @@
  * - 구독 시스템: ID별 구독자 관리, 선택적 notify
  */
 
-import { cloneDeep } from "lodash-es";
+import { cloneDeep } from 'lodash-es'
 
-import type { ComponentFactory } from "../components/types";
-import type {
-  BaseLayoutState,
-  SduiLayoutDocument,
-} from "../schema";
-import { normalizeSduiLayout } from "../utils/normalize";
-import {
-  DocumentManager,
-  LayoutStateRepository,
-  SubscriptionManager,
-  VariablesManager,
-} from "./managers";
-import type {
-  SduiLayoutStoreOptions,
-  SduiLayoutStoreState,
-} from "./types";
+import type { ComponentFactory } from '../components/types'
+import type { BaseLayoutState, SduiLayoutDocument } from '../schema'
+import { normalizeSduiLayout } from '../utils/normalize'
+import { DocumentManager, LayoutStateRepository, SubscriptionManager, VariablesManager } from './managers'
+import type { SduiLayoutStoreOptions, SduiLayoutStoreState } from './types'
 
 // ==================== Store Class ====================
 
@@ -50,30 +39,24 @@ export class SduiLayoutStore {
   // ==================== 매니저 인스턴스 ====================
 
   /** 구독 시스템 매니저 */
-  private _subscriptionManager = new SubscriptionManager();
+  private _subscriptionManager = new SubscriptionManager()
 
   /** 상태 저장소 */
-  private _repository = new LayoutStateRepository();
+  private _repository = new LayoutStateRepository()
 
   /** 문서 관리자 */
-  private _documentManager = new DocumentManager();
+  private _documentManager = new DocumentManager()
 
   /** 변수 관리자 */
-  private _variablesManager: VariablesManager;
+  private _variablesManager: VariablesManager
 
   /** 컴포넌트 오버라이드 (일반 변수) - ID와 타입을 하나의 맵으로 관리 */
-  private _componentOverrides: Record<string, ComponentFactory> = {};
+  private _componentOverrides: Record<string, ComponentFactory> = {}
 
-  constructor(
-    initialState?: Partial<SduiLayoutStoreState>,
-    options?: SduiLayoutStoreOptions
-  ) {
-    this._repository.initializeState(initialState);
-    this._variablesManager = new VariablesManager(
-      this._repository,
-      this._subscriptionManager
-    );
-    this._componentOverrides = options?.componentOverrides || {};
+  constructor(initialState?: Partial<SduiLayoutStoreState>, options?: SduiLayoutStoreOptions) {
+    this._repository.initializeState(initialState)
+    this._variablesManager = new VariablesManager(this._repository, this._subscriptionManager)
+    this._componentOverrides = options?.componentOverrides || {}
   }
 
   // ==================== 구독 시스템 메서드 ====================
@@ -86,7 +69,7 @@ export class SduiLayoutStore {
    * @returns 구독 해제 함수
    */
   subscribeNode(nodeId: string, callback: () => void): () => void {
-    return this._subscriptionManager.subscribeNode(nodeId, callback);
+    return this._subscriptionManager.subscribeNode(nodeId, callback)
   }
 
   /**
@@ -96,7 +79,7 @@ export class SduiLayoutStore {
    * @returns 구독 해제 함수
    */
   subscribeVersion(callback: () => void): () => void {
-    return this._subscriptionManager.subscribeVersion(callback);
+    return this._subscriptionManager.subscribeVersion(callback)
   }
 
   // ==================== Getter (동기적 데이터 접근) ====================
@@ -105,42 +88,42 @@ export class SduiLayoutStore {
    * Store 상태를 반환합니다.
    */
   get state(): SduiLayoutStoreState {
-    return this._repository.state;
+    return this._repository.state
   }
 
   /**
    * 노드 엔티티를 반환합니다.
    */
   get nodes() {
-    return this._repository.nodes;
+    return this._repository.nodes
   }
 
   /**
    * 레이아웃 상태를 반환합니다.
    */
   get layoutStates() {
-    return this._repository.layoutStates;
+    return this._repository.layoutStates
   }
 
   /**
    * 레이아웃 속성을 반환합니다.
    */
   get layoutAttributes() {
-    return this._repository.layoutAttributes;
+    return this._repository.layoutAttributes
   }
 
   /**
    * 문서 메타데이터를 반환합니다.
    */
-  get metadata(): SduiLayoutDocument["metadata"] | undefined {
-    return this._documentManager.getMetadata();
+  get metadata(): SduiLayoutDocument['metadata'] | undefined {
+    return this._documentManager.getMetadata()
   }
 
   /**
    * 컴포넌트 오버라이드 맵을 반환합니다.
    */
   getComponentOverrides(): Record<string, ComponentFactory> {
-    return this._componentOverrides;
+    return this._componentOverrides
   }
 
   // ==================== Node Query Methods ====================
@@ -152,7 +135,7 @@ export class SduiLayoutStore {
    * @returns 노드 또는 undefined
    */
   getNodeById(nodeId: string) {
-    return this._repository.getNodeById(nodeId);
+    return this._repository.getNodeById(nodeId)
   }
 
   /**
@@ -162,7 +145,7 @@ export class SduiLayoutStore {
    * @returns 노드 타입 또는 undefined
    */
   getNodeTypeById(nodeId: string): string | undefined {
-    return this._repository.getNodeTypeById(nodeId);
+    return this._repository.getNodeTypeById(nodeId)
   }
 
   /**
@@ -172,7 +155,7 @@ export class SduiLayoutStore {
    * @returns 자식 노드 ID 배열 또는 빈 배열
    */
   getChildrenIdsById(nodeId: string): string[] {
-    return this._repository.getChildrenIdsById(nodeId);
+    return this._repository.getChildrenIdsById(nodeId)
   }
 
   /**
@@ -182,7 +165,7 @@ export class SduiLayoutStore {
    * @returns 레이아웃 상태 또는 undefined
    */
   getLayoutStateById(nodeId: string): BaseLayoutState | undefined {
-    return this._repository.getLayoutStateById(nodeId);
+    return this._repository.getLayoutStateById(nodeId)
   }
 
   /**
@@ -192,7 +175,7 @@ export class SduiLayoutStore {
    * @returns 속성 또는 undefined
    */
   getAttributesById(nodeId: string): Record<string, unknown> | undefined {
-    return this._repository.getAttributesById(nodeId);
+    return this._repository.getAttributesById(nodeId)
   }
 
   /**
@@ -201,7 +184,7 @@ export class SduiLayoutStore {
    * @returns 루트 노드 ID 또는 undefined
    */
   getRootId(): string | undefined {
-    return this._repository.getRootId();
+    return this._repository.getRootId()
   }
 
   // ==================== Layout Update Methods ====================
@@ -213,25 +196,23 @@ export class SduiLayoutStore {
    * @param document - 업데이트할 레이아웃 문서
    */
   updateLayout(document: SduiLayoutDocument): void {
-    const { entities } = normalizeSduiLayout(document);
+    const { entities } = normalizeSduiLayout(document)
 
     // Repository에 상태 업데이트
-    this._repository.updateLayoutStates(entities.layoutStates || {});
-    this._repository.updateLayoutAttributes(entities.layoutAttributes || {});
-    this._repository.updateNodes(entities.nodes || {});
-    this._repository.setRootId(document.root.id);
-    this._repository.setEdited(false);
-    this._repository.updateVariables(
-      document.variables ? cloneDeep(document.variables) : {}
-    );
-    this._repository.incrementVersion();
+    this._repository.updateLayoutStates(entities.layoutStates || {})
+    this._repository.updateLayoutAttributes(entities.layoutAttributes || {})
+    this._repository.updateNodes(entities.nodes || {})
+    this._repository.setRootId(document.root.id)
+    this._repository.setEdited(false)
+    this._repository.updateVariables(document.variables ? cloneDeep(document.variables) : {})
+    this._repository.incrementVersion()
 
     // 문서 관리자에 메타데이터 및 캐시 업데이트
-    this._documentManager.setMetadata(document.metadata);
-    this._documentManager.cacheDocument(document);
+    this._documentManager.setMetadata(document.metadata)
+    this._documentManager.cacheDocument(document)
 
     // version 구독자에게 알림
-    this._subscriptionManager.notifyVersion();
+    this._subscriptionManager.notifyVersion()
   }
 
   /**
@@ -240,14 +221,12 @@ export class SduiLayoutStore {
    * @param documentId - 복원할 문서 ID
    */
   cancelEdit(documentId?: string): void {
-    const id =
-      documentId ||
-      this._documentManager.getDocumentId(this._repository.getRootId());
-    if (!id) return;
+    const id = documentId || this._documentManager.getDocumentId(this._repository.getRootId())
+    if (!id) return
 
-    const original = this._documentManager.getOriginalDocument(id);
+    const original = this._documentManager.getOriginalDocument(id)
     if (original) {
-      this.updateLayout(original);
+      this.updateLayout(original)
     }
   }
 
@@ -260,12 +239,9 @@ export class SduiLayoutStore {
    * @param nodeId - 업데이트할 노드 ID
    * @param layout - 새로운 레이아웃 위치
    */
-  updateNodeLayout(
-    nodeId: string,
-    layout: Partial<BaseLayoutState["layout"]>
-  ): void {
-    const currentState = this._repository.getLayoutStateById(nodeId);
-    if (!currentState) return;
+  updateNodeLayout(nodeId: string, layout: Partial<BaseLayoutState['layout']>): void {
+    const currentState = this._repository.getLayoutStateById(nodeId)
+    if (!currentState) return
 
     // 해당 노드만 얕은 복사로 업데이트 (cloneDeep 없음)
     this._repository.updateNodeLayoutState(nodeId, {
@@ -274,12 +250,12 @@ export class SduiLayoutStore {
         ...currentState.layout,
         ...layout,
       },
-    });
+    })
 
-    this._repository.setEdited(true);
+    this._repository.setEdited(true)
 
     // 해당 노드의 구독자만 notify (forceRender)
-    this._subscriptionManager.notifyNode(nodeId);
+    this._subscriptionManager.notifyNode(nodeId)
   }
 
   /**
@@ -289,19 +265,19 @@ export class SduiLayoutStore {
    * @param state - 새로운 상태
    */
   updateNodeState(nodeId: string, state: Partial<BaseLayoutState>): void {
-    const currentState = this._repository.getLayoutStateById(nodeId);
-    if (!currentState) return;
+    const currentState = this._repository.getLayoutStateById(nodeId)
+    if (!currentState) return
 
     // 해당 노드만 얕은 복사로 업데이트
     this._repository.updateNodeLayoutState(nodeId, {
       ...currentState,
       ...state,
-    });
+    })
 
-    this._repository.setEdited(true);
+    this._repository.setEdited(true)
 
     // 해당 노드의 구독자만 notify
-    this._subscriptionManager.notifyNode(nodeId);
+    this._subscriptionManager.notifyNode(nodeId)
   }
 
   /**
@@ -310,22 +286,19 @@ export class SduiLayoutStore {
    * @param nodeId - 업데이트할 노드 ID
    * @param attributes - 새로운 속성
    */
-  updateNodeAttributes(
-    nodeId: string,
-    attributes: Partial<Record<string, unknown>>
-  ): void {
-    const currentAttributes = this._repository.getAttributesById(nodeId) || {};
+  updateNodeAttributes(nodeId: string, attributes: Partial<Record<string, unknown>>): void {
+    const currentAttributes = this._repository.getAttributesById(nodeId) || {}
 
     // 해당 노드만 얕은 복사로 업데이트
     this._repository.updateNodeAttributes(nodeId, {
       ...currentAttributes,
       ...attributes,
-    });
+    })
 
-    this._repository.setEdited(true);
+    this._repository.setEdited(true)
 
     // 해당 노드의 구독자만 notify
-    this._subscriptionManager.notifyNode(nodeId);
+    this._subscriptionManager.notifyNode(nodeId)
   }
 
   /**
@@ -336,27 +309,27 @@ export class SduiLayoutStore {
    */
   updateMultipleNodeLayouts(
     updates: Array<{
-      nodeId: string;
-      layout: Partial<BaseLayoutState["layout"]>;
-    }>
+      nodeId: string
+      layout: Partial<BaseLayoutState['layout']>
+    }>,
   ): void {
-    const changedIds: string[] = [];
+    const changedIds: string[] = []
 
     updates.forEach(({ nodeId, layout }) => {
-      const currentState = this._repository.getLayoutStateById(nodeId);
-      if (!currentState) return;
+      const currentState = this._repository.getLayoutStateById(nodeId)
+      if (!currentState) return
 
-      const currentLayout = currentState.layout;
+      const currentLayout = currentState.layout
 
       // 실제로 변경되었는지 비교 (x, y, w, h만 비교)
       const hasChanged =
         currentLayout.x !== layout.x ||
         currentLayout.y !== layout.y ||
         currentLayout.w !== layout.w ||
-        currentLayout.h !== layout.h;
+        currentLayout.h !== layout.h
 
       // 변경되지 않았으면 스킵
-      if (!hasChanged) return;
+      if (!hasChanged) return
 
       // 해당 노드만 얕은 복사로 업데이트
       this._repository.updateNodeLayoutState(nodeId, {
@@ -365,16 +338,16 @@ export class SduiLayoutStore {
           ...currentState.layout,
           ...layout,
         },
-      });
+      })
 
-      changedIds.push(nodeId);
-    });
+      changedIds.push(nodeId)
+    })
 
     if (changedIds.length > 0) {
-      this._repository.setEdited(true);
+      this._repository.setEdited(true)
 
       // 실제로 변경된 노드들만 notify
-      this._subscriptionManager.notifyNodes(changedIds);
+      this._subscriptionManager.notifyNodes(changedIds)
     }
   }
 
@@ -387,7 +360,7 @@ export class SduiLayoutStore {
    * @param variables - 새로운 전역 변수 객체
    */
   updateVariables(variables: Record<string, unknown>): void {
-    this._variablesManager.updateVariables(variables);
+    this._variablesManager.updateVariables(variables)
   }
 
   /**
@@ -398,7 +371,7 @@ export class SduiLayoutStore {
    * @param value - 변수 값
    */
   updateVariable(key: string, value: unknown): void {
-    this._variablesManager.updateVariable(key, value);
+    this._variablesManager.updateVariable(key, value)
   }
 
   /**
@@ -407,7 +380,7 @@ export class SduiLayoutStore {
    * @param key - 삭제할 변수 키
    */
   deleteVariable(key: string): void {
-    this._variablesManager.deleteVariable(key);
+    this._variablesManager.deleteVariable(key)
   }
 
   // ==================== Selection Methods ====================
@@ -418,11 +391,11 @@ export class SduiLayoutStore {
    * @param nodeId - 선택할 노드 ID
    */
   setSelectedNodeId(nodeId?: string): void {
-    const previousId = this._repository.setSelectedNodeId(nodeId);
+    const previousId = this._repository.setSelectedNodeId(nodeId)
 
     // 이전 선택 노드와 새 선택 노드 모두 notify
-    if (previousId) this._subscriptionManager.notifyNode(previousId);
-    if (nodeId) this._subscriptionManager.notifyNode(nodeId);
+    if (previousId) this._subscriptionManager.notifyNode(previousId)
+    if (nodeId) this._subscriptionManager.notifyNode(nodeId)
   }
 
   // ==================== Document Methods ====================
@@ -434,25 +407,23 @@ export class SduiLayoutStore {
    * @returns 복원된 문서 또는 null
    */
   getDocument(): SduiLayoutDocument | null {
-    return this._documentManager.getDocument(this._repository);
+    return this._documentManager.getDocument(this._repository)
   }
 
   /**
    * 캐시를 초기화합니다.
    */
   clearCache(): void {
-    this._documentManager.clearCache();
-    this.reset();
+    this._documentManager.clearCache()
+    this.reset()
   }
 
   /**
    * 상태를 초기화합니다.
    */
   reset(): void {
-    this._documentManager.reset();
-    this._repository.reset();
-    this._subscriptionManager.notifyVersion();
+    this._documentManager.reset()
+    this._repository.reset()
+    this._subscriptionManager.notifyVersion()
   }
 }
-
-
