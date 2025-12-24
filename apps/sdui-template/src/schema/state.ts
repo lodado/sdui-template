@@ -47,24 +47,4 @@ export interface LayoutPosition {
  * 일반 노드들은 이 타입을 사용합니다.
  * Record<string, unknown>을 확장하여 SduiNode의 state 타입과 호환되도록 합니다.
  */
-export interface BaseLayoutState extends Record<string, unknown> {
-  /** 레이아웃 위치 및 크기 */
-  layout: LayoutPosition
-
-  /** 그리드 레이아웃 전역 설정 (선택적) */
-  grid?: GridLayoutConfig
-
-  /** 레이아웃 편집 상태 */
-  edit?: {
-    /** 드래그 중 여부 */
-    isDragging?: boolean
-
-    /** 리사이즈 중 여부 */
-    isResizing?: boolean
-
-    /** 편집 여부 (변경사항 있음) */
-    isEdited?: boolean
-  }
-}
-
-
+export interface BaseLayoutState extends Record<string, unknown> {}

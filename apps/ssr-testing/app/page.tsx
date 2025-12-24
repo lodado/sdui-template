@@ -53,7 +53,7 @@ const exampleDocument: SduiLayoutDocument = {
           layout: {
             x: 0,
             y: 0,
-            w: 4,
+            w: 6,
             h: 1,
             minW: 2,
             minH: 1,
@@ -78,9 +78,9 @@ const exampleDocument: SduiLayoutDocument = {
             isResizable: true,
           },
           layout: {
-            x: 4,
+            x: 6,
             y: 0,
-            w: 4,
+            w: 6,
             h: 1,
             minW: 2,
             minH: 1,
@@ -105,9 +105,9 @@ const exampleDocument: SduiLayoutDocument = {
             isResizable: true,
           },
           layout: {
-            x: 8,
-            y: 0,
-            w: 4,
+            x: 0,
+            y: 1,
+            w: 6,
             h: 1,
             minW: 2,
             minH: 1,

@@ -102,15 +102,14 @@ export function useSduiNodeSubscription<TSchema extends ZodSchema<BaseLayoutStat
 
   // layoutStates 변경 구독 (구독 시스템)
   useEffect(() => {
-    const unsubscribe = store.subscribeNode(nodeId, forceRender)
+    const unsubscribe = store.subscribeNode(nodeId, () => {
+      console.log('useSduiNodeSubscription', nodeId)
+
+      forceRender()
+    })
+
     return unsubscribe
   }, [store, nodeId])
-
-  // version 구독 (nodes, variables 변경 감지)
-  useEffect(() => {
-    const unsubscribe = store.subscribeVersion(forceRender)
-    return unsubscribe
-  }, [store])
 
   // Store에서 직접 노드 정보 가져오기
   const node = store.getNodeById(nodeId)

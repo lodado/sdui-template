@@ -9,27 +9,6 @@ import { z } from 'zod'
  * Toggle State 스키마
  */
 const toggleStateSchema = z.object({
-  grid: z.object({
-    cols: z.number(),
-    rowHeight: z.number(),
-    margin: z.tuple([z.number(), z.number()]),
-    compactType: z.enum(['vertical', 'horizontal']).nullable().optional(),
-    preventCollision: z.boolean().optional(),
-    isDraggable: z.boolean().optional(),
-    isResizable: z.boolean().optional(),
-    maxRows: z.number().optional(),
-  }),
-  layout: z.object({
-    x: z.number(),
-    y: z.number(),
-    w: z.number(),
-    h: z.number(),
-    minW: z.number().optional(),
-    minH: z.number().optional(),
-    maxW: z.number().optional(),
-    maxH: z.number().optional(),
-    static: z.boolean().optional(),
-  }),
   checked: z.boolean(),
   label: z.string().optional(),
 })
@@ -38,7 +17,7 @@ interface ToggleProps {
   id: string
 }
 
-export const Toggle: React.FC<ToggleProps> = ({ id }) => {
+const ToggleComponent: React.FC<ToggleProps> = ({ id }) => {
   const { state } = useSduiNodeSubscription({
     nodeId: id,
     schema: toggleStateSchema,
@@ -53,13 +32,12 @@ export const Toggle: React.FC<ToggleProps> = ({ id }) => {
     })
   }, [id, checked, store])
 
+  console.log('ToggleComponent', id, checked, label)
+
   return (
     <div className="flex items-center gap-2 p-3 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 h-full">
       {label && (
-        <label
-          onClick={handleToggle}
-          className="text-sm text-zinc-700 dark:text-zinc-300 cursor-pointer select-none"
-        >
+        <label onClick={handleToggle} className="text-sm text-zinc-700 dark:text-zinc-300 cursor-pointer select-none">
           {label}
         </label>
       )}
@@ -81,5 +59,8 @@ export const Toggle: React.FC<ToggleProps> = ({ id }) => {
   )
 }
 
-export const ToggleFactory: ComponentFactory = (id) => <Toggle id={id} />
+ToggleComponent.displayName = 'Toggle'
 
+export const Toggle = React.memo(ToggleComponent)
+
+export const ToggleFactory: ComponentFactory = (id) => <Toggle id={id} />

@@ -9,16 +9,18 @@ import { z } from 'zod'
  * GridLayout State 스키마
  */
 const gridLayoutStateSchema = z.object({
-  grid: z.object({
-    cols: z.number(),
-    rowHeight: z.number(),
-    margin: z.tuple([z.number(), z.number()]),
-    compactType: z.enum(['vertical', 'horizontal']).nullable().optional(),
-    preventCollision: z.boolean().optional(),
-    isDraggable: z.boolean().optional(),
-    isResizable: z.boolean().optional(),
-    maxRows: z.number().optional(),
-  }),
+  grid: z
+    .object({
+      cols: z.number(),
+      rowHeight: z.number(),
+      margin: z.tuple([z.number(), z.number()]),
+      compactType: z.enum(['vertical', 'horizontal']).nullable().optional(),
+      preventCollision: z.boolean().optional(),
+      isDraggable: z.boolean().optional(),
+      isResizable: z.boolean().optional(),
+      maxRows: z.number().optional(),
+    })
+    .optional(),
   layout: z.object({
     x: z.number(),
     y: z.number(),
@@ -32,19 +34,36 @@ const gridLayoutStateSchema = z.object({
   }),
 })
 
+/**
+ * Grid 기본값
+ */
+const DEFAULT_GRID = {
+  cols: 12,
+  rowHeight: 100,
+  margin: [8, 8] as [number, number],
+  compactType: 'horizontal' as const,
+  preventCollision: false,
+  isDraggable: true,
+  isResizable: true,
+}
+
 interface GridLayoutProps {
   id: string
   renderNode: RenderNodeFn
 }
 
-export const GridLayout: React.FC<GridLayoutProps> = ({ id, renderNode }) => {
+const index = 0
+
+const GridLayoutComponent: React.FC<GridLayoutProps> = ({ id, renderNode }) => {
   const store = useSduiLayoutAction()
+  // GridLayout은 자신의 state와 childrenIds만 구독 (자식의 state 변경은 구독하지 않음)
   const { state, childrenIds } = useSduiNodeSubscription({
     nodeId: id,
     schema: gridLayoutStateSchema,
   })
 
-  const { grid } = state
+  // grid가 없으면 기본값 사용
+  const grid = state.grid || DEFAULT_GRID
 
   // CSS Grid 스타일 계산
   const gridStyle = useMemo(() => {
@@ -59,11 +78,12 @@ export const GridLayout: React.FC<GridLayoutProps> = ({ id, renderNode }) => {
   }, [grid.cols, grid.margin])
 
   // 각 자식 아이템의 스타일 계산 (grid-column, grid-row)
+  // childrenIds가 변경될 때만 재계산 (자식의 state 변경은 구독하지 않음)
   const childStyles = useMemo(() => {
     if (!childrenIds || childrenIds.length === 0) return {}
 
     const styles: Record<string, React.CSSProperties> = {}
-    
+
     childrenIds.forEach((childId: string) => {
       const childState = store.getLayoutStateById(childId)
       if (!childState) return
@@ -80,7 +100,9 @@ export const GridLayout: React.FC<GridLayoutProps> = ({ id, renderNode }) => {
     })
 
     return styles
-  }, [childrenIds, store, grid.rowHeight])
+    // childrenIds가 변경될 때만 재계산 (자식의 state 변경은 구독하지 않음)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [childrenIds?.join(','), grid.rowHeight])
 
   return (
     <div style={gridStyle} className="w-full h-full">
@@ -96,7 +118,8 @@ export const GridLayout: React.FC<GridLayoutProps> = ({ id, renderNode }) => {
   )
 }
 
-export const GridLayoutFactory: ComponentFactory = (id, renderNode) => (
-  <GridLayout id={id} renderNode={renderNode} />
-)
+GridLayoutComponent.displayName = 'GridLayout'
 
+export const GridLayout = GridLayoutComponent
+
+export const GridLayoutFactory: ComponentFactory = (id, renderNode) => <GridLayout id={id} renderNode={renderNode} />
