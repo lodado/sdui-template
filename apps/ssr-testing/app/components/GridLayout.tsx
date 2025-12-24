@@ -15,7 +15,7 @@ const GridLayoutComponent: React.FC<GridLayoutProps> = ({ id, renderNode }) => {
   })
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full" data-testid="grid-layout">
       {childrenIds?.map((childId: string) => (
         <div key={childId}>{renderNode(childId)}</div>
       ))}
