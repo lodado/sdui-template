@@ -70,7 +70,7 @@ const SduiLayoutRendererInner = ({
   // renderNode 함수 생성 (Render Props Pattern)
   const renderNode = useRenderNode(customComponentMap)
 
-  return <>{renderNode(id)}</>
+  return renderNode(id)
 }
 
 /**

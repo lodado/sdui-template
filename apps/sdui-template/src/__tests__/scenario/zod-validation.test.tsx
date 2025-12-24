@@ -18,20 +18,9 @@ import type { ComponentFactory } from '../../components/types'
 
 /**
  * Toggle component state Zod schema
- * Validates only layout, checked, and label fields
+ * Validates only checked and label fields
  */
 const toggleStateSchema = z.object({
-  layout: z.object({
-    x: z.number(),
-    y: z.number(),
-    w: z.number(),
-    h: z.number(),
-    minW: z.number().optional(),
-    minH: z.number().optional(),
-    maxW: z.number().optional(),
-    maxH: z.number().optional(),
-    static: z.boolean().optional(),
-  }),
   checked: z.boolean(),
   label: z.string().optional(),
 })
@@ -101,7 +90,6 @@ describe('Zod Schema Validation', () => {
             id: 'toggle-1',
             type: 'Toggle',
             state: {
-              layout: { x: 0, y: 0, w: 3, h: 1 },
               checked: false,
               label: 'Enable notifications',
             },
@@ -130,7 +118,6 @@ describe('Zod Schema Validation', () => {
             id: 'toggle-1',
             type: 'Toggle',
             state: {
-              layout: { x: 0, y: 0, w: 3, h: 1 },
               checked: false,
               label: 'Enable notifications',
             },
@@ -271,15 +258,12 @@ describe('Zod Schema Validation', () => {
           root: {
             id: 'root',
             type: 'Container',
-            state: {
-              layout: { x: 0, y: 0, w: 12, h: 1 },
-            },
+            state: {},
             children: [
               {
                 id: 'toggle-1',
                 type: 'Toggle',
                 state: {
-                  layout: { x: 0, y: 0, w: 3, h: 1 },
                   checked: false,
                   label: 'Toggle 1',
                 },
@@ -288,7 +272,6 @@ describe('Zod Schema Validation', () => {
                 id: 'toggle-2',
                 type: 'Toggle',
                 state: {
-                  layout: { x: 3, y: 0, w: 3, h: 1 },
                   checked: true,
                   label: 'Toggle 2',
                 },

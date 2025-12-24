@@ -32,7 +32,7 @@ export { SduiLayoutRenderer } from './react/components/SduiLayoutRenderer'
 export { SduiLayoutProvider } from './react/context/SduiLayoutContext'
 
 // React Hooks
-export { useSduiLayoutStores, useSduiLayoutAction, useSduiNodeSubscription, useRenderNode } from './react/hooks'
+export { useSduiLayoutAction, useSduiNodeSubscription, useRenderNode } from './react/hooks'
 export type { UseSduiNodeSubscriptionParams } from './react/hooks/useSduiNodeSubscription'
 
 // Store
@@ -56,5 +56,3 @@ export type { ComponentFactory, RenderNodeFn } from './components/types'
 // Normalization Utilities (optional, for advanced usage)
 export { normalizeSduiLayout, normalizeSduiNode, denormalizeSduiLayout, denormalizeSduiNode } from './utils/normalize'
 export type { NormalizedSduiEntities } from './utils/normalize/types'
-
-

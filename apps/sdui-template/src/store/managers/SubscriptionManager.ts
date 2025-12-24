@@ -13,10 +13,10 @@
  */
 export class SubscriptionManager {
   /** ID별 구독자 관리 (layoutStates/layoutAttributes 변경 감지용) */
-  private _nodeListeners = new Map<string, Set<() => void>>();
+  private _nodeListeners = new Map<string, Set<() => void>>()
 
   /** version 구독자 관리 (nodes, rootId, variables 변경 감지용) */
-  private _versionListeners = new Set<() => void>();
+  private _versionListeners = new Set<() => void>()
 
   /**
    * 특정 노드 ID를 구독합니다.
@@ -27,17 +27,17 @@ export class SubscriptionManager {
    */
   subscribeNode(nodeId: string, callback: () => void): () => void {
     if (!this._nodeListeners.has(nodeId)) {
-      this._nodeListeners.set(nodeId, new Set());
+      this._nodeListeners.set(nodeId, new Set())
     }
-    this._nodeListeners.get(nodeId)!.add(callback);
+    this._nodeListeners.get(nodeId)!.add(callback)
 
     return () => {
-      this._nodeListeners.get(nodeId)?.delete(callback);
+      this._nodeListeners.get(nodeId)?.delete(callback)
       // 구독자가 없으면 Map에서 제거 (메모리 정리)
       if (this._nodeListeners.get(nodeId)?.size === 0) {
-        this._nodeListeners.delete(nodeId);
+        this._nodeListeners.delete(nodeId)
       }
-    };
+    }
   }
 
   /**
@@ -47,10 +47,10 @@ export class SubscriptionManager {
    * @returns 구독 해제 함수
    */
   subscribeVersion(callback: () => void): () => void {
-    this._versionListeners.add(callback);
+    this._versionListeners.add(callback)
     return () => {
-      this._versionListeners.delete(callback);
-    };
+      this._versionListeners.delete(callback)
+    }
   }
 
   /**
@@ -59,7 +59,7 @@ export class SubscriptionManager {
    * @param nodeId - 변경된 노드 ID
    */
   notifyNode(nodeId: string): void {
-    this._nodeListeners.get(nodeId)?.forEach((callback) => callback());
+    this._nodeListeners.get(nodeId)?.forEach((callback) => callback())
   }
 
   /**
@@ -69,17 +69,14 @@ export class SubscriptionManager {
    */
   notifyNodes(nodeIds: string[]): void {
     // 중복 제거 후 notify
-    const uniqueIds = [...new Set(nodeIds)];
-    uniqueIds.forEach((nodeId) => this.notifyNode(nodeId));
+    const uniqueIds = [...new Set(nodeIds)]
+    uniqueIds.forEach((nodeId) => this.notifyNode(nodeId))
   }
 
   /**
    * version 구독자에게 변경을 알립니다.
    */
   notifyVersion(): void {
-    this._versionListeners.forEach((callback) => callback());
+    this._versionListeners.forEach((callback) => callback())
   }
 }
-
-
-

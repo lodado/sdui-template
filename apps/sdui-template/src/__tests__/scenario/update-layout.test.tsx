@@ -1,53 +1,65 @@
 /**
- * Scenario Test: Update Layout
+ * Scenario Test: Update State
  *
- * Tests for layout updates and re-renders
+ * Tests for state updates and re-renders using custom components
  */
 
 import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
+import { z } from 'zod'
 
 import { useSduiLayoutAction, useSduiNodeSubscription } from '../../react/hooks'
 import { createTestDocument, renderWithSduiLayout } from '../utils/test-utils'
+import type { ComponentFactory } from '../../components/types'
+
+// Test component state schema
+const testComponentStateSchema = z.object({
+  value: z.number(),
+  label: z.string().optional(),
+})
 
 // Test component that subscribes to node changes
-const TestComponent: React.FC<{ nodeId: string }> = ({ nodeId }) => {
-  const { state } = useSduiNodeSubscription({ nodeId })
+const TestComponent: React.FC<{ nodeId: string; testPrefix?: string }> = ({ nodeId, testPrefix = 'test' }) => {
+  const { state } = useSduiNodeSubscription({
+    nodeId,
+    schema: testComponentStateSchema,
+  })
 
   return (
-    <div data-testid={`node-${nodeId}`}>
-      <div>X: {state?.layout.x}</div>
-      <div>Y: {state?.layout.y}</div>
-      <div>W: {state?.layout.w}</div>
-      <div>H: {state?.layout.h}</div>
+    <div data-testid={`${testPrefix}-node-${nodeId}`}>
+      <div>Value: {state?.value}</div>
+      {state?.label && <div>Label: {state.label}</div>}
     </div>
   )
 }
 
-describe('Layout Updates', () => {
+// Test component factory (for SDUI document rendering)
+const TestComponentFactory: ComponentFactory = (id) => <TestComponent nodeId={id} testPrefix="sdui" />
+
+describe('State Updates', () => {
   describe('as is: document loaded, component rendered', () => {
-    describe('when: store.updateNodeLayout(nodeId, newLayout) called', () => {
+    describe('when: store.updateNodeState(nodeId, newState) called', () => {
       it('to be: only affected component re-renders', async () => {
         const document = createTestDocument({
           root: {
             id: 'root',
             type: 'Container',
-            state: {
-              layout: { x: 0, y: 0, w: 12, h: 1 },
-            },
+            state: {},
             children: [
               {
                 id: 'node-1',
-                type: 'Card',
+                type: 'TestComponent',
                 state: {
-                  layout: { x: 0, y: 0, w: 6, h: 1 },
+                  value: 10,
+                  label: 'First',
                 },
               },
               {
                 id: 'node-2',
-                type: 'Card',
+                type: 'TestComponent',
                 state: {
-                  layout: { x: 6, y: 0, w: 6, h: 1 },
+                  value: 20,
+                  label: 'Second',
                 },
               },
             ],
@@ -57,27 +69,34 @@ describe('Layout Updates', () => {
         const UpdateTest: React.FC = () => {
           const store = useSduiLayoutAction()
           React.useEffect(() => {
-            // Update node-1 layout
-            store.updateNodeLayout('node-1', { x: 2, y: 0, w: 4, h: 1 })
+            // Update node-1 state
+            store.updateNodeState('node-1', { value: 15 })
           }, [store])
 
           return (
             <>
-              <TestComponent nodeId="node-1" />
-              <TestComponent nodeId="node-2" />
+              <TestComponent nodeId="node-1" testPrefix="test" />
+              <TestComponent nodeId="node-2" testPrefix="test" />
             </>
           )
         }
 
-        renderWithSduiLayout(document, undefined, <UpdateTest />)
+        renderWithSduiLayout(
+          document,
+          {
+            components: {
+              TestComponent: TestComponentFactory,
+            },
+          },
+          <UpdateTest />,
+        )
 
         await waitFor(() => {
-          const node1 = screen.getByTestId('node-node-1')
-          expect(node1).toHaveTextContent('X: 2')
-          expect(node1).toHaveTextContent('W: 4')
+          const node1 = screen.getByTestId('test-node-node-1')
+          expect(node1).toHaveTextContent('Value: 15')
 
-          const node2 = screen.getByTestId('node-node-2')
-          expect(node2).toHaveTextContent('X: 6') // Unchanged
+          const node2 = screen.getByTestId('test-node-node-2')
+          expect(node2).toHaveTextContent('Value: 20') // Unchanged
         })
       })
     })

@@ -27,14 +27,7 @@ export function createTestDocument(overrides?: Partial<SduiLayoutDocument>): Sdu
     root: {
       id: 'root',
       type: 'Container',
-      state: {
-        layout: {
-          x: 0,
-          y: 0,
-          w: 12,
-          h: 1,
-        },
-      },
+      state: {},
       children: [],
     },
     ...overrides,
@@ -54,52 +47,24 @@ export function createNestedTestDocument(): SduiLayoutDocument {
     root: {
       id: 'root',
       type: 'Container',
-      state: {
-        layout: {
-          x: 0,
-          y: 0,
-          w: 12,
-          h: 1,
-        },
-      },
+      state: {},
       children: [
         {
           id: 'child-1',
           type: 'Card',
-          state: {
-            layout: {
-              x: 0,
-              y: 0,
-              w: 6,
-              h: 1,
-            },
-          },
+          state: {},
           children: [
             {
               id: 'grandchild-1',
               type: 'Panel',
-              state: {
-                layout: {
-                  x: 0,
-                  y: 0,
-                  w: 3,
-                  h: 1,
-                },
-              },
+              state: {},
             },
           ],
         },
         {
           id: 'child-2',
           type: 'Card',
-          state: {
-            layout: {
-              x: 6,
-              y: 0,
-              w: 6,
-              h: 1,
-            },
-          },
+          state: {},
         },
       ],
     },

@@ -32,8 +32,6 @@ const ToggleComponent: React.FC<ToggleProps> = ({ id }) => {
     })
   }, [id, checked, store])
 
-  console.log('ToggleComponent', id, checked, label)
-
   return (
     <div className="flex items-center gap-2 p-3 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 h-full">
       {label && (
@@ -61,6 +59,6 @@ const ToggleComponent: React.FC<ToggleProps> = ({ id }) => {
 
 ToggleComponent.displayName = 'Toggle'
 
-export const Toggle = React.memo(ToggleComponent)
+export const Toggle = ToggleComponent
 
 export const ToggleFactory: ComponentFactory = (id) => <Toggle id={id} />

@@ -229,35 +229,6 @@ export class SduiLayoutStore {
       this.updateLayout(original)
     }
   }
-
-  // ==================== Node State Update Methods ====================
-
-  /**
-   * 특정 노드의 레이아웃 위치를 업데이트합니다.
-   * cloneDeep 없이 해당 노드만 업데이트하고 notify합니다.
-   *
-   * @param nodeId - 업데이트할 노드 ID
-   * @param layout - 새로운 레이아웃 위치
-   */
-  updateNodeLayout(nodeId: string, layout: Partial<BaseLayoutState['layout']>): void {
-    const currentState = this._repository.getLayoutStateById(nodeId)
-    if (!currentState) return
-
-    // 해당 노드만 얕은 복사로 업데이트 (cloneDeep 없음)
-    this._repository.updateNodeLayoutState(nodeId, {
-      ...currentState,
-      layout: {
-        ...currentState.layout,
-        ...layout,
-      },
-    })
-
-    this._repository.setEdited(true)
-
-    // 해당 노드의 구독자만 notify (forceRender)
-    this._subscriptionManager.notifyNode(nodeId)
-  }
-
   /**
    * 특정 노드의 상태를 업데이트합니다.
    *
@@ -299,56 +270,6 @@ export class SduiLayoutStore {
 
     // 해당 노드의 구독자만 notify
     this._subscriptionManager.notifyNode(nodeId)
-  }
-
-  /**
-   * 여러 노드의 레이아웃을 일괄 업데이트합니다.
-   * 실제로 값이 변경된 노드만 업데이트하고 notify합니다.
-   *
-   * @param updates - 업데이트할 노드 목록
-   */
-  updateMultipleNodeLayouts(
-    updates: Array<{
-      nodeId: string
-      layout: Partial<BaseLayoutState['layout']>
-    }>,
-  ): void {
-    const changedIds: string[] = []
-
-    updates.forEach(({ nodeId, layout }) => {
-      const currentState = this._repository.getLayoutStateById(nodeId)
-      if (!currentState) return
-
-      const currentLayout = currentState.layout
-
-      // 실제로 변경되었는지 비교 (x, y, w, h만 비교)
-      const hasChanged =
-        currentLayout.x !== layout.x ||
-        currentLayout.y !== layout.y ||
-        currentLayout.w !== layout.w ||
-        currentLayout.h !== layout.h
-
-      // 변경되지 않았으면 스킵
-      if (!hasChanged) return
-
-      // 해당 노드만 얕은 복사로 업데이트
-      this._repository.updateNodeLayoutState(nodeId, {
-        ...currentState,
-        layout: {
-          ...currentState.layout,
-          ...layout,
-        },
-      })
-
-      changedIds.push(nodeId)
-    })
-
-    if (changedIds.length > 0) {
-      this._repository.setEdited(true)
-
-      // 실제로 변경된 노드들만 notify
-      this._subscriptionManager.notifyNodes(changedIds)
-    }
   }
 
   // ==================== Variables Update Methods ====================

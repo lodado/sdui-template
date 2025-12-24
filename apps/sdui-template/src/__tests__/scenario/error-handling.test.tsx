@@ -19,9 +19,7 @@ describe("Error Handling", () => {
           root: {
             // Missing id
             type: "Container",
-            state: {
-              layout: { x: 0, y: 0, w: 12, h: 1 },
-            },
+            state: {},
           },
         };
 

@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 /**
  * useSduiLayoutAction
@@ -14,13 +14,10 @@
  * ```
  */
 
-import { useSduiLayoutContext } from "../context";
-import type { SduiLayoutStore } from "../../store";
+import { useSduiLayoutContext } from '../context'
+import type { SduiLayoutStore } from '../../store'
 
 export const useSduiLayoutAction = (): SduiLayoutStore => {
-  const { store } = useSduiLayoutContext();
-  return store;
-};
-
-
-
+  const { store } = useSduiLayoutContext()
+  return store
+}
