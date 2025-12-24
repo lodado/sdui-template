@@ -1,216 +1,332 @@
+# @lodado/sdui-template
 
-# @lodado/sdui-template Summary
+Server-Driven UI Template Library for React. A flexible and powerful template system for building server-driven user interfaces with dynamic layouts and components.
 
-`@lodado/sdui-template` is a React library for building Server-Driven UI (SDUI) applications. It provides a flexible template system for creating dynamic layouts and components that can be driven by server-side configuration, enabling rapid UI development and easy customization.
+## Features
 
-more information >>
-
-<https://github.com/lodado/sdui-template>
-
-## Key Features
-
-- **Scoped State Management**: Isolates state within specific React contexts or namespaces.
-- **Composable Scopes**: Allows combining multiple state scopes for more complex scenarios.
-- **Efficient Re-renders**: Reduces unnecessary re-renders by utilizing scoped contexts.
-- **TypeScript Support**: Fully typed for better developer experience.
-- **Inspired by Radix UI**: Leverages concepts from Radix UI's scope-based context system.
-
-## Usage
-
-### Creating a Namespace Context
-
-You can create a namespaced context using the `createNamespaceContext` function. This context manages state and actions within a specific namespace.
-
-```typescript
-import { createNamespaceContext } from "@lodado/sdui-template";
-
-const { 
-  Provider: AppProvider, 
-  useNamespaceStores, 
-  useNamespaceAction 
-} = createNamespaceContext({
-  globalStore, // Provide a global store
-  // localStore, // Optional local store for specific components
-});
-```
-
-### Providing the Store
-
-Wrap your application or specific components with the `AppProvider` to make the store available within the component tree.
-
-```tsx
-import React from 'react';
-import { AppProvider } from './path-to-your-provider';
-
-function App() {
-  return (
-    <AppProvider>
-      <YourComponent />
-    </AppProvider>
-  );
-}
-
-export default App;
-```
-
-### Consuming the Store
-
-Use hooks like `useNamespaceStores` and `useNamespaceAction` to access state and actions within your components.
-
-```tsx
-import React from 'react';
-import { useNamespaceStores, useNamespaceAction } from './path-to-your-provider';
-
-function YourComponent() {
-  const { user } = useNamespaceStores((state) => ({ user: state.user }));
-  const { setUser, toggleTheme } = useNamespaceAction();
-
-  return (
-    <div>
-      <h1>Welcome, {user.name}</h1>
-      <button onClick={() => toggleTheme()}>
-        Switch to {state.theme === 'light' ? 'dark' : 'light'} mode
-      </button>
-    </div>
-  );
-}
-
-export default YourComponent;
-```
-
-## Scope
-
-The concept of **scope** in this library ensures isolated and modular state management for React applications. Inspired by Radix UI's `scopeContext`, it overcomes React Context's limitations, such as difficulties with nested context management and the overhead of re-rendering entire trees. By utilizing scoped contexts, this approach provides a more efficient, reusable, and scalable way to handle state in complex components.
-
----
-
-### Example Code
-
-Below is an example that demonstrates how to create and use **scoped state** with `@lodado/sdui-template`.
-
-#### 1. Define Stores for Scoped State
-
-```tsx
-import { NamespaceStore } from '@lodado/namespace-core';
-
-// Counter store for managing count
-class Counter extends NamespaceStore<{ count: number }> {
-  constructor(initialCount = 0) {
-    super({ count: initialCount });
-  }
-
-  increment() {
-    this.state.count += 1;
-  }
-
-  decrement() {
-    this.state.count -= 1;
-  }
-}
-
-// Text store for managing text
-class Text extends NamespaceStore<{ text: string }> {
-  constructor() {
-    super({ text: 'test' });
-  }
-
-  updateText() {
-    this.state.text = 'updated';
-  }
-}
-```
-
----
-
-#### 2. Create Scopes and Providers
-
-Scopes allow you to isolate state for different contexts. In this example, a `Dialog` scope and an `AlertDialog` scope are created.
-
-```tsx
-import { createNamespaceScope, Scope } from '@lodado/sdui-template';
-
-// Create a Dialog scope
-const [createDialogContext, createDialogScope] = createNamespaceScope('Dialog');
-const { Provider: DialogProvider, useNamespaceStores: useDialogNamespaceStore } = createDialogContext('Dialog', {
-  localStore: () => new Counter(),
-});
-
-// Create an AlertDialog scope, extending Dialog scope
-const [createAlertDialogProvider, createAlertDialogScope] = createNamespaceScope('AlertDialog', [createDialogScope]);
-const { Provider: AlertDialogProvider, useNamespaceStores: useAlertDialogNamespaceStore } = createAlertDialogProvider('AlertDialog', {
-  localStore: () => new Text(),
-});
-```
-
----
-
-#### 3. Use Scoped State in Components
-
-Using `useNamespaceStores`, you can access state from specific scopes.
-
-```tsx
-const DialogContent = ({ scope, scope2 }: { scope: Scope<any>; scope2: Scope<any> }) => {
-  const { count } = useDialogNamespaceStore((state) => ({ count: state.count }), scope);
-
-  const { text } = useAlertDialogNamespaceStore((state) => ({ text: state.text }), scope);
-  
-  const { increment } = useDialogNamespaceStore(() => ({}), scope2);
-
-  return (
-    <div>
-      <button onClick={increment}>Click!</button>
-      <div>
-        Content: {count} - {text}
-      </div>
-    </div>
-  );
-};
-```
-
----
-
-#### 4. Combine Scopes in Your Application
-
-You can nest providers with different scopes to isolate and manage state efficiently.
-
-```tsx
-export const ScopeExample = () => {
-  const scope1 = createAlertDialogScope()({});
-  const scope2 = createAlertDialogScope()({});
-
-  return (
-    <AlertDialogProvider scope={scope1.__scopeAlertDialog}>
-      <AlertDialogProvider scope={scope2.__scopeAlertDialog}>
-        <DialogProvider scope={scope2.__scopeAlertDialog}>
-          <DialogProvider scope={scope1.__scopeAlertDialog}>
-            <DialogContent scope={scope1.__scopeAlertDialog} scope2={scope2.__scopeAlertDialog} />
-            <DialogContent scope={scope2.__scopeAlertDialog} scope2={scope1.__scopeAlertDialog} />
-          </DialogProvider>
-        </DialogProvider>
-      </AlertDialogProvider>
-    </AlertDialogProvider>
-  );
-};
-```
-
----
-
-This example highlights how **scoped state** allows you to create isolated, modular, and reusable contexts for state management, particularly in scenarios with nested or complex components.
+- 🎯 **Server-Driven UI**: Define layouts from server-side configuration
+- ⚡ **Performance Optimized**: ID-based subscription system for minimal re-renders
+- 🔄 **Normalize/Denormalize**: Efficient data structure using normalizr
+- 📐 **Layout Support**: Built-in support for grid-based layouts
+- 🎨 **Type Safe**: Full TypeScript support
+- 🧩 **Modular**: Clean architecture with separated concerns
+- 🚀 **Next.js Compatible**: Works seamlessly with Next.js App Router
 
 ## Installation
-
-Install the package using npm or yarn:
 
 ```bash
 npm install @lodado/sdui-template
 # or
+pnpm add @lodado/sdui-template
+# or
 yarn add @lodado/sdui-template
+```
+
+## Quick Start
+
+### Basic Usage
+
+```tsx
+"use client";
+
+import { SduiLayoutRenderer } from "@lodado/sdui-template";
+
+const document = {
+  version: "1.0.0",
+  metadata: {
+    id: "my-layout",
+    name: "My Layout",
+  },
+  root: {
+    id: "root",
+    type: "Container",
+    state: {
+      layout: {
+        x: 0,
+        y: 0,
+        w: 12,
+        h: 1,
+      },
+    },
+    children: [
+      {
+        id: "card-1",
+        type: "Card",
+        state: {
+          layout: {
+            x: 0,
+            y: 0,
+            w: 6,
+            h: 2,
+          },
+        },
+      },
+      {
+        id: "card-2",
+        type: "Card",
+        state: {
+          layout: {
+            x: 6,
+            y: 0,
+            w: 6,
+            h: 2,
+          },
+        },
+      },
+    ],
+  },
+};
+
+export default function Page() {
+  return <SduiLayoutRenderer document={document} />;
+}
+```
+
+### Custom Components
+
+```tsx
+"use client";
+
+import { SduiLayoutRenderer, type ComponentFactory } from "@lodado/sdui-template";
+
+// Define your component factory
+const CardFactory: ComponentFactory = (id, renderNode) => {
+  return (
+    <div className="card">
+      <h3>Card {id}</h3>
+      {/* Render children if any */}
+      {renderNode(id)}
+    </div>
+  );
+};
+
+const document = {
+  version: "1.0.0",
+  root: {
+    id: "root",
+    type: "Card",
+    state: {
+      layout: { x: 0, y: 0, w: 12, h: 1 },
+    },
+  },
+};
+
+export default function Page() {
+  return (
+    <SduiLayoutRenderer
+      document={document}
+      components={{ Card: CardFactory }}
+    />
+  );
+}
+```
+
+### Using Hooks
+
+```tsx
+"use client";
+
+import {
+  SduiLayoutProvider,
+  useSduiLayoutAction,
+  useSduiNodeSubscription,
+} from "@lodado/sdui-template";
+import { SduiLayoutStore } from "@lodado/sdui-template";
+
+function MyComponent({ nodeId }: { nodeId: string }) {
+  const store = useSduiLayoutAction();
+  const { state, childrenIds } = useSduiNodeSubscription({ nodeId });
+
+  const handleUpdate = () => {
+    store.updateNodeLayout(nodeId, {
+      x: state?.layout.x || 0,
+      y: (state?.layout.y || 0) + 1,
+      w: state?.layout.w || 12,
+      h: state?.layout.h || 1,
+    });
+  };
+
+  return (
+    <div>
+      <div>Position: ({state?.layout.x}, {state?.layout.y})</div>
+      <button onClick={handleUpdate}>Move Down</button>
+      {childrenIds.map((childId) => (
+        <MyComponent key={childId} nodeId={childId} />
+      ))}
+    </div>
+  );
+}
+
+export default function Page() {
+  const store = new SduiLayoutStore();
+  // ... initialize store with document
+
+  return (
+    <SduiLayoutProvider store={store}>
+      <MyComponent nodeId="root" />
+    </SduiLayoutProvider>
+  );
+}
+```
+
+### Component Overrides
+
+```tsx
+"use client";
+
+import { SduiLayoutRenderer, type ComponentFactory } from "@lodado/sdui-template";
+
+const SpecialCardFactory: ComponentFactory = (id) => (
+  <div className="special-card">Special: {id}</div>
+);
+
+export default function Page() {
+  return (
+    <SduiLayoutRenderer
+      document={document}
+      componentOverrides={{
+        // Override by node ID (highest priority)
+        byNodeId: {
+          "special-card-1": SpecialCardFactory,
+        },
+        // Override by node type
+        byNodeType: {
+          Card: CustomCardFactory,
+        },
+      }}
+    />
+  );
+}
+```
+
+## API Reference
+
+### Components
+
+#### `SduiLayoutRenderer`
+
+Main component for rendering SDUI layouts.
+
+**Props:**
+
+- `document: SduiLayoutDocument` - SDUI Layout Document (required)
+- `components?: Record<string, ComponentFactory>` - Custom component map
+- `componentOverrides?: { byNodeId?: Record<string, ComponentFactory>, byNodeType?: Record<string, ComponentFactory> }` - Component overrides
+- `onLayoutChange?: (document: SduiLayoutDocument) => void` - Layout change callback
+- `onError?: (error: Error) => void` - Error callback
+
+#### `SduiLayoutProvider`
+
+Context provider for SDUI Layout Store.
+
+**Props:**
+
+- `store: SduiLayoutStore` - Store instance
+- `children: React.ReactNode` - Child components
+
+### Hooks
+
+#### `useSduiLayoutStores<T>(selector: (state: SduiLayoutStoreState) => T): T`
+
+Selectively subscribes to store state changes.
+
+```tsx
+const { rootId, nodes } = useSduiLayoutStores((state) => ({
+  rootId: state.rootId,
+  nodes: state.nodes,
+}));
+```
+
+#### `useSduiLayoutAction(): SduiLayoutStore`
+
+Returns store instance for calling actions.
+
+```tsx
+const store = useSduiLayoutAction();
+store.updateNodeLayout(nodeId, { x: 0, y: 0 });
+```
+
+#### `useSduiNodeSubscription(params: { nodeId: string, schema?: ZodSchema }): NodeData`
+
+Subscribes to a specific node's changes.
+
+```tsx
+const { node, state, childrenIds } = useSduiNodeSubscription({
+  nodeId: "node-1",
+  schema: baseLayoutStateSchema, // optional
+});
+```
+
+#### `useRenderNode(componentMap?: Record<string, ComponentFactory>): RenderNodeFn`
+
+Returns a function to render child nodes (internal use).
+
+### Store
+
+#### `SduiLayoutStore`
+
+Main store class for managing SDUI layout state.
+
+**Methods:**
+
+- `updateLayout(document: SduiLayoutDocument): void` - Update layout document
+- `updateNodeLayout(nodeId: string, layout: Partial<LayoutPosition>): void` - Update node layout
+- `updateNodeState(nodeId: string, state: Partial<BaseLayoutState>): void` - Update node state
+- `updateVariables(variables: Record<string, unknown>): void` - Update global variables
+- `getNodeById(nodeId: string): SduiLayoutNode | undefined` - Get node by ID
+- `getChildrenIdsById(nodeId: string): string[]` - Get children IDs
+- `subscribeNode(nodeId: string, callback: () => void): () => void` - Subscribe to node changes
+- `subscribeVersion(callback: () => void): () => void` - Subscribe to global changes
+- `reset(): void` - Reset store to initial state
+
+## TypeScript Types
+
+All types are exported from the main package:
+
+```tsx
+import type {
+  SduiLayoutDocument,
+  SduiLayoutNode,
+  BaseLayoutState,
+  LayoutPosition,
+  GridLayoutConfig,
+  ComponentFactory,
+  RenderNodeFn,
+  SduiLayoutStoreState,
+  SduiLayoutStoreOptions,
+} from "@lodado/sdui-template";
+```
+
+## Architecture
+
+This library uses a clean architecture with separated concerns:
+
+- **SubscriptionManager**: Manages observer pattern for state changes
+- **LayoutStateRepository**: Handles state storage and retrieval
+- **DocumentManager**: Manages document caching and serialization
+- **VariablesManager**: Manages global variables
+
+## Performance
+
+- Subscription-based re-renders ensure only changed nodes update
+- Normalized data structure for efficient lookups
+- Minimal bundle size (< 50KB gzipped)
+
+## Next.js App Router
+
+This library is designed to work with Next.js App Router. All React components include the `"use client"` directive and should be used in client components.
+
+```tsx
+// app/page.tsx
+"use client";
+
+import { SduiLayoutRenderer } from "@lodado/sdui-template";
+
+export default function Page() {
+  return <SduiLayoutRenderer document={document} />;
+}
 ```
 
 ## License
 
-MIT License
-
----
-
-`@lodado/sdui-template` simplifies Server-Driven UI development in React applications by offering flexible templates and dynamic layouts. It is an excellent choice for building modular and reusable React components while maintaining clean and maintainable code.
+MIT
