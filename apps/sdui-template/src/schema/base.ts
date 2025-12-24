@@ -22,13 +22,7 @@ export interface SduiNode {
   state?: Record<string, unknown>
 
   /** 외형 스타일 속성 (순수 CSS 스타일만) */
-  attributes?: {
-    /** 인라인 스타일 */
-    style?: Record<string, string | number>
-
-    /** CSS 클래스명 */
-    className?: string
-  }
+  attributes?: Record<string, unknown>
 
   /** 자식 노드 배열 (재귀 구조) */
   children?: SduiNode[]
