@@ -19,7 +19,7 @@ export interface SduiNode {
   type: string
 
   /** 상태 (모든 설정값 및 UI 상태) */
-  state: Record<string, unknown>
+  state?: Record<string, unknown>
 
   /** 외형 스타일 속성 (순수 CSS 스타일만) */
   attributes?: {
@@ -61,6 +61,3 @@ export interface SduiDocument {
   /** 전역 변수 */
   variables?: Record<string, unknown>
 }
-
-
-

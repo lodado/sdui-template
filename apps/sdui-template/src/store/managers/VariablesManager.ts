@@ -69,3 +69,4 @@ export class VariablesManager {
     this.subscriptionManager.notifyVersion()
   }
 }
+

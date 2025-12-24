@@ -21,7 +21,12 @@ const ResetTest: React.FC = () => {
     }
   }, [store, reset])
 
-  const rootId = store.getRootId()
+  let rootId: string | undefined
+  try {
+    rootId = store.getRootId()
+  } catch {
+    rootId = undefined
+  }
   const { nodes } = store.state
 
   return (

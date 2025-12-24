@@ -45,6 +45,104 @@ pnpm add @lodado/sdui-template
 yarn add @lodado/sdui-template
 ```
 
+## Schema Reference
+
+### SduiLayoutDocument Structure
+
+The `SduiLayoutDocument` is the root structure that defines your entire UI layout. Here's what each field means:
+
+```typescript
+interface SduiLayoutDocument {
+  version: string // Required: Schema version (e.g., "1.0.0")
+  metadata?: {
+    // Optional: Document metadata
+    id?: string // Document identifier
+    name?: string // Document name
+    description?: string // Document description
+    createdAt?: string // ISO 8601 timestamp
+    updatedAt?: string // ISO 8601 timestamp
+    author?: string // Author information
+  }
+  root: SduiLayoutNode // Required: Root node of the layout tree
+  variables?: Record<string, unknown> // Optional: Global variables accessible to all nodes
+}
+```
+
+### SduiLayoutNode Structure
+
+Each node in the layout tree follows this structure:
+
+```typescript
+interface SduiLayoutNode {
+  id: string // Required: Unique identifier for this node
+  type: string // Required: Component type (e.g., "Container", "Card", "Toggle")
+  state?: Record<string, unknown> // Optional: Component state (auto-filled as {} if omitted)
+  attributes?: {
+    // Optional: CSS styling attributes (auto-filled as {} if omitted)
+    style?: Record<string, string | number> // Inline styles
+    className?: string // CSS class names
+  }
+  children?: SduiLayoutNode[] // Optional: Child nodes (recursive structure)
+}
+```
+
+### Field Details
+
+#### Required Fields
+
+- **`id`** (string): Unique identifier for the node. Must be unique within the document.
+- **`type`** (string): Component type that determines which React component will render this node. Must match a component factory in your `components` prop or `componentMap`.
+
+#### Optional Fields (Auto-filled)
+
+- **`state`** (Record<string, unknown>): Component-specific state data. If omitted, automatically set to `{}` during normalization. Use this for:
+
+  - Component configuration (e.g., `{ title: "Card Title", content: "..." }`)
+  - UI state (e.g., `{ checked: true, value: 42 }`)
+  - Any custom data your component needs
+
+- **`attributes`** (object): CSS styling attributes. If omitted, automatically set to `{}` during normalization. Use this for:
+
+  - `style`: Inline CSS styles (e.g., `{ backgroundColor: "red", padding: "10px" }`)
+  - `className`: CSS class names (e.g., `"card-container primary"`)
+
+- **`children`** (SduiLayoutNode[]): Array of child nodes. Omit for leaf nodes.
+
+### Best Practices
+
+1. **Minimal Required Fields**: You only need `id` and `type` for each node. `state` and `attributes` are automatically handled if omitted.
+
+```tsx
+// ✅ Minimal - state and attributes auto-filled
+const node = {
+  id: 'card-1',
+  type: 'Card',
+}
+
+// ✅ With state - for components that need data
+const nodeWithState = {
+  id: 'card-1',
+  type: 'Card',
+  state: {
+    title: 'My Card',
+    content: 'Card content here',
+  },
+}
+
+// ✅ With attributes - for styling
+const nodeWithStyle = {
+  id: 'card-1',
+  type: 'Card',
+  attributes: {
+    className: 'custom-card',
+    style: { padding: '20px' },
+  },
+}
+```
+
+1. **Unique IDs**: Ensure all node IDs are unique within the document.
+2. **Type Matching**: Node `type` must match a component factory you provide via the `components` prop.
+
 ## Quick Start
 
 ### Basic Usage
@@ -56,6 +154,7 @@ import { SduiLayoutRenderer } from '@lodado/sdui-template'
 import type { SduiLayoutDocument } from '@lodado/sdui-template'
 
 // Define your SDUI document (typically received from server)
+// Note: state and attributes are optional - they're auto-filled as {} if omitted
 const document: SduiLayoutDocument = {
   version: '1.0.0',
   metadata: {
@@ -65,7 +164,6 @@ const document: SduiLayoutDocument = {
   root: {
     id: 'root',
     type: 'Container',
-    state: {},
     children: [
       {
         id: 'card-1',
@@ -141,7 +239,6 @@ const document = {
   root: {
     id: 'root',
     type: 'Container',
-    state: {},
     children: [
       {
         id: 'toggle-1',
@@ -222,7 +319,6 @@ const document = {
   root: {
     id: 'root',
     type: 'Container',
-    state: {},
     children: [
       {
         id: 'toggle-1',
@@ -343,7 +439,7 @@ Subscribes to a specific node's changes and returns node information.
 
 - `node: SduiLayoutNode | undefined` - Node entity
 - `type: string | undefined` - Node type
-- `state: T` - Layout state (inferred from schema if provided, otherwise `BaseLayoutState`)
+- `state: T` - Layout state (inferred from schema if provided, otherwise `Record<string, unknown>`)
 - `childrenIds: string[]` - Array of child node IDs
 - `attributes: Record<string, unknown> | undefined` - Node attributes
 - `exists: boolean` - Whether the node exists
@@ -369,25 +465,23 @@ Main store class for managing SDUI layout state.
 
 - `state: SduiLayoutStoreState` - Current store state
 - `nodes: Record<string, SduiLayoutNode>` - Node entities
-- `layoutStates: Record<string, BaseLayoutState>` - Layout states
-- `layoutAttributes: Record<string, Record<string, unknown>>` - Layout attributes
 - `metadata: SduiLayoutDocument['metadata'] | undefined` - Document metadata
 - `getComponentOverrides(): Record<string, ComponentFactory>` - Get component overrides
 
 **Query Methods:**
 
-- `getNodeById(nodeId: string): SduiLayoutNode | undefined` - Get node by ID
-- `getNodeTypeById(nodeId: string): string | undefined` - Get node type by ID
-- `getChildrenIdsById(nodeId: string): string[]` - Get children IDs by node ID
-- `getLayoutStateById(nodeId: string): BaseLayoutState | undefined` - Get layout state by ID
-- `getAttributesById(nodeId: string): Record<string, unknown> | undefined` - Get attributes by ID
-- `getRootId(): string | undefined` - Get root node ID
+- `getNodeById(nodeId: string): SduiLayoutNode` - Get node by ID (throws `NodeNotFoundError` if not found)
+- `getNodeTypeById(nodeId: string): string` - Get node type by ID (throws `NodeNotFoundError` if not found)
+- `getChildrenIdsById(nodeId: string): string[]` - Get children IDs by node ID (throws `NodeNotFoundError` if not found)
+- `getLayoutStateById(nodeId: string): Record<string, unknown>` - Get layout state by ID (returns `{}` if not set, throws `NodeNotFoundError` if node not found)
+- `getAttributesById(nodeId: string): Record<string, unknown>` - Get attributes by ID (returns `{}` if not set, throws `NodeNotFoundError` if node not found)
+- `getRootId(): string` - Get root node ID (throws `RootNotFoundError` if not found)
 - `getDocument(): SduiLayoutDocument | null` - Convert current state to document
 
 **Update Methods:**
 
 - `updateLayout(document: SduiLayoutDocument): void` - Update layout document
-- `updateNodeState(nodeId: string, state: Partial<BaseLayoutState>): void` - Update node state
+- `updateNodeState(nodeId: string, state: Partial<Record<string, unknown>>): void` - Update node state
 - `updateNodeAttributes(nodeId: string, attributes: Partial<Record<string, unknown>>): void` - Update node attributes
 - `updateVariables(variables: Record<string, unknown>): void` - Update global variables
 - `updateVariable(key: string, value: unknown): void` - Update single variable
@@ -416,8 +510,6 @@ All types are exported from the main package:
 import type {
   SduiLayoutDocument,
   SduiLayoutNode,
-  BaseLayoutState,
-  LayoutPosition,
   SduiDocument,
   SduiNode,
   ComponentFactory,

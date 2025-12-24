@@ -19,7 +19,6 @@ describe('Error Handling', () => {
           root: {
             // Missing id
             type: 'Container',
-            state: {},
           },
         }
 

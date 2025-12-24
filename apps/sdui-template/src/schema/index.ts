@@ -7,9 +7,6 @@
 // 기본 스키마
 export type * from './base'
 
-// 상태 스키마
-export type * from './state'
-
 // 노드 스키마
 export type * from './node'
 

@@ -45,7 +45,6 @@ describe('Subscription System', () => {
           root: {
             id: 'root',
             type: 'Container',
-            state: {},
             children: [
               {
                 id: 'node-1',

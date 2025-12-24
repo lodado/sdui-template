@@ -5,7 +5,6 @@
  */
 
 import type { SduiNode } from './base'
-import type { BaseLayoutState } from './state'
 
 /**
  * Layout 전용 노드
@@ -17,11 +16,8 @@ export interface SduiLayoutNode extends SduiNode {
   type: string
 
   /** 레이아웃 상태 */
-  state: BaseLayoutState
+  state?: Record<string, unknown>
 
   /** 자식 노드 배열 (재귀 구조) */
   children?: SduiLayoutNode[]
 }
-
-
-

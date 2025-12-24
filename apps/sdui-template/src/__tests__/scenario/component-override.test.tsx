@@ -21,7 +21,6 @@ describe('Component Overrides', () => {
           root: {
             id: 'root',
             type: 'CustomType',
-            state: {},
           },
         })
 
@@ -42,12 +41,10 @@ describe('Component Overrides', () => {
           root: {
             id: 'root',
             type: 'Container',
-            state: {},
             children: [
               {
                 id: 'custom-id',
                 type: 'DefaultType',
-                state: {},
               },
             ],
           },

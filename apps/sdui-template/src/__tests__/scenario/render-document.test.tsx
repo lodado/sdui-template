@@ -43,7 +43,6 @@ describe('SduiLayoutRenderer', () => {
           root: {
             id: 'root',
             type: 'Container',
-            state: {},
             children: [],
           },
         })
@@ -61,14 +60,12 @@ describe('SduiLayoutRenderer', () => {
         let current: any = {
           id: 'root',
           type: 'Container',
-          state: {},
         }
 
         for (let i = 0; i < 10; i += 1) {
           current = {
             id: `level-${i}`,
             type: 'Container',
-            state: {},
             children: [current],
           }
         }

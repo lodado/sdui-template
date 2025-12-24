@@ -14,8 +14,9 @@
 import { cloneDeep } from 'lodash-es'
 
 import type { ComponentFactory } from '../components/types'
-import type { BaseLayoutState, SduiLayoutDocument } from '../schema'
+import type { SduiLayoutDocument } from '../schema'
 import { normalizeSduiLayout } from '../utils/normalize'
+import { MetadataNotFoundError, NodeNotFoundError, RootNotFoundError } from './errors'
 import { DocumentManager, LayoutStateRepository, SubscriptionManager, VariablesManager } from './managers'
 import type { SduiLayoutStoreOptions, SduiLayoutStoreState } from './types'
 
@@ -99,24 +100,16 @@ export class SduiLayoutStore {
   }
 
   /**
-   * 레이아웃 상태를 반환합니다.
-   */
-  get layoutStates() {
-    return this._repository.layoutStates
-  }
-
-  /**
-   * 레이아웃 속성을 반환합니다.
-   */
-  get layoutAttributes() {
-    return this._repository.layoutAttributes
-  }
-
-  /**
    * 문서 메타데이터를 반환합니다.
+   *
+   * @throws {MetadataNotFoundError} 메타데이터가 없을 경우
    */
-  get metadata(): SduiLayoutDocument['metadata'] | undefined {
-    return this._documentManager.getMetadata()
+  get metadata(): SduiLayoutDocument['metadata'] {
+    const metadata = this._documentManager.getMetadata()
+    if (!metadata) {
+      throw new MetadataNotFoundError()
+    }
+    return metadata
   }
 
   /**
@@ -132,29 +125,44 @@ export class SduiLayoutStore {
    * ID로 노드를 조회합니다.
    *
    * @param nodeId - 조회할 노드 ID
-   * @returns 노드 또는 undefined
+   * @returns 노드
+   * @throws {NodeNotFoundError} 노드가 존재하지 않을 경우
    */
   getNodeById(nodeId: string) {
-    return this._repository.getNodeById(nodeId)
+    const node = this._repository.getNodeById(nodeId)
+    if (!node) {
+      throw new NodeNotFoundError(nodeId)
+    }
+    return node
   }
 
   /**
    * ID로 노드 타입을 조회합니다.
    *
    * @param nodeId - 조회할 노드 ID
-   * @returns 노드 타입 또는 undefined
+   * @returns 노드 타입
+   * @throws {NodeNotFoundError} 노드가 존재하지 않을 경우
    */
-  getNodeTypeById(nodeId: string): string | undefined {
-    return this._repository.getNodeTypeById(nodeId)
+  getNodeTypeById(nodeId: string): string {
+    const nodeType = this._repository.getNodeTypeById(nodeId)
+    if (!nodeType) {
+      throw new NodeNotFoundError(nodeId)
+    }
+    return nodeType
   }
 
   /**
    * ID로 자식 노드 ID 목록을 조회합니다.
    *
    * @param nodeId - 조회할 노드 ID
-   * @returns 자식 노드 ID 배열 또는 빈 배열
+   * @returns 자식 노드 ID 배열
+   * @throws {NodeNotFoundError} 노드가 존재하지 않을 경우
    */
   getChildrenIdsById(nodeId: string): string[] {
+    const node = this._repository.getNodeById(nodeId)
+    if (!node) {
+      throw new NodeNotFoundError(nodeId)
+    }
     return this._repository.getChildrenIdsById(nodeId)
   }
 
@@ -162,29 +170,40 @@ export class SduiLayoutStore {
    * ID로 레이아웃 상태를 조회합니다.
    *
    * @param nodeId - 조회할 노드 ID
-   * @returns 레이아웃 상태 또는 undefined
+   * @returns 레이아웃 상태 (없으면 빈 객체 반환)
+   * @throws {NodeNotFoundError} 노드가 존재하지 않을 경우
    */
-  getLayoutStateById(nodeId: string): BaseLayoutState | undefined {
-    return this._repository.getLayoutStateById(nodeId)
+  getLayoutStateById(nodeId: string): Record<string, unknown> {
+    const node = this.getNodeById(nodeId)
+    // state가 없으면 빈 객체 반환 (에러 대신)
+    return node.state || {}
   }
 
   /**
    * ID로 속성을 조회합니다.
    *
    * @param nodeId - 조회할 노드 ID
-   * @returns 속성 또는 undefined
+   * @returns 속성 (없으면 빈 객체 반환)
+   * @throws {NodeNotFoundError} 노드가 존재하지 않을 경우
    */
-  getAttributesById(nodeId: string): Record<string, unknown> | undefined {
-    return this._repository.getAttributesById(nodeId)
+  getAttributesById(nodeId: string): Record<string, unknown> {
+    const node = this.getNodeById(nodeId)
+    // attributes가 없으면 빈 객체 반환 (에러 대신)
+    return node.attributes || {}
   }
 
   /**
    * 루트 노드 ID를 반환합니다.
    *
-   * @returns 루트 노드 ID 또는 undefined
+   * @returns 루트 노드 ID
+   * @throws {RootNotFoundError} 루트 노드 ID가 존재하지 않을 경우
    */
-  getRootId(): string | undefined {
-    return this._repository.getRootId()
+  getRootId(): string {
+    const rootId = this._repository.getRootId()
+    if (!rootId) {
+      throw new RootNotFoundError()
+    }
+    return rootId
   }
 
   // ==================== Layout Update Methods ====================
@@ -199,8 +218,6 @@ export class SduiLayoutStore {
     const { entities } = normalizeSduiLayout(document)
 
     // Repository에 상태 업데이트
-    this._repository.updateLayoutStates(entities.layoutStates || {})
-    this._repository.updateLayoutAttributes(entities.layoutAttributes || {})
     this._repository.updateNodes(entities.nodes || {})
     this._repository.setRootId(document.root.id)
     this._repository.setEdited(false)
@@ -221,7 +238,8 @@ export class SduiLayoutStore {
    * @param documentId - 복원할 문서 ID
    */
   cancelEdit(documentId?: string): void {
-    const id = documentId || this._documentManager.getDocumentId(this._repository.getRootId())
+    const rootId = this._repository.getRootId()
+    const id = documentId || (rootId ? this._documentManager.getDocumentId(rootId) : undefined)
     if (!id) return
 
     const original = this._documentManager.getOriginalDocument(id)
@@ -234,14 +252,14 @@ export class SduiLayoutStore {
    *
    * @param nodeId - 업데이트할 노드 ID
    * @param state - 새로운 상태
+   * @throws {NodeNotFoundError} 노드가 존재하지 않을 경우
    */
-  updateNodeState(nodeId: string, state: Partial<BaseLayoutState>): void {
-    const currentState = this._repository.getLayoutStateById(nodeId)
-    if (!currentState) return
+  updateNodeState(nodeId: string, state: Partial<Record<string, unknown>>): void {
+    const node = this.getNodeById(nodeId)
 
-    // 해당 노드만 얕은 복사로 업데이트
-    this._repository.updateNodeLayoutState(nodeId, {
-      ...currentState,
+    // 노드의 state를 업데이트 (state가 없으면 빈 객체로 시작)
+    this._repository.updateNodeState(nodeId, {
+      ...(node.state || {}),
       ...state,
     })
 
@@ -256,13 +274,14 @@ export class SduiLayoutStore {
    *
    * @param nodeId - 업데이트할 노드 ID
    * @param attributes - 새로운 속성
+   * @throws {NodeNotFoundError} 노드가 존재하지 않을 경우
    */
   updateNodeAttributes(nodeId: string, attributes: Partial<Record<string, unknown>>): void {
-    const currentAttributes = this._repository.getAttributesById(nodeId) || {}
+    const node = this.getNodeById(nodeId)
 
-    // 해당 노드만 얕은 복사로 업데이트
+    // 노드의 attributes를 업데이트
     this._repository.updateNodeAttributes(nodeId, {
-      ...currentAttributes,
+      ...(node.attributes || {}),
       ...attributes,
     })
 

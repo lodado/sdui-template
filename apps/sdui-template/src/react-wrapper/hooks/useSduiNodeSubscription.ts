@@ -14,7 +14,7 @@
 import { useEffect, useMemo, useReducer } from 'react'
 import type { z, ZodSchema } from 'zod'
 
-import type { BaseLayoutState, SduiLayoutNode } from '../../schema'
+import type { SduiLayoutNode } from '../../schema'
 import { useSduiLayoutAction } from './useSduiLayoutAction'
 
 /**
@@ -26,7 +26,7 @@ const forceRenderReducer = (x: number): number => x + 1
  * useSduiNodeSubscription 파라미터 타입
  */
 export interface UseSduiNodeSubscriptionParams<
-  TSchema extends ZodSchema<BaseLayoutState> = ZodSchema<BaseLayoutState>,
+  TSchema extends ZodSchema<Record<string, unknown>> = ZodSchema<Record<string, unknown>>,
 > {
   /** 구독할 노드 ID */
   nodeId: string
@@ -47,7 +47,7 @@ export interface UseSduiNodeSubscriptionParams<
  * @returns 노드 정보 객체
  *   - `node`: 노드 엔티티 (SduiLayoutNode | undefined)
  *   - `type`: 노드 타입 (string | undefined)
- *   - `state`: 레이아웃 상태 (스키마가 제공되면 z.infer<TSchema>, 아니면 BaseLayoutState)
+ *   - `state`: 레이아웃 상태 (스키마가 제공되면 z.infer<TSchema>, 아니면 Record<string, unknown>)
  *   - `childrenIds`: 자식 노드 ID 배열 (string[])
  *   - `attributes`: 노드 속성 (Record<string, unknown> | undefined)
  *   - `exists`: 노드 존재 여부 (boolean)
@@ -62,12 +62,12 @@ export interface UseSduiNodeSubscriptionParams<
  */
 
 // Implementation
-export function useSduiNodeSubscription<TSchema extends ZodSchema<BaseLayoutState> = ZodSchema<BaseLayoutState>>(
+export function useSduiNodeSubscription<TSchema extends ZodSchema<Record<string, unknown>> = ZodSchema<Record<string, unknown>>>(
   params: UseSduiNodeSubscriptionParams<TSchema>,
 ): {
   node: SduiLayoutNode | undefined
   type: string | undefined
-  state: TSchema extends ZodSchema<any> ? z.infer<TSchema> : BaseLayoutState
+  state: TSchema extends ZodSchema<any> ? z.infer<TSchema> : Record<string, unknown>
   childrenIds: string[]
   attributes: Record<string, unknown> | undefined
   exists: boolean
@@ -85,13 +85,34 @@ export function useSduiNodeSubscription<TSchema extends ZodSchema<BaseLayoutStat
     return unsubscribe
   }, [store, nodeId])
 
-  // Store에서 직접 노드 정보 가져오기
-  const node = store.getNodeById(nodeId)
-  const childrenIds = (node as any)?.childrenIds || []
+  // Store에서 직접 노드 정보 가져오기 (각각 개별적으로 처리)
+  let node: SduiLayoutNode | undefined
+  let childrenIds: string[] = []
+  let rawState: Record<string, unknown> | undefined
+  let attributes: Record<string, unknown> | undefined
 
-  // layoutStates/layoutAttributes는 store에서 직접 접근 (일반 변수)
-  const rawState = store.getLayoutStateById(nodeId)
-  const attributes = store.getAttributesById(nodeId)
+  // 노드 조회 (노드가 없으면 undefined)
+  try {
+    node = store.getNodeById(nodeId)
+    childrenIds = (node as any)?.childrenIds || []
+  } catch {
+    node = undefined
+    childrenIds = []
+  }
+
+  // 레이아웃 상태 조회 (상태가 없으면 undefined)
+  try {
+    rawState = store.getLayoutStateById(nodeId)
+  } catch {
+    rawState = undefined
+  }
+
+  // 속성 조회 (속성이 없으면 undefined)
+  try {
+    attributes = store.getAttributesById(nodeId)
+  } catch {
+    attributes = undefined
+  }
 
   // 스키마가 있으면 검증
   const validatedState = useMemo(() => {
@@ -113,7 +134,7 @@ export function useSduiNodeSubscription<TSchema extends ZodSchema<BaseLayoutStat
 
     // 검증 성공 시 항상 정의된 데이터 반환
     return result.data
-  }, [rawState, schema, nodeId]) as TSchema extends ZodSchema<any> ? z.infer<TSchema> : BaseLayoutState
+  }, [rawState, schema, nodeId]) as TSchema extends ZodSchema<any> ? z.infer<TSchema> : Record<string, unknown>
 
   return {
     node,

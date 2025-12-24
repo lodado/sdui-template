@@ -18,19 +18,29 @@ import type { SduiLayoutStoreOptions } from '../../store/types'
  * Create a test document with a single root node
  */
 export function createTestDocument(overrides?: Partial<SduiLayoutDocument>): SduiLayoutDocument {
+  const defaultRoot = {
+    id: 'root',
+    type: 'Container',
+    children: [],
+  }
+
+  // overrides가 있으면 병합 (state와 attributes는 normalize에서 자동 처리되므로 명시하지 않아도 됨)
+  const mergedRoot = overrides?.root
+    ? {
+        ...defaultRoot,
+        ...overrides.root,
+        // state와 attributes는 normalize에서 자동으로 {}로 설정되므로 명시하지 않아도 됨
+      }
+    : defaultRoot
+
   return {
     version: '1.0.0',
     metadata: {
       id: 'test-doc',
       name: 'Test Document',
     },
-    root: {
-      id: 'root',
-      type: 'Container',
-      state: {},
-      children: [],
-    },
     ...overrides,
+    root: mergedRoot, // root는 항상 병합된 결과 사용
   }
 }
 
@@ -47,24 +57,20 @@ export function createNestedTestDocument(): SduiLayoutDocument {
     root: {
       id: 'root',
       type: 'Container',
-      state: {},
       children: [
         {
           id: 'child-1',
           type: 'Card',
-          state: {},
           children: [
             {
               id: 'grandchild-1',
               type: 'Panel',
-              state: {},
             },
           ],
         },
         {
           id: 'child-2',
           type: 'Card',
-          state: {},
         },
       ],
     },

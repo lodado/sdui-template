@@ -64,3 +64,4 @@ const DefaultNodeComponent: React.FC<{
 export const defaultComponentFactory: ComponentFactory = (id, renderNode) => (
   <DefaultNodeComponent id={id} renderNode={renderNode} />
 )
+

@@ -91,8 +91,6 @@ export class DocumentManager {
 
     const rootNode = denormalizeSduiNode(rootId, {
       nodes: repository.nodes,
-      layoutStates: repository.layoutStates,
-      layoutAttributes: repository.layoutAttributes,
     })
 
     if (!rootNode) return null

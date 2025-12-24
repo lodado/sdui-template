@@ -11,7 +11,6 @@ import { z } from 'zod'
 
 import type { ComponentFactory } from '../../components/types'
 import { useSduiLayoutAction, useSduiNodeSubscription } from '../../react-wrapper/hooks'
-import type { BaseLayoutState } from '../../schema'
 import { createTestDocument, renderWithSduiLayout } from '../utils/test-utils'
 
 // ==================== Zod Schemas ====================
@@ -258,7 +257,6 @@ describe('Zod Schema Validation', () => {
           root: {
             id: 'root',
             type: 'Container',
-            state: {},
             children: [
               {
                 id: 'toggle-1',

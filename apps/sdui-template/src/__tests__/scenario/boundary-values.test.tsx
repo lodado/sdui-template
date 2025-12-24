@@ -27,11 +27,9 @@ describe('Boundary Value Analysis', () => {
           root: {
             id: 'root',
             type: 'Container',
-            state: {},
             children: Array.from({ length: 9 }, (_, i) => ({
               id: `node-${i + 1}`,
               type: 'Card',
-              state: {},
             })),
           },
         })
@@ -51,11 +49,9 @@ describe('Boundary Value Analysis', () => {
           root: {
             id: 'root',
             type: 'Container',
-            state: {},
             children: Array.from({ length: 99 }, (_, i) => ({
               id: `node-${i + 1}`,
               type: 'Card',
-              state: {},
             })),
           },
         })
@@ -76,11 +72,9 @@ describe('Boundary Value Analysis', () => {
           root: {
             id: 'root',
             type: 'Container',
-            state: {},
             children: Array.from({ length: 999 }, (_, i) => ({
               id: `node-${i + 1}`,
               type: 'Card',
-              state: {},
             })),
           },
         })
@@ -103,7 +97,6 @@ describe('Boundary Value Analysis', () => {
           root: {
             id: 'root',
             type: 'Container',
-            state: {},
             children: [],
           },
         })
@@ -121,12 +114,10 @@ describe('Boundary Value Analysis', () => {
           root: {
             id: 'root',
             type: 'Container',
-            state: {},
             children: [
               {
                 id: 'child-1',
                 type: 'Card',
-                state: {},
               },
             ],
           },
@@ -144,14 +135,12 @@ describe('Boundary Value Analysis', () => {
         let current: any = {
           id: 'level-0',
           type: 'Container',
-          state: {},
         }
 
         for (let i = 1; i <= 5; i += 1) {
           current = {
             id: `level-${i}`,
             type: 'Container',
-            state: {},
             children: [current],
           }
         }
@@ -173,14 +162,12 @@ describe('Boundary Value Analysis', () => {
         let current: any = {
           id: 'level-0',
           type: 'Container',
-          state: {},
         }
 
         for (let i = 1; i <= 20; i += 1) {
           current = {
             id: `level-${i}`,
             type: 'Container',
-            state: {},
             children: [current],
           }
         }
@@ -235,7 +222,6 @@ describe('Boundary Value Analysis', () => {
           root: {
             id: 'a',
             type: 'Container',
-            state: {},
           },
         })
 
@@ -252,7 +238,6 @@ describe('Boundary Value Analysis', () => {
           root: {
             id: veryLongId,
             type: 'Container',
-            state: {},
           },
         })
 
@@ -263,4 +248,3 @@ describe('Boundary Value Analysis', () => {
     })
   })
 })
-

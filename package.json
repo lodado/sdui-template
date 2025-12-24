@@ -1,8 +1,44 @@
 {
-  "name": "monorepo",
+  "name": "@lodado/sdui-template-monorepo",
   "version": "0.0.0",
+  "description": "Monorepo for Server-Driven UI Template Library - A flexible and powerful template system for building server-driven user interfaces with dynamic layouts and components",
   "private": true,
   "packageManager": "pnpm@9.0.6",
+  "keywords": [
+    "server-driven-ui",
+    "sdui",
+    "react",
+    "typescript",
+    "layout",
+    "dynamic-ui",
+    "component-system",
+    "state-management",
+    "normalize",
+    "subscription",
+    "nextjs",
+    "app-router",
+    "dashboard-builder",
+    "form-generator",
+    "cms",
+    "ab-testing",
+    "ui-framework",
+    "react-components",
+    "zod",
+    "type-safe"
+  ],
+  "author": {
+    "name": "lodado",
+    "url": "https://github.com/lodado"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lodado/sdui-template.git"
+  },
+  "homepage": "https://github.com/lodado/sdui-template#readme",
+  "bugs": {
+    "url": "https://github.com/lodado/sdui-template/issues"
+  },
+  "license": "MIT",
   "scripts": {
     "prepare": "husky install",
     "storybook": "turbo run dev --no-cache --continue --concurrency=15",
