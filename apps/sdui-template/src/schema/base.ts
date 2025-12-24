@@ -62,3 +62,4 @@ export interface SduiDocument {
   variables?: Record<string, unknown>
 }
 
+

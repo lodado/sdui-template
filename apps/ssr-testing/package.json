@@ -9,9 +9,11 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@lodado/sdui-template": "workspace:*",
     "next": "16.1.1",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
