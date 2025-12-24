@@ -42,7 +42,6 @@ export type { SduiLayoutStoreOptions, SduiLayoutStoreState } from './store/types
 // Schema Types
 export type {
   BaseLayoutState,
-  GridLayoutConfig,
   LayoutPosition,
   SduiDocument,
   SduiLayoutDocument,

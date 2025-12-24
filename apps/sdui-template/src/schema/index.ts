@@ -7,9 +7,6 @@
 // 기본 스키마
 export type * from './base'
 
-// 그리드 설정
-export type * from './grid'
-
 // 상태 스키마
 export type * from './state'
 
@@ -18,6 +15,3 @@ export type * from './node'
 
 // 문서 스키마
 export type * from './document'
-
-
-

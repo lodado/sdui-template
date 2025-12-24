@@ -4,8 +4,6 @@
  * 레이아웃 위치 및 상태를 정의합니다.
  */
 
-import type { GridLayoutConfig } from './grid'
-
 /**
  * 레이아웃 위치 및 크기
  *
@@ -48,4 +46,3 @@ export interface LayoutPosition {
  * Record<string, unknown>을 확장하여 SduiNode의 state 타입과 호환되도록 합니다.
  */
 export interface BaseLayoutState extends Record<string, unknown> {}
-

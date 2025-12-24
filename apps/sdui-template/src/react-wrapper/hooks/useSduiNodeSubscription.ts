@@ -67,7 +67,7 @@ export function useSduiNodeSubscription<TSchema extends ZodSchema<BaseLayoutStat
 ): {
   node: SduiLayoutNode | undefined
   type: string | undefined
-  state: TSchema extends ZodSchema<any> ? z.infer<TSchema> | undefined : BaseLayoutState | undefined
+  state: TSchema extends ZodSchema<any> ? z.infer<TSchema> : BaseLayoutState
   childrenIds: string[]
   attributes: Record<string, unknown> | undefined
   exists: boolean
@@ -113,14 +113,12 @@ export function useSduiNodeSubscription<TSchema extends ZodSchema<BaseLayoutStat
 
     // 검증 성공 시 항상 정의된 데이터 반환
     return result.data
-  }, [rawState, schema, nodeId]) as TSchema extends ZodSchema<any>
-    ? z.infer<TSchema> | undefined
-    : BaseLayoutState | undefined
+  }, [rawState, schema, nodeId]) as TSchema extends ZodSchema<any> ? z.infer<TSchema> : BaseLayoutState
 
   return {
     node,
     type: node?.type,
-    state: validatedState,
+    state: validatedState!,
     childrenIds,
     attributes,
     exists: !!node,
