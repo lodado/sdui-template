@@ -6,8 +6,8 @@
 
 import type { ReactNode } from 'react'
 
-import type { SduiLayoutNode } from '../schema'
 import type { ParentPath } from '../components/types'
+import type { SduiLayoutNode } from '../schema'
 
 /**
  * 자식 노드 렌더링 함수 타입 (Render Props)
