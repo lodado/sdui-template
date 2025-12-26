@@ -1,4 +1,4 @@
-import type { ComponentFactory, SduiLayoutDocument } from '@lodado/sdui-template'
+import type { ComponentFactory, SduiComponentProps, SduiLayoutDocument } from '@lodado/sdui-template'
 import { SduiLayoutRenderer, useSduiNodeSubscription } from '@lodado/sdui-template'
 import { Button } from '@lodado/sdui-template-component'
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -33,7 +33,7 @@ const basicDocument: SduiLayoutDocument = {
 }
 
 // Button 컴포넌트 (팩토리 외부로 이동)
-const ButtonComponent: React.FC<{ nodeId: string }> = ({ nodeId }) => {
+const ButtonComponent: React.FC<SduiComponentProps> = ({ nodeId, parentPath }) => {
   const { state, attributes } = useSduiNodeSubscription({
     nodeId,
   })
@@ -42,6 +42,9 @@ const ButtonComponent: React.FC<{ nodeId: string }> = ({ nodeId }) => {
   const size = (attributes?.size as string) || 'md'
   const disabled = (attributes?.disabled as boolean) || false
   const children = (attributes?.children as React.ReactNode) || 'Button'
+
+  // 디버깅을 위한 경로 표시
+  const pathString = parentPath && parentPath.length > 0 ? `${parentPath.join(' > ')} > ${nodeId}` : nodeId
 
   return (
     <Button
@@ -52,6 +55,7 @@ const ButtonComponent: React.FC<{ nodeId: string }> = ({ nodeId }) => {
       onClick={() => {
         // Button clicked
       }}
+      data-sdui-path={pathString}
     >
       {children}
     </Button>
@@ -59,8 +63,8 @@ const ButtonComponent: React.FC<{ nodeId: string }> = ({ nodeId }) => {
 }
 
 // Button 컴포넌트 팩토리
-const ButtonFactory: ComponentFactory = (nodeId) => {
-  return <ButtonComponent nodeId={nodeId} />
+const ButtonFactory: ComponentFactory = (nodeId, renderNode, parentPath) => {
+  return <ButtonComponent nodeId={nodeId} parentPath={parentPath} />
 }
 
 // Button 컴포넌트를 사용하는 문서 예제

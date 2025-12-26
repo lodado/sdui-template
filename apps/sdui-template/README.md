@@ -556,9 +556,44 @@ const node1 = referencedNodesMap['target-1']
 const node2 = referencedNodesMap['target-2']
 ```
 
-#### `useRenderNode(componentMap?: Record<string, ComponentFactory>): RenderNodeFn`
+#### `useRenderNode(params): UseRenderNodeReturn`
 
-Returns a function to render child nodes (internal use).
+Returns an object with `renderNode` function and node information including automatically calculated `currentPath`.
+
+**Parameters:**
+
+- `params.nodeId: string` - Current node ID (required)
+- `params.componentMap?: Record<string, ComponentFactory>` - Optional component map
+- `params.parentPath?: ParentPath` - Parent node ID path (default: `[]`)
+
+**Returns:**
+
+```typescript
+{
+  renderNode: RenderNodeFn           // Function to render child nodes
+  currentPath: ParentPath             // Current path array (automatically calculated)
+  pathString: string                  // Current path string (automatically calculated)
+  nodeId: string                      // Current node ID
+  parentPath: ParentPath              // Parent node ID path
+}
+```
+
+**Example:**
+
+```tsx
+function Container({ id }: { id: string }) {
+  const { childrenIds } = useSduiNodeSubscription({ nodeId: id })
+  const { renderNode, currentPath } = useRenderNode({ nodeId: id, parentPath: [] })
+
+  return (
+    <div>
+      {childrenIds.map((childId) => (
+        <div key={childId}>{renderNode(childId, currentPath)}</div>
+      ))}
+    </div>
+  )
+}
+```
 
 ### Store
 

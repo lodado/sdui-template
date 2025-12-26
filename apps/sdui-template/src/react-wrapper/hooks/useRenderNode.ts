@@ -5,33 +5,59 @@
  *
  * Render Props Pattern을 위한 renderNode 함수를 생성하는 hook입니다.
  * useSyncExternalStore를 사용하여 nodes 변경을 구독합니다.
+ * 현재 노드의 정보와 currentPath를 자동으로 계산하여 반환합니다.
  */
 
-import { useCallback, useRef, useSyncExternalStore } from 'react'
+import { useCallback, useMemo, useRef, useSyncExternalStore } from 'react'
 
 import { defaultComponentFactory } from '../../components/componentMap'
-import type { ComponentFactory, RenderNodeFn } from '../../components/types'
+import type { ComponentFactory, ParentPath, RenderNodeFn } from '../../components/types'
+import { buildCurrentPath, buildCurrentPathArray } from '../../utils/parentPath'
 import { useSduiLayoutContext } from '../context'
+
+/**
+ * useRenderNode hook의 파라미터 타입
+ */
+export interface UseRenderNodeParams {
+  /** 현재 노드 ID */
+  nodeId: string
+  /** 기본 컴포넌트 맵 (선택적) */
+  componentMap?: Record<string, ComponentFactory>
+  /** 부모 노드 ID 경로 (기본값: []) */
+  parentPath?: ParentPath
+}
+
+/**
+ * useRenderNode hook의 반환 타입
+ */
+export interface UseRenderNodeReturn {
+  /** 자식 노드를 렌더링하는 함수 */
+  renderNode: RenderNodeFn
+  /** 현재 노드까지의 경로 배열 (자동 계산) */
+  currentPath: ParentPath
+  /** 현재 노드까지의 경로 문자열 (자동 계산) */
+  pathString: string
+  /** 현재 노드 ID */
+  nodeId: string
+  /** 부모 노드 ID 경로 */
+  parentPath: ParentPath
+}
 
 /**
  * renderNode 함수를 생성하는 hook
  *
  * useSyncExternalStore를 사용하여 nodes 변경을 구독하고,
  * 변경 시 자동으로 리렌더링됩니다.
+ * 현재 노드의 정보와 currentPath를 자동으로 계산하여 반환합니다.
  *
- * @param componentMap - 기본 컴포넌트 맵 (선택적)
- * @returns 자식 노드를 렌더링하는 함수
+ * @param params - 노드 정보를 포함한 파라미터 객체
+ * @param params.nodeId - 현재 노드 ID
+ * @param params.componentMap - 기본 컴포넌트 맵 (선택적)
+ * @param params.parentPath - 부모 노드 ID 경로 (기본값: [])
+ * @returns 노드 정보와 렌더링 함수를 포함한 객체
  */
-export const useRenderNode = (componentMap?: Record<string, ComponentFactory>): RenderNodeFn => {
+export const useRenderNode = ({ nodeId, componentMap, parentPath = [] }: UseRenderNodeParams): UseRenderNodeReturn => {
   const { store } = useSduiLayoutContext()
-
-  // useSyncExternalStore를 사용하여 nodes 변경 구독
-  // lastModified 객체 참조가 변경되면 nodes를 다시 읽어옴
-  const lastModifiedSnapshot = useSyncExternalStore(
-    (onStoreChange) => store.subscribeVersion(onStoreChange),
-    () => store.getSnapshot(),
-    () => store.getServerSnapshot(),
-  )
 
   // lastModified 객체 참조가 변경되면 nodes를 다시 읽어옴
   // useSyncExternalStore가 lastModified 객체 참조 변경을 감지하면 리렌더링됨
@@ -40,14 +66,19 @@ export const useRenderNode = (componentMap?: Record<string, ComponentFactory>): 
   // renderNode 함수가 자기 자신을 참조할 수 있도록 ref 사용
   const renderNodeRef = useRef<RenderNodeFn | null>(null)
 
+  // currentPath와 pathString을 자동으로 계산
+  const currentPath = useMemo(() => buildCurrentPathArray(parentPath, nodeId), [parentPath, nodeId])
+  const pathString = useMemo(() => buildCurrentPath(parentPath, nodeId), [parentPath, nodeId])
+
   /**
    * 노드 렌더링 함수 (Render Props)
    *
    * ID를 받아서 해당 노드의 타입에 맞는 컴포넌트를 렌더링합니다.
    * 우선순위: byNodeId[id] > byNodeType[node.type] > componentMap[node.type] > defaultComponentFactory
+   * parentPath는 디버깅을 위한 부모 노드 ID 경로입니다.
    */
   const renderNode: RenderNodeFn = useCallback(
-    (id: string) => {
+    (id: string, parentPathForChild: ParentPath = []) => {
       const node = nodes[id]
       if (!node) return null
 
@@ -61,8 +92,9 @@ export const useRenderNode = (componentMap?: Record<string, ComponentFactory>): 
       // 4. 기본 팩토리
       const factory = overrides[id] || overrides[node.type] || componentMapEntries[node.type] || defaultComponentFactory
 
-      // ref를 통해 최신 renderNode 함수 참조
-      return factory(id, renderNodeRef.current!)
+      // factory에는 현재 노드의 parentPath를 전달 (자식에게는 currentPath를 전달)
+      // ref를 통해 최신 renderNode 함수 참조 (부모 경로 전달)
+      return factory(id, renderNodeRef.current!, parentPathForChild)
     },
     [nodes, store, componentMap],
   )
@@ -70,5 +102,11 @@ export const useRenderNode = (componentMap?: Record<string, ComponentFactory>): 
   // ref에 최신 함수 저장
   renderNodeRef.current = renderNode
 
-  return renderNode
+  return {
+    renderNode,
+    currentPath,
+    pathString,
+    nodeId,
+    parentPath,
+  }
 }

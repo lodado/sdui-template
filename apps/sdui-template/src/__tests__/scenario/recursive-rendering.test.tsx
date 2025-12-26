@@ -13,9 +13,9 @@ import { createTestDocument } from '../utils/test-utils'
 // Step 4 example from README: Recursive Rendering - Container with Children
 
 // 1. Create a Container component that renders its children
-const Container = ({ id }: { id: string }) => {
+const Container = ({ id, parentPath = [] }: { id: string; parentPath?: string[] }) => {
   const { childrenIds } = useSduiNodeSubscription({ nodeId: id })
-  const renderNode = useRenderNode()
+  const { renderNode, currentPath } = useRenderNode({ nodeId: id, parentPath })
 
   return (
     <div className="container p-4 border-2 border-gray-300 rounded-lg" data-testid={`container-${id}`}>
@@ -23,7 +23,7 @@ const Container = ({ id }: { id: string }) => {
       <div className="flex flex-col gap-2">
         {/* Recursively render each child */}
         {childrenIds.map((childId) => (
-          <div key={childId}>{renderNode(childId)}</div>
+          <div key={childId}>{renderNode(childId, currentPath)}</div>
         ))}
       </div>
     </div>
@@ -46,7 +46,9 @@ const Card = ({ id }: { id: string }) => {
 }
 
 // 3. Create factories
-const ContainerFactory: ComponentFactory = (id) => <Container id={id} />
+const ContainerFactory: ComponentFactory = (id, _renderNode, parentPath) => (
+  <Container id={id} parentPath={parentPath} />
+)
 const CardFactory: ComponentFactory = (id) => <Card id={id} />
 
 describe('README Example: Recursive Rendering', () => {

@@ -40,17 +40,14 @@ export { SduiLayoutStore } from './store/SduiLayoutStore'
 export type { SduiLayoutStoreOptions, SduiLayoutStoreState } from './store/types'
 
 // Schema Types
-export type {
-  SduiDocument,
-  SduiLayoutDocument,
-  SduiLayoutNode,
-  SduiNode,
-} from './schema'
+export type { SduiDocument, SduiLayoutDocument, SduiLayoutNode, SduiNode } from './schema'
 
 // Component System Types
-export type { ComponentFactory, RenderNodeFn } from './components/types'
+export type { ComponentFactory, ParentPath, RenderNodeFn, SduiComponentProps } from './components/types'
+
+// Parent Path Utilities
+export { buildCurrentPath, buildCurrentPathArray, formatParentPath } from './utils/parentPath'
 
 // Normalization Utilities (optional, for advanced usage)
 export { denormalizeSduiLayout, denormalizeSduiNode, normalizeSduiLayout, normalizeSduiNode } from './utils/normalize'
 export type { NormalizedSduiEntities } from './utils/normalize/types'
-

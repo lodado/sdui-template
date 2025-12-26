@@ -334,6 +334,7 @@ function StatusDisplay({ id }: { id: string }) {
   })
 
   // Access referenced node by ID
+  // Note: Consider managing node IDs as constants instead of hardcoded strings
   const toggleNode = referencedNodesMap['toggle-node']
 
   if (!toggleNode) {
@@ -418,6 +419,7 @@ function Card({ id }: { id: string }) {
   const { referencedNodesMap, referencedNodes } = useSduiNodeReference({ nodeId: id })
 
   // Access by ID (O(1))
+  // Note: Consider managing node IDs as constants instead of hardcoded strings
   const node1 = referencedNodesMap['target-1']
   const node2 = referencedNodesMap['target-2']
 
@@ -454,9 +456,9 @@ import {
 } from '@lodado/sdui-template'
 
 // 1. Create a Container component that renders its children
-function Container({ id }: { id: string }) {
+function Container({ id, parentPath = [] }: { id: string; parentPath?: string[] }) {
   const { childrenIds } = useSduiNodeSubscription({ nodeId: id })
-  const renderNode = useRenderNode()
+  const { renderNode, currentPath } = useRenderNode({ nodeId: id, parentPath })
 
   return (
     <div className="container p-4 border-2 border-gray-300 rounded-lg">
@@ -464,7 +466,7 @@ function Container({ id }: { id: string }) {
       <div className="flex flex-col gap-2">
         {/* Recursively render each child */}
         {childrenIds.map((childId) => (
-          <div key={childId}>{renderNode(childId)}</div>
+          <div key={childId}>{renderNode(childId, currentPath)}</div>
         ))}
       </div>
     </div>
@@ -484,7 +486,9 @@ function Card({ id }: { id: string }) {
 }
 
 // 3. Create factories
-const ContainerFactory: ComponentFactory = (id) => <Container id={id} />
+const ContainerFactory: ComponentFactory = (id, _renderNode, parentPath) => (
+  <Container id={id} parentPath={parentPath} />
+)
 const CardFactory: ComponentFactory = (id) => <Card id={id} />
 
 // 4. Document with nested structure
@@ -544,8 +548,8 @@ export default function Page() {
 **How Recursive Rendering Works:**
 
 1. **`useSduiNodeSubscription`**: Gets `childrenIds` array for the current node
-2. **`useRenderNode`**: Returns a function that can render any node by ID
-3. **Map over children**: Loop through `childrenIds` and call `renderNode(childId)` for each
+2. **`useRenderNode`**: Returns an object with `renderNode` function and `currentPath` (automatically calculated)
+3. **Map over children**: Loop through `childrenIds` and call `renderNode(childId, currentPath)` for each
 4. **Automatic recursion**: Each child renders itself, and if it has children, it renders them too!
 
 **Result Structure:**
@@ -560,8 +564,9 @@ Container (root)
 
 **Key Points:**
 
-- ✅ `useRenderNode()` gives you a function to render any node by ID
+- ✅ `useRenderNode({ nodeId, parentPath })` returns an object with `renderNode` function and `currentPath` (automatically calculated)
 - ✅ `childrenIds` tells you which nodes are children of the current node
+- ✅ Pass `currentPath` to `renderNode` to maintain parent path tracking
 - ✅ Each component handles its own children, creating natural recursion
 - ✅ Works with any nesting depth automatically
 
@@ -837,6 +842,7 @@ Accesses referenced nodes' information and subscribes to their changes. Use this
 ```tsx
 // Single reference
 const { referencedNodesMap } = useSduiNodeReference({ nodeId: 'source-node' })
+// Note: Consider managing node IDs as constants instead of hardcoded strings
 const targetNode = referencedNodesMap['target-node-id']
 if (targetNode) {
   console.log(targetNode.state.title)
@@ -851,13 +857,49 @@ referencedNodes.forEach((node) => {
   console.log(node.state.title)
 })
 // Or access by ID
+// Note: Consider managing node IDs as constants instead of hardcoded strings
 const node1 = referencedNodesMap['target-1']
 const node2 = referencedNodesMap['target-2']
 ```
 
-#### `useRenderNode(componentMap?): RenderNodeFn`
+#### `useRenderNode(params): UseRenderNodeReturn`
 
-Returns a function to render child nodes (internal use, but available if needed).
+Returns an object with `renderNode` function and node information including automatically calculated `currentPath`.
+
+**Parameters:**
+
+- `params.nodeId: string` - Current node ID (required)
+- `params.componentMap?: Record<string, ComponentFactory>` - Optional component map
+- `params.parentPath?: ParentPath` - Parent node ID path (default: `[]`)
+
+**Returns:**
+
+```typescript
+{
+  renderNode: RenderNodeFn // Function to render child nodes
+  currentPath: ParentPath // Current path array (automatically calculated)
+  pathString: string // Current path string (automatically calculated)
+  nodeId: string // Current node ID
+  parentPath: ParentPath // Parent node ID path
+}
+```
+
+**Example:**
+
+```tsx
+function Container({ id }: { id: string }) {
+  const { childrenIds } = useSduiNodeSubscription({ nodeId: id })
+  const { renderNode, currentPath } = useRenderNode({ nodeId: id, parentPath: [] })
+
+  return (
+    <div>
+      {childrenIds.map((childId) => (
+        <div key={childId}>{renderNode(childId, currentPath)}</div>
+      ))}
+    </div>
+  )
+}
+```
 
 ### Store Methods
 

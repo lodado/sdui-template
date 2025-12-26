@@ -68,9 +68,10 @@ const SduiLayoutRendererInner = ({
   componentMap?: Record<string, ComponentFactory>
 }) => {
   // renderNode 함수 생성 (Render Props Pattern)
-  const renderNode = useRenderNode(customComponentMap)
+  // root 노드는 parentPath 없이 렌더링
+  const { renderNode } = useRenderNode({ nodeId: id, componentMap: customComponentMap, parentPath: [] })
 
-  return renderNode(id)
+  return renderNode(id, [])
 }
 
 /**
