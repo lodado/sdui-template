@@ -32,6 +32,7 @@ In these situations, implementing state management, subscription systems, and co
 - 🧩 **Modular**: Clean architecture with separated concerns
 - 🚀 **Next.js Compatible**: Works seamlessly with Next.js App Router
 - 🔧 **Flexible State Management**: Update component state programmatically
+- 🔗 **Node References**: Reference other nodes to access their state and subscribe to changes
 
 ## Installation
 
@@ -261,6 +262,161 @@ export default function Page() {
 - ✅ Server controls initial state, client handles interactions
 - ✅ Easy to extend with more components
 
+### Node References
+
+Nodes can reference other nodes to access their state and subscribe to changes. This is useful for components that need to display or react to other components' state.
+
+```tsx
+'use client'
+
+import {
+  SduiLayoutRenderer,
+  useSduiNodeSubscription,
+  useSduiNodeReference,
+  useSduiLayoutAction,
+  type ComponentFactory,
+} from '@lodado/sdui-template'
+import { z } from 'zod'
+
+// Toggle state schema
+const toggleStateSchema = z.object({
+  checked: z.boolean(),
+  label: z.string().optional(),
+})
+
+// Toggle component: manages its own state
+function Toggle({ id }: { id: string }) {
+  const { state } = useSduiNodeSubscription({
+    nodeId: id,
+    schema: toggleStateSchema,
+  })
+  const store = useSduiLayoutAction()
+
+  const handleClick = () => {
+    store.updateNodeState(id, { checked: !state.checked })
+  }
+
+  return (
+    <div>
+      <button onClick={handleClick}>{state.label || 'Toggle'}</button>
+      <span>{state.checked ? 'ON' : 'OFF'}</span>
+    </div>
+  )
+}
+
+// StatusDisplay component: displays state from referenced toggle
+function StatusDisplay({ id }: { id: string }) {
+  const { referencedNodesMap } = useSduiNodeReference({
+    nodeId: id,
+    schema: toggleStateSchema, // Validates referenced node's state
+  })
+
+  // Access referenced node by ID
+  const toggleNode = referencedNodesMap['toggle-node']
+
+  if (!toggleNode) {
+    return <div>No reference</div>
+  }
+
+  return (
+    <div>
+      <div>Status: {toggleNode.state.checked ? 'ON' : 'OFF'}</div>
+      {toggleNode.state.label && <div>Label: {toggleNode.state.label}</div>}
+    </div>
+  )
+}
+
+const document = {
+  version: '1.0.0',
+  root: {
+    id: 'root',
+    type: 'Container',
+    children: [
+      {
+        id: 'toggle-node',
+        type: 'Toggle',
+        state: {
+          checked: false,
+          label: 'Power',
+        },
+      },
+      {
+        id: 'status-display',
+        type: 'StatusDisplay',
+        reference: 'toggle-node', // Reference to toggle-node
+      },
+    ],
+  },
+}
+
+export default function Page() {
+  return (
+    <SduiLayoutRenderer
+      document={document}
+      components={{
+        Toggle: (id) => <Toggle id={id} />,
+        StatusDisplay: (id) => <StatusDisplay id={id} />,
+      }}
+    />
+  )
+}
+```
+
+**Multiple References:**
+
+You can also reference multiple nodes:
+
+```tsx
+const document = {
+  version: '1.0.0',
+  root: {
+    id: 'root',
+    type: 'Container',
+    children: [
+      {
+        id: 'source-node',
+        type: 'Card',
+        reference: ['target-1', 'target-2'], // Multiple references
+      },
+      {
+        id: 'target-1',
+        type: 'Card',
+        state: { count: 10 },
+      },
+      {
+        id: 'target-2',
+        type: 'Card',
+        state: { count: 20 },
+      },
+    ],
+  },
+}
+
+function Card({ id }: { id: string }) {
+  const { referencedNodesMap, referencedNodes } = useSduiNodeReference({ nodeId: id })
+
+  // Access by ID (O(1))
+  const node1 = referencedNodesMap['target-1']
+  const node2 = referencedNodesMap['target-2']
+
+  // Or iterate over array
+  return (
+    <div>
+      {referencedNodes.map((node) => (
+        <div key={node.id}>Count: {String(node.state.count)}</div>
+      ))}
+    </div>
+  )
+}
+```
+
+**Key Benefits:**
+
+- ✅ Automatically subscribes to referenced nodes' changes
+- ✅ Type-safe access to referenced nodes' state
+- ✅ Efficient O(1) access via `referencedNodesMap`
+- ✅ Supports both single and multiple references
+
 ### Component Overrides
 
 ```tsx
@@ -344,13 +500,60 @@ Subscribes to a specific node's changes and returns node information.
 - `state: T` - Layout state (inferred from schema if provided, otherwise `BaseLayoutState`)
 - `childrenIds: string[]` - Array of child node IDs
 - `attributes: Record<string, unknown> | undefined` - Node attributes
+- `reference: string | string[] | undefined` - Reference to other node(s)
 - `exists: boolean` - Whether the node exists
 
 ```tsx
-const { node, state, childrenIds, attributes, exists } = useSduiNodeSubscription({
+const { node, state, childrenIds, attributes, reference, exists } = useSduiNodeSubscription({
   nodeId: 'node-1',
   schema: baseLayoutStateSchema, // optional - validates and types state
 })
+```
+
+#### `useSduiNodeReference<T>(params: { nodeId: string, schema?: ZodSchema }): ReferencedNodesData`
+
+Accesses referenced nodes' information and subscribes to their changes. Use this hook when a node has a `reference` field pointing to other nodes.
+
+**Parameters:**
+
+- `nodeId: string` - Node ID that has a reference field
+- `schema?: ZodSchema` - Optional Zod schema for referenced nodes' state validation and type inference
+
+**Returns:**
+
+- `referencedNodes: Array<ReferencedNodeInfo>` - Array of referenced node information (for iteration)
+- `referencedNodesMap: Record<string, ReferencedNodeInfo>` - Map of referenced nodes by ID (for O(1) access)
+- `reference: string | string[] | undefined` - Original reference value
+- `hasReference: boolean` - Whether the node has any references
+
+**ReferencedNodeInfo includes:**
+
+- `id: string` - Referenced node ID
+- `node: SduiLayoutNode | undefined` - Node entity
+- `type: string | undefined` - Node type
+- `state: T` - Layout state (inferred from schema if provided)
+- `attributes: Record<string, unknown> | undefined` - Node attributes
+- `exists: boolean` - Whether the node exists
+
+```tsx
+// Single reference
+const { referencedNodesMap } = useSduiNodeReference({ nodeId: 'source-node' })
+const targetNode = referencedNodesMap['target-node-id']
+if (targetNode) {
+  console.log(targetNode.state.title)
+}
+
+// Multiple references
+const { referencedNodes, referencedNodesMap } = useSduiNodeReference({
+  nodeId: 'source-node',
+  schema: cardStateSchema, // optional - validates referenced nodes' state
+})
+referencedNodes.forEach((node) => {
+  console.log(node.state.title)
+})
+// Or access by ID
+const node1 = referencedNodesMap['target-1']
+const node2 = referencedNodesMap['target-2']
 ```
 
 #### `useRenderNode(componentMap?: Record<string, ComponentFactory>): RenderNodeFn`
@@ -379,6 +582,7 @@ Main store class for managing SDUI layout state.
 - `getChildrenIdsById(nodeId: string): string[]` - Get children IDs by node ID
 - `getLayoutStateById(nodeId: string): BaseLayoutState | undefined` - Get layout state by ID
 - `getAttributesById(nodeId: string): Record<string, unknown> | undefined` - Get attributes by ID
+- `getReferenceById(nodeId: string): string | string[] | undefined` - Get reference by node ID
 - `getRootId(): string | undefined` - Get root node ID
 - `getDocument(): SduiLayoutDocument | null` - Convert current state to document
 
@@ -387,6 +591,7 @@ Main store class for managing SDUI layout state.
 - `updateLayout(document: SduiLayoutDocument): void` - Update layout document
 - `updateNodeState(nodeId: string, state: Partial<BaseLayoutState>): void` - Update node state
 - `updateNodeAttributes(nodeId: string, attributes: Partial<Record<string, unknown>>): void` - Update node attributes
+- `updateNodeReference(nodeId: string, reference: string | string[] | undefined): void` - Update node reference (set to undefined to remove)
 - `updateVariables(variables: Record<string, unknown>): void` - Update global variables
 - `updateVariable(key: string, value: unknown): void` - Update single variable
 - `deleteVariable(key: string): void` - Delete variable

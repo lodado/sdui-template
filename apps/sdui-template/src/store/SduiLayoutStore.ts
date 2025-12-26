@@ -303,6 +303,26 @@ export class SduiLayoutStore {
     this._subscriptionManager.notifyNode(nodeId)
   }
 
+  /**
+   * 특정 노드의 참조를 업데이트합니다.
+   *
+   * @param nodeId - 업데이트할 노드 ID
+   * @param reference - 새로운 참조 (단일 ID 또는 ID 배열, undefined로 제거 가능)
+   * @throws {NodeNotFoundError} 노드가 존재하지 않을 경우
+   */
+  updateNodeReference(nodeId: string, reference: string | string[] | undefined): void {
+    // 노드 존재 확인
+    this.getNodeById(nodeId)
+
+    // 노드의 reference를 업데이트
+    this._repository.updateNodeReference(nodeId, reference)
+
+    this._repository.setEdited(true)
+
+    // 해당 노드의 구독자만 notify
+    this._subscriptionManager.notifyNode(nodeId)
+  }
+
   // ==================== Variables Update Methods ====================
 
   /**

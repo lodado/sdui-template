@@ -469,4 +469,167 @@ describe('Node Reference', () => {
       })
     })
   })
+
+  describe('as is: updating node reference', () => {
+    describe('when: updating reference via store.updateNodeReference', () => {
+      it('to be: reference updated correctly', () => {
+        const document = createTestDocument({
+          root: {
+            id: 'root',
+            type: 'Container',
+            children: [
+              {
+                id: 'source-node',
+                type: 'Card',
+                reference: 'target-1',
+              },
+              {
+                id: 'target-1',
+                type: 'Card',
+                state: { count: 10 },
+              },
+              {
+                id: 'target-2',
+                type: 'Card',
+                state: { count: 20 },
+              },
+            ],
+          },
+        })
+
+        const UpdateReferenceComponent: React.FC = () => {
+          const store = useSduiLayoutAction()
+          const [reference, setReference] = React.useState<string | string[] | undefined>()
+
+          React.useEffect(() => {
+            // 초기 reference 가져오기
+            const initialRef = store.getReferenceById('source-node')
+            setReference(initialRef)
+
+            // reference 업데이트
+            store.updateNodeReference('source-node', 'target-2')
+            const updatedRef = store.getReferenceById('source-node')
+            setReference(updatedRef)
+          }, [store])
+
+          return (
+            <div data-testid="update-reference-test">
+              {reference && (
+                <div data-testid="reference-value">
+                  {typeof reference === 'string' ? reference : reference.join(', ')}
+                </div>
+              )}
+            </div>
+          )
+        }
+
+        renderWithSduiLayout(document, {}, <UpdateReferenceComponent />)
+
+        expect(screen.getByTestId('update-reference-test')).toBeInTheDocument()
+        expect(screen.getByTestId('reference-value')).toBeInTheDocument()
+        expect(screen.getByText('target-2')).toBeInTheDocument()
+      })
+
+      it('to be: can update to multiple references', () => {
+        const document = createTestDocument({
+          root: {
+            id: 'root',
+            type: 'Container',
+            children: [
+              {
+                id: 'source-node',
+                type: 'Card',
+              },
+              {
+                id: 'target-1',
+                type: 'Card',
+                state: { count: 10 },
+              },
+              {
+                id: 'target-2',
+                type: 'Card',
+                state: { count: 20 },
+              },
+            ],
+          },
+        })
+
+        const UpdateMultipleReferenceComponent: React.FC = () => {
+          const store = useSduiLayoutAction()
+          const [reference, setReference] = React.useState<string | string[] | undefined>()
+
+          React.useEffect(() => {
+            // 여러 reference로 업데이트
+            store.updateNodeReference('source-node', ['target-1', 'target-2'])
+            const updatedRef = store.getReferenceById('source-node')
+            setReference(updatedRef)
+          }, [store])
+
+          return (
+            <div data-testid="update-multiple-reference-test">
+              {reference && Array.isArray(reference) && (
+                <div data-testid="reference-list">
+                  {reference.map((ref) => (
+                    <span key={ref} data-testid={`ref-${ref}`}>
+                      {ref}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        }
+
+        renderWithSduiLayout(document, {}, <UpdateMultipleReferenceComponent />)
+
+        expect(screen.getByTestId('update-multiple-reference-test')).toBeInTheDocument()
+        expect(screen.getByTestId('ref-target-1')).toBeInTheDocument()
+        expect(screen.getByTestId('ref-target-2')).toBeInTheDocument()
+      })
+
+      it('to be: can remove reference by setting to undefined', () => {
+        const document = createTestDocument({
+          root: {
+            id: 'root',
+            type: 'Container',
+            children: [
+              {
+                id: 'source-node',
+                type: 'Card',
+                reference: 'target-1',
+              },
+              {
+                id: 'target-1',
+                type: 'Card',
+                state: { count: 10 },
+              },
+            ],
+          },
+        })
+
+        const RemoveReferenceComponent: React.FC = () => {
+          const store = useSduiLayoutAction()
+          const [reference, setReference] = React.useState<string | string[] | undefined>()
+
+          React.useEffect(() => {
+            // reference 제거
+            store.updateNodeReference('source-node', undefined)
+            const updatedRef = store.getReferenceById('source-node')
+            setReference(updatedRef)
+          }, [store])
+
+          return (
+            <div data-testid="remove-reference-test">
+              {reference === undefined && <div data-testid="no-reference">No reference</div>}
+            </div>
+          )
+        }
+
+        renderWithSduiLayout(document, {}, <RemoveReferenceComponent />)
+
+        expect(screen.getByTestId('remove-reference-test')).toBeInTheDocument()
+        expect(screen.getByTestId('no-reference')).toBeInTheDocument()
+      })
+    })
+  })
 })

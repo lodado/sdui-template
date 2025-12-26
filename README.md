@@ -43,6 +43,7 @@ This library provides:
 - 🧩 **Modular**: Clean, separated architecture
 - 🚀 **Next.js Compatible**: Built for App Router
 - 🔧 **State Management**: Update component state programmatically
+- 🔗 **Node References**: Reference other nodes to access their state and subscribe to changes
 
 ## 📦 Installation
 
@@ -283,7 +284,162 @@ export default function Page() {
 - ✅ Server controls initial state, client handles interactions
 - ✅ Easy to add more components
 
-### Step 4: Recursive Rendering - Container with Children
+### Step 4: Node References
+
+Nodes can reference other nodes to access their state and subscribe to changes. This is useful for components that need to display or react to other components' state.
+
+```tsx
+'use client'
+
+import {
+  SduiLayoutRenderer,
+  useSduiNodeSubscription,
+  useSduiNodeReference,
+  useSduiLayoutAction,
+  type ComponentFactory,
+} from '@lodado/sdui-template'
+import { z } from 'zod'
+
+// Toggle state schema
+const toggleStateSchema = z.object({
+  checked: z.boolean(),
+  label: z.string().optional(),
+})
+
+// Toggle component: manages its own state
+function Toggle({ id }: { id: string }) {
+  const { state } = useSduiNodeSubscription({
+    nodeId: id,
+    schema: toggleStateSchema,
+  })
+  const store = useSduiLayoutAction()
+
+  const handleClick = () => {
+    store.updateNodeState(id, { checked: !state.checked })
+  }
+
+  return (
+    <div>
+      <button onClick={handleClick}>{state.label || 'Toggle'}</button>
+      <span>{state.checked ? 'ON' : 'OFF'}</span>
+    </div>
+  )
+}
+
+// StatusDisplay component: displays state from referenced toggle
+function StatusDisplay({ id }: { id: string }) {
+  const { referencedNodesMap } = useSduiNodeReference({
+    nodeId: id,
+    schema: toggleStateSchema, // Validates referenced node's state
+  })
+
+  // Access referenced node by ID
+  const toggleNode = referencedNodesMap['toggle-node']
+
+  if (!toggleNode) {
+    return <div>No reference</div>
+  }
+
+  return (
+    <div>
+      <div>Status: {toggleNode.state.checked ? 'ON' : 'OFF'}</div>
+      {toggleNode.state.label && <div>Label: {toggleNode.state.label}</div>}
+    </div>
+  )
+}
+
+const document: SduiLayoutDocument = {
+  version: '1.0.0',
+  root: {
+    id: 'root',
+    type: 'Container',
+    children: [
+      {
+        id: 'toggle-node',
+        type: 'Toggle',
+        state: {
+          checked: false,
+          label: 'Power',
+        },
+      },
+      {
+        id: 'status-display',
+        type: 'StatusDisplay',
+        reference: 'toggle-node', // Reference to toggle-node
+      },
+    ],
+  },
+}
+
+export default function Page() {
+  return (
+    <SduiLayoutRenderer
+      document={document}
+      components={{
+        Toggle: (id) => <Toggle id={id} />,
+        StatusDisplay: (id) => <StatusDisplay id={id} />,
+      }}
+    />
+  )
+}
+```
+
+**Multiple References:**
+
+You can also reference multiple nodes:
+
+```tsx
+const document: SduiLayoutDocument = {
+  version: '1.0.0',
+  root: {
+    id: 'root',
+    type: 'Container',
+    children: [
+      {
+        id: 'source-node',
+        type: 'Card',
+        reference: ['target-1', 'target-2'], // Multiple references
+      },
+      {
+        id: 'target-1',
+        type: 'Card',
+        state: { count: 10 },
+      },
+      {
+        id: 'target-2',
+        type: 'Card',
+        state: { count: 20 },
+      },
+    ],
+  },
+}
+
+function Card({ id }: { id: string }) {
+  const { referencedNodesMap, referencedNodes } = useSduiNodeReference({ nodeId: id })
+
+  // Access by ID (O(1))
+  const node1 = referencedNodesMap['target-1']
+  const node2 = referencedNodesMap['target-2']
+
+  // Or iterate over array
+  return (
+    <div>
+      {referencedNodes.map((node) => (
+        <div key={node.id}>Count: {String(node.state.count)}</div>
+      ))}
+    </div>
+  )
+}
+```
+
+**Key Benefits:**
+
+- ✅ Automatically subscribes to referenced nodes' changes
+- ✅ Type-safe access to referenced nodes' state
+- ✅ Efficient O(1) access via `referencedNodesMap`
+- ✅ Supports both single and multiple references
+
+### Step 5: Recursive Rendering - Container with Children
 
 When you have nested structures (like a Container with Cards inside), you need to recursively render children. Here's how:
 
@@ -394,7 +550,7 @@ export default function Page() {
 
 **Result Structure:**
 
-```
+```text
 Container (root)
   ├── Card (card-1)
   └── Container (container-1)
@@ -443,6 +599,7 @@ interface SduiLayoutNode {
   state?: Record<string, unknown> // Optional: Component data (auto-filled as {} if omitted)
   attributes?: Record<string, unknown> // Optional: CSS/styling (auto-filled as {} if omitted)
   children?: SduiLayoutNode[] // Optional: Child nodes (for nested structures)
+  reference?: string | string[] // Optional: Reference to other node(s) by ID
 }
 ```
 
@@ -633,6 +790,7 @@ Subscribe to a node's changes. Returns node info and auto re-renders when the no
   state: T                              // Node state (typed if schema provided)
   childrenIds: string[]                 // Array of child node IDs
   attributes: Record<string, unknown>   // Node attributes
+  reference: string | string[] | undefined // Reference to other node(s)
   exists: boolean                       // Whether node exists
 }
 ```
@@ -647,6 +805,54 @@ const { state, childrenIds, attributes } = useSduiNodeSubscription({
 
 // state is now typed based on your schema!
 console.log(state.title) // TypeScript knows this exists
+```
+
+#### `useSduiNodeReference<T>(params): ReferencedNodesData`
+
+Accesses referenced nodes' information and subscribes to their changes. Use this hook when a node has a `reference` field pointing to other nodes.
+
+**Parameters:**
+
+- `nodeId: string` - Node ID that has a reference field
+- `schema?: ZodSchema` - Optional Zod schema for referenced nodes' state validation and type inference
+
+**Returns:**
+
+- `referencedNodes: Array<ReferencedNodeInfo>` - Array of referenced node information (for iteration)
+- `referencedNodesMap: Record<string, ReferencedNodeInfo>` - Map of referenced nodes by ID (for O(1) access)
+- `reference: string | string[] | undefined` - Original reference value
+- `hasReference: boolean` - Whether the node has any references
+
+**ReferencedNodeInfo includes:**
+
+- `id: string` - Referenced node ID
+- `node: SduiLayoutNode | undefined` - Node entity
+- `type: string | undefined` - Node type
+- `state: T` - Layout state (inferred from schema if provided)
+- `attributes: Record<string, unknown> | undefined` - Node attributes
+- `exists: boolean` - Whether the node exists
+
+**Example:**
+
+```tsx
+// Single reference
+const { referencedNodesMap } = useSduiNodeReference({ nodeId: 'source-node' })
+const targetNode = referencedNodesMap['target-node-id']
+if (targetNode) {
+  console.log(targetNode.state.title)
+}
+
+// Multiple references
+const { referencedNodes, referencedNodesMap } = useSduiNodeReference({
+  nodeId: 'source-node',
+  schema: cardStateSchema, // optional - validates referenced nodes' state
+})
+referencedNodes.forEach((node) => {
+  console.log(node.state.title)
+})
+// Or access by ID
+const node1 = referencedNodesMap['target-1']
+const node2 = referencedNodesMap['target-2']
 ```
 
 #### `useRenderNode(componentMap?): RenderNodeFn`
@@ -667,6 +873,7 @@ store.getNodeTypeById(nodeId) // Get node type (throws if not found)
 store.getChildrenIdsById(nodeId) // Get children IDs (throws if not found)
 store.getLayoutStateById(nodeId) // Get state (returns {} if not set)
 store.getAttributesById(nodeId) // Get attributes (returns {} if not set)
+store.getReferenceById(nodeId) // Get reference (returns undefined if not set)
 store.getRootId() // Get root ID (throws if not found)
 store.getDocument() // Convert store to document
 ```
@@ -677,6 +884,7 @@ store.getDocument() // Convert store to document
 store.updateLayout(document)                    // Update entire layout
 store.updateNodeState(nodeId, partialState)     // Update node state
 store.updateNodeAttributes(nodeId, attributes) // Update node attributes
+store.updateNodeReference(nodeId, reference)   // Update node reference (string | string[] | undefined)
 store.updateVariables(variables)                // Update global variables
 store.updateVariable(key, value)                // Update single variable
 store.deleteVariable(key)                       // Delete variable

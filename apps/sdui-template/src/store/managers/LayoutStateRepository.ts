@@ -143,6 +143,22 @@ export class LayoutStateRepository {
   }
 
   /**
+   * 특정 노드의 참조를 업데이트합니다.
+   *
+   * @param nodeId - 노드 ID
+   * @param reference - 참조 (단일 ID 또는 ID 배열)
+   */
+  updateNodeReference(nodeId: string, reference: string | string[] | undefined): void {
+    const node = this._state.nodes[nodeId]
+    if (node) {
+      this._state.nodes[nodeId] = {
+        ...node,
+        reference,
+      }
+    }
+  }
+
+  /**
    * 루트 노드 ID를 설정합니다.
    *
    * @param rootId - 루트 노드 ID
