@@ -42,7 +42,7 @@ const LevelComponent: React.FC<SduiComponentProps> = ({ nodeId, parentPath = [] 
  * 레벨 컴포넌트 팩토리
  * useRenderNode hook을 사용하여 자식 노드들을 렌더링합니다.
  */
-const LevelComponentFactory: ComponentFactory = (id, _renderNode, parentPath) => {
+const LevelComponentFactory: ComponentFactory = (id, parentPath) => {
   return <LevelComponent nodeId={id} parentPath={parentPath} />
 }
 

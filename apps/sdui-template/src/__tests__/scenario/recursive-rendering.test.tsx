@@ -46,9 +46,7 @@ const Card = ({ id }: { id: string }) => {
 }
 
 // 3. Create factories
-const ContainerFactory: ComponentFactory = (id, _renderNode, parentPath) => (
-  <Container id={id} parentPath={parentPath} />
-)
+const ContainerFactory: ComponentFactory = (id, parentPath) => <Container id={id} parentPath={parentPath} />
 const CardFactory: ComponentFactory = (id) => <Card id={id} />
 
 describe('README Example: Recursive Rendering', () => {

@@ -8,7 +8,7 @@
  * 현재 노드의 정보와 currentPath를 자동으로 계산하여 반환합니다.
  */
 
-import { useCallback, useMemo, useRef, useSyncExternalStore } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { defaultComponentFactory } from '../../components/componentMap'
 import type { ComponentFactory, ParentPath, RenderNodeFn } from '../../components/types'
@@ -63,9 +63,6 @@ export const useRenderNode = ({ nodeId, componentMap, parentPath = [] }: UseRend
   // useSyncExternalStore가 lastModified 객체 참조 변경을 감지하면 리렌더링됨
   const { nodes } = store.state
 
-  // renderNode 함수가 자기 자신을 참조할 수 있도록 ref 사용
-  const renderNodeRef = useRef<RenderNodeFn | null>(null)
-
   // currentPath와 pathString을 자동으로 계산
   const currentPath = useMemo(() => buildCurrentPathArray(parentPath, nodeId), [parentPath, nodeId])
   const pathString = useMemo(() => buildCurrentPath(parentPath, nodeId), [parentPath, nodeId])
@@ -92,15 +89,12 @@ export const useRenderNode = ({ nodeId, componentMap, parentPath = [] }: UseRend
       // 4. 기본 팩토리
       const factory = overrides[id] || overrides[node.type] || componentMapEntries[node.type] || defaultComponentFactory
 
-      // factory에는 현재 노드의 parentPath를 전달 (자식에게는 currentPath를 전달)
-      // ref를 통해 최신 renderNode 함수 참조 (부모 경로 전달)
-      return factory(id, renderNodeRef.current!, parentPathForChild)
+      // factory에는 현재 노드의 parentPath를 전달
+      // 컴포넌트 내부에서 useRenderNode hook을 사용하여 자식 노드를 렌더링할 수 있습니다
+      return factory(id, parentPathForChild)
     },
     [nodes, store, componentMap],
   )
-
-  // ref에 최신 함수 저장
-  renderNodeRef.current = renderNode
 
   return {
     renderNode,
