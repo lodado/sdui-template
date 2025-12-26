@@ -64,35 +64,35 @@ Developers using SDUI (Server-Driven UI) need a collection of high-quality, acce
 
 ## 3) FR (table)
 
-| ID   | Feature                    | Description                                                  | Priority | Testable Statement                                                                 |
-| ---- | -------------------------- | ------------------------------------------------------------ | -------- | ---------------------------------------------------------------------------------- |
-| FR1  | Component Rendering        | Render components as React elements                          | MUST     | Given Button component, when rendered, then React element is created             |
-| FR2  | Variant System             | Support multiple visual variants (primary, secondary, etc.)  | MUST     | Given variant prop, when rendered, then correct styles applied                    |
-| FR3  | Size System                | Support multiple sizes (sm, md, lg)                          | MUST     | Given size prop, when rendered, then correct size styles applied                  |
-| FR4  | Event Handling             | Handle user interactions (click, keyboard)                   | MUST     | Given onClick handler, when clicked, then handler called with event              |
-| FR5  | SDUI Integration           | Work with useSduiNodeSubscription and ComponentFactory       | MUST     | Given nodeId, when used with SDUI, then component subscribes to node state        |
-| FR6  | TypeScript Support         | Full type definitions for all props                           | MUST     | Given TypeScript project, when imported, then types are available                  |
-| FR7  | Accessibility              | Keyboard navigation and ARIA attributes                      | MUST     | Given component, when keyboard used, then focus and interaction work correctly     |
-| FR8  | Disabled State             | Support disabled state for interactive components            | SHOULD   | Given disabled prop, when set, then component is non-interactive                   |
-| FR9  | Event Emission             | Support eventId for event mapper pattern                     | SHOULD   | Given eventId, when event occurs, then event can be emitted                       |
-| FR10 | Custom Styling             | Allow style overrides while maintaining structure            | COULD    | Given className prop, when provided, then merged with default styles                |
-| FR11 | Composition                | Support asChild pattern for flexible composition             | COULD    | Given asChild prop, when set, then component merges props with child               |
+| ID   | Feature             | Description                                                 | Priority | Testable Statement                                                             |
+| ---- | ------------------- | ----------------------------------------------------------- | -------- | ------------------------------------------------------------------------------ |
+| FR1  | Component Rendering | Render components as React elements                         | MUST     | Given Button component, when rendered, then React element is created           |
+| FR2  | Variant System      | Support multiple visual variants (primary, secondary, etc.) | MUST     | Given variant prop, when rendered, then correct styles applied                 |
+| FR3  | Size System         | Support multiple sizes (sm, md, lg)                         | MUST     | Given size prop, when rendered, then correct size styles applied               |
+| FR4  | Event Handling      | Handle user interactions (click, keyboard)                  | MUST     | Given onClick handler, when clicked, then handler called with event            |
+| FR5  | SDUI Integration    | Work with useSduiNodeSubscription and ComponentFactory      | MUST     | Given nodeId, when used with SDUI, then component subscribes to node state     |
+| FR6  | TypeScript Support  | Full type definitions for all props                         | MUST     | Given TypeScript project, when imported, then types are available              |
+| FR7  | Accessibility       | Keyboard navigation and ARIA attributes                     | MUST     | Given component, when keyboard used, then focus and interaction work correctly |
+| FR8  | Disabled State      | Support disabled state for interactive components           | SHOULD   | Given disabled prop, when set, then component is non-interactive               |
+| FR9  | Event Emission      | Support eventId for event mapper pattern                    | SHOULD   | Given eventId, when event occurs, then event can be emitted                    |
+| FR10 | Custom Styling      | Allow style overrides while maintaining structure           | COULD    | Given className prop, when provided, then merged with default styles           |
+| FR11 | Composition         | Support asChild pattern for flexible composition            | COULD    | Given asChild prop, when set, then component merges props with child           |
 
 ## 4) NFR (table)
 
-| ID    | Requirement                      | Target                                    | Measurement Method   | Priority |
-| ----- | -------------------------------- | ----------------------------------------- | -------------------- | -------- |
-| NFR1  | Performance - Bundle Size        | < 10KB per component (gzipped)            | Bundle analyzer      | MUST     |
-| NFR2  | Performance - Render Time        | < 16ms for initial render (60fps)         | React Profiler       | MUST     |
-| NFR3  | Accessibility - WCAG             | WCAG 2.1 AA compliant                     | Manual testing       | MUST     |
-| NFR4  | Accessibility - Keyboard         | Full keyboard navigation support          | Manual testing       | MUST     |
-| NFR5  | Accessibility - Screen Reader    | Works with NVDA, JAWS, VoiceOver         | Manual testing       | MUST     |
-| NFR6  | Compatibility - React            | 18+                                       | Type definitions     | MUST     |
-| NFR7  | Compatibility - TypeScript        | 4.3+                                      | Type checking        | MUST     |
-| NFR8  | Compatibility - Next.js          | 13+ (App Router)                          | Integration tests    | MUST     |
-| NFR9  | Reliability - Error Handling    | Graceful handling of invalid props        | Error boundary tests | SHOULD   |
-| NFR10 | Maintainability - Documentation  | JSDoc for all public APIs                 | Code review          | MUST     |
-| NFR11 | Security - XSS Prevention        | React auto-escaping, no dangerouslySetInnerHTML | Code review | MUST     |
+| ID    | Requirement                     | Target                                          | Measurement Method   | Priority |
+| ----- | ------------------------------- | ----------------------------------------------- | -------------------- | -------- |
+| NFR1  | Performance - Bundle Size       | < 10KB per component (gzipped)                  | Bundle analyzer      | MUST     |
+| NFR2  | Performance - Render Time       | < 16ms for initial render (60fps)               | React Profiler       | MUST     |
+| NFR3  | Accessibility - WCAG            | WCAG 2.1 AA compliant                           | Manual testing       | MUST     |
+| NFR4  | Accessibility - Keyboard        | Full keyboard navigation support                | Manual testing       | MUST     |
+| NFR5  | Accessibility - Screen Reader   | Works with NVDA, JAWS, VoiceOver                | Manual testing       | MUST     |
+| NFR6  | Compatibility - React           | 18+                                             | Type definitions     | MUST     |
+| NFR7  | Compatibility - TypeScript      | 4.3+                                            | Type checking        | MUST     |
+| NFR8  | Compatibility - Next.js         | 13+ (App Router)                                | Integration tests    | MUST     |
+| NFR9  | Reliability - Error Handling    | Graceful handling of invalid props              | Error boundary tests | SHOULD   |
+| NFR10 | Maintainability - Documentation | JSDoc for all public APIs                       | Code review          | MUST     |
+| NFR11 | Security - XSS Prevention       | React auto-escaping, no dangerouslySetInnerHTML | Code review          | MUST     |
 
 ## 5) Out of scope
 
@@ -222,10 +222,7 @@ const ButtonFactory: ComponentFactory = (id, renderNode) => {
 }
 
 // Usage with SDUI
-<SduiLayoutRenderer
-  document={document}
-  components={{ Button: ButtonFactory }}
-/>
+;<SduiLayoutRenderer document={document} components={{ Button: ButtonFactory }} />
 ```
 
 ### Event Emission
@@ -235,7 +232,7 @@ const ButtonFactory: ComponentFactory = (id, renderNode) => {
 type EventHandler = (eventId: string, props: Record<string, unknown>) => void
 
 // EventMapper integration
-<EventMapper nodeId={nodeId} onEvent={handleEvent}>
+;<EventMapper nodeId={nodeId} onEvent={handleEvent}>
   <Button eventId={eventId} />
 </EventMapper>
 ```
@@ -245,12 +242,15 @@ type EventHandler = (eventId: string, props: Record<string, unknown>) => void
 ### Risks
 
 1. **Bundle Size**: Radix UI primitives may add significant bundle size
+
    - **Mitigation**: Tree-shaking, code splitting, measure and optimize
 
 2. **Style Conflicts**: Component styles may conflict with application styles
+
    - **Mitigation**: Use CSS modules or scoped styles, provide className override
 
 3. **Accessibility Regression**: Updates may break accessibility
+
    - **Mitigation**: Comprehensive accessibility tests, manual testing with screen readers
 
 4. **Version Compatibility**: Breaking changes in Radix UI
@@ -259,9 +259,11 @@ type EventHandler = (eventId: string, props: Record<string, unknown>) => void
 ### Open Questions
 
 1. Should components support theming out of the box?
+
    - **Decision**: No, use CSS variables or Tailwind for theming
 
 2. Should we include default styles or be unstyled?
+
    - **Decision**: Include minimal default styles, allow full override via className
 
 3. How to handle component composition (asChild pattern)?
@@ -302,6 +304,7 @@ type EventHandler = (eventId: string, props: Record<string, unknown>) => void
 ### Next Steps (Post-MVP)
 
 1. **Additional Components**:
+
    - Card
    - Input
    - Toggle
@@ -309,12 +312,14 @@ type EventHandler = (eventId: string, props: Record<string, unknown>) => void
    - Dialog
 
 2. **Enhanced Features**:
+
    - Icon support
    - Loading states
    - Error states
    - Animation/transitions
 
 3. **Developer Experience**:
+
    - Storybook documentation
    - Component playground
    - Migration guides
@@ -349,4 +354,3 @@ type EventHandler = (eventId: string, props: Record<string, unknown>) => void
 **Deterministic Async**:
 
 - No async behavior in Button component (synchronous only)
-

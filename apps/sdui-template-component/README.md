@@ -31,7 +31,7 @@ A flexible button component built with Radix UI primitives.
 ```tsx
 import { Button } from '@lodado/sdui-template-component'
 
-<Button variant="primary" size="md" onClick={handleClick}>
+;<Button variant="primary" size="md" onClick={handleClick}>
   Submit
 </Button>
 ```
@@ -47,4 +47,3 @@ This library follows Feature-Sliced Design (FSD) architecture:
 ## License
 
 MIT
-
