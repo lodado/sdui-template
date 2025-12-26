@@ -41,6 +41,8 @@ export function denormalizeSduiNode(nodeId: string, entities: NormalizedSduiEnti
     state: node.state || {},
     // attributes가 없으면 빈 객체로 자동 설정
     attributes: node.attributes || {},
+    // reference는 그대로 전달
+    ...(node.reference !== undefined && { reference: node.reference }),
     ...(children.length > 0 && { children }),
   }
 }

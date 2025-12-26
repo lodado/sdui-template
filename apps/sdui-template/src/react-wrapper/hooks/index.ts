@@ -6,4 +6,5 @@
 
 export * from './useRenderNode'
 export * from './useSduiLayoutAction'
+export * from './useSduiNodeReference'
 export * from './useSduiNodeSubscription'

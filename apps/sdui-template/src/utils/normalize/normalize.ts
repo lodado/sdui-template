@@ -32,6 +32,8 @@ const sduiLayoutNodeSchema = new schema.Entity<Omit<SduiLayoutNode, 'children'>>
         state: value.state || {},
         // attributes가 없으면 빈 객체로 자동 설정
         attributes: value.attributes || {},
+        // reference는 그대로 전달
+        ...(value.reference !== undefined && { reference: value.reference }),
       }
     },
   },
@@ -66,6 +68,8 @@ export function normalizeSduiNode(node: SduiLayoutNode) {
     state: node.state || {},
     // attributes가 없으면 빈 객체로 자동 설정
     attributes: node.attributes || {},
+    // reference는 그대로 전달
+    ...(node.reference !== undefined && { reference: node.reference }),
   }
 
   const normalizedData = normalize<Omit<SduiLayoutNode, 'children'>, { nodes?: Record<string, any> }, string>(
@@ -99,6 +103,8 @@ export function normalizeSduiNode(node: SduiLayoutNode) {
           state: currentNode.state || {},
           // attributes가 없으면 빈 객체로 자동 설정
           attributes: currentNode.attributes || {},
+          // reference는 그대로 전달
+          ...(currentNode.reference !== undefined && { reference: currentNode.reference }),
           childrenIds: currentNode.children?.map((child) => child.id) || [],
         } as any
       }

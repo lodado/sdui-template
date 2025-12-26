@@ -193,6 +193,18 @@ export class SduiLayoutStore {
   }
 
   /**
+   * ID로 참조를 조회합니다.
+   *
+   * @param nodeId - 조회할 노드 ID
+   * @returns 참조 (없으면 undefined 반환)
+   * @throws {NodeNotFoundError} 노드가 존재하지 않을 경우
+   */
+  getReferenceById(nodeId: string): string | string[] | undefined {
+    const node = this.getNodeById(nodeId)
+    return node.reference
+  }
+
+  /**
    * 루트 노드 ID를 반환합니다.
    *
    * @returns 루트 노드 ID

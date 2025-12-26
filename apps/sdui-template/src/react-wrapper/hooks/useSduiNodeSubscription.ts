@@ -50,6 +50,7 @@ export interface UseSduiNodeSubscriptionParams<
  *   - `state`: 레이아웃 상태 (스키마가 제공되면 z.infer<TSchema>, 아니면 Record<string, unknown>)
  *   - `childrenIds`: 자식 노드 ID 배열 (string[])
  *   - `attributes`: 노드 속성 (Record<string, unknown> | undefined)
+ *   - `reference`: 노드 참조 (string | string[] | undefined)
  *   - `exists`: 노드 존재 여부 (boolean)
  *
  * @example
@@ -62,7 +63,9 @@ export interface UseSduiNodeSubscriptionParams<
  */
 
 // Implementation
-export function useSduiNodeSubscription<TSchema extends ZodSchema<Record<string, unknown>> = ZodSchema<Record<string, unknown>>>(
+export function useSduiNodeSubscription<
+  TSchema extends ZodSchema<Record<string, unknown>> = ZodSchema<Record<string, unknown>>,
+>(
   params: UseSduiNodeSubscriptionParams<TSchema>,
 ): {
   node: SduiLayoutNode | undefined
@@ -70,6 +73,7 @@ export function useSduiNodeSubscription<TSchema extends ZodSchema<Record<string,
   state: TSchema extends ZodSchema<any> ? z.infer<TSchema> : Record<string, unknown>
   childrenIds: string[]
   attributes: Record<string, unknown> | undefined
+  reference: string | string[] | undefined
   exists: boolean
 } {
   const { nodeId, schema } = params
@@ -85,34 +89,13 @@ export function useSduiNodeSubscription<TSchema extends ZodSchema<Record<string,
     return unsubscribe
   }, [store, nodeId])
 
-  // Store에서 직접 노드 정보 가져오기 (각각 개별적으로 처리)
-  let node: SduiLayoutNode | undefined
-  let childrenIds: string[] = []
-  let rawState: Record<string, unknown> | undefined
-  let attributes: Record<string, unknown> | undefined
-
-  // 노드 조회 (노드가 없으면 undefined)
-  try {
-    node = store.getNodeById(nodeId)
-    childrenIds = (node as any)?.childrenIds || []
-  } catch {
-    node = undefined
-    childrenIds = []
-  }
-
-  // 레이아웃 상태 조회 (상태가 없으면 undefined)
-  try {
-    rawState = store.getLayoutStateById(nodeId)
-  } catch {
-    rawState = undefined
-  }
-
-  // 속성 조회 (속성이 없으면 undefined)
-  try {
-    attributes = store.getAttributesById(nodeId)
-  } catch {
-    attributes = undefined
-  }
+  // Store에서 직접 노드 정보 가져오기
+  // 노드가 없으면 throw (NodeNotFoundError)
+  const node = store.getNodeById(nodeId)
+  const childrenIds = (node as any)?.childrenIds || []
+  const rawState = store.getLayoutStateById(nodeId)
+  const attributes = store.getAttributesById(nodeId)
+  const reference = store.getReferenceById(nodeId)
 
   // 스키마가 있으면 검증
   const validatedState = useMemo(() => {
@@ -142,6 +125,7 @@ export function useSduiNodeSubscription<TSchema extends ZodSchema<Record<string,
     state: validatedState!,
     childrenIds,
     attributes,
+    reference,
     exists: !!node,
   }
 }

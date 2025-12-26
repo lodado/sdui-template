@@ -24,6 +24,9 @@ export interface SduiNode {
   /** 외형 스타일 속성 (순수 CSS 스타일만) */
   attributes?: Record<string, unknown>
 
+  /** 다른 노드 참조 (단일 또는 다중 참조) */
+  reference?: string | string[]
+
   /** 자식 노드 배열 (재귀 구조) */
   children?: SduiNode[]
 }
