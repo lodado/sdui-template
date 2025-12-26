@@ -166,9 +166,9 @@ export function useSduiNodeReference<
   // 각 참조된 노드에 대해 구독 및 정보 수집 (헬퍼 함수 사용)
   const referencedSubscriptions = useMultipleNodeSubscriptions<TSchema>(referencedIds, schema)
 
-  // 참조된 노드들의 정보를 ReferencedNodeInfo 형태로 변환
-  const referencedNodes = useMemo(() => {
-    return referencedSubscriptions.map((sub, index) => {
+  // 참조된 노드들의 정보를 ReferencedNodeInfo 형태로 변환하고 Map도 함께 생성
+  const { referencedNodes, referencedNodesMap } = useMemo(() => {
+    const nodes = referencedSubscriptions.map((sub, index) => {
       const refId = referencedIds[index]
       return {
         id: refId,
@@ -178,22 +178,21 @@ export function useSduiNodeReference<
         attributes: sub.attributes,
         exists: sub.exists,
       }
-    })
-  }, [referencedSubscriptions, referencedIds]) as Array<
-    ReferencedNodeInfo & { state: TSchema extends ZodSchema<any> ? z.infer<TSchema> : Record<string, unknown> }
-  >
+    }) as Array<
+      ReferencedNodeInfo & { state: TSchema extends ZodSchema<any> ? z.infer<TSchema> : Record<string, unknown> }
+    >
 
-  // ID로 바로 접근할 수 있는 Map 생성
-  const referencedNodesMap = useMemo(() => {
+    // ID로 바로 접근할 수 있는 Map 생성 (한 번의 순회로 처리)
     const map: Record<
       string,
       ReferencedNodeInfo & { state: TSchema extends ZodSchema<any> ? z.infer<TSchema> : Record<string, unknown> }
     > = {}
-    referencedNodes.forEach((node) => {
+    nodes.forEach((node) => {
       map[node.id] = node
     })
-    return map
-  }, [referencedNodes])
+
+    return { referencedNodes: nodes, referencedNodesMap: map }
+  }, [referencedSubscriptions, referencedIds])
 
   return {
     referencedNodes,
