@@ -93,6 +93,28 @@ export class SduiLayoutStore {
   }
 
   /**
+   * useSyncExternalStore를 위한 스냅샷을 반환합니다.
+   * lastModified 객체 참조를 직접 반환하여 효율적인 비교를 가능하게 합니다.
+   * lastModified 객체는 업데이트 시 새로 생성되므로 참조 비교만으로 변경 감지가 가능합니다.
+   *
+   * @returns lastModified 객체 참조
+   */
+  getSnapshot(): Record<string, string> {
+    // lastModified 객체 참조를 직접 반환 (업데이트 시 새 객체가 생성되므로 참조 비교만으로 충분)
+    return this._repository.state.lastModified
+  }
+
+  /**
+   * useSyncExternalStore를 위한 서버 스냅샷을 반환합니다.
+   * SSR 시 하이드레이션 안전성을 보장합니다.
+   *
+   * @returns lastModified 객체 참조 (getSnapshot과 동일)
+   */
+  getServerSnapshot(): Record<string, string> {
+    return this.getSnapshot()
+  }
+
+  /**
    * 노드 엔티티를 반환합니다.
    */
   get nodes() {

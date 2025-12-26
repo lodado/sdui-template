@@ -1,3 +1,5 @@
+import React from 'react'
+
 /**
  * Button component variant styles
  */
@@ -62,4 +64,3 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   /** Event ID for event emission */
   eventId?: string
 }
-

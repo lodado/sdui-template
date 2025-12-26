@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from '@storybook/react-vite'
+import type { ComponentFactory, SduiLayoutDocument } from '@lodado/sdui-template'
 import { SduiLayoutRenderer, useSduiNodeSubscription } from '@lodado/sdui-template'
-import type { SduiLayoutDocument, ComponentFactory } from '@lodado/sdui-template'
 import { Button } from '@lodado/sdui-template-component'
+import type { Meta, StoryObj } from '@storybook/react-vite'
 import React from 'react'
 
 const meta: Meta<typeof SduiLayoutRenderer> = {
@@ -32,32 +32,35 @@ const basicDocument: SduiLayoutDocument = {
   },
 }
 
+// Button 컴포넌트 (팩토리 외부로 이동)
+const ButtonComponent: React.FC<{ nodeId: string }> = ({ nodeId }) => {
+  const { state, attributes } = useSduiNodeSubscription({
+    nodeId,
+  })
+
+  const variant = (attributes?.variant as string) || 'primary'
+  const size = (attributes?.size as string) || 'md'
+  const disabled = (attributes?.disabled as boolean) || false
+  const children = (attributes?.children as React.ReactNode) || 'Button'
+
+  return (
+    <Button
+      nodeId={nodeId}
+      variant={variant as any}
+      size={size as any}
+      disabled={disabled}
+      onClick={() => {
+        // Button clicked
+      }}
+    >
+      {children}
+    </Button>
+  )
+}
+
 // Button 컴포넌트 팩토리
-const ButtonFactory: ComponentFactory = (nodeId, renderNode) => {
-  const ButtonComponent: React.FC = () => {
-    const { state, attributes } = useSduiNodeSubscription({
-      nodeId,
-    })
-
-    const variant = (attributes?.variant as string) || 'primary'
-    const size = (attributes?.size as string) || 'md'
-    const disabled = (attributes?.disabled as boolean) || false
-    const children = (attributes?.children as React.ReactNode) || 'Button'
-
-    return (
-      <Button
-        nodeId={nodeId}
-        variant={variant as any}
-        size={size as any}
-        disabled={disabled}
-        onClick={() => console.log('Button clicked:', nodeId)}
-      >
-        {children}
-      </Button>
-    )
-  }
-
-  return <ButtonComponent />
+const ButtonFactory: ComponentFactory = (nodeId) => {
+  return <ButtonComponent nodeId={nodeId} />
 }
 
 // Button 컴포넌트를 사용하는 문서 예제

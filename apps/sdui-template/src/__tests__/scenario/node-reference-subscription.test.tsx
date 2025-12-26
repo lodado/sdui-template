@@ -236,30 +236,33 @@ describe('Node Reference Subscription', () => {
     }
 
     // useSduiNodeReference를 호출하는 컴포넌트
-    // 참조된 노드가 없으면 useMultipleNodeSubscriptions 내부에서
-    // store.getNodeById를 호출할 때 NodeNotFoundError가 throw됩니다.
+    // 참조된 노드가 없으면 exists: false를 반환합니다 (에러를 throw하지 않음)
     const ReferenceTestComponent: React.FC<{ nodeId: string }> = ({ nodeId }) => {
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      useSduiNodeReference({ nodeId })
-      return <div data-testid={`node-${nodeId}`}>Rendered</div>
+      const { referencedNodes, hasReference } = useSduiNodeReference({ nodeId })
+      const nonExistentNode = referencedNodes.find((n) => n.id === 'non-existent-node')
+      
+      return (
+        <div data-testid={`node-${nodeId}`}>
+          <div data-testid="has-reference">{String(hasReference)}</div>
+          {nonExistentNode && (
+            <div data-testid="non-existent-exists">{String(nonExistentNode.exists)}</div>
+          )}
+        </div>
+      )
     }
 
     const componentFactory: ComponentFactory = (id) => {
       if (id === 'source-node') {
-        return (
-          <TestErrorBoundary>
-            <ReferenceTestComponent nodeId={id} />
-          </TestErrorBoundary>
-        )
+        return <ReferenceTestComponent nodeId={id} />
       }
       return <div data-testid={`default-${id}`}>Default</div>
     }
 
     render(<SduiLayoutRenderer document={document} components={{ Card: componentFactory }} />)
 
-    // NodeNotFoundError가 throw되어 에러 경계에서 catch되었는지 확인
-    expect(screen.getByTestId('error-boundary')).toBeInTheDocument()
-    expect(screen.getByTestId('error-boundary')).toHaveTextContent('Node not found: "non-existent-node"')
+    // 참조는 있지만 존재하지 않는 노드는 exists: false를 반환
+    expect(screen.getByTestId('has-reference')).toHaveTextContent('true')
+    expect(screen.getByTestId('non-existent-exists')).toHaveTextContent('false')
   })
 
   it('should re-render when multiple referenced nodes state changes', async () => {
@@ -404,28 +407,35 @@ describe('Node Reference Subscription', () => {
     }
 
     // useSduiNodeReference를 호출하는 컴포넌트
-    // 여러 reference 중 하나라도 없으면 NodeNotFoundError가 throw됩니다.
+    // 여러 reference 중 존재하지 않는 노드는 exists: false를 반환합니다 (에러를 throw하지 않음)
     const ReferenceTestComponent: React.FC<{ nodeId: string }> = ({ nodeId }) => {
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      useSduiNodeReference({ nodeId })
-      return <div data-testid={`node-${nodeId}`}>Rendered</div>
+      const { referencedNodes, hasReference } = useSduiNodeReference({ nodeId })
+      const target1 = referencedNodes.find((n) => n.id === 'target-1')
+      const nonExistentNode = referencedNodes.find((n) => n.id === 'non-existent-node')
+      
+      return (
+        <div data-testid={`node-${nodeId}`}>
+          <div data-testid="has-reference">{String(hasReference)}</div>
+          {target1 && <div data-testid="target-1-exists">{String(target1.exists)}</div>}
+          {nonExistentNode && (
+            <div data-testid="non-existent-exists">{String(nonExistentNode.exists)}</div>
+          )}
+        </div>
+      )
     }
 
     const componentFactory: ComponentFactory = (id) => {
       if (id === 'source-node') {
-        return (
-          <TestErrorBoundary>
-            <ReferenceTestComponent nodeId={id} />
-          </TestErrorBoundary>
-        )
+        return <ReferenceTestComponent nodeId={id} />
       }
       return <div data-testid={`default-${id}`}>Default</div>
     }
 
     render(<SduiLayoutRenderer document={document} components={{ Card: componentFactory }} />)
 
-    // NodeNotFoundError가 throw되어 에러 경계에서 catch되었는지 확인
-    expect(screen.getByTestId('error-boundary')).toBeInTheDocument()
-    expect(screen.getByTestId('error-boundary')).toHaveTextContent('Node not found: "non-existent-node"')
+    // 참조는 있지만 존재하지 않는 노드는 exists: false를 반환
+    expect(screen.getByTestId('has-reference')).toHaveTextContent('true')
+    expect(screen.getByTestId('target-1-exists')).toHaveTextContent('true')
+    expect(screen.getByTestId('non-existent-exists')).toHaveTextContent('false')
   })
 })

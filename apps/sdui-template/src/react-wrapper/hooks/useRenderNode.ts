@@ -4,10 +4,10 @@
  * SDUI Render Node Hook
  *
  * Render Props Pattern을 위한 renderNode 함수를 생성하는 hook입니다.
- * nodes는 store에서 직접 접근하여 사용합니다.
+ * useSyncExternalStore를 사용하여 nodes 변경을 구독합니다.
  */
 
-import { useCallback, useRef } from 'react'
+import { useCallback, useRef, useSyncExternalStore } from 'react'
 
 import { defaultComponentFactory } from '../../components/componentMap'
 import type { ComponentFactory, RenderNodeFn } from '../../components/types'
@@ -16,14 +16,26 @@ import { useSduiLayoutContext } from '../context'
 /**
  * renderNode 함수를 생성하는 hook
  *
- * nodes는 React 상태로 관리되므로 변경 시 자동으로 리렌더링됩니다.
+ * useSyncExternalStore를 사용하여 nodes 변경을 구독하고,
+ * 변경 시 자동으로 리렌더링됩니다.
  *
  * @param componentMap - 기본 컴포넌트 맵 (선택적)
  * @returns 자식 노드를 렌더링하는 함수
  */
 export const useRenderNode = (componentMap?: Record<string, ComponentFactory>): RenderNodeFn => {
   const { store } = useSduiLayoutContext()
-  const { nodes } = store
+
+  // useSyncExternalStore를 사용하여 nodes 변경 구독
+  // lastModified 객체 참조가 변경되면 nodes를 다시 읽어옴
+  const lastModifiedSnapshot = useSyncExternalStore(
+    (onStoreChange) => store.subscribeVersion(onStoreChange),
+    () => store.getSnapshot(),
+    () => store.getServerSnapshot(),
+  )
+
+  // lastModified 객체 참조가 변경되면 nodes를 다시 읽어옴
+  // useSyncExternalStore가 lastModified 객체 참조 변경을 감지하면 리렌더링됨
+  const { nodes } = store.state
 
   // renderNode 함수가 자기 자신을 참조할 수 있도록 ref 사용
   const renderNodeRef = useRef<RenderNodeFn | null>(null)

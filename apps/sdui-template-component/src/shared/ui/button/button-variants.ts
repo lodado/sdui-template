@@ -1,5 +1,6 @@
 import { cva, type VariantProps } from 'class-variance-authority'
-import type { ButtonVariant, ButtonSize } from './types'
+
+import type { ButtonSize,ButtonVariant } from './types'
 
 /**
  * Button variant configuration using class-variance-authority

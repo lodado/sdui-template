@@ -3,24 +3,21 @@
 /**
  * SDUI Node Subscription Hook
  *
- * ID 기반 구독 시스템을 사용하여 특정 노드의 layoutState 변경을 감지하고
- * forceRender를 트리거합니다.
+ * useSyncExternalStore 기반 구독 시스템을 사용하여 특정 노드의 변경을 감지하고
+ * 리렌더링을 트리거합니다. tearing 문제를 방지하기 위해 내부적으로
+ * useSduiNodeSubscriptionSync를 사용합니다.
  *
  * @description
+ * - useSyncExternalStore를 사용하여 React 18+ concurrent rendering에서 tearing 방지
  * - nodes, variables: version 구독으로 변경 감지
  * - layoutStates/layoutAttributes: 노드별 구독으로 변경 감지
+ * - 타임스탬프 기반 스냅샷 비교로 효율적인 리렌더링
  */
 
-import { useEffect, useMemo, useReducer } from 'react'
 import type { z, ZodSchema } from 'zod'
 
 import type { SduiLayoutNode } from '../../schema'
-import { useSduiLayoutAction } from './useSduiLayoutAction'
-
-/**
- * forceRender를 위한 reducer
- */
-const forceRenderReducer = (x: number): number => x + 1
+import { useSduiNodeSubscriptionSync } from './useSduiNodeSubscriptionSync'
 
 /**
  * useSduiNodeSubscription 파라미터 타입
@@ -35,7 +32,9 @@ export interface UseSduiNodeSubscriptionParams<
 }
 
 /**
- * 특정 노드 ID를 구독하고 변경 시 forceRender를 트리거합니다.
+ * 특정 노드 ID를 구독하고 변경 시 리렌더링을 트리거합니다.
+ *
+ * 내부적으로 useSyncExternalStore를 사용하여 tearing 문제를 방지합니다.
  *
  * - nodes, variables: version 구독으로 변경 감지
  * - layoutStates: 노드별 구독으로 변경 감지
@@ -61,8 +60,6 @@ export interface UseSduiNodeSubscriptionParams<
  * });
  * ```
  */
-
-// Implementation
 export function useSduiNodeSubscription<
   TSchema extends ZodSchema<Record<string, unknown>> = ZodSchema<Record<string, unknown>>,
 >(
@@ -76,56 +73,6 @@ export function useSduiNodeSubscription<
   reference: string | string[] | undefined
   exists: boolean
 } {
-  const { nodeId, schema } = params
-  // forceRender를 위한 state (layoutStates 및 nodes/variables 변경 감지용)
-  const [, forceRender] = useReducer(forceRenderReducer, 0)
-
-  // Store 인스턴스 가져오기
-  const store = useSduiLayoutAction()
-
-  // layoutStates 변경 구독 (구독 시스템)
-  useEffect(() => {
-    const unsubscribe = store.subscribeNode(nodeId, forceRender)
-    return unsubscribe
-  }, [store, nodeId])
-
-  // Store에서 직접 노드 정보 가져오기
-  // 노드가 없으면 throw (NodeNotFoundError)
-  const node = store.getNodeById(nodeId)
-  const childrenIds = (node as any)?.childrenIds || []
-  const rawState = store.getLayoutStateById(nodeId)
-  const attributes = store.getAttributesById(nodeId)
-  const reference = store.getReferenceById(nodeId)
-
-  // 스키마가 있으면 검증
-  const validatedState = useMemo(() => {
-    if (!schema) {
-      // 스키마가 없으면 rawState 반환 (없을 수 있음)
-      return rawState
-    }
-
-    // 스키마가 제공되면 rawState가 없으면 throw
-    if (!rawState) {
-      throw new Error(`State not found for node "${nodeId}". Schema was provided but state is missing.`)
-    }
-
-    // 스키마 검증 실패 시 throw
-    const result = schema.safeParse(rawState)
-    if (!result.success) {
-      throw new Error(`State validation failed for node "${nodeId}": ${result.error.message}`)
-    }
-
-    // 검증 성공 시 항상 정의된 데이터 반환
-    return result.data
-  }, [rawState, schema, nodeId]) as TSchema extends ZodSchema<any> ? z.infer<TSchema> : Record<string, unknown>
-
-  return {
-    node,
-    type: node?.type,
-    state: validatedState!,
-    childrenIds,
-    attributes,
-    reference,
-    exists: !!node,
-  }
+  // useSyncExternalStore 기반 구독으로 위임
+  return useSduiNodeSubscriptionSync(params)
 }

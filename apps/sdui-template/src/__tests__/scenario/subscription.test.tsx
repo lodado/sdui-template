@@ -1,7 +1,9 @@
 /**
  * Scenario Test: Subscription System
  *
- * Tests for subscription-based re-renders
+ * Tests for subscription-based re-renders.
+ * Note: This test now uses useSyncExternalStore internally (via useSduiNodeSubscription)
+ * to prevent tearing issues in concurrent rendering.
  */
 
 import { screen, waitFor } from '@testing-library/react'

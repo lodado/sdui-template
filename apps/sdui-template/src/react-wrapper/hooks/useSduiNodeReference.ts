@@ -14,10 +14,11 @@
  * - 순회: referencedNodes.forEach(...)
  */
 
-import { useEffect, useMemo, useReducer } from 'react'
+import React, { useMemo, useSyncExternalStore } from 'react'
 import type { z, ZodSchema } from 'zod'
 
 import type { SduiLayoutNode } from '../../schema'
+import type { SduiLayoutStore } from '../../store/SduiLayoutStore'
 import { useSduiLayoutAction } from './useSduiLayoutAction'
 import { useSduiNodeSubscription } from './useSduiNodeSubscription'
 
@@ -54,6 +55,9 @@ export interface UseSduiNodeReferenceParams<
 /**
  * 여러 노드 ID에 대해 구독 및 정보를 수집하는 헬퍼 hook
  *
+ * useSyncExternalStore를 사용하여 모든 노드를 한 번에 구독합니다.
+ * tearing 문제를 방지합니다.
+ *
  * @template TSchema - Zod 스키마 타입
  * @param nodeIds - 구독할 노드 ID 배열
  * @param schema - Zod 스키마 (선택적)
@@ -63,36 +67,80 @@ function useMultipleNodeSubscriptions<
   TSchema extends ZodSchema<Record<string, unknown>> = ZodSchema<Record<string, unknown>>,
 >(nodeIds: string[], schema?: TSchema): Array<ReturnType<typeof useSduiNodeSubscription<TSchema>>> {
   const store = useSduiLayoutAction()
-  const [renderKey, forceRender] = useReducer((x: number) => x + 1, 0)
 
-  // 모든 참조된 노드에 대해 구독 설정
-  useEffect(() => {
-    const unsubscribes = nodeIds.map((refId) => store.subscribeNode(refId, forceRender))
-    return () => {
-      unsubscribes.forEach((unsubscribe) => unsubscribe())
-    }
-  }, [store, nodeIds, forceRender])
+  // 각 노드 ID별 lastModified 값 추출을 위한 캐시
+  // nodeIds와 lastModified 값이 같으면 같은 배열 참조 반환
+  const lastModifiedCacheRef = React.useRef<{
+    nodeIdsKey: string
+    values: string[]
+  } | null>(null)
 
-  // 각 노드의 정보 수집
-  // renderKey를 의존성에 추가하여 forceRender 호출 시 재계산되도록 함
+  // useSyncExternalStore를 사용하여 모든 노드 구독
+  // 각 노드의 lastModified 값만 추출하여 비교
+  const lastModifiedValues = useSyncExternalStore(
+    // subscribe 함수: 모든 노드와 version 변경 구독
+    (onStoreChange) => {
+      // 각 노드에 대한 구독
+      const unsubscribes = nodeIds.map((nodeId) => store.subscribeNode(nodeId, onStoreChange))
+      // version 구독 (nodes 전체 변경 감지)
+      const unsubscribeVersion = store.subscribeVersion(onStoreChange)
+
+      return () => {
+        unsubscribes.forEach((unsubscribe) => unsubscribe())
+        unsubscribeVersion()
+      }
+    },
+    // getSnapshot: 구독한 노드들의 lastModified 값만 추출하여 반환
+    () => {
+      const lastModifiedSnapshot = store.getSnapshot()
+      const values = nodeIds.map((id) => lastModifiedSnapshot[id] || 'none')
+      const nodeIdsKey = nodeIds.join(',')
+
+      // 캐시 확인: nodeIds와 값이 같으면 같은 배열 참조 반환
+      if (
+        lastModifiedCacheRef.current &&
+        lastModifiedCacheRef.current.nodeIdsKey === nodeIdsKey &&
+        lastModifiedCacheRef.current.values.length === values.length &&
+        lastModifiedCacheRef.current.values.every((val, idx) => val === values[idx])
+      ) {
+        return lastModifiedCacheRef.current.values
+      }
+
+      // 새 배열 생성 및 캐시 업데이트
+      lastModifiedCacheRef.current = { nodeIdsKey, values }
+      return values
+    },
+    // getServerSnapshot: SSR용
+    () => {
+      const lastModifiedSnapshot = store.getServerSnapshot()
+      return nodeIds.map((id) => lastModifiedSnapshot[id] || 'none')
+    },
+  )
+
+  // lastModified 값들이 변경되면 리렌더링되므로, 이 시점에 store.state에서 직접 읽기
+  const { nodes } = store.state
+
+  // 스키마 검증 및 결과 변환
+  // lastModified 값들을 문자열로 변환하여 의존성 배열에 사용
+  const lastModifiedKeys = useMemo(() => lastModifiedValues.join(':'), [lastModifiedValues])
+
   return useMemo(() => {
-    return nodeIds.map((refId) => {
-      const node = store.getNodeById(refId)
-      const state = store.getLayoutStateById(refId)
-      const attributes = store.getAttributesById(refId)
-      const reference = store.getReferenceById(refId)
+    return nodeIds.map((nodeId) => {
+      const node = nodes[nodeId]
       const childrenIds = (node as any)?.childrenIds || []
+      const rawState = node?.state || {}
+      const attributes = node?.attributes
+      const reference = node?.reference
 
-      // 스키마가 있으면 검증
       let validatedState: Record<string, unknown>
       if (schema) {
-        const result = schema.safeParse(state)
+        const result = schema.safeParse(rawState)
         if (!result.success) {
-          throw new Error(`State validation failed for referenced node "${refId}": ${result.error.message}`)
+          throw new Error(`State validation failed for referenced node "${nodeId}": ${result.error.message}`)
         }
         validatedState = result.data
       } else {
-        validatedState = state
+        validatedState = rawState
       }
 
       return {
@@ -104,8 +152,8 @@ function useMultipleNodeSubscriptions<
         reference,
         exists: !!node,
       }
-    })
-  }, [nodeIds, store, schema, renderKey]) as Array<ReturnType<typeof useSduiNodeSubscription<TSchema>>>
+    }) as Array<ReturnType<typeof useSduiNodeSubscription<TSchema>>>
+  }, [nodeIds, nodes, schema, lastModifiedKeys])
 }
 
 /**

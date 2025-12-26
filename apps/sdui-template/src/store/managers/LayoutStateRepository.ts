@@ -23,6 +23,7 @@ export class LayoutStateRepository {
     selectedNodeId: undefined,
     isEdited: false,
     variables: {},
+    lastModified: {},
   }
 
   // ==================== Getter ====================
@@ -82,6 +83,16 @@ export class LayoutStateRepository {
     return this._state.rootId
   }
 
+  /**
+   * 노드의 마지막 수정 시간을 반환합니다.
+   *
+   * @param nodeId - 노드 ID
+   * @returns 마지막 수정 시간 (ISO timestamp) 또는 undefined
+   */
+  getLastModified(nodeId: string): string | undefined {
+    return this._state.lastModified[nodeId]
+  }
+
   // ==================== Update Methods (Internal) ====================
 
   /**
@@ -97,6 +108,7 @@ export class LayoutStateRepository {
       selectedNodeId: undefined,
       isEdited: false,
       variables: {},
+      lastModified: {},
       ...initialState,
     }
   }
@@ -108,6 +120,13 @@ export class LayoutStateRepository {
    */
   updateNodes(nodes: Record<string, SduiLayoutNode>): void {
     this._state.nodes = nodes
+    // 모든 노드에 대한 타임스탬프 업데이트 (새 객체 생성하여 참조 변경)
+    const timestamp = new Date().toISOString()
+    const newLastModified: Record<string, string> = {}
+    Object.keys(nodes).forEach((nodeId) => {
+      newLastModified[nodeId] = timestamp
+    })
+    this._state.lastModified = newLastModified
   }
 
   /**
@@ -122,6 +141,11 @@ export class LayoutStateRepository {
       this._state.nodes[nodeId] = {
         ...node,
         state,
+      }
+      // 타임스탬프 업데이트 (새 객체 생성하여 참조 변경)
+      this._state.lastModified = {
+        ...this._state.lastModified,
+        [nodeId]: new Date().toISOString(),
       }
     }
   }
@@ -139,6 +163,11 @@ export class LayoutStateRepository {
         ...node,
         attributes,
       }
+      // 타임스탬프 업데이트 (새 객체 생성하여 참조 변경)
+      this._state.lastModified = {
+        ...this._state.lastModified,
+        [nodeId]: new Date().toISOString(),
+      }
     }
   }
 
@@ -154,6 +183,11 @@ export class LayoutStateRepository {
       this._state.nodes[nodeId] = {
         ...node,
         reference,
+      }
+      // 타임스탬프 업데이트 (새 객체 생성하여 참조 변경)
+      this._state.lastModified = {
+        ...this._state.lastModified,
+        [nodeId]: new Date().toISOString(),
       }
     }
   }
@@ -212,6 +246,7 @@ export class LayoutStateRepository {
     this._state.isEdited = false
     this._state.selectedNodeId = undefined
     this._state.variables = {}
+    this._state.lastModified = {}
     this._state.version += 1
   }
 }

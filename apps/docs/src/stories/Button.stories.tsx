@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/react-vite'
-import { Button } from '@lodado/sdui-template-component'
 import type { ButtonProps } from '@lodado/sdui-template-component'
+import { Button } from '@lodado/sdui-template-component'
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
 const meta: Meta<typeof Button> = {
   title: 'Components/Button',

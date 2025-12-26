@@ -49,6 +49,9 @@ export interface SduiLayoutStoreState {
 
   /** 전역 변수 (깊은 복사로 리렌더 트리거) */
   variables: Record<string, unknown>;
+
+  /** 노드별 마지막 수정 시간 (nodeId → ISO timestamp) */
+  lastModified: Record<string, string>;
 }
 
 /**
