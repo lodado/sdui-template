@@ -1,23 +1,24 @@
 'use client'
 
 import React from 'react'
-import type { ComponentFactory, RenderNodeFn } from '@lodado/sdui-template'
-import { useSduiNodeSubscription } from '@lodado/sdui-template'
+import type { ComponentFactory, ParentPath } from '@lodado/sdui-template'
+import { useRenderNode, useSduiNodeSubscription } from '@lodado/sdui-template'
 
 interface GridLayoutProps {
   id: string
-  renderNode: RenderNodeFn
+  parentPath?: ParentPath
 }
 
-const GridLayoutComponent: React.FC<GridLayoutProps> = ({ id, renderNode }) => {
+const GridLayoutComponent: React.FC<GridLayoutProps> = ({ id, parentPath = [] }) => {
   const { childrenIds } = useSduiNodeSubscription({
     nodeId: id,
   })
+  const { renderNode, currentPath } = useRenderNode({ nodeId: id, parentPath })
 
   return (
     <div className="w-full h-full" data-testid="grid-layout">
       {childrenIds?.map((childId: string) => (
-        <div key={childId}>{renderNode(childId)}</div>
+        <div key={childId}>{renderNode(childId, currentPath)}</div>
       ))}
     </div>
   )
@@ -27,4 +28,4 @@ GridLayoutComponent.displayName = 'GridLayout'
 
 export const GridLayout = GridLayoutComponent
 
-export const GridLayoutFactory: ComponentFactory = (id, renderNode) => <GridLayout id={id} renderNode={renderNode} />
+export const GridLayoutFactory: ComponentFactory = (id, parentPath) => <GridLayout id={id} parentPath={parentPath} />
