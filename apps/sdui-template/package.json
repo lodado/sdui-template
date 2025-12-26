@@ -1,19 +1,46 @@
 {
-  "author": "lodado",
+  "name": "@lodado/sdui-template",
+  "description": "SDUI (Server-Driven UI) template library for React. A flexible and powerful template system for building server-driven user interfaces with dynamic layouts and components.",
   "version": "1.0.0",
+  "sideEffects": false,
+  "license": "MIT",
+  "author": "lodado",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "source": "./src/index.ts",
+  "types": "./src/index.ts",
   "bugs": {
     "url": "https://github.com/lodado/sdui-template/issues"
   },
   "contributors": [],
+  "files": [
+    "dist/**",
+    "README.md"
+  ],
+  "homepage": "https://github.com/lodado/sdui-template",
+  "keywords": [
+    "react",
+    "sdui",
+    "server-driven-ui",
+    "template",
+    "layout",
+    "dynamic",
+    "components",
+    "ui"
+  ],
+  "scripts": {
+    "build": "rollup -c && tsc --emitDeclarationOnly --declarationMap false --declaration --declarationDir dist/types",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
+    "lint": "eslint \"src/**/*.ts*\"",
+    "manual-release": "pnpm run build && pnpm publish --no-git-checks",
+    "test": "jest --passWithNoTests"
+  },
+
+  "packageManager": "pnpm@9.0.6",
   "dependencies": {
     "lodash-es": "^4.17.21",
     "normalizr": "^3.6.2",
     "zod": "^3.23.8"
-  },
-  "description": "SDUI (Server-Driven UI) template library for React. A flexible and powerful template system for building server-driven user interfaces with dynamic layouts and components.",
-  "peerDependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.1.5",
@@ -40,36 +67,20 @@
     },
     "./package.json": "./package.json"
   },
-  "files": [
-    "dist/**",
-    "README.md"
-  ],
-  "homepage": "https://github.com/lodado/sdui-template",
-  "keywords": [
-    "react",
-    "sdui",
-    "server-driven-ui",
-    "template",
-    "layout",
-    "dynamic",
-    "components",
-    "ui"
-  ],
-  "license": "MIT",
-  "main": "./src/index.ts",
-  "module": "./src/index.ts",
-  "name": "@lodado/sdui-template",
-  "packageManager": "pnpm@9.0.6",
   "peerDependencies": {
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
-    "react": "^18.0"
+    "react": "^18.0",
+    "react-dom": "^18.0"
   },
   "peerDependenciesMeta": {
     "@types/react": {
       "optional": true
     },
     "@types/react-dom": {
+      "optional": true
+    },
+    "react-dom": {
       "optional": true
     }
   },
@@ -91,15 +102,5 @@
     "module": "./dist/es/client/index.mjs",
     "source": "./src/index.ts",
     "types": "./dist/types/index.d.ts"
-  },
-  "scripts": {
-    "build": "rollup -c && tsc --emitDeclarationOnly --declarationMap false --declaration --declarationDir dist/types",
-    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
-    "lint": "eslint \"src/**/*.ts*\"",
-    "manual-release": "pnpm run build && pnpm publish --no-git-checks",
-    "test": "jest --passWithNoTests"
-  },
-  "sideEffects": false,
-  "source": "./src/index.ts",
-  "types": "./src/index.ts"
+  }
 }
