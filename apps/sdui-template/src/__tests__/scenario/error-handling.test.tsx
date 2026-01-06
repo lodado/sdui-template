@@ -8,6 +8,7 @@ import { render, screen } from '@testing-library/react'
 import React from 'react'
 
 import { SduiLayoutRenderer } from '../../react-wrapper/components/SduiLayoutRenderer'
+import { defaultTestComponentFactory } from '../utils/test-utils'
 
 describe('Error Handling', () => {
   describe('as is: empty store', () => {
@@ -22,7 +23,7 @@ describe('Error Handling', () => {
           },
         }
 
-        render(<SduiLayoutRenderer document={invalidDocument} onError={onError} />)
+        render(<SduiLayoutRenderer document={invalidDocument} onError={onError} components={{ Container: defaultTestComponentFactory }} />)
 
         // Error should be caught and passed to onError
         // Note: The actual error might be thrown during normalization

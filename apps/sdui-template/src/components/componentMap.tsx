@@ -11,12 +11,7 @@
  * 자신의 컴포넌트를 제공해야 합니다.
  */
 
-import React, { ReactNode } from 'react'
-
-import { useRenderNode } from '../react-wrapper/hooks/useRenderNode'
-import { useSduiNodeSubscription } from '../react-wrapper/hooks/useSduiNodeSubscription'
-import { buildCurrentPath, buildCurrentPathArray } from '../utils/parentPath'
-import type { ComponentFactory, ParentPath, SduiComponentProps } from './types'
+import type { ComponentFactory } from './types'
 
 /**
  * 컴포넌트 맵
@@ -25,43 +20,3 @@ import type { ComponentFactory, ParentPath, SduiComponentProps } from './types'
  * 기본적으로 비어있으며, consumers가 components prop을 통해 제공합니다.
  */
 export const componentMap: Record<string, ComponentFactory> = {}
-
-/**
- * 기본 노드 컴포넌트
- *
- * 노드 타입이 매핑되지 않았을 때 사용되는 기본 컴포넌트입니다.
- * 개발 환경에서 노드 정보를 표시합니다.
- */
-const DefaultNodeComponent: React.FC<SduiComponentProps> = ({ nodeId: id, parentPath = [] }) => {
-  const { type, childrenIds } = useSduiNodeSubscription({
-    nodeId: id,
-  })
-  const { renderNode, currentPath, pathString } = useRenderNode({ nodeId: id, parentPath })
-
-  if (!type) return null
-
-  return (
-    <div data-sdui-node-id={id} data-sdui-node-type={type} data-sdui-path={pathString}>
-      <div>Type: {type}</div>
-      <div>ID: {id}</div>
-      {parentPath.length > 0 && <div>Path: {pathString}</div>}
-      {childrenIds && childrenIds.length > 0 && (
-        <div>
-          {childrenIds.map((childId: string) => (
-            <div key={childId}>{renderNode(childId, currentPath)}</div>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
-/**
- * 기본 컴포넌트 팩토리
- *
- * 노드 타입이 componentMap에 없을 때 사용되는 기본 팩토리입니다.
- * 노드 정보를 표시하고 자식을 렌더링합니다.
- */
-export const defaultComponentFactory: ComponentFactory = (id, parentPath) => (
-  <DefaultNodeComponent nodeId={id} parentPath={parentPath} />
-)

@@ -7,12 +7,52 @@
 import { render, RenderResult } from '@testing-library/react'
 import React from 'react'
 
-import type { ComponentFactory } from '../../components/types'
+import type { ComponentFactory, SduiComponentProps } from '../../components/types'
 import { SduiLayoutRendererInner } from '../../react-wrapper/components/SduiLayoutRenderer'
 import { SduiLayoutProvider } from '../../react-wrapper/context'
+import { useRenderNode } from '../../react-wrapper/hooks/useRenderNode'
+import { useSduiNodeSubscription } from '../../react-wrapper/hooks/useSduiNodeSubscription'
 import type { SduiLayoutDocument } from '../../schema'
 import { SduiLayoutStore } from '../../store'
 import type { SduiLayoutStoreOptions } from '../../store/types'
+
+/**
+ * 테스트용 기본 노드 컴포넌트 (자식 렌더링 포함)
+ *
+ * 노드 정보를 표시하고 자식 노드를 렌더링합니다.
+ * 테스트에서 기본 컴포넌트로 사용됩니다.
+ */
+export const TestDefaultNodeComponent: React.FC<SduiComponentProps> = ({ nodeId: id, parentPath = [] }) => {
+  const { type, childrenIds } = useSduiNodeSubscription({
+    nodeId: id,
+  })
+  const { renderNode, currentPath } = useRenderNode({ nodeId: id, parentPath })
+
+  if (!type) return null
+
+  return (
+    <div data-sdui-node-id={id} data-sdui-node-type={type}>
+      <div>Type: {type}</div>
+      <div>ID: {id}</div>
+      {childrenIds && childrenIds.length > 0 && (
+        <div>
+          {childrenIds.map((childId: string) => (
+            <div key={childId}>{renderNode(childId, currentPath)}</div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/**
+ * 테스트용 기본 컴포넌트 팩토리
+ *
+ * 테스트에서 기본 컴포넌트로 사용되는 팩토리입니다.
+ */
+export const defaultTestComponentFactory: ComponentFactory = (id, parentPath) => (
+  <TestDefaultNodeComponent nodeId={id} parentPath={parentPath} />
+)
 
 /**
  * Create a test document with a single root node

@@ -10,7 +10,7 @@
 
 import { useCallback, useMemo } from 'react'
 
-import { defaultComponentFactory } from '../../components/componentMap'
+import { defaultComponentFactory } from '../../components/defaultComponentFactory'
 import type { ComponentFactory, ParentPath, RenderNodeFn } from '../../components/types'
 import { buildCurrentPath, buildCurrentPathArray } from '../../utils/parentPath'
 import { useSduiLayoutContext } from '../context'

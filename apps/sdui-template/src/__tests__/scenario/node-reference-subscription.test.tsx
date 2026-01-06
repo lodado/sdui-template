@@ -14,7 +14,7 @@ import type { ComponentFactory } from '../../components/types'
 import { SduiLayoutRenderer } from '../../react-wrapper/components/SduiLayoutRenderer'
 import { useSduiLayoutAction, useSduiNodeReference, useSduiNodeSubscription } from '../../react-wrapper/hooks'
 import { NodeNotFoundError } from '../../store'
-import { createTestDocument } from '../utils/test-utils'
+import { createTestDocument, defaultTestComponentFactory } from '../utils/test-utils'
 
 // Toggle state schema
 const toggleStateSchema = z.object({
@@ -73,7 +73,12 @@ describe('Node Reference Subscription', () => {
       return <div data-testid={`default-${id}`}>Default</div>
     }
 
-    render(<SduiLayoutRenderer document={document} components={{ Card: componentFactory }} />)
+    render(
+      <SduiLayoutRenderer
+        document={document}
+        components={{ Container: defaultTestComponentFactory, Card: componentFactory }}
+      />,
+    )
 
     // 초기값 확인
     expect(screen.getByTestId('target-count-source-node')).toHaveTextContent('0')
@@ -158,7 +163,11 @@ describe('Node Reference Subscription', () => {
     render(
       <SduiLayoutRenderer
         document={document}
-        components={{ Toggle: toggleFactory, StatusDisplay: statusDisplayFactory }}
+        components={{
+          Container: defaultTestComponentFactory,
+          Toggle: toggleFactory,
+          StatusDisplay: statusDisplayFactory,
+        }}
       />,
     )
 
@@ -240,13 +249,11 @@ describe('Node Reference Subscription', () => {
     const ReferenceTestComponent: React.FC<{ nodeId: string }> = ({ nodeId }) => {
       const { referencedNodes, hasReference } = useSduiNodeReference({ nodeId })
       const nonExistentNode = referencedNodes.find((n) => n.id === 'non-existent-node')
-      
+
       return (
         <div data-testid={`node-${nodeId}`}>
           <div data-testid="has-reference">{String(hasReference)}</div>
-          {nonExistentNode && (
-            <div data-testid="non-existent-exists">{String(nonExistentNode.exists)}</div>
-          )}
+          {nonExistentNode && <div data-testid="non-existent-exists">{String(nonExistentNode.exists)}</div>}
         </div>
       )
     }
@@ -258,7 +265,12 @@ describe('Node Reference Subscription', () => {
       return <div data-testid={`default-${id}`}>Default</div>
     }
 
-    render(<SduiLayoutRenderer document={document} components={{ Card: componentFactory }} />)
+    render(
+      <SduiLayoutRenderer
+        document={document}
+        components={{ Container: defaultTestComponentFactory, Card: componentFactory }}
+      />,
+    )
 
     // 참조는 있지만 존재하지 않는 노드는 exists: false를 반환
     expect(screen.getByTestId('has-reference')).toHaveTextContent('true')
@@ -333,7 +345,12 @@ describe('Node Reference Subscription', () => {
       return <div data-testid={`default-${id}`}>Default</div>
     }
 
-    render(<SduiLayoutRenderer document={document} components={{ Card: componentFactory }} />)
+    render(
+      <SduiLayoutRenderer
+        document={document}
+        components={{ Container: defaultTestComponentFactory, Card: componentFactory }}
+      />,
+    )
 
     // 초기값 확인
     expect(screen.getByTestId('target-1-count-source-node')).toHaveTextContent('0')
@@ -412,14 +429,12 @@ describe('Node Reference Subscription', () => {
       const { referencedNodes, hasReference } = useSduiNodeReference({ nodeId })
       const target1 = referencedNodes.find((n) => n.id === 'target-1')
       const nonExistentNode = referencedNodes.find((n) => n.id === 'non-existent-node')
-      
+
       return (
         <div data-testid={`node-${nodeId}`}>
           <div data-testid="has-reference">{String(hasReference)}</div>
           {target1 && <div data-testid="target-1-exists">{String(target1.exists)}</div>}
-          {nonExistentNode && (
-            <div data-testid="non-existent-exists">{String(nonExistentNode.exists)}</div>
-          )}
+          {nonExistentNode && <div data-testid="non-existent-exists">{String(nonExistentNode.exists)}</div>}
         </div>
       )
     }
@@ -431,7 +446,12 @@ describe('Node Reference Subscription', () => {
       return <div data-testid={`default-${id}`}>Default</div>
     }
 
-    render(<SduiLayoutRenderer document={document} components={{ Card: componentFactory }} />)
+    render(
+      <SduiLayoutRenderer
+        document={document}
+        components={{ Container: defaultTestComponentFactory, Card: componentFactory }}
+      />,
+    )
 
     // 참조는 있지만 존재하지 않는 노드는 exists: false를 반환
     expect(screen.getByTestId('has-reference')).toHaveTextContent('true')

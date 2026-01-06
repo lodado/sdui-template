@@ -11,7 +11,7 @@ import { z } from 'zod'
 
 import type { ComponentFactory } from '../../components/types'
 import { useSduiLayoutAction, useSduiNodeSubscription } from '../../react-wrapper/hooks'
-import { createTestDocument, renderWithSduiLayout } from '../utils/test-utils'
+import { createTestDocument, defaultTestComponentFactory, renderWithSduiLayout } from '../utils/test-utils'
 
 // ==================== Zod Schemas ====================
 
@@ -97,6 +97,7 @@ describe('Zod Schema Validation', () => {
 
         renderWithSduiLayout(document, {
           components: {
+            Container: defaultTestComponentFactory,
             Toggle: toggleComponentFactory,
           },
         })
@@ -126,6 +127,7 @@ describe('Zod Schema Validation', () => {
         // Render without updater first to verify initial state
         renderWithSduiLayout(document, {
           components: {
+            Container: defaultTestComponentFactory,
             Toggle: toggleComponentFactory,
           },
         })
@@ -216,6 +218,7 @@ describe('Zod Schema Validation', () => {
 
         renderWithSduiLayout(document, {
           components: {
+            Container: defaultTestComponentFactory,
             Toggle: toggleComponentFactory,
           },
         })
@@ -240,6 +243,7 @@ describe('Zod Schema Validation', () => {
 
         renderWithSduiLayout(document, {
           components: {
+            Container: defaultTestComponentFactory,
             Toggle: toggleComponentFactory,
           },
         })
@@ -280,6 +284,7 @@ describe('Zod Schema Validation', () => {
 
         renderWithSduiLayout(document, {
           components: {
+            Container: defaultTestComponentFactory,
             Toggle: toggleComponentFactory,
           },
         })

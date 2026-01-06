@@ -8,14 +8,19 @@ import { render, screen } from '@testing-library/react'
 import React from 'react'
 
 import { SduiLayoutRenderer } from '../../react-wrapper/components/SduiLayoutRenderer'
-import { createNestedTestDocument, createTestDocument, renderWithProvider } from '../utils/test-utils'
+import {
+  createNestedTestDocument,
+  createTestDocument,
+  defaultTestComponentFactory,
+  renderWithProvider,
+} from '../utils/test-utils'
 
 describe('SduiLayoutRenderer', () => {
   describe('as is: empty store', () => {
     describe('when: SduiLayoutRenderer receives document with single root node (no children)', () => {
       it('to be: root node renders, no errors', () => {
         const document = createTestDocument()
-        render(<SduiLayoutRenderer document={document} />)
+        render(<SduiLayoutRenderer document={document} components={{ Container: defaultTestComponentFactory }} />)
 
         // Check that root node is rendered (default component shows node info)
         expect(screen.getByText(/Type: Container/i)).toBeInTheDocument()
@@ -26,7 +31,12 @@ describe('SduiLayoutRenderer', () => {
     describe('when: SduiLayoutRenderer receives document with 3 levels of nesting', () => {
       it('to be: all nodes render in correct hierarchy', () => {
         const document = createNestedTestDocument()
-        render(<SduiLayoutRenderer document={document} />)
+        render(
+          <SduiLayoutRenderer
+            document={document}
+            components={{ Container: defaultTestComponentFactory, Card: defaultTestComponentFactory }}
+          />,
+        )
 
         // Check that all nodes are rendered
         expect(screen.getByText(/Type: Container/i)).toBeInTheDocument()
@@ -46,7 +56,7 @@ describe('SduiLayoutRenderer', () => {
             children: [],
           },
         })
-        render(<SduiLayoutRenderer document={document} />)
+        render(<SduiLayoutRenderer document={document} components={{ Container: defaultTestComponentFactory }} />)
 
         expect(screen.getByText(/ID: root/i)).toBeInTheDocument()
         // No children should be rendered
@@ -76,7 +86,7 @@ describe('SduiLayoutRenderer', () => {
         }
 
         const start = performance.now()
-        render(<SduiLayoutRenderer document={document} />)
+        render(<SduiLayoutRenderer document={document} components={{ Container: defaultTestComponentFactory }} />)
         const duration = performance.now() - start
 
         // Should render without errors

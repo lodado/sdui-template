@@ -8,14 +8,14 @@ import { render, screen } from '@testing-library/react'
 import React from 'react'
 
 import { SduiLayoutRenderer } from '../../react-wrapper/components/SduiLayoutRenderer'
-import { createTestDocument } from '../utils/test-utils'
+import { createTestDocument, defaultTestComponentFactory } from '../utils/test-utils'
 
 describe('Boundary Value Analysis', () => {
   describe('Node Count', () => {
     describe('when: document with 1 node (minimum valid)', () => {
       it('to be: renders correctly', () => {
         const document = createTestDocument()
-        render(<SduiLayoutRenderer document={document} />)
+        render(<SduiLayoutRenderer document={document} components={{ Container: defaultTestComponentFactory }} />)
 
         expect(screen.getByText(/ID: root/i)).toBeInTheDocument()
       })
@@ -34,7 +34,7 @@ describe('Boundary Value Analysis', () => {
           },
         })
 
-        render(<SduiLayoutRenderer document={document} />)
+        render(<SduiLayoutRenderer document={document} components={{ Container: defaultTestComponentFactory, Card: defaultTestComponentFactory }} />)
 
         expect(screen.getByText(/ID: root/i)).toBeInTheDocument()
         for (let i = 1; i <= 9; i += 1) {
@@ -101,7 +101,7 @@ describe('Boundary Value Analysis', () => {
           },
         })
 
-        render(<SduiLayoutRenderer document={document} />)
+        render(<SduiLayoutRenderer document={document} components={{ Container: defaultTestComponentFactory, Card: defaultTestComponentFactory }} />)
 
         expect(screen.getByText(/ID: root/i)).toBeInTheDocument()
         expect(screen.queryByText(/ID: child/i)).not.toBeInTheDocument()
@@ -123,7 +123,7 @@ describe('Boundary Value Analysis', () => {
           },
         })
 
-        render(<SduiLayoutRenderer document={document} />)
+        render(<SduiLayoutRenderer document={document} components={{ Container: defaultTestComponentFactory, Card: defaultTestComponentFactory }} />)
 
         expect(screen.getByText(/ID: root/i)).toBeInTheDocument()
         expect(screen.getByText(/ID: child-1/i)).toBeInTheDocument()
@@ -150,7 +150,7 @@ describe('Boundary Value Analysis', () => {
           root: current,
         }
 
-        render(<SduiLayoutRenderer document={document} />)
+        render(<SduiLayoutRenderer document={document} components={{ Container: defaultTestComponentFactory }} />)
 
         expect(screen.getByText(/ID: level-0/i)).toBeInTheDocument()
         expect(screen.getByText(/ID: level-5/i)).toBeInTheDocument()
@@ -178,7 +178,7 @@ describe('Boundary Value Analysis', () => {
         }
 
         const start = performance.now()
-        render(<SduiLayoutRenderer document={document} />)
+        render(<SduiLayoutRenderer document={document} components={{ Container: defaultTestComponentFactory }} />)
         const duration = performance.now() - start
 
         expect(screen.getByText(/ID: level-0/i)).toBeInTheDocument()
@@ -196,7 +196,7 @@ describe('Boundary Value Analysis', () => {
           version: '',
         })
 
-        render(<SduiLayoutRenderer document={document} />)
+        render(<SduiLayoutRenderer document={document} components={{ Container: defaultTestComponentFactory, Card: defaultTestComponentFactory }} />)
 
         expect(screen.getByText(/ID: root/i)).toBeInTheDocument()
       })
@@ -208,7 +208,7 @@ describe('Boundary Value Analysis', () => {
           version: '999.999.999',
         })
 
-        render(<SduiLayoutRenderer document={document} />)
+        render(<SduiLayoutRenderer document={document} components={{ Container: defaultTestComponentFactory, Card: defaultTestComponentFactory }} />)
 
         expect(screen.getByText(/ID: root/i)).toBeInTheDocument()
       })
@@ -225,7 +225,7 @@ describe('Boundary Value Analysis', () => {
           },
         })
 
-        render(<SduiLayoutRenderer document={document} />)
+        render(<SduiLayoutRenderer document={document} components={{ Container: defaultTestComponentFactory, Card: defaultTestComponentFactory }} />)
 
         expect(screen.getByText(/ID: a/i)).toBeInTheDocument()
       })
@@ -241,7 +241,7 @@ describe('Boundary Value Analysis', () => {
           },
         })
 
-        render(<SduiLayoutRenderer document={document} />)
+        render(<SduiLayoutRenderer document={document} components={{ Container: defaultTestComponentFactory, Card: defaultTestComponentFactory }} />)
 
         expect(screen.getByText(new RegExp(`ID: ${veryLongId}`, 'i'))).toBeInTheDocument()
       })

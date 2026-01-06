@@ -4,13 +4,6 @@
  * Component factory system exports
  */
 
-export * from "./componentMap";
-export * from "./types";
-
-
-
-
-
-
-
-
+export * from './componentMap'
+export * from './defaultComponentFactory'
+export * from './types'

@@ -9,7 +9,7 @@ import React from 'react'
 
 import type { ComponentFactory } from '../../components/types'
 import { SduiLayoutRenderer } from '../../react-wrapper/components/SduiLayoutRenderer'
-import { createTestDocument } from '../utils/test-utils'
+import { createTestDocument, defaultTestComponentFactory } from '../utils/test-utils'
 
 describe('Component Overrides', () => {
   describe('as is: document with node type CustomType', () => {
@@ -53,6 +53,7 @@ describe('Component Overrides', () => {
         render(
           <SduiLayoutRenderer
             document={document}
+            components={{ Container: defaultTestComponentFactory }}
             componentOverrides={{
               byNodeId: { 'custom-id': customFactory },
             }}

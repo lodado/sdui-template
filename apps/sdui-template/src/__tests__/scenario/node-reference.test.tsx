@@ -10,7 +10,7 @@ import React from 'react'
 import type { ComponentFactory } from '../../components/types'
 import { SduiLayoutRenderer } from '../../react-wrapper/components/SduiLayoutRenderer'
 import { useSduiLayoutAction, useSduiNodeReference, useSduiNodeSubscription } from '../../react-wrapper/hooks'
-import { createTestDocument, renderWithSduiLayout } from '../utils/test-utils'
+import { createTestDocument, defaultTestComponentFactory, renderWithSduiLayout } from '../utils/test-utils'
 
 describe('Node Reference', () => {
   describe('as is: document with node having single reference', () => {
@@ -58,7 +58,12 @@ describe('Node Reference', () => {
           return <div data-testid={`default-${id}`}>Default</div>
         }
 
-        render(<SduiLayoutRenderer document={document} components={{ Card: componentFactory }} />)
+        render(
+          <SduiLayoutRenderer
+            document={document}
+            components={{ Container: defaultTestComponentFactory, Card: componentFactory }}
+          />,
+        )
 
         expect(screen.getByTestId('node-source-node')).toBeInTheDocument()
         expect(screen.getByTestId('reference-source-node')).toBeInTheDocument()
@@ -157,7 +162,12 @@ describe('Node Reference', () => {
           return <div data-testid={`default-${id}`}>Default</div>
         }
 
-        render(<SduiLayoutRenderer document={document} components={{ Card: componentFactory }} />)
+        render(
+          <SduiLayoutRenderer
+            document={document}
+            components={{ Container: defaultTestComponentFactory, Card: componentFactory }}
+          />,
+        )
 
         expect(screen.getByTestId('node-source-node')).toBeInTheDocument()
         expect(screen.getByTestId('reference-source-node')).toBeInTheDocument()
@@ -200,7 +210,12 @@ describe('Node Reference', () => {
           return <div data-testid={`default-${id}`}>Default</div>
         }
 
-        render(<SduiLayoutRenderer document={document} components={{ Card: componentFactory }} />)
+        render(
+          <SduiLayoutRenderer
+            document={document}
+            components={{ Container: defaultTestComponentFactory, Card: componentFactory }}
+          />,
+        )
 
         expect(screen.getByTestId('node-no-ref-node')).toBeInTheDocument()
         expect(screen.getByTestId('no-reference-no-ref-node')).toBeInTheDocument()
@@ -268,7 +283,12 @@ describe('Node Reference', () => {
           return <div data-testid={`default-${id}`}>Default</div>
         }
 
-        render(<SduiLayoutRenderer document={document} components={{ Card: componentFactory }} />)
+        render(
+          <SduiLayoutRenderer
+            document={document}
+            components={{ Container: defaultTestComponentFactory, Card: componentFactory }}
+          />,
+        )
 
         expect(screen.getByTestId('node-source-node')).toBeInTheDocument()
         expect(screen.getByTestId('target-state-source-node')).toBeInTheDocument()
@@ -324,7 +344,12 @@ describe('Node Reference', () => {
           return <div data-testid={`default-${id}`}>Default</div>
         }
 
-        render(<SduiLayoutRenderer document={document} components={{ Card: componentFactory }} />)
+        render(
+          <SduiLayoutRenderer
+            document={document}
+            components={{ Container: defaultTestComponentFactory, Card: componentFactory }}
+          />,
+        )
 
         expect(screen.getByTestId('node-source-node')).toBeInTheDocument()
         expect(screen.getByTestId('referenced-info-source-node')).toBeInTheDocument()
@@ -389,7 +414,12 @@ describe('Node Reference', () => {
           return <div data-testid={`default-${id}`}>Default</div>
         }
 
-        render(<SduiLayoutRenderer document={document} components={{ Card: componentFactory }} />)
+        render(
+          <SduiLayoutRenderer
+            document={document}
+            components={{ Container: defaultTestComponentFactory, Card: componentFactory }}
+          />,
+        )
 
         expect(screen.getByTestId('node-source-node')).toBeInTheDocument()
         expect(screen.getByTestId('referenced-list-source-node')).toBeInTheDocument()
@@ -460,7 +490,12 @@ describe('Node Reference', () => {
           return <div data-testid={`default-${id}`}>Default</div>
         }
 
-        render(<SduiLayoutRenderer document={document} components={{ Card: componentFactory }} />)
+        render(
+          <SduiLayoutRenderer
+            document={document}
+            components={{ Container: defaultTestComponentFactory, Card: componentFactory }}
+          />,
+        )
 
         expect(screen.getByTestId('node-source-node')).toBeInTheDocument()
         expect(screen.getByTestId('map-access-source-node')).toBeInTheDocument()
