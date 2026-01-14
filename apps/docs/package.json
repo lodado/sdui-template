@@ -4,22 +4,24 @@
   "private": true,
   "description": "Storybook for SDUI Template Library",
   "scripts": {
-    "dev": "storybook dev -p 6006",
-    "build": "storybook build",
-    "lint": "eslint \"src/**/*.ts*\"",
     "storybook": "storybook dev -p 6006",
+    "build:internal": "storybook build",
+    "lint": "eslint \"src/**/*.ts*\"",
     "build-storybook": "storybook build"
   },
   "dependencies": {
+    "@lodado/sdui-design-files": "workspace:*",
     "@lodado/sdui-template": "workspace:*",
     "@lodado/sdui-template-component": "workspace:*",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@storybook/addon-a11y": "^10.1.10",
     "@storybook/addon-docs": "^10.1.10",
     "@storybook/react-vite": "^10.1.10",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20.12.7",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
@@ -29,6 +31,7 @@
     "eslint-plugin-storybook": "^10.1.10",
     "postcss": "^8.4.47",
     "storybook": "^10.1.10",
+    "tailwindcss": "^4",
     "tsconfig": "workspace:*",
     "typescript": "^5.0.0"
   }

@@ -1,0 +1,105 @@
+{
+  "name": "@lodado/sdui-template",
+  "description": "SDUI (Server-Driven UI) template library for React. A flexible and powerful template system for building server-driven user interfaces with dynamic layouts and components.",
+  "version": "1.0.0",
+  "sideEffects": false,
+  "license": "MIT",
+  "author": "lodado",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "source": "./src/index.ts",
+  "types": "./src/index.ts",
+  "bugs": {
+    "url": "https://github.com/lodado/sdui-template/issues"
+  },
+  "contributors": [],
+  "files": [
+    "dist/**",
+    "README.md"
+  ],
+  "homepage": "https://github.com/lodado/sdui-template",
+  "keywords": [
+    "react",
+    "sdui",
+    "server-driven-ui",
+    "template",
+    "layout",
+    "dynamic",
+    "components",
+    "ui"
+  ],
+  "scripts": {
+    "build": "rollup -c && tsc --emitDeclarationOnly --declarationMap false --declaration --declarationDir dist/types",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
+    "lint": "eslint \"src/**/*.ts*\"",
+    "manual-release": "pnpm run build && pnpm publish --no-git-checks",
+    "test": "jest --passWithNoTests"
+  },
+  "packageManager": "pnpm@9.0.6",
+  "dependencies": {
+    "lodash-es": "^4.17.21",
+    "normalizr": "^3.6.2",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@types/lodash-es": "^4.17.12",
+    "@types/node": "^20.12.7",
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "babel-jest": "29.5.0",
+    "eslint": "^8.57.0",
+    "eslint-config-sdui-template": "workspace:*",
+    "jest-config": "workspace:*",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "rollup-config": "workspace:*",
+    "ts-jest": "29.0.5",
+    "tsconfig": "workspace:*"
+  },
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "require": "./src/index.ts",
+      "types": "./src/index.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "peerDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "react": "^18.0",
+    "react-dom": "^18.0"
+  },
+  "peerDependenciesMeta": {
+    "@types/react": {
+      "optional": true
+    },
+    "@types/react-dom": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "import": {
+          "default": "./dist/es/client/index.mjs",
+          "types": "./dist/types/index.d.ts"
+        },
+        "require": {
+          "default": "./dist/cjs/client/index.cjs",
+          "types": "./dist/types/index.d.ts"
+        }
+      }
+    },
+    "main": "./dist/cjs/client/index.cjs",
+    "module": "./dist/es/client/index.mjs",
+    "source": "./src/index.ts",
+    "types": "./dist/types/index.d.ts"
+  }
+}

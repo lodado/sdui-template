@@ -1,0 +1,110 @@
+{
+  "name": "@lodado/sdui-template-component",
+  "version": "1.0.0",
+  "description": "SDUI Component Library - Radix UI-based components for Server-Driven UI",
+  "author": "lodado",
+  "license": "MIT",
+  "packageManager": "pnpm@9.0.6",
+  "main": "./dist/cjs/client/index.cjs",
+  "module": "./dist/es/client/index.mjs",
+  "types": "./dist/types/index.d.ts",
+  "source": "./src/index.tsx",
+  "exports": {
+    ".": {
+      "import": "./src/index.tsx",
+      "require": "./src/index.tsx",
+      "types": "./src/index.tsx"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist/**",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "import": {
+          "default": "./dist/es/client/index.mjs",
+          "types": "./dist/types/index.d.ts"
+        },
+        "require": {
+          "default": "./dist/cjs/client/index.cjs",
+          "types": "./dist/types/index.d.ts"
+        }
+      }
+    },
+    "main": "./dist/cjs/client/index.cjs",
+    "module": "./dist/es/client/index.mjs",
+    "source": "./src/index.tsx",
+    "types": "./dist/types/index.d.ts"
+  },
+  "scripts": {
+    "build": "rollup -c && tsc --emitDeclarationOnly --declarationMap false --declaration --declarationDir dist/types",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
+    "lint": "eslint \"src/**/*.ts*\"",
+    "test": "jest --passWithNoTests",
+    "manual-release": "pnpm run build && pnpm publish --no-git-checks"
+  },
+  "sideEffects": false,
+  "keywords": [
+    "react",
+    "sdui",
+    "server-driven-ui",
+    "components",
+    "radix-ui",
+    "ui-library",
+    "typescript"
+  ],
+  "peerDependencies": {
+    "@lodado/sdui-template": "workspace:*",
+    "next": "^14.0.0",
+    "react": "^18.0",
+    "react-dom": "^18.0"
+  },
+  "peerDependenciesMeta": {
+    "@types/react": {
+      "optional": true
+    },
+    "@types/react-dom": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
+    "@radix-ui/react-slot": "^1.0.2",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "react-hook-form": "^7.70.0",
+    "tailwind-merge": "^2.2.1",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/node": "^20.12.7",
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "babel-jest": "29.5.0",
+    "eslint": "^8.57.0",
+    "eslint-config-sdui-template": "workspace:*",
+    "jest-config": "workspace:*",
+    "next": "^14.0.0",
+    "rollup-config": "workspace:*",
+    "ts-jest": "29.0.5",
+    "tsconfig": "workspace:*",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lodado/sdui-template.git",
+    "directory": "packages/sdui-template-component"
+  },
+  "homepage": "https://github.com/lodado/sdui-template#readme",
+  "bugs": {
+    "url": "https://github.com/lodado/sdui-template/issues"
+  }
+}

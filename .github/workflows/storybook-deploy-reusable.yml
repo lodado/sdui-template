@@ -31,7 +31,7 @@ jobs:
         run: pnpm install
 
       - name: build repositories
-        run: pnpm build --filter=\!web
+        run: pnpm build-storybook
 
       - name: Set PUBLIC_URL
         run: |
@@ -42,4 +42,4 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-          publish_dir: ./apps/docs/storybook-static
+          publish_dir: apps/docs/storybook-static

@@ -1,0 +1,6 @@
+export { getIconComponents } from './getIconComponents'
+export { Icon } from './Icon'
+export type { IconVariants } from './icon-variants'
+export { iconVariants } from './icon-variants'
+export { IconContainer } from './IconContainer'
+export type { IconProps, IconSize } from './types'

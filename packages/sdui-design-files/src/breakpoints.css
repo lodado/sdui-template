@@ -1,0 +1,52 @@
+/**
+ * Design System Breakpoints
+ *
+ * Breakpoints:
+ * - mobile: 768px 미만
+ * - tablet: 768px 이상 ~ 1279px
+ * - desktop: 1280px 이상
+ */
+
+:root {
+  /* Breakpoint values */
+  --breakpoint-mobile-max: 767px;
+  --breakpoint-tablet-min: 768px;
+  --breakpoint-tablet-max: 1279px;
+  --breakpoint-desktop-min: 1280px;
+}
+
+/* Tailwind CSS v4 breakpoints */
+@theme {
+  /* Override default Tailwind breakpoints */
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1280px;
+
+  /* Custom breakpoints */
+  --breakpoint-mobile: 0px;
+  --breakpoint-tablet: 768px;
+  --breakpoint-desktop: 1280px;
+}
+
+/* Custom media queries for Tailwind CSS v4 */
+@custom-media --mobile (width < 768px);
+@custom-media --tablet (width >= 768px) and (width < 1280px);
+@custom-media --desktop (width >= 1280px);
+
+/* Legacy media queries (for non-Tailwind usage) */
+@media (max-width: 767px) {
+  :root {
+    --breakpoint-current: mobile;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1279px) {
+  :root {
+    --breakpoint-current: tablet;
+  }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --breakpoint-current: desktop;
+  }
+}

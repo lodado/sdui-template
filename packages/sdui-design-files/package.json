@@ -1,0 +1,86 @@
+{
+  "name": "@lodado/sdui-design-files",
+  "version": "1.0.0",
+  "description": "Design system files for SDUI template - CSS variables, colors, and design tokens extracted from Figma",
+  "sideEffects": [
+    "./index.css",
+    "./src/colors.css",
+    "./src/breakpoints.css",
+    "./src/layout.css"
+  ],
+  "license": "MIT",
+  "author": "lodado",
+  "main": "./index.tsx",
+  "module": "./index.tsx",
+  "source": "./index.tsx",
+  "types": "./index.tsx",
+  "bugs": {
+    "url": "https://github.com/lodado/sdui-template/issues"
+  },
+  "homepage": "https://github.com/lodado/sdui-template",
+  "keywords": [
+    "design-system",
+    "css-variables",
+    "colors",
+    "figma",
+    "design-tokens",
+    "sdui"
+  ],
+  "scripts": {
+    "build": "rollup -c && tsc --emitDeclarationOnly --declarationMap false --declaration --declarationDir dist/types",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
+    "lint": "eslint \"src/**/*.ts*\" \"*.ts*\"",
+    "test": "jest --passWithNoTests"
+  },
+  "packageManager": "pnpm@9.0.6",
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "babel-jest": "29.5.0",
+    "eslint": "^8.57.0",
+    "eslint-config-sdui-template": "workspace:*",
+    "jest-config": "workspace:*",
+    "rollup-config": "workspace:*",
+    "ts-jest": "29.0.5",
+    "tsconfig": "workspace:*"
+  },
+  "exports": {
+    ".": {
+      "import": "./index.tsx",
+      "require": "./index.tsx",
+      "types": "./index.tsx"
+    },
+    "./index.css": "./src/colors.css",
+    "./colors.css": "./src/colors.css",
+    "./breakpoints.css": "./src/breakpoints.css",
+    "./layout.css": "./src/layout.css",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist/**",
+    "src/**/*.css",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "import": {
+          "default": "./dist/es/client/index.mjs",
+          "types": "./dist/types/index.d.ts"
+        },
+        "require": {
+          "default": "./dist/cjs/client/index.cjs",
+          "types": "./dist/types/index.d.ts"
+        }
+      },
+      "./index.css": "./src/colors.css",
+      "./colors.css": "./src/colors.css",
+      "./breakpoints.css": "./src/breakpoints.css",
+      "./layout.css": "./src/layout.css"
+    },
+    "main": "./dist/cjs/client/index.cjs",
+    "module": "./dist/es/client/index.mjs",
+    "source": "./index.tsx",
+    "types": "./dist/types/index.d.ts"
+  }
+}

@@ -1,0 +1,4 @@
+@import 'tailwindcss';
+
+@source "../../../packages/sdui-template-component/src/**/*.{ts,tsx}";
+@source "../**/*.{ts,tsx}";

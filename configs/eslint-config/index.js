@@ -26,8 +26,12 @@ module.exports = {
     'lines-between-class-members': 0,
     'class-methods-use-this': 0,
     'react/require-default-props': 0,
+    'react/button-has-type': 'off',
+    'react/prop-types': 'off', // TypeScript를 사용하므로 prop-types 불필요
     'react/jsx-no-useless-fragment': 0,
     'react/jsx-props-no-spreading': ['warn'],
+    'jsx-a11y/control-has-associated-label': 'off', // Button은 children으로 라벨 제공
+    'jsx-a11y/button-has-type': 'off', // TypeScript로 타입 안전성 보장, 동적 type prop 허용
 
     'import/no-extraneous-dependencies': [
       1,
