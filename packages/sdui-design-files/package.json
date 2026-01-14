@@ -4,16 +4,14 @@
   "description": "Design system files for SDUI template - CSS variables, colors, and design tokens extracted from Figma",
   "sideEffects": [
     "./index.css",
-    "./src/colors.css",
-    "./src/breakpoints.css",
     "./src/layout.css"
   ],
   "license": "MIT",
   "author": "lodado",
-  "main": "./index.tsx",
-  "module": "./index.tsx",
-  "source": "./index.tsx",
-  "types": "./index.tsx",
+  "main": "./index.ts",
+  "module": "./index.ts",
+  "source": "./index.ts",
+  "types": "./index.ts",
   "bugs": {
     "url": "https://github.com/lodado/sdui-template/issues"
   },
@@ -45,13 +43,12 @@
   },
   "exports": {
     ".": {
-      "import": "./index.tsx",
-      "require": "./index.tsx",
-      "types": "./index.tsx"
+      "import": "./index.ts",
+      "require": "./index.ts",
+      "types": "./index.ts"
     },
-    "./index.css": "./src/colors.css",
+    "./index.css": "./src/index.css",
     "./colors.css": "./src/colors.css",
-    "./breakpoints.css": "./src/breakpoints.css",
     "./layout.css": "./src/layout.css",
     "./package.json": "./package.json"
   },
@@ -73,14 +70,13 @@
           "types": "./dist/types/index.d.ts"
         }
       },
-      "./index.css": "./src/colors.css",
+      "./index.css": "./src/index.css",
       "./colors.css": "./src/colors.css",
-      "./breakpoints.css": "./src/breakpoints.css",
       "./layout.css": "./src/layout.css"
     },
     "main": "./dist/cjs/client/index.cjs",
     "module": "./dist/es/client/index.mjs",
-    "source": "./index.tsx",
+    "source": "./index.ts",
     "types": "./dist/types/index.d.ts"
   }
 }

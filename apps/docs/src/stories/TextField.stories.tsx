@@ -126,10 +126,12 @@ export const Default: Story = {
               {
                 id: 'textfield',
                 type: 'TextField',
-                attributes: {
+                state: {
                   error: false,
-                  disabled: false,
                   required: false,
+                },
+                attributes: {
+                  disabled: false,
                 },
                 children: [
                   {
@@ -189,10 +191,12 @@ export const Focus: Story = {
               {
                 id: 'textfield',
                 type: 'TextField',
-                attributes: {
+                state: {
                   error: false,
-                  disabled: false,
                   required: false,
+                },
+                attributes: {
+                  disabled: false,
                 },
                 children: [
                   {
@@ -257,10 +261,12 @@ export const Filled: Story = {
               {
                 id: 'textfield',
                 type: 'TextField',
-                attributes: {
+                state: {
                   error: false,
-                  disabled: false,
                   required: false,
+                },
+                attributes: {
+                  disabled: false,
                 },
                 children: [
                   {
@@ -384,11 +390,13 @@ export const Error: Story = {
               {
                 id: 'textfield',
                 type: 'TextField',
-                attributes: {
+                state: {
                   error: true,
                   errorMessage: 'Help message',
-                  disabled: false,
                   required: false,
+                },
+                attributes: {
+                  disabled: false,
                 },
                 children: [
                   {
@@ -459,11 +467,13 @@ export const VerticalLayout: Story = {
               {
                 id: 'textfield',
                 type: 'TextField',
-                attributes: {
+                state: {
                   error: false,
                   helpMessage: 'Enter your email address',
-                  disabled: false,
                   required: false,
+                },
+                attributes: {
+                  disabled: false,
                 },
                 children: [
                   {
@@ -537,10 +547,12 @@ export const HorizontalLayout: Story = {
               {
                 id: 'textfield',
                 type: 'TextField',
-                attributes: {
+                state: {
                   error: false,
-                  disabled: false,
                   required: false,
+                },
+                attributes: {
+                  disabled: false,
                 },
                 children: [
                   {
@@ -607,10 +619,12 @@ export const WithLabel: Story = {
               {
                 id: 'textfield',
                 type: 'TextField',
-                attributes: {
+                state: {
                   error: false,
-                  disabled: false,
                   required: false,
+                },
+                attributes: {
+                  disabled: false,
                 },
                 children: [
                   {
@@ -677,11 +691,13 @@ export const WithHelpMessage: Story = {
               {
                 id: 'textfield',
                 type: 'TextField',
-                attributes: {
+                state: {
                   error: false,
                   helpMessage: 'Enter a valid email address',
-                  disabled: false,
                   required: false,
+                },
+                attributes: {
+                  disabled: false,
                 },
                 children: [
                   {
@@ -1067,10 +1083,12 @@ export const WithLeftIcon: Story = {
               {
                 id: 'textfield',
                 type: 'TextField',
-                attributes: {
+                state: {
                   error: false,
-                  disabled: false,
                   required: false,
+                },
+                attributes: {
+                  disabled: false,
                 },
                 children: [
                   {
@@ -1155,10 +1173,12 @@ export const WithRightIcon: Story = {
               {
                 id: 'textfield',
                 type: 'TextField',
-                attributes: {
+                state: {
                   error: false,
-                  disabled: false,
                   required: false,
+                },
+                attributes: {
+                  disabled: false,
                 },
                 children: [
                   {
@@ -1244,10 +1264,12 @@ export const WithBothIcons: Story = {
               {
                 id: 'textfield',
                 type: 'TextField',
-                attributes: {
+                state: {
                   error: false,
-                  disabled: false,
                   required: false,
+                },
+                attributes: {
+                  disabled: false,
                 },
                 children: [
                   {

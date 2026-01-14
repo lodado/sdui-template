@@ -88,19 +88,16 @@ export interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonE
 }
 
 /**
- * Button attributes schema for type validation
+ * Button state schema for component state validation
  *
  * @description
- * Zod schema for validating Button component attributes in SDUI.
+ * Zod schema for validating Button component state in SDUI.
  * Used with useSduiNodeSubscription to ensure type safety.
  */
 export const buttonStatesSchema: z.ZodSchema<Record<string, unknown>> = z.object({
   buttonStyle: z.enum(['filled', 'outline', 'text']).optional(),
   size: z.enum(['L', 'M', 'S']).optional(),
   buttonType: z.enum(['primary', 'secondary']).optional(),
-  disabled: z.boolean().optional(),
-  type: z.enum(['submit', 'reset', 'button']).optional(),
-  className: z.string().optional(),
 }) as z.ZodSchema<Record<string, unknown>>
 
-export type ButtonAttributes = z.infer<typeof buttonStatesSchema>
+export type ButtonState = z.infer<typeof buttonStatesSchema>

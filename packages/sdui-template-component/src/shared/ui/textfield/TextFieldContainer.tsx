@@ -15,13 +15,15 @@ export const TextFieldContainer = ({ id, parentPath = [] }: TextFieldContainerPr
   const { childrenIds, attributes, state } = useSduiNodeSubscription({ nodeId: id })
   const { renderChildren } = useRenderNode({ nodeId: id, parentPath })
 
-  // Root props from attributes
-  const error = attributes?.error as TextFieldRootProps['error'] | undefined
-  const errorMessage = attributes?.errorMessage as string | undefined
-  const helpMessage = attributes?.helpMessage as string | undefined
+  // HTML attributes
   const disabled = attributes?.disabled as boolean | undefined
-  const required = attributes?.required as boolean | undefined
   const className = attributes?.className as string | undefined
+
+  // State (component state, not HTML attributes)
+  const error = state?.error as TextFieldRootProps['error'] | undefined
+  const errorMessage = state?.errorMessage as string | undefined
+  const helpMessage = state?.helpMessage as string | undefined
+  const required = state?.required as boolean | undefined
 
   // Render children (should contain TextField.Wrapper with Label, Input, HelpMessage)
   const children = childrenIds.length > 0 ? renderChildren(childrenIds) : undefined

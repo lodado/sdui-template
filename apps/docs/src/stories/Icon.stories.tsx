@@ -127,7 +127,7 @@ export const Default: Story = {
           {
             id: 'icon-1',
             type: 'Icon',
-            attributes: {
+            state: {
               size: '24px',
             },
             children: [
@@ -278,7 +278,7 @@ export const Size24px: Story = {
           {
             id: 'icon-1',
             type: 'Icon',
-            attributes: {
+            state: {
               size: '24px',
             },
             children: [

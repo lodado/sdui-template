@@ -145,7 +145,7 @@ export function useSduiNodeSubscriptionSync<
 
     validatedState = result.data
   } else {
-    validatedState = rawState
+    validatedState = rawState!
   }
 
   return {

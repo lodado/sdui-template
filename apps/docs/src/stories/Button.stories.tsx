@@ -68,10 +68,12 @@ export const Default: Story = {
           {
             id: 'button-1',
             type: 'Button',
-            attributes: {
+            state: {
               buttonStyle: 'filled',
               size: 'M',
               buttonType: 'primary',
+            },
+            attributes: {
               disabled: false,
               type: 'button',
             },
@@ -129,10 +131,12 @@ export const Filled: Story = {
           {
             id: 'button-1',
             type: 'Button',
-            attributes: {
+            state: {
               buttonStyle: 'filled',
               size: 'M',
               buttonType: 'primary',
+            },
+            attributes: {
               disabled: false,
               type: 'button',
             },
@@ -409,10 +413,12 @@ export const SizeM: Story = {
           {
             id: 'button-1',
             type: 'Button',
-            attributes: {
+            state: {
               buttonStyle: 'filled',
               size: 'M',
               buttonType: 'primary',
+            },
+            attributes: {
               disabled: false,
               type: 'button',
             },
@@ -551,10 +557,12 @@ export const Primary: Story = {
           {
             id: 'button-1',
             type: 'Button',
-            attributes: {
+            state: {
               buttonStyle: 'filled',
               size: 'M',
               buttonType: 'primary',
+            },
+            attributes: {
               disabled: false,
               type: 'button',
             },
@@ -786,7 +794,7 @@ export const FilledCombinations: Story = {
                 (['primary', 'secondary'] as const).map((buttonType, index) => ({
                   id: `button-filled-${size}-${buttonType}`,
                   type: 'Button',
-                  attributes: {
+                  state: {
                     buttonStyle: 'filled' as const,
                     size,
                     buttonType,
@@ -874,7 +882,7 @@ export const OutlineCombinations: Story = {
                 (['primary', 'secondary'] as const).map((buttonType) => ({
                   id: `button-outline-${size}-${buttonType}`,
                   type: 'Button',
-                  attributes: {
+                  state: {
                     buttonStyle: 'outline' as const,
                     size,
                     buttonType,
@@ -962,7 +970,7 @@ export const TextCombinations: Story = {
                 (['primary', 'secondary'] as const).map((buttonType) => ({
                   id: `button-text-${size}-${buttonType}`,
                   type: 'Button',
-                  attributes: {
+                  state: {
                     buttonStyle: 'text' as const,
                     size,
                     buttonType,
@@ -1089,7 +1097,7 @@ export const StatesMatrix: Story = {
                       {
                         id: `button-default-btn-${buttonStyle}`,
                         type: 'Button',
-                        attributes: {
+                        state: {
                           buttonStyle,
                           size: 'M',
                           buttonType: 'primary',
@@ -1126,7 +1134,7 @@ export const StatesMatrix: Story = {
                       {
                         id: `button-hover-btn-${buttonStyle}`,
                         type: 'Button',
-                        attributes: {
+                        state: {
                           buttonStyle,
                           size: 'M',
                           buttonType: 'primary',
@@ -1163,7 +1171,7 @@ export const StatesMatrix: Story = {
                       {
                         id: `button-press-btn-${buttonStyle}`,
                         type: 'Button',
-                        attributes: {
+                        state: {
                           buttonStyle,
                           size: 'M',
                           buttonType: 'primary',
@@ -1200,10 +1208,12 @@ export const StatesMatrix: Story = {
                       {
                         id: `button-disabled-btn-${buttonStyle}`,
                         type: 'Button',
-                        attributes: {
+                        state: {
                           buttonStyle,
                           size: 'M',
                           buttonType: 'primary',
+                        },
+                        attributes: {
                           disabled: true,
                         },
                         children: [
@@ -1367,7 +1377,7 @@ export const AllCombinations: Story = {
                           {
                             id: `size-button-${buttonStyle}-${size}`,
                             type: 'Button',
-                            attributes: {
+                            state: {
                               buttonStyle,
                               size,
                               buttonType: 'primary',
@@ -1432,7 +1442,7 @@ export const AllCombinations: Story = {
                         {
                           id: `type-button-${buttonStyle}-${buttonType}`,
                           type: 'Button',
-                          attributes: {
+                          state: {
                             buttonStyle,
                             size: 'M',
                             buttonType,

@@ -5,6 +5,6 @@
     "paths": {},
     "allowJs": true
   },
-  "include": ["**/*.ts", "**/*.tsx", "index.tsx"],
+  "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["dist", "build", "node_modules", "**/*.test.*"]
 }

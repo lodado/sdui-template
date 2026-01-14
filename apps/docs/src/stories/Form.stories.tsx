@@ -113,11 +113,13 @@ export const Basic: Story = {
                       {
                         id: 'submit-button',
                         type: 'Button',
-                        attributes: {
-                          type: 'submit',
+                        state: {
                           buttonStyle: 'filled',
                           buttonType: 'primary',
                           size: 'L',
+                        },
+                        attributes: {
+                          type: 'submit',
                           className: 'w-full',
                         },
                         children: [
@@ -233,11 +235,13 @@ export const RegistrationForm: Story = {
                       {
                         id: 'submit-button',
                         type: 'Button',
-                        attributes: {
-                          type: 'submit',
+                        state: {
                           buttonStyle: 'filled',
                           buttonType: 'primary',
                           size: 'L',
+                        },
+                        attributes: {
+                          type: 'submit',
                           className: 'w-full',
                         },
                         children: [
@@ -331,11 +335,13 @@ export const WithHelpMessages: Story = {
                       {
                         id: 'submit-button',
                         type: 'Button',
-                        attributes: {
-                          type: 'submit',
+                        state: {
                           buttonStyle: 'filled',
                           buttonType: 'primary',
                           size: 'L',
+                        },
+                        attributes: {
+                          type: 'submit',
                           className: 'w-full',
                         },
                         children: [
@@ -427,11 +433,13 @@ export const WithoutSchema: Story = {
                       {
                         id: 'submit-button',
                         type: 'Button',
-                        attributes: {
-                          type: 'submit',
+                        state: {
                           buttonStyle: 'filled',
                           buttonType: 'primary',
                           size: 'L',
+                        },
+                        attributes: {
+                          type: 'submit',
                           className: 'w-full',
                         },
                         children: [
@@ -524,11 +532,13 @@ export const CustomValidation: Story = {
                       {
                         id: 'submit-button',
                         type: 'Button',
-                        attributes: {
-                          type: 'submit',
+                        state: {
                           buttonStyle: 'filled',
                           buttonType: 'primary',
                           size: 'L',
+                        },
+                        attributes: {
+                          type: 'submit',
                           className: 'w-full',
                         },
                         children: [
@@ -618,11 +628,13 @@ export const DisabledFields: Story = {
                       {
                         id: 'submit-button',
                         type: 'Button',
-                        attributes: {
-                          type: 'submit',
+                        state: {
                           buttonStyle: 'filled',
                           buttonType: 'primary',
                           size: 'L',
+                        },
+                        attributes: {
+                          type: 'submit',
                           className: 'w-full',
                         },
                         children: [
