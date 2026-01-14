@@ -3,8 +3,10 @@ on:
   workflow_call:
 
 jobs:
-  chromatic-deploy:
+  deploy-storybook:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Check out source code
         uses: actions/checkout@v4
@@ -30,16 +32,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: build repositories
+      - name: Build Storybook with base path
+        env:
+          PUBLIC_URL: /${{ github.event.repository.name }}/
         run: pnpm build-storybook
 
-      - name: Set PUBLIC_URL
-        run: |
-          PUBLIC_URL=$(echo $GITHUB_REPOSITORY | sed -r 's/^.+\/(.+)$/\/\1\//')
-          echo PUBLIC_URL=$PUBLIC_URL > .env
-
-      - name: Deploy to gh-pages branch
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: apps/docs/storybook-static
+          cname: false

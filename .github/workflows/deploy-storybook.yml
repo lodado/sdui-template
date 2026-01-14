@@ -1,0 +1,16 @@
+name: Deploy Storybook to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/docs/**'
+      - 'packages/**'
+      - '.github/workflows/deploy-storybook.yml'
+      - '.github/workflows/storybook-deploy-reusable.yml'
+  workflow_dispatch: # 수동 실행 가능
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/storybook-deploy-reusable.yml
