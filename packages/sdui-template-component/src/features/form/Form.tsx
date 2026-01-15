@@ -9,7 +9,7 @@ import type { z } from 'zod'
 import { FormContext } from './FormContext'
 import { FormField } from './FormField'
 import type { FormRootProps } from './types'
-import { getSchema } from './types'
+import { extractSchemaKeys, getSchema } from './types'
 
 /**
  * Form Root Component
@@ -42,6 +42,7 @@ const FormRoot = <TFieldValues extends FieldValues = FieldValues, TContext = unk
   className,
   ...formOptions
 }: FormRootProps<TFieldValues, TContext>) => {
+  // Create zodResolver - it automatically extracts error messages from zod schema
   const resolver = schema ? zodResolver(schema) : undefined
 
   const methods = useForm<TFieldValues, TContext>({
@@ -58,16 +59,20 @@ const FormRoot = <TFieldValues extends FieldValues = FieldValues, TContext = unk
     (errors) => {},
   )
 
-  const contextValue = React.useMemo<{ formMethods: UseFormReturn<TFieldValues, TContext> }>(
+  const contextValue = React.useMemo<{
+    formMethods: UseFormReturn<TFieldValues, TContext>
+    schema?: z.ZodType<any, any, any>
+  }>(
     () => ({
       formMethods: methods,
+      schema,
     }),
-    [methods],
+    [methods, schema],
   )
 
   return (
     <FormContext.Provider value={contextValue as never}>
-      {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit} className={className} noValidate>
           {typeof children === 'function' ? children(methods) : children}

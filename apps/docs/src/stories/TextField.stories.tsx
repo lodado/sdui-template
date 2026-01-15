@@ -849,7 +849,7 @@ export const AllStates: Story = {
                     id: 'state-default-desc',
                     type: 'Span',
                     state: {
-                      text: '입력 가능한 기본 상태',
+                      text: 'Default state ready for input',
                     },
                     attributes: {
                       className: 'text-sm text-gray-600 mb-2',
@@ -897,7 +897,7 @@ export const AllStates: Story = {
                     id: 'state-filled-desc',
                     type: 'Span',
                     state: {
-                      text: '입력 완료된 상태',
+                      text: 'Filled state with completed input',
                     },
                     attributes: {
                       className: 'text-sm text-gray-600 mb-2',
@@ -946,7 +946,7 @@ export const AllStates: Story = {
                     id: 'state-disabled-desc',
                     type: 'Span',
                     state: {
-                      text: '입력 불가능한 비활성화 상태',
+                      text: 'Disabled state unable to input',
                     },
                     attributes: {
                       className: 'text-sm text-gray-600 mb-2',
@@ -997,7 +997,7 @@ export const AllStates: Story = {
                     id: 'state-error-desc',
                     type: 'Span',
                     state: {
-                      text: '에러 상태',
+                      text: 'Error state',
                     },
                     attributes: {
                       className: 'text-sm text-gray-600 mb-2',

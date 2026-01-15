@@ -3,10 +3,11 @@
 import { useSduiNodeSubscription } from '@lodado/sdui-template'
 import React from 'react'
 import type { FieldValues, Path } from 'react-hook-form'
-import { Controller, useFormContext } from 'react-hook-form'
+import { Controller, useFormContext as useReactHookFormContext } from 'react-hook-form'
 
 import { TextField } from '../../shared/ui/textfield'
-import type { FormFieldProps } from './types'
+import { useFormContext } from './FormContext'
+import { extractSchemaKeys, type FormFieldProps } from './types'
 
 /**
  * FormField Component
@@ -42,10 +43,15 @@ const FormField = <TFieldValues extends FieldValues = FieldValues>({
   const {
     control,
     formState: { errors },
-  } = useFormContext<TFieldValues>()
+  } = useReactHookFormContext<TFieldValues>()
 
   const fieldName = name as Path<TFieldValues>
   const error = errors[fieldName]
+
+  // Extract error message from zod validation
+  // zodResolver returns errors in format: { message: string, type: string }
+  // Handle both FieldError and FieldErrorWithMessage types
+  // zodResolver automatically extracts custom error messages from zod schema
   const errorMessage = error?.message as string | undefined
 
   return (
@@ -117,22 +123,40 @@ interface FormFieldContainerProps {
 
 export const FormFieldContainer = ({ id }: FormFieldContainerProps) => {
   const { attributes } = useSduiNodeSubscription({ nodeId: id })
+  const formContext = useFormContext<FieldValues>()
 
-  const name = attributes?.name as string | undefined
-  const label = attributes?.label as string | undefined
-  const helpMessage = attributes?.helpMessage as string | undefined
-  const required = attributes?.required as boolean | undefined
-  const disabled = attributes?.disabled as boolean | undefined
-  const type = attributes?.type as FormFieldProps<FieldValues>['type'] | undefined
-  const placeholder = attributes?.placeholder as string | undefined
-  const inputProps = attributes?.inputProps as FormFieldProps<FieldValues>['inputProps'] | undefined
-  const className = attributes?.className as string | undefined
-
-  if (!name) {
+  if (!attributes?.name) {
     // eslint-disable-next-line no-console
     console.warn(`FormField with id "${id}" is missing name attribute`)
     return null
   }
+
+  const name = attributes.name as string
+
+  // Runtime validation: Check if field name exists in schema
+  if (formContext.schema) {
+    const schemaKeys = extractSchemaKeys(formContext.schema)
+    if (schemaKeys.length > 0 && !schemaKeys.includes(name)) {
+      throw new Error(
+        `FormField with name "${name}" (id: "${id}") is not defined in the form schema. ` +
+          `Expected fields: ${schemaKeys.join(', ')}`
+      )
+    }
+  }
+
+  // Extract FormField props from attributes
+  const {
+    name: _name,
+    label,
+    helpMessage,
+    required,
+    disabled,
+    type,
+    placeholder,
+    inputProps,
+    className,
+    ...restAttributes
+  } = attributes as Partial<FormFieldProps<FieldValues>> & { name: string }
 
   return (
     <FormField
@@ -145,6 +169,8 @@ export const FormFieldContainer = ({ id }: FormFieldContainerProps) => {
       placeholder={placeholder}
       inputProps={inputProps}
       className={className}
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      {...restAttributes}
     />
   )
 }

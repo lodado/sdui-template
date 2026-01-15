@@ -71,10 +71,20 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         return fallback
       }
 
-      // Default fallback UI
+      // Default fallback UI with error details
       return (
-        <div role="alert" data-testid="error-boundary-fallback">
-          <div>Something went wrong</div>
+        <div
+          role="alert"
+          data-testid="error-boundary-fallback"
+          className="p-4 border border-red-500 rounded bg-red-50 text-red-900"
+        >
+          <div className="font-bold mb-2">Something went wrong</div>
+          {error.message && (
+            <div>
+              <span className="font-semibold">Error: </span>
+              <span>{error.message}</span>
+            </div>
+          )}
         </div>
       )
     }
