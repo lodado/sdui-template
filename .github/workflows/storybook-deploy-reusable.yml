@@ -37,6 +37,15 @@ jobs:
           PUBLIC_URL: /${{ github.event.repository.name }}/
         run: pnpm build-storybook
 
+      - name: Verify build output
+        run: |
+          if [ ! -d "apps/docs/storybook-static" ]; then
+            echo "Error: storybook-static directory not found"
+            exit 1
+          fi
+          echo "Build output verified:"
+          ls -la apps/docs/storybook-static/ | head -20
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
