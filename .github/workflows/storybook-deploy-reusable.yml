@@ -5,8 +5,7 @@ on:
 jobs:
   deploy-storybook:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    # permissions는 호출하는 워크플로우에서 설정해야 함
     steps:
       - name: Check out source code
         uses: actions/checkout@v4

@@ -13,4 +13,6 @@ on:
 
 jobs:
   deploy:
+    permissions:
+      contents: write
     uses: ./.github/workflows/storybook-deploy-reusable.yml
