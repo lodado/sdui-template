@@ -1,4 +1,4 @@
-import{j as i}from"./jsx-runtime-CV-d8Z6U.js";import{B as g}from"./types-C_8bWqUB.js";import{S as $,T as z,D,a as s}from"./Text-CUOypVkr.js";import{B as T}from"./ButtonContainer-C1_iceBo.js";import"./iframe-4wv0QjTe.js";import"./preload-helper-ggYluGXI.js";import"./index-LzdNk5us.js";function a(){return{Button:(e,t)=>i.jsx(T,{id:e,parentPath:t}),Div:(e,t)=>i.jsx(D,{id:e,parentPath:t}),Text:e=>i.jsx(z,{id:e}),Span:e=>i.jsx($,{id:e})}}const O={title:"Shared/UI/Button",component:g,tags:["autodocs"],parameters:{docs:{description:{component:`
+import{j as i}from"./jsx-runtime-G6TLFr6R.js";import{B as g}from"./types-zgzN39SE.js";import{S as $,T as z,D,a as s}from"./Text-BrwFlwNR.js";import{B as T}from"./ButtonContainer-Bzx_hoK9.js";import"./iframe-Zpr94bE2.js";import"./preload-helper-ggYluGXI.js";import"./index-DXcY7tow.js";function a(){return{Button:(e,t)=>i.jsx(T,{id:e,parentPath:t}),Div:(e,t)=>i.jsx(D,{id:e,parentPath:t}),Text:e=>i.jsx(z,{id:e}),Span:e=>i.jsx($,{id:e})}}const O={title:"Shared/UI/Button",component:g,tags:["autodocs"],parameters:{docs:{description:{component:`
 ## Overview
 
 The **Button** component is an interactive element that triggers specific actions when clicked. It's a fundamental UI component used throughout the application for user interactions.
@@ -32,7 +32,7 @@ The **Button** component is an interactive element that triggers specific action
 - Navigation actions
 - Dialog confirmations
 - Feature toggles
-        `}}}},o={render:()=>{const e={version:"1.0.0",root:{id:"root",type:"Div",attributes:{className:"flex items-center justify-center p-4"},children:[{id:"button-1",type:"Button",state:{buttonStyle:"filled",size:"M",buttonType:"primary"},attributes:{disabled:!1,type:"button"},children:[{id:"button-text",type:"Span",state:{text:"Button"}}]}]}};return i.jsx(s,{document:e,components:a()})},parameters:{docs:{description:{story:`
+        `}}}},o={render:()=>{const e={version:"1.0.0",root:{id:"root",type:"Div",attributes:{className:"flex items-center justify-center p-4"},children:[{id:"button-1",type:"Button",state:{buttonStyle:"filled",size:"M",buttonType:"primary",disabled:!1},attributes:{type:"button"},children:[{id:"button-text",type:"Span",state:{text:"Button"}}]}]}};return i.jsx(s,{document:e,components:a()})},parameters:{docs:{description:{story:`
 ## Overview
 
 The **default button configuration** represents the most commonly used variant in the design system.
@@ -46,7 +46,7 @@ The **default button configuration** represents the most commonly used variant i
 ## Usage
 
 This is the recommended starting point for most button implementations. Use this variant for primary actions that need clear visual emphasis.
-        `}}}},r={render:()=>{const e={version:"1.0.0",root:{id:"root",type:"Div",attributes:{className:"flex items-center justify-center p-4"},children:[{id:"button-1",type:"Button",state:{buttonStyle:"filled",size:"M",buttonType:"primary"},attributes:{disabled:!1,type:"button"},children:[{id:"button-text",type:"Span",state:{text:"Filled Button"}}]}]}};return i.jsx(s,{document:e,components:a()})},parameters:{docs:{description:{story:`
+        `}}}},r={render:()=>{const e={version:"1.0.0",root:{id:"root",type:"Div",attributes:{className:"flex items-center justify-center p-4"},children:[{id:"button-1",type:"Button",state:{buttonStyle:"filled",size:"M",buttonType:"primary",disabled:!1},attributes:{type:"button"},children:[{id:"button-text",type:"Span",state:{text:"Filled Button"}}]}]}};return i.jsx(s,{document:e,components:a()})},parameters:{docs:{description:{story:`
 ## Overview
 
 **Filled buttons** feature a solid background color and provide the highest visual emphasis among all button styles.
@@ -68,7 +68,7 @@ This is the recommended starting point for most button implementations. Use this
 - Submit forms
 - Confirm critical actions
 - Primary navigation
-        `}}}},l={render:()=>{const e={version:"1.0.0",root:{id:"root",type:"Div",attributes:{className:"flex items-center justify-center p-4"},children:[{id:"button-1",type:"Button",attributes:{buttonStyle:"outline",size:"M",buttonType:"primary",disabled:!1,type:"button"},children:[{id:"button-text",type:"Span",state:{text:"Outline Button"}}]}]}};return i.jsx(s,{document:e,components:a()})},parameters:{docs:{description:{story:`
+        `}}}},l={render:()=>{const e={version:"1.0.0",root:{id:"root",type:"Div",attributes:{className:"flex items-center justify-center p-4"},children:[{id:"button-1",type:"Button",state:{buttonStyle:"outline",size:"M",buttonType:"primary",disabled:!1},attributes:{type:"button"},children:[{id:"button-text",type:"Span",state:{text:"Outline Button"}}]}]}};return i.jsx(s,{document:e,components:a()})},parameters:{docs:{description:{story:`
 ## Overview
 
 **Outline buttons** feature a transparent background with a visible border, providing medium visual emphasis.
@@ -90,7 +90,7 @@ This is the recommended starting point for most button implementations. Use this
 - Secondary form actions
 - Cancel buttons
 - Alternative navigation options
-        `}}}},c={render:()=>{const e={version:"1.0.0",root:{id:"root",type:"Div",attributes:{className:"flex items-center justify-center p-4"},children:[{id:"button-1",type:"Button",attributes:{buttonStyle:"text",size:"M",buttonType:"primary",disabled:!1,type:"button"},children:[{id:"button-text",type:"Span",state:{text:"Text Button"}}]}]}};return i.jsx(s,{document:e,components:a()})},parameters:{docs:{description:{story:`
+        `}}}},c={render:()=>{const e={version:"1.0.0",root:{id:"root",type:"Div",attributes:{className:"flex items-center justify-center p-4"},children:[{id:"button-1",type:"Button",state:{buttonStyle:"text",size:"M",buttonType:"primary",disabled:!1},attributes:{type:"button"},children:[{id:"button-text",type:"Span",state:{text:"Text Button"}}]}]}};return i.jsx(s,{document:e,components:a()})},parameters:{docs:{description:{story:`
 ## Overview
 
 **Text buttons** have no background or border, relying solely on text color for visibility. They provide the least visual emphasis.
@@ -120,7 +120,7 @@ Unlike filled and outline buttons, text buttons support **all three sizes**:
 - Link-like buttons
 - Compact interfaces
 - Mobile-friendly designs
-        `}}}},d={render:()=>{const e={version:"1.0.0",root:{id:"root",type:"Div",attributes:{className:"flex items-center justify-center p-4"},children:[{id:"button-1",type:"Button",attributes:{buttonStyle:"filled",size:"L",buttonType:"primary",disabled:!1,type:"button"},children:[{id:"button-text",type:"Span",state:{text:"Size L"}}]}]}};return i.jsx(s,{document:e,components:a()})},parameters:{docs:{description:{story:`
+        `}}}},d={render:()=>{const e={version:"1.0.0",root:{id:"root",type:"Div",attributes:{className:"flex items-center justify-center p-4"},children:[{id:"button-1",type:"Button",state:{buttonStyle:"filled",size:"L",buttonType:"primary",disabled:!1},attributes:{type:"button"},children:[{id:"button-text",type:"Span",state:{text:"Size L"}}]}]}};return i.jsx(s,{document:e,components:a()})},parameters:{docs:{description:{story:`
 ## Overview
 
 **Large buttons (Size L)** are the most prominent size, ideal for important call-to-action elements.
@@ -141,7 +141,7 @@ Unlike filled and outline buttons, text buttons support **all three sizes**:
 ## When to Use
 
 Use Size L when you need maximum visibility and want to guide users toward the primary action.
-        `}}}},u={render:()=>{const e={version:"1.0.0",root:{id:"root",type:"Div",attributes:{className:"flex items-center justify-center p-4"},children:[{id:"button-1",type:"Button",state:{buttonStyle:"filled",size:"M",buttonType:"primary"},attributes:{disabled:!1,type:"button"},children:[{id:"button-text",type:"Span",state:{text:"Size M"}}]}]}};return i.jsx(s,{document:e,components:a()})},parameters:{docs:{description:{story:`
+        `}}}},u={render:()=>{const e={version:"1.0.0",root:{id:"root",type:"Div",attributes:{className:"flex items-center justify-center p-4"},children:[{id:"button-1",type:"Button",state:{buttonStyle:"filled",size:"M",buttonType:"primary",disabled:!1},attributes:{type:"button"},children:[{id:"button-text",type:"Span",state:{text:"Size M"}}]}]}};return i.jsx(s,{document:e,components:a()})},parameters:{docs:{description:{story:`
 ## Overview
 
 **Medium buttons (Size M)** are the default size and the most versatile option for general use.
@@ -165,7 +165,7 @@ Use Size L when you need maximum visibility and want to guide users toward the p
 - General UI actions
 - Navigation elements
 - Most common use cases
-        `}}}},p={render:()=>{const e={version:"1.0.0",root:{id:"root",type:"Div",attributes:{className:"flex items-center justify-center p-4"},children:[{id:"button-1",type:"Button",attributes:{buttonStyle:"text",size:"S",buttonType:"primary",disabled:!1,type:"button"},children:[{id:"button-text",type:"Span",state:{text:"Size S"}}]}]}};return i.jsx(s,{document:e,components:a()})},parameters:{docs:{description:{story:`
+        `}}}},p={render:()=>{const e={version:"1.0.0",root:{id:"root",type:"Div",attributes:{className:"flex items-center justify-center p-4"},children:[{id:"button-1",type:"Button",state:{buttonStyle:"text",size:"S",buttonType:"primary",disabled:!1},attributes:{type:"button"},children:[{id:"button-text",type:"Span",state:{text:"Size S"}}]}]}};return i.jsx(s,{document:e,components:a()})},parameters:{docs:{description:{story:`
 ## Overview
 
 **Small buttons (Size S)** provide a compact option for space-constrained interfaces.
@@ -190,7 +190,7 @@ Use Size L when you need maximum visibility and want to guide users toward the p
 ## When to Use
 
 Use Size S when space is limited but you still need a clickable action element.
-        `}}}},m={render:()=>{const e={version:"1.0.0",root:{id:"root",type:"Div",attributes:{className:"flex items-center justify-center p-4"},children:[{id:"button-1",type:"Button",state:{buttonStyle:"filled",size:"M",buttonType:"primary"},attributes:{disabled:!1,type:"button"},children:[{id:"button-text",type:"Span",state:{text:"Primary Button"}}]}]}};return i.jsx(s,{document:e,components:a()})},parameters:{docs:{description:{story:`
+        `}}}},m={render:()=>{const e={version:"1.0.0",root:{id:"root",type:"Div",attributes:{className:"flex items-center justify-center p-4"},children:[{id:"button-1",type:"Button",state:{buttonStyle:"filled",size:"M",buttonType:"primary",disabled:!1},attributes:{type:"button"},children:[{id:"button-text",type:"Span",state:{text:"Primary Button"}}]}]}};return i.jsx(s,{document:e,components:a()})},parameters:{docs:{description:{story:`
 ## Overview
 
 **Primary buttons** use the primary color scheme from the design system, indicating the most important action.
@@ -213,7 +213,7 @@ Use Size S when space is limited but you still need a clickable action element.
 - Save changes
 - Confirm actions
 - Primary navigation
-        `}}}},b={render:()=>{const e={version:"1.0.0",root:{id:"root",type:"Div",attributes:{className:"flex items-center justify-center p-4"},children:[{id:"button-1",type:"Button",attributes:{buttonStyle:"filled",size:"M",buttonType:"secondary",disabled:!1,type:"button"},children:[{id:"button-text",type:"Span",state:{text:"Secondary Button"}}]}]}};return i.jsx(s,{document:e,components:a()})},parameters:{docs:{description:{story:`
+        `}}}},b={render:()=>{const e={version:"1.0.0",root:{id:"root",type:"Div",attributes:{className:"flex items-center justify-center p-4"},children:[{id:"button-1",type:"Button",state:{buttonStyle:"filled",size:"M",buttonType:"secondary",disabled:!1},attributes:{type:"button"},children:[{id:"button-text",type:"Span",state:{text:"Secondary Button"}}]}]}};return i.jsx(s,{document:e,components:a()})},parameters:{docs:{description:{story:`
 ## Overview
 
 **Secondary buttons** use the secondary color scheme, indicating important but less critical actions.
@@ -236,7 +236,7 @@ Use Size S when space is limited but you still need a clickable action element.
 - Alternative options
 - Secondary form actions
 - Additional navigation paths
-        `}}}},y={render:()=>{const e={version:"1.0.0",root:{id:"root",type:"Div",attributes:{className:"flex items-center justify-center p-4"},children:[{id:"button-1",type:"Button",attributes:{buttonStyle:"filled",size:"M",buttonType:"primary",disabled:!0,type:"button"},children:[{id:"button-text",type:"Span",state:{text:"Disabled Button"}}]}]}};return i.jsx(s,{document:e,components:a()})},parameters:{docs:{description:{story:`
+        `}}}},y={render:()=>{const e={version:"1.0.0",root:{id:"root",type:"Div",attributes:{className:"flex items-center justify-center p-4"},children:[{id:"button-1",type:"Button",state:{buttonStyle:"filled",size:"M",buttonType:"primary",disabled:!0},attributes:{type:"button"},children:[{id:"button-text",type:"Span",state:{text:"Disabled Button"}}]}]}};return i.jsx(s,{document:e,components:a()})},parameters:{docs:{description:{story:`
 ## Overview
 
 **Disabled buttons** are non-interactive elements that indicate an action is currently unavailable.
@@ -428,10 +428,10 @@ Use this comprehensive reference to:
           state: {
             buttonStyle: 'filled',
             size: 'M',
-            buttonType: 'primary'
+            buttonType: 'primary',
+            disabled: false
           },
           attributes: {
-            disabled: false,
             type: 'button'
           },
           children: [{
@@ -483,10 +483,10 @@ This is the recommended starting point for most button implementations. Use this
           state: {
             buttonStyle: 'filled',
             size: 'M',
-            buttonType: 'primary'
+            buttonType: 'primary',
+            disabled: false
           },
           attributes: {
-            disabled: false,
             type: 'button'
           },
           children: [{
@@ -543,11 +543,13 @@ This is the recommended starting point for most button implementations. Use this
         children: [{
           id: 'button-1',
           type: 'Button',
-          attributes: {
+          state: {
             buttonStyle: 'outline',
             size: 'M',
             buttonType: 'primary',
-            disabled: false,
+            disabled: false
+          },
+          attributes: {
             type: 'button'
           },
           children: [{
@@ -604,11 +606,13 @@ This is the recommended starting point for most button implementations. Use this
         children: [{
           id: 'button-1',
           type: 'Button',
-          attributes: {
+          state: {
             buttonStyle: 'text',
             size: 'M',
             buttonType: 'primary',
-            disabled: false,
+            disabled: false
+          },
+          attributes: {
             type: 'button'
           },
           children: [{
@@ -673,11 +677,13 @@ Unlike filled and outline buttons, text buttons support **all three sizes**:
         children: [{
           id: 'button-1',
           type: 'Button',
-          attributes: {
+          state: {
             buttonStyle: 'filled',
             size: 'L',
             buttonType: 'primary',
-            disabled: false,
+            disabled: false
+          },
+          attributes: {
             type: 'button'
           },
           children: [{
@@ -736,10 +742,10 @@ Use Size L when you need maximum visibility and want to guide users toward the p
           state: {
             buttonStyle: 'filled',
             size: 'M',
-            buttonType: 'primary'
+            buttonType: 'primary',
+            disabled: false
           },
           attributes: {
-            disabled: false,
             type: 'button'
           },
           children: [{
@@ -798,11 +804,13 @@ Use Size L when you need maximum visibility and want to guide users toward the p
         children: [{
           id: 'button-1',
           type: 'Button',
-          attributes: {
+          state: {
             buttonStyle: 'text',
             size: 'S',
             buttonType: 'primary',
-            disabled: false,
+            disabled: false
+          },
+          attributes: {
             type: 'button'
           },
           children: [{
@@ -865,10 +873,10 @@ Use Size S when space is limited but you still need a clickable action element.
           state: {
             buttonStyle: 'filled',
             size: 'M',
-            buttonType: 'primary'
+            buttonType: 'primary',
+            disabled: false
           },
           attributes: {
-            disabled: false,
             type: 'button'
           },
           children: [{
@@ -926,11 +934,13 @@ Use Size S when space is limited but you still need a clickable action element.
         children: [{
           id: 'button-1',
           type: 'Button',
-          attributes: {
+          state: {
             buttonStyle: 'filled',
             size: 'M',
             buttonType: 'secondary',
-            disabled: false,
+            disabled: false
+          },
+          attributes: {
             type: 'button'
           },
           children: [{
@@ -988,11 +998,13 @@ Use Size S when space is limited but you still need a clickable action element.
         children: [{
           id: 'button-1',
           type: 'Button',
-          attributes: {
+          state: {
             buttonStyle: 'filled',
             size: 'M',
             buttonType: 'primary',
-            disabled: true,
+            disabled: true
+          },
+          attributes: {
             type: 'button'
           },
           children: [{
