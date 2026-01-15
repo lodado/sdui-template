@@ -1,4 +1,4 @@
-import{j as n}from"./jsx-runtime-G6TLFr6R.js";/* empty css               */import{I as v,a as z}from"./IconContainer-DFy0veNE.js";import{S as w,D,a as s}from"./Text-BrwFlwNR.js";import"./iframe-Zpr94bE2.js";import"./preload-helper-ggYluGXI.js";import"./index-DXcY7tow.js";function I(){return{Icon:(e,t)=>n.jsx(v,{id:e,parentPath:t}),Div:(e,t)=>n.jsx(D,{id:e,parentPath:t}),Span:e=>n.jsx(w,{id:e})}}const U={title:"Shared/UI/Icon",component:z,tags:["autodocs"],parameters:{docs:{description:{component:`
+import{j as n}from"./jsx-runtime-DxbnSXFt.js";/* empty css               */import{I as v,a as z}from"./IconContainer-D1dsIxjH.js";import{S as w,D,a as s}from"./Text-keOb2BbV.js";import"./iframe-OK5fRIFX.js";import"./preload-helper-ggYluGXI.js";import"./index-B-ZdNt7K.js";function I(){return{Icon:(e,t)=>n.jsx(v,{id:e,parentPath:t}),Div:(e,t)=>n.jsx(D,{id:e,parentPath:t}),Span:e=>n.jsx(w,{id:e})}}const U={title:"Shared/UI/Icon",component:z,tags:["autodocs"],parameters:{docs:{description:{component:`
 ## Overview
 
 The **Icon** component serves as a placeholder for icons that may not be loaded yet or are missing. It accepts SVG children and automatically applies sizing.
