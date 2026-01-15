@@ -2,7 +2,7 @@ import { type SduiLayoutDocument, SduiLayoutRenderer } from '@lodado/sdui-templa
 import { Button, getButtonComponents } from '@lodado/sdui-template-component'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import React from 'react'
-
+ 
 const meta: Meta<typeof Button> = {
   title: 'Shared/UI/Button',
   component: Button,

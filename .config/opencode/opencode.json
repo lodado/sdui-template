@@ -1,0 +1,237 @@
+{
+  "plugin": [
+    "oh-my-opencode",
+    "opencode-antigravity-auth@1.2.8",
+    "opencode-openai-codex-auth"
+  ],
+  "provider": {
+    "google": {
+      "name": "Google",
+      "models": {
+        "antigravity-gemini-3-pro-high": {
+          "name": "Gemini 3 Pro High (Antigravity)",
+          "attachment": true,
+          "limit": {
+            "context": 1048576,
+            "output": 65535
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
+          }
+        },
+        "antigravity-gemini-3-pro-low": {
+          "name": "Gemini 3 Pro Low (Antigravity)",
+          "attachment": true,
+          "limit": {
+            "context": 1048576,
+            "output": 65535
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
+          }
+        },
+        "antigravity-gemini-3-flash": {
+          "name": "Gemini 3 Flash (Antigravity)",
+          "attachment": true,
+          "limit": {
+            "context": 1048576,
+            "output": 65536
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
+          }
+        }
+      }
+    },
+    "openai": {
+      "name": "OpenAI",
+      "models": {
+        "gpt-5.2": {
+          "name": "GPT 5.2 (OAuth)",
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "variants": {
+            "none": {
+              "reasoningEffort": "none",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "low": {
+              "reasoningEffort": "low",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "medium": {
+              "reasoningEffort": "medium",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "high": {
+              "reasoningEffort": "high",
+              "reasoningSummary": "detailed",
+              "textVerbosity": "medium"
+            },
+            "xhigh": {
+              "reasoningEffort": "xhigh",
+              "reasoningSummary": "detailed",
+              "textVerbosity": "medium"
+            }
+          }
+        },
+        "gpt-5.2-codex": {
+          "name": "GPT 5.2 Codex (OAuth)",
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "variants": {
+            "low": {
+              "reasoningEffort": "low",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "medium": {
+              "reasoningEffort": "medium",
+              "reasoningSummary": "auto",
+              "textVerbosity": "medium"
+            },
+            "high": {
+              "reasoningEffort": "high",
+              "reasoningSummary": "detailed",
+              "textVerbosity": "medium"
+            },
+            "xhigh": {
+              "reasoningEffort": "xhigh",
+              "reasoningSummary": "detailed",
+              "textVerbosity": "medium"
+            }
+          }
+        },
+        "gpt-5.1-codex-max": {
+          "name": "GPT 5.1 Codex Max (OAuth)",
+          "limit": {
+            "context": 272000,
+            "output": 128000
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "variants": {
+            "low": {
+              "reasoningEffort": "low",
+              "reasoningSummary": "detailed",
+              "textVerbosity": "medium"
+            },
+            "medium": {
+              "reasoningEffort": "medium",
+              "reasoningSummary": "detailed",
+              "textVerbosity": "medium"
+            },
+            "high": {
+              "reasoningEffort": "high",
+              "reasoningSummary": "detailed",
+              "textVerbosity": "medium"
+            },
+            "xhigh": {
+              "reasoningEffort": "xhigh",
+              "reasoningSummary": "detailed",
+              "textVerbosity": "medium"
+            }
+          }
+        }
+      },
+      "options": {
+        "reasoningEffort": "medium",
+        "reasoningSummary": "auto",
+        "textVerbosity": "medium",
+        "include": [
+          "reasoning.encrypted_content"
+        ],
+        "store": false
+      }
+    }
+  },
+
+  "agent": {
+    "pm-spec-enforcer": {
+      "mode": "subagent",
+      "description": "PM 스펙 집행관: 스펙 기반 FR/NFR 검증",
+      "model": "openai/gpt-5.2",
+      "prompt": "너는 스펙 집행관 PM이다. 스펙 문서 기준으로 FR/NFR 체크리스트를 만들고, 코드/테스트 근거가 없으면 충족으로 판정하지 않는다. 불명확은 질문으로 남긴다. 출력: 결론(승인/조건부/반려) + 항목별 체크 + 이슈(P0~P3) + 재현 + 수정권고.",
+      "permission": { "edit": "ask", "bash": "ask" }
+    },
+
+    "ux-art-obsessed": {
+      "mode": "subagent",
+      "description": "UX 미학 강박 QA: 반응형/색상/접근성/상태 UX 집착",
+      "model": "openai/gpt-5.2",
+      "prompt": "너는 미학 강박 UX 디자이너다. 반응형(320~1440), 대비/상태색, 키보드 탐색/aria, focus, 로딩/빈/에러 상태 UX를 집요하게 검증한다. 감정적 욕설은 금지하고, 재현 조건과 사용자 영향을 근거로 P0~P3 이슈를 작성한다. 마지막에 디자인 시스템에 반영할 규칙 3개를 제안한다.",
+      "permission": { "edit": "ask", "bash": "ask" }
+    },
+
+    "toxic-architect": {
+      "mode": "subagent",
+      "description": "유지보수 절대주의 아키텍트: 경계/추상화/타입/에러전파/테스트가능성",
+      "model": "openai/gpt-5.2-codex",
+      "prompt": "너는 유지보수 절대주의 아키텍트다. 경계(의존성 방향), 과잉/부족 추상화, 타입 계약, 실패모드/에러전파, 테스트 가능성을 검증한다. 반드시 (1) 최소 변경안(MVP Refactor)과 (2) 이상적 변경안(Ideal Refactor)을 제시하고, 각각 변경 파일 수/리스크/롤백 플랜을 포함한다.",
+      "permission": { "edit": "ask", "bash": "ask" }
+    },
+
+    "mz-dx-rager": {
+      "mode": "subagent",
+      "description": "DX 폭주 감별사: API/문서/에러 경험/일관성 검증",
+      "model": "openai/gpt-5.2-codex",
+      "prompt": "너는 DX 폭주 감별사다. API 사용성/일관성/에러 메시지/actionability/문서-예제/로컬 개발 흐름을 검증한다. DX 비용을 수치화(첫 사용 단계 수, 실수 포인트 수, 디버깅 정보 누락 수)하고, (1) 가장 작은 DX 개선(PR 1개)과 (2) 근본 개선(설계 변경)으로 나눠 제안한다.",
+      "permission": { "edit": "ask", "bash": "ask" }
+    }
+  },
+
+  "$schema": "https://opencode.ai/config.json"
+}
