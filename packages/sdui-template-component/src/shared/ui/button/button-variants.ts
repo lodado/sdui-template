@@ -25,9 +25,9 @@ export const buttonVariants = cva(
         text: '',
       } as Record<ButtonStyle, string>,
       size: {
-        L: 'text-base leading-[1.5]', // 16px text, line-height 1.5
-        M: 'text-sm leading-[1.429]', // 14px text, line-height 1.429
-        S: 'text-xs leading-[1.333]', // 12px text, line-height 1.333
+        L: 'text-base leading-6', // 16px text, line-height 1.5 (24px)
+        M: 'text-sm leading-5', // 14px text, line-height 1.429 (20px)
+        S: 'text-xs leading-4', // 12px text, line-height 1.333 (16px)
       } as Record<ButtonSize, string>,
       type: {
         primary: '',
@@ -45,7 +45,7 @@ export const buttonVariants = cva(
         type: 'primary',
         size: 'L',
         class:
-          'h-12 px-4 bg-[var(--color-background-brand-bold-default)] text-[var(--color-text-inverse)] hover:bg-[var(--color-background-brand-bold-hovered)] active:bg-[var(--color-background-brand-bold-pressed)] disabled:bg-[var(--color-background-disabled)] disabled:text-[var(--color-text-disabled)]',
+          'h-12 px-6 bg-[var(--color-background-brand-bold-default)] text-[var(--color-text-inverse)] hover:bg-[var(--color-background-brand-bold-hovered)] active:bg-[var(--color-background-brand-bold-pressed)] disabled:bg-[var(--color-background-disabled)] disabled:text-[var(--color-text-disabled)]',
       },
       {
         style: 'filled',
@@ -67,7 +67,7 @@ export const buttonVariants = cva(
         type: 'secondary',
         size: 'L',
         class:
-          'h-12 px-4 bg-[var(--color-background-accent-gray-subtler-default)] text-[var(--color-text-default)] hover:bg-[var(--color-background-accent-gray-subtler-hovered)] active:bg-[var(--color-background-accent-gray-subtler-pressed)] disabled:bg-[var(--color-background-disabled)] disabled:text-[var(--color-text-disabled)]',
+          'h-12 px-6 bg-[var(--color-background-accent-gray-subtler-default)] text-[var(--color-text-default)] hover:bg-[var(--color-background-accent-gray-subtler-hovered)] active:bg-[var(--color-background-accent-gray-subtler-pressed)] disabled:bg-[var(--color-background-disabled)] disabled:text-[var(--color-text-disabled)]',
       },
       {
         style: 'filled',
@@ -89,7 +89,7 @@ export const buttonVariants = cva(
         type: 'primary',
         size: 'L',
         class:
-          'h-12 px-4 border-[var(--color-border-brand)] text-[var(--color-text-brand)] hover:bg-[var(--color-background-brand-subtlest-default)] active:bg-[var(--color-background-brand-subtlest-hovered)] disabled:border-[var(--color-border-disabled)] disabled:text-[var(--color-text-disabled)]',
+          'h-12 px-6 border-[var(--color-border-brand)] text-[var(--color-text-brand)] hover:bg-[var(--color-background-brand-subtlest-default)] active:bg-[var(--color-background-brand-subtlest-hovered)] disabled:border-[var(--color-border-disabled)] disabled:text-[var(--color-text-disabled)]',
       },
       {
         style: 'outline',
@@ -111,7 +111,7 @@ export const buttonVariants = cva(
         type: 'secondary',
         size: 'L',
         class:
-          'h-12 px-4 border-[var(--color-border-default)] text-[var(--color-text-default)] hover:bg-[var(--color-background-neutral-default)] active:bg-[var(--color-background-neutral-hovered)] disabled:border-[var(--color-border-disabled)] disabled:text-[var(--color-text-disabled)]',
+          'h-12 px-6 border-[var(--color-border-default)] text-[var(--color-text-default)] hover:bg-[var(--color-background-neutral-default)] active:bg-[var(--color-background-neutral-hovered)] disabled:border-[var(--color-border-disabled)] disabled:text-[var(--color-text-disabled)]',
       },
       {
         style: 'outline',
