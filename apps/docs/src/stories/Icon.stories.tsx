@@ -167,7 +167,7 @@ export const Size12px: Story = {
           {
             id: 'icon-1',
             type: 'Icon',
-            attributes: {
+            state: {
               size: '12px',
             },
             children: [
@@ -204,7 +204,7 @@ export const Size16px: Story = {
           {
             id: 'icon-1',
             type: 'Icon',
-            attributes: {
+            state: {
               size: '16px',
             },
             children: [
@@ -241,7 +241,7 @@ export const Size20px: Story = {
           {
             id: 'icon-1',
             type: 'Icon',
-            attributes: {
+            state: {
               size: '20px',
             },
             children: [
@@ -315,7 +315,7 @@ export const Size32px: Story = {
           {
             id: 'icon-1',
             type: 'Icon',
-            attributes: {
+            state: {
               size: '32px',
             },
             children: [
@@ -352,7 +352,7 @@ export const Size40px: Story = {
           {
             id: 'icon-1',
             type: 'Icon',
-            attributes: {
+            state: {
               size: '40px',
             },
             children: [
@@ -389,7 +389,7 @@ export const Size48px: Story = {
           {
             id: 'icon-1',
             type: 'Icon',
-            attributes: {
+            state: {
               size: '48px',
             },
             children: [
@@ -426,7 +426,7 @@ export const Size64px: Story = {
           {
             id: 'icon-1',
             type: 'Icon',
-            attributes: {
+            state: {
               size: '64px',
             },
             children: [
@@ -464,8 +464,10 @@ export const Placeholder: Story = {
           {
             id: 'icon-1',
             type: 'Icon',
-            attributes: {
+            state: {
               size: '24px',
+            },
+            attributes: {
               'aria-label': 'Icon placeholder',
             },
             children: [],
@@ -529,7 +531,7 @@ export const AllSizes: Story = {
                   {
                     id: `icon-${size}`,
                     type: 'Icon',
-                    attributes: {
+                    state: {
                       size,
                     },
                     children: [
@@ -634,7 +636,7 @@ export const DifferentIcons: Story = {
               {
                 id: 'icon-sample',
                 type: 'Icon',
-                attributes: {
+                state: {
                   size: '24px',
                 },
                 children: [
@@ -647,7 +649,7 @@ export const DifferentIcons: Story = {
               {
                 id: 'icon-arrow',
                 type: 'Icon',
-                attributes: {
+                state: {
                   size: '24px',
                 },
                 children: [
@@ -660,7 +662,7 @@ export const DifferentIcons: Story = {
               {
                 id: 'icon-close',
                 type: 'Icon',
-                attributes: {
+                state: {
                   size: '24px',
                 },
                 children: [
@@ -725,8 +727,10 @@ export const Accessibility: Story = {
                   {
                     id: 'icon-accessible',
                     type: 'Icon',
-                    attributes: {
+                    state: {
                       size: '24px',
+                    },
+                    attributes: {
                       'aria-label': 'Close icon',
                     },
                     children: [
@@ -755,8 +759,10 @@ export const Accessibility: Story = {
                   {
                     id: 'icon-hidden',
                     type: 'Icon',
-                    attributes: {
+                    state: {
                       size: '24px',
+                    },
+                    attributes: {
                       'aria-hidden': true,
                     },
                     children: [
@@ -785,7 +791,7 @@ export const Accessibility: Story = {
                   {
                     id: 'icon-placeholder',
                     type: 'Icon',
-                    attributes: {
+                    state: {
                       size: '24px',
                     },
                   },

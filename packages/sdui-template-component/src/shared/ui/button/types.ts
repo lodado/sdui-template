@@ -98,6 +98,7 @@ export const buttonStatesSchema: z.ZodSchema<Record<string, unknown>> = z.object
   buttonStyle: z.enum(['filled', 'outline', 'text']).optional(),
   size: z.enum(['L', 'M', 'S']).optional(),
   buttonType: z.enum(['primary', 'secondary']).optional(),
+  disabled: z.boolean().optional(),
 }) as z.ZodSchema<Record<string, unknown>>
 
 export type ButtonState = z.infer<typeof buttonStatesSchema>

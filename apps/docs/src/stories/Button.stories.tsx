@@ -72,9 +72,9 @@ export const Default: Story = {
               buttonStyle: 'filled',
               size: 'M',
               buttonType: 'primary',
+              disabled: false,
             },
             attributes: {
-              disabled: false,
               type: 'button',
             },
             children: [
@@ -135,9 +135,9 @@ export const Filled: Story = {
               buttonStyle: 'filled',
               size: 'M',
               buttonType: 'primary',
+              disabled: false,
             },
             attributes: {
-              disabled: false,
               type: 'button',
             },
             children: [
@@ -201,11 +201,13 @@ export const Outline: Story = {
           {
             id: 'button-1',
             type: 'Button',
-            attributes: {
+            state: {
               buttonStyle: 'outline',
               size: 'M',
               buttonType: 'primary',
               disabled: false,
+            },
+            attributes: {
               type: 'button',
             },
             children: [
@@ -269,11 +271,13 @@ export const Text: Story = {
           {
             id: 'button-1',
             type: 'Button',
-            attributes: {
+            state: {
               buttonStyle: 'text',
               size: 'M',
               buttonType: 'primary',
               disabled: false,
+            },
+            attributes: {
               type: 'button',
             },
             children: [
@@ -346,11 +350,13 @@ export const SizeL: Story = {
           {
             id: 'button-1',
             type: 'Button',
-            attributes: {
+            state: {
               buttonStyle: 'filled',
               size: 'L',
               buttonType: 'primary',
               disabled: false,
+            },
+            attributes: {
               type: 'button',
             },
             children: [
@@ -417,9 +423,9 @@ export const SizeM: Story = {
               buttonStyle: 'filled',
               size: 'M',
               buttonType: 'primary',
+              disabled: false,
             },
             attributes: {
-              disabled: false,
               type: 'button',
             },
             children: [
@@ -485,11 +491,13 @@ export const SizeS: Story = {
           {
             id: 'button-1',
             type: 'Button',
-            attributes: {
+            state: {
               buttonStyle: 'text',
               size: 'S',
               buttonType: 'primary',
               disabled: false,
+            },
+            attributes: {
               type: 'button',
             },
             children: [
@@ -561,9 +569,9 @@ export const Primary: Story = {
               buttonStyle: 'filled',
               size: 'M',
               buttonType: 'primary',
+              disabled: false,
             },
             attributes: {
-              disabled: false,
               type: 'button',
             },
             children: [
@@ -628,11 +636,13 @@ export const Secondary: Story = {
           {
             id: 'button-1',
             type: 'Button',
-            attributes: {
+            state: {
               buttonStyle: 'filled',
               size: 'M',
               buttonType: 'secondary',
               disabled: false,
+            },
+            attributes: {
               type: 'button',
             },
             children: [
@@ -698,11 +708,13 @@ export const Disabled: Story = {
           {
             id: 'button-1',
             type: 'Button',
-            attributes: {
+            state: {
               buttonStyle: 'filled',
               size: 'M',
               buttonType: 'primary',
               disabled: true,
+            },
+            attributes: {
               type: 'button',
             },
             children: [

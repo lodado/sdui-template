@@ -16,7 +16,6 @@ export const TextFieldContainer = ({ id, parentPath = [] }: TextFieldContainerPr
   const { renderChildren } = useRenderNode({ nodeId: id, parentPath })
 
   // HTML attributes
-  const disabled = attributes?.disabled as boolean | undefined
   const className = attributes?.className as string | undefined
 
   // State (component state, not HTML attributes)
@@ -24,6 +23,7 @@ export const TextFieldContainer = ({ id, parentPath = [] }: TextFieldContainerPr
   const errorMessage = state?.errorMessage as string | undefined
   const helpMessage = state?.helpMessage as string | undefined
   const required = state?.required as boolean | undefined
+  const disabled = state?.disabled as boolean | undefined
 
   // Render children (should contain TextField.Wrapper with Label, Input, HelpMessage)
   const children = childrenIds.length > 0 ? renderChildren(childrenIds) : undefined

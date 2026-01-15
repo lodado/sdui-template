@@ -129,8 +129,6 @@ export const Default: Story = {
                 state: {
                   error: false,
                   required: false,
-                },
-                attributes: {
                   disabled: false,
                 },
                 children: [
@@ -194,8 +192,6 @@ export const Focus: Story = {
                 state: {
                   error: false,
                   required: false,
-                },
-                attributes: {
                   disabled: false,
                 },
                 children: [
@@ -264,8 +260,6 @@ export const Filled: Story = {
                 state: {
                   error: false,
                   required: false,
-                },
-                attributes: {
                   disabled: false,
                 },
                 children: [
@@ -327,7 +321,7 @@ export const Disabled: Story = {
               {
                 id: 'textfield',
                 type: 'TextField',
-                attributes: {
+                state: {
                   error: false,
                   disabled: true,
                   required: false,
@@ -550,8 +544,6 @@ export const HorizontalLayout: Story = {
                 state: {
                   error: false,
                   required: false,
-                },
-                attributes: {
                   disabled: false,
                 },
                 children: [
@@ -622,8 +614,6 @@ export const WithLabel: Story = {
                 state: {
                   error: false,
                   required: false,
-                },
-                attributes: {
                   disabled: false,
                 },
                 children: [
@@ -1086,8 +1076,6 @@ export const WithLeftIcon: Story = {
                 state: {
                   error: false,
                   required: false,
-                },
-                attributes: {
                   disabled: false,
                 },
                 children: [
@@ -1176,8 +1164,6 @@ export const WithRightIcon: Story = {
                 state: {
                   error: false,
                   required: false,
-                },
-                attributes: {
                   disabled: false,
                 },
                 children: [
@@ -1267,8 +1253,6 @@ export const WithBothIcons: Story = {
                 state: {
                   error: false,
                   required: false,
-                },
-                attributes: {
                   disabled: false,
                 },
                 children: [
