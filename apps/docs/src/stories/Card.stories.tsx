@@ -125,7 +125,7 @@ export const WithTitle: Story = {
             id: 'card-1',
             type: 'Card',
             state: {
-              title: '학습 가이드',
+              title: 'Learning Guide',
             },
             attributes: {},
             children: [
@@ -194,7 +194,7 @@ export const WithListItems: Story = {
             id: 'card-1',
             type: 'Card',
             state: {
-              title: '학습 가이드',
+              title: 'Learning Guide',
             },
             attributes: {},
             children: [
@@ -241,7 +241,7 @@ export const WithListItems: Story = {
                             id: 'list-1-title',
                             type: 'Span',
                             state: {
-                              text: '1. 기사 읽기',
+                              text: '1. Read an Article',
                             },
                             attributes: {
                               className: 'text-base font-semibold text-[var(--color-text-default)]',
@@ -251,7 +251,7 @@ export const WithListItems: Story = {
                             id: 'list-1-description',
                             type: 'Span',
                             state: {
-                              text: '오늘의 추천 기사를 읽고 단어를 저장하세요',
+                              text: "Read today's featured article and save new words",
                             },
                             attributes: {
                               className: 'text-sm text-[var(--color-text-subtle)]',
