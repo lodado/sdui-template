@@ -1,6 +1,6 @@
 /* eslint-disable local-rules/no-console-log */
 import { type SduiLayoutDocument, SduiLayoutRenderer } from '@lodado/sdui-template'
-import { getListComponents,Icon, List } from '@lodado/sdui-template-component'
+import { getListComponents, List } from '@lodado/sdui-template-component'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import React from 'react'
 
@@ -45,7 +45,7 @@ Uses the **Compound Component pattern** to flexibly arrange:
 - ✅ **Keyboard navigation** support
 - ✅ **Accessibility features** built-in
 - ✅ **ARIA attributes** for screen readers
-- ✅ **Link support**: Can render as anchor tag
+- ✅ **SDUI metadata**: Supports nodeId/eventId data attributes
 
 ## Common Use Cases
 
@@ -114,13 +114,18 @@ const XIcon = () => (
 export const Default: Story = {
   render: () => (
     <div className="p-4">
-      <List onClick={() => console.log('Clicked')} className="w-[70vw]">
+      <List
+        onClick={() => console.log('Clicked')}
+        className="w-[70vw]"
+        nodeId="storybook-list-default"
+        eventId="storybook-list-default-click"
+      >
         <List.Icon color="blue">
           <BookIcon />
         </List.Icon>
         <List.Content>
-          <List.Title>기사 읽기</List.Title>
-          <List.Description>오늘의 추천 기사를 읽고 단어를 저장하세요</List.Description>
+          <List.Title>Read an Article</List.Title>
+          <List.Description>Read today&apos;s featured article and save new words</List.Description>
         </List.Content>
         <List.Arrow />
       </List>
@@ -145,6 +150,7 @@ The **default list configuration** demonstrates the basic compound component pat
 ## Usage
 
 This is the recommended pattern for creating interactive list items with icons, text, and navigation indicators.
+The nodeId and eventId props map to data-node-id and data-event-id attributes for SDUI metadata.
         `,
       },
     },
@@ -158,29 +164,29 @@ export const WithMultipleItems: Story = {
       {
         id: 1,
         iconColor: 'blue' as const,
-        title: '1. 기사 읽기',
-        description: '오늘의 추천 기사를 읽고 단어를 저장하세요',
+        title: '1. Read an Article',
+        description: 'Read today&apos;s featured article and save new words',
         icon: <BookIcon />,
       },
       {
         id: 2,
         iconColor: 'green' as const,
-        title: '2. 단어장 확인',
-        description: '저장한 단어들을 확인하고 관리하세요',
+        title: '2. Review Vocabulary',
+        description: 'Check and manage the words you saved',
         icon: <BooksIcon />,
       },
       {
         id: 3,
         iconColor: 'purple' as const,
-        title: '3. 퀴즈 풀기',
-        description: '퀴즈로 학습 효과를 확인하세요',
+        title: '3. Take a Quiz',
+        description: 'Use a quiz to confirm learning progress',
         icon: <TargetIcon />,
       },
       {
         id: 4,
         iconColor: 'red' as const,
-        title: '4. 오답 복습',
-        description: '틀린 문제를 다시 풀어보세요',
+        title: '4. Review Mistakes',
+        description: 'Retry the questions you missed',
         icon: <XIcon />,
       },
     ]
@@ -212,12 +218,12 @@ export const WithMultipleItems: Story = {
 
 ## Figma Design Recreation
 
-This story demonstrates the "학습 가이드" (Learning Guide) section from the Figma design:
+This story demonstrates the "Learning Guide" section from the Figma design:
 
-1. **기사 읽기** (Read Article) - Blue icon
-2. **단어장 확인** (Check Vocabulary) - Green icon
-3. **퀴즈 풀기** (Take Quiz) - Purple icon
-4. **오답 복습** (Review Incorrect Answers) - Red icon
+1. **Read an Article** - Blue icon
+2. **Review Vocabulary** - Green icon
+3. **Take a Quiz** - Purple icon
+4. **Review Mistakes** - Red icon
 
 ## Icon Colors
 

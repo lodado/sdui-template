@@ -74,7 +74,7 @@
   color: var(--color-gray-600, #646464);
 }
 
-/* 다크 배경에서도 잘 보이도록 */
+/* Ensure visibility on dark backgrounds. */
 .color-box[data-color-value='#ffffff'] .color-box__swatch,
 .color-box[data-color-value='#f0f0f0'] .color-box__swatch,
 .color-box[data-color-value='#dcf8e9'] .color-box__swatch,
