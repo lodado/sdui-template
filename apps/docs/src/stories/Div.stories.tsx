@@ -1,7 +1,7 @@
 import '@lodado/sdui-design-files/colors.css'
 
 import { type SduiLayoutDocument, SduiLayoutRenderer } from '@lodado/sdui-template'
-import { Div, getDivComponents } from '@lodado/sdui-template-component'
+import { defaultComponentMap,Div } from '@lodado/sdui-template-component'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import React from 'react'
 
@@ -103,7 +103,7 @@ export const Default: Story = {
       },
     }
 
-    return <SduiLayoutRenderer document={document} components={getDivComponents()} />
+    return <SduiLayoutRenderer document={document} components={defaultComponentMap} />
   },
   parameters: {
     docs: {
@@ -195,7 +195,7 @@ export const NestedDivs: Story = {
       },
     }
 
-    return <SduiLayoutRenderer document={document} components={getDivComponents()} />
+    return <SduiLayoutRenderer document={document} components={defaultComponentMap} />
   },
   parameters: {
     docs: {
@@ -266,7 +266,7 @@ export const WithCustomStyling: Story = {
       },
     }
 
-    return <SduiLayoutRenderer document={document} components={getDivComponents()} />
+    return <SduiLayoutRenderer document={document} components={defaultComponentMap} />
   },
   parameters: {
     docs: {
@@ -358,7 +358,7 @@ export const AsContainer: Story = {
       },
     }
 
-    return <SduiLayoutRenderer document={document} components={getDivComponents()} />
+    return <SduiLayoutRenderer document={document} components={defaultComponentMap} />
   },
   parameters: {
     docs: {

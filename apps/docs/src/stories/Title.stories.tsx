@@ -1,7 +1,7 @@
 import '@lodado/sdui-design-files/colors.css'
 
 import { type SduiLayoutDocument, SduiLayoutRenderer } from '@lodado/sdui-template'
-import { Button, getTitleComponents, Title } from '@lodado/sdui-template-component'
+import { Button, defaultComponentMap, Title } from '@lodado/sdui-template-component'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import React from 'react'
 
@@ -57,7 +57,7 @@ export const Basic: Story = {
 
     return (
       <div style={{ width: '100%', backgroundColor: '#f0f0f0' }}>
-        <SduiLayoutRenderer document={document} components={getTitleComponents()} />
+        <SduiLayoutRenderer document={document} components={defaultComponentMap} />
       </div>
     )
   },
@@ -145,7 +145,7 @@ export const WithNavigation: Story = {
 
     return (
       <div style={{ width: '100%', backgroundColor: '#f0f0f0' }}>
-        <SduiLayoutRenderer document={document} components={getTitleComponents()} />
+        <SduiLayoutRenderer document={document} components={defaultComponentMap} />
       </div>
     )
   },
@@ -248,7 +248,7 @@ export const ThreeSections: Story = {
 
     return (
       <div style={{ width: '100%', backgroundColor: '#f0f0f0' }}>
-        <SduiLayoutRenderer document={document} components={getTitleComponents()} />
+        <SduiLayoutRenderer document={document} components={defaultComponentMap} />
       </div>
     )
   },
@@ -291,7 +291,7 @@ export const MultipleLogos: Story = {
 
     return (
       <div style={{ width: '100%', backgroundColor: '#f0f0f0' }}>
-        <SduiLayoutRenderer document={document} components={getTitleComponents()} />
+        <SduiLayoutRenderer document={document} components={defaultComponentMap} />
       </div>
     )
   },
@@ -361,7 +361,7 @@ export const WithButtons: Story = {
     }
 
     const customComponents = {
-      ...getTitleComponents(),
+      ...defaultComponentMap,
       ButtonContainer: () => <ButtonContainer id="button-container" />,
     }
 
@@ -501,7 +501,7 @@ export const Responsive: Story = {
 
     return (
       <div style={{ width: '100%', backgroundColor: '#f0f0f0' }}>
-        <SduiLayoutRenderer document={document} components={getTitleComponents()} />
+        <SduiLayoutRenderer document={document} components={defaultComponentMap} />
       </div>
     )
   },
@@ -529,7 +529,7 @@ export const Empty: Story = {
 
     return (
       <div style={{ width: '100%', backgroundColor: '#f0f0f0' }}>
-        <SduiLayoutRenderer document={document} components={getTitleComponents()} />
+        <SduiLayoutRenderer document={document} components={defaultComponentMap} />
       </div>
     )
   },

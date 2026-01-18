@@ -3,10 +3,11 @@ import '@lodado/sdui-design-files/colors.css'
 
 import { type SduiLayoutDocument, SduiLayoutRenderer } from '@lodado/sdui-template'
 import {
+  defaultComponentMap,
   ErrorBoundary,
   type ExtractSchemaFields,
   Form,
-  getFormComponents,
+  registerSchema,
 } from '@lodado/sdui-template-component'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import React from 'react'
@@ -63,6 +64,12 @@ The Form component supports:
 export default meta
 type Story = StoryObj<typeof Form>
 
+const registerSchemas = (schemas: Record<string, z.ZodTypeAny>) => {
+  Object.entries(schemas).forEach(([name, schema]) => {
+    registerSchema(name, schema)
+  })
+}
+
 // Basic Form Example with Zod Validation
 export const Basic: Story = {
   render: () => {
@@ -74,6 +81,8 @@ export const Basic: Story = {
         password: z.string().min(8, 'Password must be at least 8 characters'),
       }),
     }
+
+    registerSchemas(schemas)
 
     // Type-safe: Extract field names from schema
     // type LoginFields = ExtractSchemaFields<typeof schemas, 'loginForm'> // "email" | "password"
@@ -164,7 +173,7 @@ export const Basic: Story = {
         ],
       },
     }
-    return <SduiLayoutRenderer document={document} components={getFormComponents(schemas)} />
+    return <SduiLayoutRenderer document={document} components={defaultComponentMap} />
   },
   parameters: {
     docs: {
@@ -194,6 +203,8 @@ export const RegistrationForm: Story = {
           path: ['confirmPassword'], // Display error on confirmPassword field
         }),
     }
+
+    registerSchemas(schemas)
 
     const document: SduiLayoutDocument = {
       version: '1.0.0',
@@ -304,7 +315,7 @@ export const RegistrationForm: Story = {
         ],
       },
     }
-    return <SduiLayoutRenderer document={document} components={getFormComponents(schemas)} />
+    return <SduiLayoutRenderer document={document} components={defaultComponentMap} />
   },
   parameters: {
     docs: {
@@ -330,6 +341,8 @@ export const WithHelpMessages: Story = {
         email: z.string().min(1, 'Please enter your email').email('Please enter a valid email'),
       }),
     }
+
+    registerSchemas(schemas)
 
     const document: SduiLayoutDocument = {
       version: '1.0.0',
@@ -418,7 +431,7 @@ export const WithHelpMessages: Story = {
         ],
       },
     }
-    return <SduiLayoutRenderer document={document} components={getFormComponents(schemas)} />
+    return <SduiLayoutRenderer document={document} components={defaultComponentMap} />
   },
   parameters: {
     docs: {
@@ -516,7 +529,7 @@ export const WithoutSchema: Story = {
         ],
       },
     }
-    return <SduiLayoutRenderer document={document} components={getFormComponents()} />
+    return <SduiLayoutRenderer document={document} components={defaultComponentMap} />
   },
   parameters: {
     docs: {
@@ -552,6 +565,8 @@ export const CustomValidation: Story = {
           ),
       }),
     }
+
+    registerSchemas(schemas)
 
     const document: SduiLayoutDocument = {
       version: '1.0.0',
@@ -639,7 +654,7 @@ export const CustomValidation: Story = {
         ],
       },
     }
-    return <SduiLayoutRenderer document={document} components={getFormComponents(schemas)} />
+    return <SduiLayoutRenderer document={document} components={defaultComponentMap} />
   },
   parameters: {
     docs: {
@@ -651,16 +666,18 @@ export const CustomValidation: Story = {
   },
 }
 
-// Form with Schema Name (using getFormComponents with schemas)
+// Form with Schema Name (using registered schemas)
 export const WithSchemaName: Story = {
   render: () => {
-    // Define schemas and register them via getFormComponents
+    // Define schemas and register them
     const schemas = {
       profileForm: z.object({
         email: z.string().email('Please enter a valid email'),
         username: z.string().min(3, 'Username must be at least 3 characters'),
       }),
     }
+
+    registerSchemas(schemas)
 
     const document: SduiLayoutDocument = {
       version: '1.0.0',
@@ -747,14 +764,13 @@ export const WithSchemaName: Story = {
         ],
       },
     }
-    // Pass schemas to getFormComponents to register them
-    return <SduiLayoutRenderer document={document} components={getFormComponents(schemas)} />
+    return <SduiLayoutRenderer document={document} components={defaultComponentMap} />
   },
   parameters: {
     docs: {
       description: {
         story:
-          'Demonstrates how to use schema names with getFormComponents. Schemas are registered via getFormComponents parameter, and the form references them using schemaName attribute. This approach is useful when you want to reuse schemas across multiple forms or when schemas are defined separately from the form document.',
+          'Demonstrates how to use schema names with registered schemas. Schemas are registered up front, and the form references them using schemaName attributes. This approach is useful when you want to reuse schemas across multiple forms or when schemas are defined separately from the form document.',
       },
     },
   },
@@ -770,6 +786,8 @@ export const DisabledFields: Story = {
         username: z.string().min(3, 'Username must be at least 3 characters'),
       }),
     }
+
+    registerSchemas(schemas)
 
     const document: SduiLayoutDocument = {
       version: '1.0.0',
@@ -854,7 +872,7 @@ export const DisabledFields: Story = {
         ],
       },
     }
-    return <SduiLayoutRenderer document={document} components={getFormComponents(schemas)} />
+    return <SduiLayoutRenderer document={document} components={defaultComponentMap} />
   },
   parameters: {
     docs: {
@@ -877,6 +895,8 @@ export const SchemaMismatch: Story = {
         password: z.string().min(8, 'Password must be at least 8 characters'),
       }),
     }
+
+    registerSchemas(schemas)
 
     const document: SduiLayoutDocument = {
       version: '1.0.0',
@@ -977,7 +997,7 @@ export const SchemaMismatch: Story = {
     }
     return (
       <ErrorBoundary>
-        <SduiLayoutRenderer document={document} components={getFormComponents(schemas)} />
+        <SduiLayoutRenderer document={document} components={defaultComponentMap} />
       </ErrorBoundary>
     )
   },

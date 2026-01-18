@@ -1,7 +1,7 @@
 import '@lodado/sdui-design-files/colors.css'
 
 import { type SduiLayoutDocument, SduiLayoutRenderer } from '@lodado/sdui-template'
-import { getIconComponents, Icon } from '@lodado/sdui-template-component'
+import { defaultComponentMap, Icon } from '@lodado/sdui-template-component'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import React from 'react'
 
@@ -103,7 +103,7 @@ const createSVGIconFactory = (SVGComponent: React.ComponentType) => {
 
 // Get components with SVG factories
 const getIconComponentsWithSVG = () => {
-  const baseComponents = getIconComponents()
+  const baseComponents = defaultComponentMap
   return {
     ...baseComponents,
     SVG_sample: createSVGIconFactory(SampleIconSVG),

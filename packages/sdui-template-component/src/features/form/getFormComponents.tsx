@@ -3,12 +3,8 @@
 import { type ComponentFactory } from '@lodado/sdui-template'
 import type { z } from 'zod'
 
-import { ButtonContainer } from '../../shared/ui/button/ButtonContainer'
-import { Div } from '../../shared/ui/div'
-import { Span,Text } from '../../shared/ui/text'
-import { FormContainer } from './Form'
-import { FormFieldContainer } from './FormField'
-import { type ExtractSchemaFields,registerSchema } from './types'
+import { defaultComponentMap } from '../../defaultComponentMap'
+import { type ExtractSchemaFields, registerSchema } from './types'
 
 /**
  * Form component map for SDUI Layout Renderer
@@ -62,12 +58,5 @@ export function getFormComponents<TSchemas extends Record<string, any> = Record<
     })
   }
 
-  return {
-    Form: (id, parentPath) => <FormContainer id={id} parentPath={parentPath} />,
-    Div: (id, parentPath) => <Div id={id} parentPath={parentPath} />,
-    FormField: (id) => <FormFieldContainer id={id} />,
-    Button: (id, parentPath) => <ButtonContainer id={id} parentPath={parentPath} />,
-    Text: (id) => <Text id={id} />,
-    Span: (id) => <Span id={id} />,
-  }
+  return defaultComponentMap
 }
