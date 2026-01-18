@@ -836,7 +836,7 @@ export const SizeComparison: Story = {
             id: 'title',
             type: 'Span',
             state: {
-              text: 'Size Comparison (Tailwind Spacing Scale 기준)',
+              text: 'Size Comparison (Tailwind Spacing Scale Reference)',
             },
             attributes: {
               className: 'text-lg font-bold',

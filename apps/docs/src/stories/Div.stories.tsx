@@ -51,7 +51,7 @@ When used in the **SDUI template system**, the Div component:
 export default meta
 type Story = StoryObj<typeof Div>
 
-// 기본 Div 예시
+// Basic Div example
 export const Default: Story = {
   render: () => {
     const document: SduiLayoutDocument = {
@@ -67,7 +67,7 @@ export const Default: Story = {
             id: 'title',
             type: 'Span',
             state: {
-              text: '기본 Div 컴포넌트',
+              text: 'Basic Div Component',
             },
             attributes: {
               className: 'text-lg font-bold mb-4',
@@ -77,7 +77,7 @@ export const Default: Story = {
             id: 'description',
             type: 'Span',
             state: {
-              text: 'Div 컴포넌트는 Error Boundary와 Suspense를 내장하고 있습니다.',
+              text: 'The Div component includes built-in Error Boundary and Suspense.',
             },
             attributes: {
               className: 'text-gray-600 mb-4',
@@ -94,7 +94,7 @@ export const Default: Story = {
                 id: 'div-content',
                 type: 'Span',
                 state: {
-                  text: '이 div는 Error Boundary와 Suspense로 감싸져 있습니다.',
+                  text: 'This div is wrapped with Error Boundary and Suspense.',
                 },
               },
             ],
@@ -134,7 +134,7 @@ No additional configuration needed - error handling and async loading support ar
   },
 }
 
-// Nested Divs 예시
+// Nested Divs example
 export const NestedDivs: Story = {
   render: () => {
     const document: SduiLayoutDocument = {
@@ -150,7 +150,7 @@ export const NestedDivs: Story = {
             id: 'title',
             type: 'Span',
             state: {
-              text: 'Nested Divs 예시',
+              text: 'Nested Divs Example',
             },
             attributes: {
               className: 'text-lg font-bold mb-4',
@@ -237,7 +237,7 @@ export const WithCustomStyling: Story = {
             id: 'title',
             type: 'Span',
             state: {
-              text: 'Custom Styling 예시',
+              text: 'Custom Styling Example',
             },
             attributes: {
               className: 'text-lg font-bold mb-4',
@@ -309,7 +309,7 @@ export const AsContainer: Story = {
             id: 'title',
             type: 'Span',
             state: {
-              text: 'Container 예시',
+              text: 'Container Example',
             },
             attributes: {
               className: 'text-lg font-bold mb-4',
