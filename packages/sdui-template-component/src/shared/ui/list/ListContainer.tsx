@@ -22,13 +22,12 @@ export const ListContainer = ({ id, parentPath = [] }: ListContainerProps) => {
 
   // Extract state values
   const disabled = state?.disabled as boolean | undefined
-  const href = state?.href as string | undefined
 
   return (
     <List
       nodeId={id}
       disabled={disabled}
-      href={href}
+
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...(attributes as ListProps)}
     >

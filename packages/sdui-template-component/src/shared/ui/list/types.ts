@@ -125,8 +125,6 @@ export interface ListArrowProps extends React.HTMLAttributes<HTMLDivElement> {
  */
 export const listStatesSchema: z.ZodSchema<Record<string, unknown>> = z.object({
   disabled: z.boolean().optional(),
-  href: z.string().optional(),
-  iconColor: z.enum(['blue', 'green', 'purple', 'red', 'default']).optional(),
 }) as z.ZodSchema<Record<string, unknown>>
 
 export type ListState = z.infer<typeof listStatesSchema>

@@ -28,6 +28,7 @@
     "build": "rollup -c && tsc --emitDeclarationOnly --declarationMap false --declaration --declarationDir dist/types",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
     "lint": "eslint \"src/**/*.ts*\" \"*.ts*\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "jest --passWithNoTests"
   },
   "packageManager": "pnpm@9.0.6",

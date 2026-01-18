@@ -7,6 +7,7 @@
     "storybook": "storybook dev -p 6006",
     "build:internal": "storybook build",
     "lint": "eslint \"src/**/*.ts*\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
     "build-storybook": "storybook build"
   },
   "dependencies": {
