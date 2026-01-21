@@ -761,10 +761,10 @@ export const Required: Story = {
               {
                 id: 'textfield',
                 type: 'TextField',
-                attributes: {
+                state: {
                   error: false,
-                  disabled: false,
                   required: true,
+                  disabled: false,
                 },
                 children: [
                   {
