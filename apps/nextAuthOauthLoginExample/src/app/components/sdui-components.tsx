@@ -8,37 +8,54 @@ import {
 import { Button } from '@lodado/sdui-template-component'
 import { signIn, signOut, useSession } from 'next-auth/react'
 import type { PropsWithChildren } from 'react'
+import React from 'react'
+import { z } from 'zod'
 
 import { useRefreshSession } from './use-refresh-session'
+
+// ==================== Zod Schemas ====================
+
+const containerStateSchema = z.object({
+  align: z.enum(['center', 'start']).optional(),
+})
+
+const cardStateSchema = z.object({
+  tone: z.enum(['dark', 'light']).optional(),
+})
+
+const textStateSchema = z.object({
+  text: z.string().optional(),
+})
+
+const authButtonStateSchema = z.object({
+  label: z.string().optional(),
+})
+
+const statusPanelStateSchema = z.object({
+  title: z.string().optional(),
+})
+
+// ==================== Type Definitions ====================
+
+type ContainerState = z.infer<typeof containerStateSchema>
+type CardState = z.infer<typeof cardStateSchema>
+type TextState = z.infer<typeof textStateSchema>
+type AuthButtonState = z.infer<typeof authButtonStateSchema>
+type StatusPanelState = z.infer<typeof statusPanelStateSchema>
+
+// ==================== Component Definitions ====================
 
 const containerClasses = {
   center: 'layout-center',
   start: 'layout-start',
 }
 
-type TextState = {
-  text?: string
-}
-
-type CardState = {
-  tone?: 'dark' | 'light'
-}
-
-type ContainerState = {
-  align?: keyof typeof containerClasses
-}
-
-type AuthButtonState = {
-  label?: string
-}
-
-type StatusPanelState = {
-  title?: string
-}
-
-const Container = ({ id }: { id: string }) => {
-  const { childrenIds, state } = useSduiNodeSubscription<ContainerState>({ nodeId: id })
-  const { renderNode, currentPath } = useRenderNode({ nodeId: id })
+const Container: React.FC<{ nodeId: string }> = ({ nodeId }) => {
+  const { childrenIds, state } = useSduiNodeSubscription<ContainerState>({
+    nodeId,
+    schema: containerStateSchema,
+  })
+  const { renderNode, currentPath } = useRenderNode({ nodeId })
 
   return (
     <section className={containerClasses[state.align ?? 'center']}>
@@ -51,9 +68,12 @@ const Container = ({ id }: { id: string }) => {
   )
 }
 
-const Card = ({ id }: { id: string }) => {
-  const { childrenIds, state } = useSduiNodeSubscription<CardState>({ nodeId: id })
-  const { renderNode, currentPath } = useRenderNode({ nodeId: id })
+const Card: React.FC<{ nodeId: string }> = ({ nodeId }) => {
+  const { childrenIds, state } = useSduiNodeSubscription<CardState>({
+    nodeId,
+    schema: cardStateSchema,
+  })
+  const { renderNode, currentPath } = useRenderNode({ nodeId })
   const tone = state.tone ?? 'dark'
 
   return (
@@ -67,18 +87,27 @@ const Card = ({ id }: { id: string }) => {
   )
 }
 
-const Title = ({ id }: { id: string }) => {
-  const { state } = useSduiNodeSubscription<TextState>({ nodeId: id })
+const Title: React.FC<{ nodeId: string }> = ({ nodeId }) => {
+  const { state } = useSduiNodeSubscription<TextState>({
+    nodeId,
+    schema: textStateSchema,
+  })
   return <h1 className="title">{state.text}</h1>
 }
 
-const Description = ({ id }: { id: string }) => {
-  const { state } = useSduiNodeSubscription<TextState>({ nodeId: id })
+const Description: React.FC<{ nodeId: string }> = ({ nodeId }) => {
+  const { state } = useSduiNodeSubscription<TextState>({
+    nodeId,
+    schema: textStateSchema,
+  })
   return <p className="description">{state.text}</p>
 }
 
-const Hint = ({ id }: { id: string }) => {
-  const { state } = useSduiNodeSubscription<TextState>({ nodeId: id })
+const Hint: React.FC<{ nodeId: string }> = ({ nodeId }) => {
+  const { state } = useSduiNodeSubscription<TextState>({
+    nodeId,
+    schema: textStateSchema,
+  })
   return <p className="hint">{state.text}</p>
 }
 
@@ -86,10 +115,26 @@ const CardSection = ({ children }: PropsWithChildren) => {
   return <div className="panel">{children}</div>
 }
 
-const AuthButton = ({ id }: { id: string }) => {
-  const { state } = useSduiNodeSubscription<AuthButtonState>({ nodeId: id })
+const AuthButton: React.FC<{ nodeId: string }> = ({ nodeId }) => {
+  const { state } = useSduiNodeSubscription<AuthButtonState>({
+    nodeId,
+    schema: authButtonStateSchema,
+  })
   const { status } = useSession()
   const { isRefreshing } = useRefreshSession()
+
+  const handleLogout = async () => {
+    try {
+      // 먼저 리프레시 토큰 삭제 (DB + 쿠키)
+      await fetch('/api/auth/logout', { method: 'POST' })
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Logout failed:', error)
+    } finally {
+      // NextAuth 세션 종료
+      await signOut({ callbackUrl: '/' })
+    }
+  }
 
   if (status === 'loading') {
     return (
@@ -113,12 +158,12 @@ const AuthButton = ({ id }: { id: string }) => {
           size="M"
           buttonType="secondary"
           className="sdui-button sdui-button--secondary"
-          onClick={() => signOut()}
+          onClick={handleLogout}
         >
           로그아웃
         </Button>
         <span className="auth-hint">
-          {isRefreshing ? '리프레시 토큰 확인 중...' : '세션이 만료되면 자동으로 갱신됩니다.'}
+          {isRefreshing ? '리프레시 토큰 확인 중...' : '세션 만료 3분 전 자동 갱신됩니다.'}
         </span>
       </div>
     )
@@ -146,8 +191,11 @@ const StatusRow = ({ label, value }: { label: string; value: string }) => {
   )
 }
 
-const StatusPanel = ({ id }: { id: string }) => {
-  const { state } = useSduiNodeSubscription<StatusPanelState>({ nodeId: id })
+const StatusPanel: React.FC<{ nodeId: string }> = ({ nodeId }) => {
+  const { state } = useSduiNodeSubscription<StatusPanelState>({
+    nodeId,
+    schema: statusPanelStateSchema,
+  })
   const { data: session, status } = useSession()
   const { isRefreshing, lastRefreshAt, errorMessage, refreshSession } = useRefreshSession()
 
@@ -179,12 +227,24 @@ const StatusPanel = ({ id }: { id: string }) => {
   )
 }
 
+// ==================== Component Factories ====================
+
+const ContainerFactory: ComponentFactory = (id) => <Container nodeId={id} />
+const CardFactory: ComponentFactory = (id) => <Card nodeId={id} />
+const TitleFactory: ComponentFactory = (id) => <Title nodeId={id} />
+const DescriptionFactory: ComponentFactory = (id) => <Description nodeId={id} />
+const HintFactory: ComponentFactory = (id) => <Hint nodeId={id} />
+const AuthButtonFactory: ComponentFactory = (id) => <AuthButton nodeId={id} />
+const StatusPanelFactory: ComponentFactory = (id) => <StatusPanel nodeId={id} />
+
+// ==================== Export Component Map ====================
+
 export const sduiComponents: Record<string, ComponentFactory> = {
-  Container: (id) => <Container id={id} />,
-  Card: (id) => <Card id={id} />,
-  Title: (id) => <Title id={id} />,
-  Description: (id) => <Description id={id} />,
-  AuthButton: (id) => <AuthButton id={id} />,
-  StatusPanel: (id) => <StatusPanel id={id} />,
-  Hint: (id) => <Hint id={id} />,
+  Container: ContainerFactory,
+  Card: CardFactory,
+  Title: TitleFactory,
+  Description: DescriptionFactory,
+  Hint: HintFactory,
+  AuthButton: AuthButtonFactory,
+  StatusPanel: StatusPanelFactory,
 }

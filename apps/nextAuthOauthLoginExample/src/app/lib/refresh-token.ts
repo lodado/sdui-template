@@ -106,3 +106,20 @@ export async function rotateRefreshToken(params: {
     throw new Error(`Failed to rotate refresh token: ${insertError.message}`)
   }
 }
+
+export async function revokeRefreshToken(token: string) {
+  const tokenHash = hashRefreshToken(token)
+  const now = new Date().toISOString()
+
+  const { error } = await supabaseAdmin
+    .from(REFRESH_TOKEN_TABLE)
+    .update({
+      revoked_at: now,
+    })
+    .eq('token_hash', tokenHash)
+    .is('revoked_at', null)
+
+  if (error) {
+    throw new Error(`Failed to revoke refresh token: ${error.message}`)
+  }
+}

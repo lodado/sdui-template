@@ -1,7 +1,9 @@
 import './globals.css'
 
+import { getServerSession } from 'next-auth/next'
 import type { ReactNode } from 'react'
 
+import { authOptions } from './lib/auth'
 import Providers from './providers'
 
 export const metadata = {
@@ -9,11 +11,13 @@ export const metadata = {
   description: 'GitHub OAuth login with NextAuth and SDUI',
 }
 
-const RootLayout = ({ children }: { children: ReactNode }) => {
+const RootLayout = async ({ children }: { children: ReactNode }) => {
+  const session = await getServerSession(authOptions)
+
   return (
     <html lang="en">
       <body>
-        <Providers>{children}</Providers>
+        <Providers session={session}>{children}</Providers>
       </body>
     </html>
   )
