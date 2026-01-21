@@ -1,0 +1,5 @@
+# Keep generated Next.js files out except for type declarations
+.next/
+
+!next-env.d.ts
+!src/types/next-auth.d.ts

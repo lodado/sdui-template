@@ -1,0 +1,28 @@
+{
+  "name": "next-auth-oauth-login-example",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint \"src/**/*.{ts,tsx}\""
+  },
+  "dependencies": {
+    "@lodado/sdui-template": "workspace:*",
+    "@lodado/sdui-template-component": "workspace:*",
+    "@supabase/supabase-js": "^2.56.1",
+    "next": "^14.2.15",
+    "next-auth": "^4.24.8",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "eslint": "^8.57.0",
+    "tsconfig": "workspace:*",
+    "typescript": "^5.6.3"
+  }
+}
