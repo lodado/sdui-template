@@ -1,250 +1,379 @@
 'use client'
 
+/**
+ * SDUI Components for NextAuth OAuth Login Example
+ *
+ * @description
+ * This file defines atomic components that integrate NextAuth functionality.
+ * Standard components (Div, Card, Text, Span) are provided by @lodado/sdui-template-component
+ * and merged in the export section.
+ *
+ * 🔧 Auth Components:
+ *    - LoginButton: OAuth login button (signIn only)
+ *    - LogoutButton: Logout button (signOut only)
+ *    - SessionHint: Session status hint text
+ *    - AuthSwitch: Conditional rendering based on auth status
+ *
+ * 🔧 Session Components:
+ *    - SessionField: Display session data field (label + value)
+ *    - RefreshButton: Session refresh button
+ *    - SessionError: Error message display
+ */
+
 import {
   type ComponentFactory,
   useRenderNode,
   useSduiNodeSubscription,
 } from '@lodado/sdui-template'
-import { Button } from '@lodado/sdui-template-component'
+import { Button, getButtonComponents, getCardComponents, getDivComponents } from '@lodado/sdui-template-component'
 import { signIn, signOut, useSession } from 'next-auth/react'
-import type { PropsWithChildren } from 'react'
 import React from 'react'
 import { z } from 'zod'
 
 import { useRefreshSession } from './use-refresh-session'
 
-// ==================== Zod Schemas ====================
+// ============================================================================
+// Schemas
+// ============================================================================
 
-const containerStateSchema = z.object({
-  align: z.enum(['center', 'start']).optional(),
-})
-
-const cardStateSchema = z.object({
-  tone: z.enum(['dark', 'light']).optional(),
-})
-
-const textStateSchema = z.object({
-  text: z.string().optional(),
-})
-
-const authButtonStateSchema = z.object({
+const loginButtonStateSchema = z.object({
   label: z.string().optional(),
+  provider: z.enum(['github', 'google', 'discord']).optional(),
+  callbackUrl: z.string().optional(),
+  buttonStyle: z.enum(['filled', 'outline', 'text']).optional(),
+  size: z.enum(['L', 'M', 'S']).optional(),
+  buttonType: z.enum(['primary', 'secondary']).optional(),
 })
 
-const statusPanelStateSchema = z.object({
-  title: z.string().optional(),
+const logoutButtonStateSchema = z.object({
+  text: z.string().optional(),
+  callbackUrl: z.string().optional(),
+  buttonStyle: z.enum(['filled', 'outline', 'text']).optional(),
+  size: z.enum(['L', 'M', 'S']).optional(),
+  buttonType: z.enum(['primary', 'secondary']).optional(),
 })
 
-// ==================== Type Definitions ====================
+const sessionHintStateSchema = z.object({
+  refreshingText: z.string().optional(),
+  normalText: z.string().optional(),
+  className: z.string().optional(),
+})
 
-type ContainerState = z.infer<typeof containerStateSchema>
-type CardState = z.infer<typeof cardStateSchema>
-type TextState = z.infer<typeof textStateSchema>
-type AuthButtonState = z.infer<typeof authButtonStateSchema>
-type StatusPanelState = z.infer<typeof statusPanelStateSchema>
+const authSwitchStateSchema = z.object({
+  slot: z.enum(['loading', 'authenticated', 'unauthenticated']).optional(),
+})
 
-// ==================== Component Definitions ====================
+const sessionFieldStateSchema = z.object({
+  field: z.enum(['status', 'userName', 'email', 'expires', 'lastRefresh']),
+  label: z.string(),
+  fallback: z.string().optional(),
+})
 
-const containerClasses = {
-  center: 'layout-center',
-  start: 'layout-start',
-}
+const refreshButtonStateSchema = z.object({
+  text: z.string().optional(),
+  refreshingText: z.string().optional(),
+  buttonStyle: z.enum(['filled', 'outline', 'text']).optional(),
+  size: z.enum(['L', 'M', 'S']).optional(),
+  buttonType: z.enum(['primary', 'secondary']).optional(),
+})
 
-const Container: React.FC<{ nodeId: string }> = ({ nodeId }) => {
-  const { childrenIds, state } = useSduiNodeSubscription<ContainerState>({
+const sessionErrorStateSchema = z.object({
+  className: z.string().optional(),
+})
+
+// Type inference
+type LoginButtonState = z.infer<typeof loginButtonStateSchema>
+type LogoutButtonState = z.infer<typeof logoutButtonStateSchema>
+type SessionHintState = z.infer<typeof sessionHintStateSchema>
+type AuthSwitchState = z.infer<typeof authSwitchStateSchema>
+type SessionFieldState = z.infer<typeof sessionFieldStateSchema>
+type RefreshButtonState = z.infer<typeof refreshButtonStateSchema>
+type SessionErrorState = z.infer<typeof sessionErrorStateSchema>
+
+// ============================================================================
+// Auth Components
+// ============================================================================
+
+/**
+ * LoginButton Component
+ * @description Atomic component - handles OAuth sign in only
+ */
+const LoginButton: React.FC<{ nodeId: string }> = ({ nodeId }) => {
+  // @ts-expect-error - Zod schema type compatibility issue between zod versions
+  const { state } = useSduiNodeSubscription<typeof loginButtonStateSchema>({
     nodeId,
-    schema: containerStateSchema,
+    schema: loginButtonStateSchema,
   })
-  const { renderNode, currentPath } = useRenderNode({ nodeId })
+
+  const typedState = state as LoginButtonState
+
+  const handleLogin = () => {
+    signIn(typedState.provider ?? 'github', {
+      callbackUrl: typedState.callbackUrl ?? '/',
+    })
+  }
 
   return (
-    <section className={containerClasses[state.align ?? 'center']}>
-      <div className="layout-frame">
-        {childrenIds.map((child) => (
-          <div key={child}>{renderNode(child, currentPath)}</div>
-        ))}
-      </div>
-    </section>
+    <Button
+      buttonStyle={typedState.buttonStyle ?? 'outline'}
+      size={typedState.size ?? 'M'}
+      buttonType={typedState.buttonType ?? 'secondary'}
+      onClick={handleLogin}
+    >
+      {typedState.label ?? 'GitHub 로그인'}
+    </Button>
   )
 }
 
-const Card: React.FC<{ nodeId: string }> = ({ nodeId }) => {
-  const { childrenIds, state } = useSduiNodeSubscription<CardState>({
+/**
+ * LogoutButton Component
+ * @description Atomic component - handles sign out only
+ */
+const LogoutButton: React.FC<{ nodeId: string }> = ({ nodeId }) => {
+  // @ts-expect-error - Zod schema type compatibility issue between zod versions
+  const { state } = useSduiNodeSubscription<typeof logoutButtonStateSchema>({
     nodeId,
-    schema: cardStateSchema,
+    schema: logoutButtonStateSchema,
   })
-  const { renderNode, currentPath } = useRenderNode({ nodeId })
-  const tone = state.tone ?? 'dark'
 
-  return (
-    <div className={`card ${tone === 'light' ? 'card-light' : ''}`}>
-      <div className="card-content">
-        {childrenIds.map((child) => (
-          <div key={child}>{renderNode(child, currentPath)}</div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-const Title: React.FC<{ nodeId: string }> = ({ nodeId }) => {
-  const { state } = useSduiNodeSubscription<TextState>({
-    nodeId,
-    schema: textStateSchema,
-  })
-  return <h1 className="title">{state.text}</h1>
-}
-
-const Description: React.FC<{ nodeId: string }> = ({ nodeId }) => {
-  const { state } = useSduiNodeSubscription<TextState>({
-    nodeId,
-    schema: textStateSchema,
-  })
-  return <p className="description">{state.text}</p>
-}
-
-const Hint: React.FC<{ nodeId: string }> = ({ nodeId }) => {
-  const { state } = useSduiNodeSubscription<TextState>({
-    nodeId,
-    schema: textStateSchema,
-  })
-  return <p className="hint">{state.text}</p>
-}
-
-const CardSection = ({ children }: PropsWithChildren) => {
-  return <div className="panel">{children}</div>
-}
-
-const AuthButton: React.FC<{ nodeId: string }> = ({ nodeId }) => {
-  const { state } = useSduiNodeSubscription<AuthButtonState>({
-    nodeId,
-    schema: authButtonStateSchema,
-  })
-  const { status } = useSession()
-  const { isRefreshing } = useRefreshSession()
+  const typedState = state as LogoutButtonState
 
   const handleLogout = async () => {
     try {
-      // 먼저 리프레시 토큰 삭제 (DB + 쿠키)
+      // Delete refresh token first (DB + cookie)
       await fetch('/api/auth/logout', { method: 'POST' })
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Logout failed:', error)
     } finally {
-      // NextAuth 세션 종료
-      await signOut({ callbackUrl: '/' })
+      // End NextAuth session
+      await signOut({ callbackUrl: typedState.callbackUrl ?? '/' })
     }
-  }
-
-  if (status === 'loading') {
-    return (
-      <Button
-        buttonStyle="outline"
-        size="M"
-        buttonType="secondary"
-        className="sdui-button sdui-button--ghost"
-        disabled
-      >
-        세션 확인 중...
-      </Button>
-    )
-  }
-
-  if (status === 'authenticated') {
-    return (
-      <div className="auth-meta">
-        <Button
-          buttonStyle="filled"
-          size="M"
-          buttonType="secondary"
-          className="sdui-button sdui-button--secondary"
-          onClick={handleLogout}
-        >
-          로그아웃
-        </Button>
-        <span className="auth-hint">
-          {isRefreshing ? '리프레시 토큰 확인 중...' : '세션 만료 3분 전 자동 갱신됩니다.'}
-        </span>
-      </div>
-    )
   }
 
   return (
     <Button
-      buttonStyle="filled"
-      size="M"
-      buttonType="primary"
-      className="sdui-button sdui-button--primary"
-      onClick={() => signIn('github', { callbackUrl: '/' })}
+      buttonStyle={typedState.buttonStyle ?? 'filled'}
+      size={typedState.size ?? 'M'}
+      buttonType={typedState.buttonType ?? 'secondary'}
+      onClick={handleLogout}
     >
-      {state.label ?? 'GitHub 로그인'}
+      {typedState.text ?? '로그아웃'}
     </Button>
   )
 }
 
-const StatusRow = ({ label, value }: { label: string; value: string }) => {
+/**
+ * SessionHint Component
+ * @description Atomic component - displays session refresh hint
+ */
+const SessionHint: React.FC<{ nodeId: string }> = ({ nodeId }) => {
+  // @ts-expect-error - Zod schema type compatibility issue between zod versions
+  const { state } = useSduiNodeSubscription<typeof sessionHintStateSchema>({
+    nodeId,
+    schema: sessionHintStateSchema,
+  })
+  const { isRefreshing } = useRefreshSession()
+
+  const typedState = state as SessionHintState
+
+  const text = isRefreshing
+    ? (typedState.refreshingText ?? '리프레시 토큰 확인 중...')
+    : (typedState.normalText ?? '세션 만료 3분 전 자동 갱신됩니다.')
+
   return (
-    <div className="status-row">
-      <span className="status-label">{label}</span>
-      <span className="status-value">{value}</span>
+    <span className={typedState.className ?? 'text-xs text-white/60'}>
+      {text}
+    </span>
+  )
+}
+
+/**
+ * AuthSwitch Component
+ * @description Atomic component - renders children based on auth status slot
+ */
+const AuthSwitch: React.FC<{ nodeId: string; parentPath?: string[] }> = ({ nodeId, parentPath = [] }) => {
+  const { childrenIds } = useSduiNodeSubscription({ nodeId })
+  const { renderChildren } = useRenderNode({ nodeId, parentPath })
+  const { status } = useSession()
+
+  // Find child with matching slot
+  const children = renderChildren(childrenIds)
+
+  // Filter children by slot matching current status
+  const filteredChildren = React.Children.toArray(children).filter((child) => {
+    if (!React.isValidElement(child)) return false
+
+    // Get the child's nodeId from data-node-id attribute or key
+    const childNodeId = child.props?.['data-node-id'] || (child.key as string)?.replace('.$', '')
+
+    // We need to find the slot from the store for this child
+    // For simplicity, we'll render all children and let them handle visibility
+    return true
+  })
+
+  return <>{children}</>
+}
+
+/**
+ * AuthSlot Component
+ * @description Wrapper component that shows/hides based on slot matching auth status
+ */
+const AuthSlot: React.FC<{ nodeId: string; parentPath?: string[] }> = ({ nodeId, parentPath = [] }) => {
+  // @ts-expect-error - Zod schema type compatibility issue between zod versions
+  const { state, childrenIds } = useSduiNodeSubscription<typeof authSwitchStateSchema>({
+    nodeId,
+    schema: authSwitchStateSchema,
+  })
+  const { renderChildren } = useRenderNode({ nodeId, parentPath })
+  const { status } = useSession()
+
+  const typedState = state as AuthSwitchState
+
+  // Only render if slot matches current status
+  if (typedState.slot !== status) {
+    return null
+  }
+
+  return <>{renderChildren(childrenIds)}</>
+}
+
+// ============================================================================
+// Session Components
+// ============================================================================
+
+/**
+ * SessionField Component
+ * @description Atomic component - displays a session data field
+ */
+const SessionField: React.FC<{ nodeId: string }> = ({ nodeId }) => {
+  // @ts-expect-error - Zod schema type compatibility issue between zod versions
+  const { state } = useSduiNodeSubscription<typeof sessionFieldStateSchema>({
+    nodeId,
+    schema: sessionFieldStateSchema,
+  })
+  const { data: session, status } = useSession()
+  const { lastRefreshAt } = useRefreshSession()
+
+  const typedState = state as SessionFieldState
+  const fallback = typedState.fallback ?? '알 수 없음'
+
+  let value: string
+
+  switch (typedState.field) {
+    case 'status':
+      value = status
+      break
+    case 'userName':
+      value = session?.user?.name ?? fallback
+      break
+    case 'email':
+      value = session?.user?.email ?? fallback
+      break
+    case 'expires':
+      value = session?.expires ?? fallback
+      break
+    case 'lastRefresh':
+      value = lastRefreshAt ? lastRefreshAt.toLocaleString() : (typedState.fallback ?? '아직 없음')
+      break
+    default:
+      value = fallback
+  }
+
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-white/50">{typedState.label}</span>
+      <span className="text-white/90 text-right">{value}</span>
     </div>
   )
 }
 
-const StatusPanel: React.FC<{ nodeId: string }> = ({ nodeId }) => {
-  const { state } = useSduiNodeSubscription<StatusPanelState>({
+/**
+ * RefreshButton Component
+ * @description Atomic component - session refresh button
+ */
+const RefreshButton: React.FC<{ nodeId: string }> = ({ nodeId }) => {
+  // @ts-expect-error - Zod schema type compatibility issue between zod versions
+  const { state } = useSduiNodeSubscription<typeof refreshButtonStateSchema>({
     nodeId,
-    schema: statusPanelStateSchema,
+    schema: refreshButtonStateSchema,
   })
-  const { data: session, status } = useSession()
-  const { isRefreshing, lastRefreshAt, errorMessage, refreshSession } = useRefreshSession()
+  const { isRefreshing, refreshSession } = useRefreshSession()
+
+  const typedState = state as RefreshButtonState
+
+  const buttonText = isRefreshing
+    ? (typedState.refreshingText ?? '갱신 중')
+    : (typedState.text ?? '세션 갱신')
 
   return (
-    <CardSection>
-      <div className="panel-header">
-        <h2 className="panel-title">{state.title ?? '상태'}</h2>
-        <button
-          type="button"
-          className="panel-action"
-          onClick={() => refreshSession()}
-          disabled={isRefreshing}
-        >
-          {isRefreshing ? '갱신 중' : '세션 갱신'}
-        </button>
-      </div>
-      <div className="panel-body">
-        <StatusRow label="세션 상태" value={status} />
-        <StatusRow label="사용자" value={session?.user?.name ?? '알 수 없음'} />
-        <StatusRow label="이메일" value={session?.user?.email ?? '알 수 없음'} />
-        <StatusRow label="세션 만료" value={session?.expires ?? '알 수 없음'} />
-        <StatusRow
-          label="최근 리프레시"
-          value={lastRefreshAt ? lastRefreshAt.toLocaleString() : '아직 없음'}
-        />
-        {errorMessage ? <p className="panel-error">{errorMessage}</p> : null}
-      </div>
-    </CardSection>
+    <button
+      type="button"
+      onClick={() => refreshSession()}
+      disabled={isRefreshing}
+      className="text-sm text-white/70 hover:text-white disabled:opacity-50"
+    >
+      {buttonText}
+    </button>
   )
 }
 
-// ==================== Component Factories ====================
+/**
+ * SessionError Component
+ * @description Atomic component - displays session error message
+ */
+const SessionError: React.FC<{ nodeId: string }> = ({ nodeId }) => {
+  // @ts-expect-error - Zod schema type compatibility issue between zod versions
+  const { state } = useSduiNodeSubscription<typeof sessionErrorStateSchema>({
+    nodeId,
+    schema: sessionErrorStateSchema,
+  })
+  const { errorMessage } = useRefreshSession()
 
-const ContainerFactory: ComponentFactory = (id) => <Container nodeId={id} />
-const CardFactory: ComponentFactory = (id) => <Card nodeId={id} />
-const TitleFactory: ComponentFactory = (id) => <Title nodeId={id} />
-const DescriptionFactory: ComponentFactory = (id) => <Description nodeId={id} />
-const HintFactory: ComponentFactory = (id) => <Hint nodeId={id} />
-const AuthButtonFactory: ComponentFactory = (id) => <AuthButton nodeId={id} />
-const StatusPanelFactory: ComponentFactory = (id) => <StatusPanel nodeId={id} />
+  const typedState = state as SessionErrorState
 
-// ==================== Export Component Map ====================
+  if (!errorMessage) {
+    return null
+  }
+
+  return (
+    <p className={typedState.className ?? 'm-0 text-[#fca5a5]'}>
+      {errorMessage}
+    </p>
+  )
+}
+
+// ============================================================================
+// Component Factories
+// ============================================================================
+
+const LoginButtonFactory: ComponentFactory = (id) => <LoginButton nodeId={id} />
+const LogoutButtonFactory: ComponentFactory = (id) => <LogoutButton nodeId={id} />
+const SessionHintFactory: ComponentFactory = (id) => <SessionHint nodeId={id} />
+const AuthSwitchFactory: ComponentFactory = (id, parentPath) => <AuthSwitch nodeId={id} parentPath={parentPath} />
+const AuthSlotFactory: ComponentFactory = (id, parentPath) => <AuthSlot nodeId={id} parentPath={parentPath} />
+const SessionFieldFactory: ComponentFactory = (id) => <SessionField nodeId={id} />
+const RefreshButtonFactory: ComponentFactory = (id) => <RefreshButton nodeId={id} />
+const SessionErrorFactory: ComponentFactory = (id) => <SessionError nodeId={id} />
+
+// ============================================================================
+// Export Component Map
+// ============================================================================
 
 export const sduiComponents: Record<string, ComponentFactory> = {
-  Container: ContainerFactory,
-  Card: CardFactory,
-  Title: TitleFactory,
-  Description: DescriptionFactory,
-  Hint: HintFactory,
-  AuthButton: AuthButtonFactory,
-  StatusPanel: StatusPanelFactory,
+  ...getDivComponents(), // Div, Text, Span
+  ...getCardComponents(), // Card
+  ...getButtonComponents(), // Button
+
+  // Auth Components
+  LoginButton: LoginButtonFactory,
+  LogoutButton: LogoutButtonFactory,
+  SessionHint: SessionHintFactory,
+  AuthSwitch: AuthSwitchFactory,
+  AuthSlot: AuthSlotFactory,
+
+  // Session Components
+  SessionField: SessionFieldFactory,
+  RefreshButton: RefreshButtonFactory,
+  SessionError: SessionErrorFactory,
 }

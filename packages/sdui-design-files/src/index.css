@@ -3,7 +3,6 @@
  *
  * This file imports all design system CSS files:
  * - colors.css: Color variables and tokens
- * - breakpoints.css: Breakpoint variables and media queries
  */
 
 @import './colors.css';

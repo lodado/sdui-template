@@ -1,3 +1,5 @@
+import '@lodado/sdui-design-files/index.css'
+import '@lodado/sdui-design-files/layout.css'
 import './globals.css'
 
 import { getServerSession } from 'next-auth/next'

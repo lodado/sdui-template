@@ -111,6 +111,9 @@ importers:
 
   apps/nextAuthOauthLoginExample:
     dependencies:
+      '@lodado/sdui-design-files':
+        specifier: ^1.0.0
+        version: 1.0.0
       '@lodado/sdui-template':
         specifier: workspace:*
         version: link:../../packages/sdui-template
@@ -136,6 +139,9 @@ importers:
         specifier: ^4.3.5
         version: 4.3.5
     devDependencies:
+      '@tailwindcss/postcss':
+        specifier: ^4.1.18
+        version: 4.1.18
       '@types/node':
         specifier: ^20.12.7
         version: 20.19.27
@@ -145,9 +151,18 @@ importers:
       '@types/react-dom':
         specifier: ^18.3.0
         version: 18.3.7(@types/react@18.3.27)
+      autoprefixer:
+        specifier: ^10.4.20
+        version: 10.4.23(postcss@8.5.6)
       eslint:
         specifier: ^8.57.0
         version: 8.57.1
+      postcss:
+        specifier: ^8.5.6
+        version: 8.5.6
+      tailwindcss:
+        specifier: ^4.1.18
+        version: 4.1.18
       tsconfig:
         specifier: workspace:*
         version: link:../../configs/tsconfig
@@ -2066,6 +2081,9 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
+
+  '@lodado/sdui-design-files@1.0.0':
+    resolution: {integrity: sha512-2iOne0JpIz8bKqZwcx99Z1Ez8+DNtw1Ernv1RTj+AHT4wAN8fSTqV7TwzrGMWumJidoO9UC0Z52R+hbYT9t6DQ==}
 
   '@manypkg/find-root@1.1.0':
     resolution: {integrity: sha512-mki5uBvhHzO8kYYix/WRy2WX8S3B5wdVSc9D6KcU5lQNglP2yt58/VfLuAK49glRXChosY8ap2oJ1qgma3GUVA==}
@@ -9387,6 +9405,8 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@lodado/sdui-design-files@1.0.0': {}
 
   '@manypkg/find-root@1.1.0':
     dependencies:

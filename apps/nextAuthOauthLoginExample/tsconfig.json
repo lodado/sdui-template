@@ -1,7 +1,7 @@
 {
   "extends": "tsconfig/base.json",
   "compilerOptions": {
-    "baseUrl": ".",
+
     "target": "ES2022",
     "lib": [
       "dom",
@@ -38,6 +38,7 @@
   },
   "include": [
     "next-env.d.ts",
+    "src/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
