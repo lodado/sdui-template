@@ -222,7 +222,7 @@ export const loginDocument: SduiLayoutDocument = {
                         id: 'field-status',
                         type: 'SessionField',
                         state: {
-                          field: 'status',
+                          dataKey: 'status',
                           label: '세션 상태',
                         },
                       },
@@ -230,7 +230,7 @@ export const loginDocument: SduiLayoutDocument = {
                         id: 'field-user',
                         type: 'SessionField',
                         state: {
-                          field: 'userName',
+                          dataKey: 'session.user.name',
                           label: '사용자',
                           fallback: '알 수 없음',
                         },
@@ -239,7 +239,7 @@ export const loginDocument: SduiLayoutDocument = {
                         id: 'field-email',
                         type: 'SessionField',
                         state: {
-                          field: 'email',
+                          dataKey: 'session.user.email',
                           label: '이메일',
                           fallback: '알 수 없음',
                         },
@@ -248,7 +248,7 @@ export const loginDocument: SduiLayoutDocument = {
                         id: 'field-expires',
                         type: 'SessionField',
                         state: {
-                          field: 'expires',
+                          dataKey: 'session.expires',
                           label: '세션 만료',
                           fallback: '알 수 없음',
                         },
@@ -257,9 +257,10 @@ export const loginDocument: SduiLayoutDocument = {
                         id: 'field-refresh',
                         type: 'SessionField',
                         state: {
-                          field: 'lastRefresh',
+                          dataKey: 'lastRefreshAt',
                           label: '최근 리프레시',
                           fallback: '아직 없음',
+                          formatter: 'date',
                         },
                       },
                     ],

@@ -25,7 +25,7 @@ import {
   useRenderNode,
   useSduiNodeSubscription,
 } from '@lodado/sdui-template'
-import { Button, getButtonComponents, getCardComponents, getDivComponents } from '@lodado/sdui-template-component'
+import { Button, sduiComponents as baseSduiComponents } from '@lodado/sdui-template-component'
 import { signIn, signOut, useSession } from 'next-auth/react'
 import React from 'react'
 import { z } from 'zod'
@@ -64,9 +64,10 @@ const authSwitchStateSchema = z.object({
 })
 
 const sessionFieldStateSchema = z.object({
-  field: z.enum(['status', 'userName', 'email', 'expires', 'lastRefresh']),
+  dataKey: z.string(),  // e.g., "status", "session.user.name", "lastRefreshAt"
   label: z.string(),
   fallback: z.string().optional(),
+  formatter: z.enum(['none', 'date']).optional(),  // date formatting for Date objects
 })
 
 const refreshButtonStateSchema = z.object({
@@ -243,8 +244,21 @@ const AuthSlot: React.FC<{ nodeId: string; parentPath?: string[] }> = ({ nodeId,
 // ============================================================================
 
 /**
+ * Get value from object by dot-notation path
+ * @example getByPath({ a: { b: 'c' } }, 'a.b') // 'c'
+ */
+const getByPath = (obj: Record<string, unknown>, path: string): unknown => {
+  return path.split('.').reduce<unknown>((acc, key) => {
+    if (acc && typeof acc === 'object' && key in acc) {
+      return (acc as Record<string, unknown>)[key]
+    }
+    return undefined
+  }, obj)
+}
+
+/**
  * SessionField Component
- * @description Atomic component - displays a session data field
+ * @description Atomic component - displays a session data field using dataKey
  */
 const SessionField: React.FC<{ nodeId: string }> = ({ nodeId }) => {
   // @ts-expect-error - Zod schema type compatibility issue between zod versions
@@ -258,26 +272,24 @@ const SessionField: React.FC<{ nodeId: string }> = ({ nodeId }) => {
   const typedState = state as SessionFieldState
   const fallback = typedState.fallback ?? '알 수 없음'
 
-  let value: string
+  // Data source object for dynamic lookup
+  const dataSource: Record<string, unknown> = {
+    status,
+    session,
+    lastRefreshAt,
+  }
 
-  switch (typedState.field) {
-    case 'status':
-      value = status
-      break
-    case 'userName':
-      value = session?.user?.name ?? fallback
-      break
-    case 'email':
-      value = session?.user?.email ?? fallback
-      break
-    case 'expires':
-      value = session?.expires ?? fallback
-      break
-    case 'lastRefresh':
-      value = lastRefreshAt ? lastRefreshAt.toLocaleString() : (typedState.fallback ?? '아직 없음')
-      break
-    default:
-      value = fallback
+  // Get value by dataKey path
+  const rawValue = getByPath(dataSource, typedState.dataKey)
+
+  // Format value
+  let value: string
+  if (rawValue === undefined || rawValue === null) {
+    value = fallback
+  } else if (typedState.formatter === 'date' && rawValue instanceof Date) {
+    value = rawValue.toLocaleString()
+  } else {
+    value = String(rawValue)
   }
 
   return (
@@ -361,9 +373,7 @@ const SessionErrorFactory: ComponentFactory = (id) => <SessionError nodeId={id} 
 // ============================================================================
 
 export const sduiComponents: Record<string, ComponentFactory> = {
-  ...getDivComponents(), // Div, Text, Span
-  ...getCardComponents(), // Card
-  ...getButtonComponents(), // Button
+  ...baseSduiComponents, // All base components (Div, Text, Span, Card, Button, etc.)
 
   // Auth Components
   LoginButton: LoginButtonFactory,

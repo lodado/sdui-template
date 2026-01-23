@@ -6,7 +6,8 @@ import {
   ErrorBoundary,
   type ExtractSchemaFields,
   Form,
-  getFormComponents,
+  registerSchemas,
+  sduiComponents,
 } from '@lodado/sdui-template-component'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import React from 'react'
@@ -164,7 +165,8 @@ export const Basic: Story = {
         ],
       },
     }
-    return <SduiLayoutRenderer document={document} components={getFormComponents(schemas)} />
+    registerSchemas(schemas)
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -304,7 +306,8 @@ export const RegistrationForm: Story = {
         ],
       },
     }
-    return <SduiLayoutRenderer document={document} components={getFormComponents(schemas)} />
+    registerSchemas(schemas)
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -418,7 +421,8 @@ export const WithHelpMessages: Story = {
         ],
       },
     }
-    return <SduiLayoutRenderer document={document} components={getFormComponents(schemas)} />
+    registerSchemas(schemas)
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -516,7 +520,7 @@ export const WithoutSchema: Story = {
         ],
       },
     }
-    return <SduiLayoutRenderer document={document} components={getFormComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -639,7 +643,8 @@ export const CustomValidation: Story = {
         ],
       },
     }
-    return <SduiLayoutRenderer document={document} components={getFormComponents(schemas)} />
+    registerSchemas(schemas)
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -651,10 +656,10 @@ export const CustomValidation: Story = {
   },
 }
 
-// Form with Schema Name (using getFormComponents with schemas)
+// Form with Schema Name (using registerSchemas)
 export const WithSchemaName: Story = {
   render: () => {
-    // Define schemas and register them via getFormComponents
+    // Define schemas and register them via registerSchemas
     const schemas = {
       profileForm: z.object({
         email: z.string().email('Please enter a valid email'),
@@ -747,14 +752,15 @@ export const WithSchemaName: Story = {
         ],
       },
     }
-    // Pass schemas to getFormComponents to register them
-    return <SduiLayoutRenderer document={document} components={getFormComponents(schemas)} />
+    // Register schemas before rendering
+    registerSchemas(schemas)
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
       description: {
         story:
-          'Demonstrates how to use schema names with getFormComponents. Schemas are registered via getFormComponents parameter, and the form references them using schemaName attribute. This approach is useful when you want to reuse schemas across multiple forms or when schemas are defined separately from the form document.',
+          'Demonstrates how to use schema names with registerSchemas. Schemas are registered via registerSchemas function, and the form references them using schemaName attribute. This approach is useful when you want to reuse schemas across multiple forms or when schemas are defined separately from the form document.',
       },
     },
   },
@@ -854,7 +860,8 @@ export const DisabledFields: Story = {
         ],
       },
     }
-    return <SduiLayoutRenderer document={document} components={getFormComponents(schemas)} />
+    registerSchemas(schemas)
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -975,9 +982,10 @@ export const SchemaMismatch: Story = {
         ],
       },
     }
+    registerSchemas(schemas)
     return (
       <ErrorBoundary>
-        <SduiLayoutRenderer document={document} components={getFormComponents(schemas)} />
+        <SduiLayoutRenderer document={document} components={sduiComponents} />
       </ErrorBoundary>
     )
   },

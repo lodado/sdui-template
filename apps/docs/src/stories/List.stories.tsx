@@ -1,6 +1,6 @@
 /* eslint-disable local-rules/no-console-log */
 import { type SduiLayoutDocument, SduiLayoutRenderer } from '@lodado/sdui-template'
-import { getListComponents, List } from '@lodado/sdui-template-component'
+import { List, sduiComponents } from '@lodado/sdui-template-component'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import React from 'react'
 
@@ -540,7 +540,7 @@ export const SduiIntegration: Story = {
       },
     }
 
-    return <SduiLayoutRenderer document={document} components={getListComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -553,7 +553,7 @@ export const SduiIntegration: Story = {
 ## How It Works
 
 1. **Layout Document**: List structure is defined in JSON
-2. **Component Factory**: getListComponents() provides component mapping
+2. **Component Factory**: sduiComponents provides component mapping
 3. **Renderer**: SduiLayoutRenderer renders the document
 4. **State Management**: List state is managed via SDUI subscription
 

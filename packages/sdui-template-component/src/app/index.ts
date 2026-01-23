@@ -1,2 +1,3 @@
-// App-level exports (if any)
-// Currently empty - reserved for future app-level components
+// App-level exports
+// Unified SDUI component map for SDUI Layout Renderer
+export { sduiComponents } from './sduiComponents'
