@@ -24,9 +24,9 @@ export const CardContainer = ({ id, parentPath = [] }: CardContainerProps) => {
     <Card
       nodeId={id}
       // eslint-disable-next-line react/jsx-props-no-spreading
-      {...(attributes as CardProps)}
-      // eslint-disable-next-line react/jsx-props-no-spreading
       {...(state as CardProps)}
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      {...(attributes as CardProps)}
     >
       {children}
     </Card>

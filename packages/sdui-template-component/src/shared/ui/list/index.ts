@@ -1,4 +1,3 @@
-export { getListComponents } from './getListComponents'
 export { List } from './List'
 export { ListContainer } from './ListContainer'
 export { ListContext, useListContext } from './ListContext'

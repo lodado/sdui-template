@@ -1,7 +1,7 @@
 import '@lodado/sdui-design-files/colors.css'
 
 import { type SduiLayoutDocument, SduiLayoutRenderer } from '@lodado/sdui-template'
-import { getTextFieldComponents, TextField } from '@lodado/sdui-template-component'
+import { sduiComponents, TextField } from '@lodado/sdui-template-component'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import React from 'react'
 
@@ -39,9 +39,8 @@ const createSVGIconFactory = (SVGComponent: React.ComponentType) => {
 
 // Get components with SVG factories
 const getTextFieldComponentsWithSVG = () => {
-  const baseComponents = getTextFieldComponents()
   return {
-    ...baseComponents,
+    ...sduiComponents,
     SVG_email: createSVGIconFactory(EmailIconSVG),
     SVG_search: createSVGIconFactory(SearchIconSVG),
     SVG_clear: createSVGIconFactory(ClearIconSVG),
@@ -155,7 +154,7 @@ export const Default: Story = {
         ],
       },
     }
-    return <SduiLayoutRenderer document={document} components={getTextFieldComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -220,7 +219,7 @@ export const Focus: Story = {
     }
     return (
       <div>
-        <SduiLayoutRenderer document={document} components={getTextFieldComponents()} />
+        <SduiLayoutRenderer document={document} components={sduiComponents} />
         <p className="text-sm text-gray-600 mt-2">Click on the input to see focus state</p>
       </div>
     )
@@ -287,7 +286,7 @@ export const Filled: Story = {
         ],
       },
     }
-    return <SduiLayoutRenderer document={document} components={getTextFieldComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -350,7 +349,7 @@ export const Disabled: Story = {
         ],
       },
     }
-    return <SduiLayoutRenderer document={document} components={getTextFieldComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -427,7 +426,7 @@ export const Error: Story = {
         ],
       },
     }
-    return <SduiLayoutRenderer document={document} components={getTextFieldComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -507,7 +506,7 @@ export const VerticalLayout: Story = {
         ],
       },
     }
-    return <SduiLayoutRenderer document={document} components={getTextFieldComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -577,7 +576,7 @@ export const HorizontalLayout: Story = {
         ],
       },
     }
-    return <SduiLayoutRenderer document={document} components={getTextFieldComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -647,7 +646,7 @@ export const WithLabel: Story = {
         ],
       },
     }
-    return <SduiLayoutRenderer document={document} components={getTextFieldComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -727,7 +726,7 @@ export const WithHelpMessage: Story = {
         ],
       },
     }
-    return <SduiLayoutRenderer document={document} components={getTextFieldComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -797,7 +796,7 @@ export const Required: Story = {
         ],
       },
     }
-    return <SduiLayoutRenderer document={document} components={getTextFieldComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -1039,7 +1038,7 @@ export const AllStates: Story = {
       },
     }
 
-    return <SduiLayoutRenderer document={document} components={getTextFieldComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {

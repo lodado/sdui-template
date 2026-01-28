@@ -1,4 +1,3 @@
-export { getIconComponents } from './getIconComponents'
 export { Icon } from './Icon'
 export type { IconVariants } from './icon-variants'
 export { iconVariants } from './icon-variants'

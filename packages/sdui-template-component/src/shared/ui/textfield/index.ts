@@ -1,4 +1,3 @@
-export { getTextFieldComponents } from './getTextFieldComponents'
 export { TextField } from './TextField'
 export { TextFieldContainer } from './TextFieldContainer'
 export { TextFieldContext, useTextFieldContext } from './TextFieldContext'

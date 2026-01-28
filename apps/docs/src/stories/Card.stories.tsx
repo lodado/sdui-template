@@ -1,5 +1,5 @@
 import { type SduiLayoutDocument, SduiLayoutRenderer } from '@lodado/sdui-template'
-import { Card, getCardComponents } from '@lodado/sdui-template-component'
+import { Card, sduiComponents } from '@lodado/sdui-template-component'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import React from 'react'
 
@@ -83,7 +83,7 @@ export const Default: Story = {
       },
     }
 
-    return <SduiLayoutRenderer document={document} components={getCardComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -145,7 +145,7 @@ export const WithTitle: Story = {
       },
     }
 
-    return <SduiLayoutRenderer document={document} components={getCardComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -269,7 +269,7 @@ export const WithListItems: Story = {
       },
     }
 
-    return <SduiLayoutRenderer document={document} components={getCardComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -354,7 +354,7 @@ export const SduiIntegration: Story = {
       },
     }
 
-    return <SduiLayoutRenderer document={document} components={getCardComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -367,7 +367,7 @@ export const SduiIntegration: Story = {
 ## How It Works
 
 1. **Layout Document**: Card structure is defined in JSON
-2. **Component Factory**: getCardComponents() provides component mapping
+2. **Component Factory**: sduiComponents provides component mapping
 3. **Renderer**: SduiLayoutRenderer renders the document
 4. **State Management**: Card state is managed via SDUI subscription
 

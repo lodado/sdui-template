@@ -1,5 +1,5 @@
 import { type SduiLayoutDocument, SduiLayoutRenderer } from '@lodado/sdui-template'
-import { Button, getButtonComponents } from '@lodado/sdui-template-component'
+import { Button, sduiComponents } from '@lodado/sdui-template-component'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import React from 'react'
  
@@ -91,7 +91,7 @@ export const Default: Story = {
       },
     }
 
-    return <SduiLayoutRenderer document={document} components={getButtonComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -154,7 +154,7 @@ export const Filled: Story = {
       },
     }
 
-    return <SduiLayoutRenderer document={document} components={getButtonComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -224,7 +224,7 @@ export const Outline: Story = {
       },
     }
 
-    return <SduiLayoutRenderer document={document} components={getButtonComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -294,7 +294,7 @@ export const Text: Story = {
       },
     }
 
-    return <SduiLayoutRenderer document={document} components={getButtonComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -373,7 +373,7 @@ export const SizeL: Story = {
       },
     }
 
-    return <SduiLayoutRenderer document={document} components={getButtonComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -442,7 +442,7 @@ export const SizeM: Story = {
       },
     }
 
-    return <SduiLayoutRenderer document={document} components={getButtonComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -514,7 +514,7 @@ export const SizeS: Story = {
       },
     }
 
-    return <SduiLayoutRenderer document={document} components={getButtonComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -588,7 +588,7 @@ export const Primary: Story = {
       },
     }
 
-    return <SduiLayoutRenderer document={document} components={getButtonComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -659,7 +659,7 @@ export const Secondary: Story = {
       },
     }
 
-    return <SduiLayoutRenderer document={document} components={getButtonComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -731,7 +731,7 @@ export const Disabled: Story = {
       },
     }
 
-    return <SduiLayoutRenderer document={document} components={getButtonComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -828,7 +828,7 @@ export const FilledCombinations: Story = {
       },
     }
 
-    return <SduiLayoutRenderer document={document} components={getButtonComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -916,7 +916,7 @@ export const OutlineCombinations: Story = {
       },
     }
 
-    return <SduiLayoutRenderer document={document} components={getButtonComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -1004,7 +1004,7 @@ export const TextCombinations: Story = {
       },
     }
 
-    return <SduiLayoutRenderer document={document} components={getButtonComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -1248,7 +1248,7 @@ export const StatesMatrix: Story = {
       },
     }
 
-    return <SduiLayoutRenderer document={document} components={getButtonComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -1480,7 +1480,7 @@ export const AllCombinations: Story = {
       },
     }
 
-    return <SduiLayoutRenderer document={document} components={getButtonComponents()} />
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {

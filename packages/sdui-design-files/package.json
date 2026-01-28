@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Design system files for SDUI template - CSS variables, colors, and design tokens extracted from Figma",
   "sideEffects": [
-    "./index.css",
+    "./src/colors.css",
+    "./src/index.css",
     "./src/layout.css"
   ],
   "license": "MIT",

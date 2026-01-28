@@ -81,6 +81,42 @@ export function getSchema(name: string): z.ZodType<any, any, any> | undefined {
 }
 
 /**
+ * Register multiple zod schemas at once
+ *
+ * @description
+ * Convenience function to register multiple schemas from an object.
+ * Use this when you have multiple schemas to register before using sduiComponents.
+ *
+ * @template TSchemas - Type of the schemas object
+ * @param schemas - Object mapping schema names to zod schemas
+ *
+ * @example
+ * ```tsx
+ * import { sduiComponents, registerSchemas } from '@lodado/sdui-template-component'
+ * import { z } from 'zod'
+ *
+ * const schemas = {
+ *   loginForm: z.object({
+ *     email: z.string().email(),
+ *     password: z.string().min(8),
+ *   }),
+ *   registerForm: z.object({
+ *     name: z.string().min(2),
+ *     email: z.string().email(),
+ *   }),
+ * }
+ *
+ * registerSchemas(schemas)
+ * <SduiLayoutRenderer document={document} components={sduiComponents} />
+ * ```
+ */
+export function registerSchemas<TSchemas extends Record<string, z.ZodType<any, any, any>>>(schemas: TSchemas): void {
+  Object.entries(schemas).forEach(([name, schema]) => {
+    registerSchema(name, schema)
+  })
+}
+
+/**
  * Form Root Props
  *
  * @description
