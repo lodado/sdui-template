@@ -63,7 +63,7 @@ export const loginDocument: SduiLayoutDocument = {
                     id: 'description',
                     type: 'Text',
                     state: {
-                      text: 'NextAuth를 이용해 GitHub 로그인을 수행하고, SDUI 템플릿으로 화면을 구성합니다.',
+                      text: 'Use NextAuth to sign in with GitHub and render the UI with the SDUI template.',
                     },
                     attributes: {
                       className: '',
@@ -99,7 +99,7 @@ export const loginDocument: SduiLayoutDocument = {
                             id: 'loading-text',
                             type: 'Span',
                             state: {
-                              text: '세션 확인 중...',
+                              text: 'Checking session...',
                             },
                           },
                         ],
@@ -126,7 +126,7 @@ export const loginDocument: SduiLayoutDocument = {
                             id: 'logout-btn',
                             type: 'LogoutButton',
                             state: {
-                              text: '로그아웃',
+                              text: 'Log out',
                               callbackUrl: '/',
                               buttonStyle: 'filled',
                               size: 'M',
@@ -137,8 +137,8 @@ export const loginDocument: SduiLayoutDocument = {
                             id: 'session-hint',
                             type: 'SessionHint',
                             state: {
-                              refreshingText: '리프레시 토큰 확인 중...',
-                              normalText: '세션 만료 3분 전 자동 갱신됩니다.',
+                              refreshingText: 'Checking refresh token...',
+                              normalText: 'Automatically refreshes 3 minutes before session expiration.',
                               className: 'text-xs text-white/60',
                             },
                           },
@@ -159,7 +159,7 @@ export const loginDocument: SduiLayoutDocument = {
                         id: 'login-btn',
                         type: 'LoginButton',
                         state: {
-                          label: 'GitHub로 로그인',
+                          label: 'Sign in with GitHub',
                           provider: 'github',
                           callbackUrl: '/',
                           buttonStyle: 'outline',
@@ -192,7 +192,7 @@ export const loginDocument: SduiLayoutDocument = {
                         id: 'status-title',
                         type: 'Text',
                         state: {
-                          text: '로그인 상태',
+                          text: 'Login status',
                         },
                         attributes: {
                           as: 'h2',
@@ -203,8 +203,8 @@ export const loginDocument: SduiLayoutDocument = {
                         id: 'refresh-btn',
                         type: 'RefreshButton',
                         state: {
-                          text: '세션 갱신',
-                          refreshingText: '갱신 중',
+                          text: 'Refresh session',
+                          refreshingText: 'Refreshing',
                         },
                       },
                     ],
@@ -223,7 +223,7 @@ export const loginDocument: SduiLayoutDocument = {
                         type: 'SessionField',
                         state: {
                           dataKey: 'status',
-                          label: '세션 상태',
+                          label: 'Session status',
                         },
                       },
                       {
@@ -231,8 +231,8 @@ export const loginDocument: SduiLayoutDocument = {
                         type: 'SessionField',
                         state: {
                           dataKey: 'session.user.name',
-                          label: '사용자',
-                          fallback: '알 수 없음',
+                          label: 'User',
+                          fallback: 'Unknown',
                         },
                       },
                       {
@@ -240,8 +240,8 @@ export const loginDocument: SduiLayoutDocument = {
                         type: 'SessionField',
                         state: {
                           dataKey: 'session.user.email',
-                          label: '이메일',
-                          fallback: '알 수 없음',
+                          label: 'Email',
+                          fallback: 'Unknown',
                         },
                       },
                       {
@@ -249,8 +249,8 @@ export const loginDocument: SduiLayoutDocument = {
                         type: 'SessionField',
                         state: {
                           dataKey: 'session.expires',
-                          label: '세션 만료',
-                          fallback: '알 수 없음',
+                          label: 'Session expires',
+                          fallback: 'Unknown',
                         },
                       },
                       {
@@ -258,8 +258,8 @@ export const loginDocument: SduiLayoutDocument = {
                         type: 'SessionField',
                         state: {
                           dataKey: 'lastRefreshAt',
-                          label: '최근 리프레시',
-                          fallback: '아직 없음',
+                          label: 'Last refresh',
+                          fallback: 'Not yet',
                           formatter: 'date',
                         },
                       },
@@ -289,7 +289,7 @@ export const loginDocument: SduiLayoutDocument = {
                     id: 'token-hint',
                     type: 'Text',
                     state: {
-                      text: 'JWT는 httpOnly 쿠키에 저장되며, 리프레시 토큰은 Supabase DB에 저장됩니다.',
+                      text: 'JWTs are stored in httpOnly cookies, and refresh tokens are stored in the Supabase database.',
                     },
                     attributes: {
                       className: 'text-sm text-gray-600',

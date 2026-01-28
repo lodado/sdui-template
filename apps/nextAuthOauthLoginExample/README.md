@@ -1,18 +1,18 @@
 # NextAuth OAuth Login Example (SDUI)
 
-이 앱은 NextAuth GitHub OAuth 로그인과 SDUI 템플릿/컴포넌트를 사용한 로그인 화면 예제를 제공합니다.
+This app provides a login screen example using NextAuth GitHub OAuth login with SDUI templates/components.
 
-## 주요 동작
+## Key Behaviors
 
-- **GitHub 로그인**: NextAuth를 사용해 GitHub OAuth 로그인 처리
-- **SDUI 렌더링**: `@lodado/sdui-template`, `@lodado/sdui-template-component`를 사용해 화면 구성
-- **JWT 쿠키**: 액세스 토큰(NextAuth JWT)은 httpOnly 쿠키에 저장
-- **RTR(Refresh Token Rotation)**: 리프레시 토큰은 Supabase DB에 저장하고 매 갱신 시 회전
-- **자동 갱신**: 클라이언트에서 세션이 만료되면 리프레시 토큰으로 자동 재발급 시도
+- **GitHub login**: Handle GitHub OAuth login using NextAuth
+- **SDUI rendering**: Build the UI with `@lodado/sdui-template` and `@lodado/sdui-template-component`
+- **JWT cookies**: Store access tokens (NextAuth JWT) in httpOnly cookies
+- **RTR (Refresh Token Rotation)**: Store refresh tokens in the Supabase DB and rotate on each refresh
+- **Auto refresh**: When the session expires, the client attempts re-issuance with the refresh token
 
-## 환경 변수
+## Environment Variables
 
-`.env.local`에 아래 값을 설정하세요.
+Set the following values in `.env.local`.
 
 ```
 GITHUB_CLIENT_ID=
@@ -23,11 +23,11 @@ SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
 ```
 
-## Supabase 설정
+## Supabase Setup
 
-### 1) Refresh Token 테이블 생성
+### 1) Create the Refresh Token table
 
-Supabase SQL Editor에서 아래 스크립트를 실행하세요.
+Run the following script in the Supabase SQL Editor.
 
 ```sql
 create extension if not exists "pgcrypto";
@@ -48,27 +48,27 @@ create table if not exists public.auth_refresh_tokens (
 create index if not exists auth_refresh_tokens_user_id_idx on public.auth_refresh_tokens (user_id);
 ```
 
-### 2) Storage 버킷 생성
+### 2) Create a Storage bucket
 
-Supabase Storage에서 `avatars` 버킷을 생성하세요. (public/private 여부는 정책에 맞게 설정)
+Create an `avatars` bucket in Supabase Storage. (Configure public/private according to your policy.)
 
-> 이 앱은 GitHub 프로필 이미지를 `avatars` 버킷에 업로드하도록 구현되어 있습니다.
+> This app is implemented to upload GitHub profile images to the `avatars` bucket.
 
-## 실행
+## Run
 
 ```bash
 pnpm --filter next-auth-oauth-login-example dev
 ```
 
-## 동작 흐름
+## Flow
 
-1. 로그인 성공 시 클라이언트에서 `/api/auth/refresh`를 호출해 리프레시 토큰을 발급합니다.
-2. 리프레시 토큰은 **Supabase DB**에 저장되며, 쿠키로도 저장됩니다.
-3. 세션(JWT)이 만료되면 클라이언트가 `/api/auth/refresh`를 호출해
-   리프레시 토큰을 대조하고 신규 세션 토큰을 발급합니다.
-4. 리프레시 토큰은 회전(RTR)되어 재사용이 차단됩니다.
+1. After a successful login, the client calls `/api/auth/refresh` to issue a refresh token.
+2. The refresh token is stored in the **Supabase DB** and also saved as a cookie.
+3. When the session (JWT) expires, the client calls `/api/auth/refresh`,
+   validates the refresh token, and issues a new session token.
+4. The refresh token is rotated (RTR) to prevent reuse.
 
-## 참고
+## Notes
 
-- 세션 만료 시간은 **15분**(`sessionMaxAgeSeconds`)으로 설정되어 있습니다.
-- 리프레시 토큰 만료 시간은 **30일**로 설정되어 있습니다.
+- The session expiration time is set to **15 minutes** (`sessionMaxAgeSeconds`).
+- The refresh token expiration time is set to **30 days**.

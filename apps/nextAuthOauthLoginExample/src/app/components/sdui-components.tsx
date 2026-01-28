@@ -121,7 +121,7 @@ const LoginButton: React.FC<{ nodeId: string }> = ({ nodeId }) => {
       buttonType={typedState.buttonType ?? 'secondary'}
       onClick={handleLogin}
     >
-      {typedState.label ?? 'GitHub 로그인'}
+      {typedState.label ?? 'Sign in with GitHub'}
     </Button>
   )
 }
@@ -159,7 +159,7 @@ const LogoutButton: React.FC<{ nodeId: string }> = ({ nodeId }) => {
       buttonType={typedState.buttonType ?? 'secondary'}
       onClick={handleLogout}
     >
-      {typedState.text ?? '로그아웃'}
+      {typedState.text ?? 'Log out'}
     </Button>
   )
 }
@@ -179,8 +179,8 @@ const SessionHint: React.FC<{ nodeId: string }> = ({ nodeId }) => {
   const typedState = state as SessionHintState
 
   const text = isRefreshing
-    ? (typedState.refreshingText ?? '리프레시 토큰 확인 중...')
-    : (typedState.normalText ?? '세션 만료 3분 전 자동 갱신됩니다.')
+    ? (typedState.refreshingText ?? 'Checking refresh token...')
+    : (typedState.normalText ?? 'Automatically refreshes 3 minutes before session expiration.')
 
   return (
     <span className={typedState.className ?? 'text-xs text-white/60'}>
@@ -270,7 +270,7 @@ const SessionField: React.FC<{ nodeId: string }> = ({ nodeId }) => {
   const { lastRefreshAt } = useRefreshSession()
 
   const typedState = state as SessionFieldState
-  const fallback = typedState.fallback ?? '알 수 없음'
+  const fallback = typedState.fallback ?? 'Unknown'
 
   // Data source object for dynamic lookup
   const dataSource: Record<string, unknown> = {
@@ -315,8 +315,8 @@ const RefreshButton: React.FC<{ nodeId: string }> = ({ nodeId }) => {
   const typedState = state as RefreshButtonState
 
   const buttonText = isRefreshing
-    ? (typedState.refreshingText ?? '갱신 중')
-    : (typedState.text ?? '세션 갱신')
+    ? (typedState.refreshingText ?? 'Refreshing')
+    : (typedState.text ?? 'Refresh session')
 
   return (
     <button
