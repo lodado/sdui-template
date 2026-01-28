@@ -9,18 +9,18 @@ export async function POST() {
   const cookieStore = cookies()
   const refreshToken = cookieStore.get(refreshCookieName)?.value
 
-  // 리프레시 토큰이 있으면 DB에서 revoke 처리
+  // Revoke refresh token from the database if it exists
   if (refreshToken) {
     try {
       await revokeRefreshToken(refreshToken)
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Failed to revoke refresh token:', error)
-      // 에러가 나도 쿠키는 삭제
+      // Remove the cookie even if revocation fails
     }
   }
 
-  // 리프레시 토큰 쿠키 삭제
+  // Remove refresh token cookie
   cookieStore.set(refreshCookieName, '', {
     httpOnly: true,
     sameSite: 'lax' as const,
