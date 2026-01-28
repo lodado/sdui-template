@@ -4,7 +4,6 @@
 @source "../**/*.{ts,tsx}";
 
 :root {
-  color-scheme: light dark;
   font-family: "Inter", system-ui, -apple-system, sans-serif;
 }
 
