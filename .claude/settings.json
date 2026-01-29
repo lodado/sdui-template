@@ -1,0 +1,22 @@
+{
+  "enabledPlugins": {
+    "everything-claude-code@everything-claude-code": true
+  },
+  "hooks": {
+    "PreToolUse": [{
+      "matcher": "*",
+      "hooks": [{
+        "type": "command",
+        "command": "./.claude/hooks/observe.sh"
+      }]
+    }],
+    "PostToolUse": [{
+      "matcher": "*",
+      "hooks": [{
+        "type": "command",
+        "command": "./.claude/hooks/observe.sh"
+      }]
+    }]
+  },
+  "enableAllProjectMcpServers": true
+}

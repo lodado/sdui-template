@@ -1,0 +1,11 @@
+{
+  "name": "sdui-template project",
+  "description": "Personal coding patterns for sdui-template",
+  "technical_level": "advanced",
+  "preferences": {
+    "coding_style": "functional, type-safe",
+    "testing": "comprehensive",
+    "documentation": "minimal but clear"
+  },
+  "created_at": "2026-01-29"
+}
