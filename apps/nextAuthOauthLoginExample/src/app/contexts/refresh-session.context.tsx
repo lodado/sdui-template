@@ -1,10 +1,9 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
+import type { Dispatch, PropsWithChildren, ReactNode } from 'react'
 import {
   createContext,
-  type Dispatch,
-  type PropsWithChildren,
   useCallback,
   useContext,
   useEffect,
@@ -112,13 +111,18 @@ const RefreshSessionContext = createContext<RefreshSessionContextValue | null>(n
 // Provider
 // ============================================================================
 
-export const RefreshSessionProvider = ({ children }: PropsWithChildren) => {
+export const RefreshSessionProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(refreshReducer, initialState)
 
+  const value = useMemo(() => ({ state, dispatch }), [state, dispatch])
+
+  // Using Provider property with type assertion to handle React 18/19 type incompatibility
+  const Provider = RefreshSessionContext.Provider as any
+
   return (
-    <RefreshSessionContext.Provider value={useMemo(() => ({ state, dispatch }), [state, dispatch])}>
+    <Provider value={value}>
       {children}
-    </RefreshSessionContext.Provider>
+    </Provider>
   )
 }
 

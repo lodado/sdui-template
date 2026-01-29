@@ -1,12 +1,12 @@
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
-import { refreshCookieName } from '@/app/lib/auth'
+import { refreshCookieName } from '@/auth'
 import { isProduction } from '@/app/lib/env'
 import { revokeRefreshToken } from '@/app/lib/refresh-token'
 
 export async function POST() {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const refreshToken = cookieStore.get(refreshCookieName)?.value
 
   // Revoke refresh token from the database if it exists

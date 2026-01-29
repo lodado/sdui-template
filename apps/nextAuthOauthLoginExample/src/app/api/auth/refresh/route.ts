@@ -1,9 +1,8 @@
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { encode } from 'next-auth/jwt'
-import { getServerSession } from 'next-auth/next'
 
-import { authOptions, refreshCookieName, sessionCookieName, sessionMaxAgeSeconds } from '@/app/lib/auth'
+import { auth, refreshCookieName, sessionCookieName, sessionMaxAgeSeconds } from '@/auth'
 import { isProduction, requireEnv } from '@/app/lib/env'
 import {
   createRefreshToken,
@@ -30,8 +29,8 @@ const sessionCookieOptions = {
 }
 
 export async function POST() {
-  const cookieStore = cookies()
-  const session = await getServerSession(authOptions)
+  const cookieStore = await cookies()
+  const session = await auth()
 
   if (session?.user?.id) {
     const refreshToken = createRefreshToken()
@@ -77,6 +76,7 @@ export async function POST() {
     },
     secret: requireEnv('NEXTAUTH_SECRET'),
     maxAge: sessionMaxAgeSeconds,
+    salt: sessionCookieName,
   })
 
   cookieStore.set(sessionCookieName, sessionToken, sessionCookieOptions)

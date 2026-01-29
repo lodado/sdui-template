@@ -206,7 +206,8 @@ const AuthSwitch: React.FC<{ nodeId: string; parentPath?: string[] }> = ({ nodeI
     if (!React.isValidElement(child)) return false
 
     // Get the child's nodeId from data-node-id attribute or key
-    const childNodeId = child.props?.['data-node-id'] || (child.key as string)?.replace('.$', '')
+    const childProps = child.props as Record<string, unknown>
+    const childNodeId = childProps['data-node-id'] || (child.key as string)?.replace('.$', '')
 
     // We need to find the slot from the store for this child
     // For simplicity, we'll render all children and let them handle visibility

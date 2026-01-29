@@ -2,10 +2,10 @@ import '@lodado/sdui-design-files/index.css'
 import '@lodado/sdui-design-files/layout.css'
 import './globals.css'
 
-import { getServerSession } from 'next-auth/next'
 import type { ReactNode } from 'react'
 
-import { authOptions } from './lib/auth'
+import { auth } from '@/auth'
+
 import Providers from './providers'
 
 export const metadata = {
@@ -14,7 +14,7 @@ export const metadata = {
 }
 
 const RootLayout = async ({ children }: { children: ReactNode }) => {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
 
   return (
     <html lang="en">

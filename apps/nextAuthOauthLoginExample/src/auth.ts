@@ -1,8 +1,8 @@
-import type { NextAuthOptions } from 'next-auth'
-import GithubProvider from 'next-auth/providers/github'
+import NextAuth from 'next-auth'
+import GitHub from "next-auth/providers/github";
 
-import { isProduction, requireEnv } from './env'
-import { persistUserAvatar } from './supabase'
+import { isProduction, requireEnv } from '@/app/lib/env'
+import { persistUserAvatar } from '@/app/lib/supabase'
 
 export const sessionMaxAgeSeconds = 60 * 15
 export const refreshCookieName = 'sdui-refresh-token'
@@ -10,19 +10,16 @@ export const sessionCookieName = isProduction
   ? '__Secure-next-auth.session-token'
   : 'next-auth.session-token'
 
-export const authOptions: NextAuthOptions = {
+const nextAuth = NextAuth({
   providers: [
-    GithubProvider({
-      clientId: requireEnv('GITHUB_CLIENT_ID'),
-      clientSecret: requireEnv('GITHUB_CLIENT_SECRET'),
+    GitHub ({
+      clientId: requireEnv('GITHUB_CLIENT_ID') ,
+      clientSecret: requireEnv('GITHUB_CLIENT_SECRET') ,
     }),
   ],
   secret: requireEnv('NEXTAUTH_SECRET'),
   session: {
     strategy: 'jwt',
-    maxAge: sessionMaxAgeSeconds,
-  },
-  jwt: {
     maxAge: sessionMaxAgeSeconds,
   },
   cookies: {
@@ -58,4 +55,11 @@ export const authOptions: NextAuthOptions = {
       }
     },
   },
-}
+})
+
+/* eslint-disable prefer-destructuring */
+// NOTE: Cannot use destructuring due to TypeScript type inference issue with @auth/core providers
+// signIn and signOut are used from 'next-auth/react' in client components
+export const auth = nextAuth.auth
+export const handlers = nextAuth.handlers
+/* eslint-enable prefer-destructuring */

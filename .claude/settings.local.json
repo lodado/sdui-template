@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(npm install:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm run build:internal:*)",
+      "mcp__plugin_context7_context7__query-docs",
+      "Bash(pnpm why:*)",
+      "Bash(find:*)"
     ]
   },
   "enabledPlugins": {
