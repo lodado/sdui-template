@@ -76,7 +76,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         <div
           role="alert"
           data-testid="error-boundary-fallback"
-          className="p-4 border border-red-500 rounded bg-red-50 text-red-900"
+          className="p-4 border border-[var(--color-border-danger)] rounded bg-[var(--color-background-danger-default)] text-[var(--color-text-danger)]"
         >
           <div className="font-bold mb-2">Something went wrong</div>
           {error.message && (

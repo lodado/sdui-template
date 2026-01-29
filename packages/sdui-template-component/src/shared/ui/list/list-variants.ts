@@ -11,7 +11,7 @@ import type { ListIconColor } from './types'
  */
 export const listVariants = cva(
   // Base styles
-  'flex w-full items-center gap-3 rounded-lg bg-[#F9FAFB] p-4 transition-colors disabled:pointer-events-none disabled:opacity-50',
+  'flex w-full items-center gap-3 rounded-lg bg-[var(--elevation-surface-raised-default)] p-4 transition-colors disabled:pointer-events-none disabled:opacity-50',
   {
     variants: {
       disabled: {
@@ -40,11 +40,11 @@ export const listIconVariants = cva(
   {
     variants: {
       color: {
-        blue: 'bg-blue-500',
-        green: 'bg-green-500',
-        purple: 'bg-purple-500',
-        red: 'bg-red-500',
-        default: 'bg-[var(--color-background-neutral-subtle)]',
+        blue: 'bg-[var(--color-background-accent-blue-bolder-default)]',
+        green: 'bg-[var(--color-background-accent-green-bolder-default)]',
+        purple: 'bg-[var(--color-background-accent-purple-bolder-default)]',
+        red: 'bg-[var(--color-background-accent-red-bolder-default)]',
+        default: 'bg-[var(--color-background-neutral-subtle-default)]',
       } as Record<ListIconColor, string>,
     },
     defaultVariants: {

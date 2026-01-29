@@ -135,7 +135,7 @@ const TextFieldLabel = React.forwardRef<HTMLLabelElement, TextFieldLabelProps>(
       // eslint-disable-next-line react/jsx-props-no-spreading
       <label ref={ref} htmlFor={inputId} id={labelId} className={cn(labelClasses, className)} {...props}>
         {children}
-        {required && <span className="ml-1 text-red-500">*</span>}
+        {required && <span className="ml-1 text-[var(--color-text-danger)]">*</span>}
       </label>
     )
   },

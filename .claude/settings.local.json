@@ -7,7 +7,9 @@
       "Bash(pnpm run build:internal:*)",
       "mcp__plugin_context7_context7__query-docs",
       "Bash(pnpm why:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "WebFetch(domain:www.figma.com)",
+      "Bash(claude mcp add:*)"
     ]
   },
   "enabledPlugins": {

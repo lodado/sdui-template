@@ -41,7 +41,7 @@ export const Title = ({ id, parentPath = [] }: TitleProps) => {
 
   return (
     <header
-      className="bg-white relative shrink-0 w-full border-b border-[var(--color-border-default)] flex items-center h-[48px] min-h-[48px] max-h-[48px] px-3 box-content"
+      className="bg-[var(--elevation-surface-default)] relative shrink-0 w-full border-b border-[var(--color-border-default)] flex items-center h-[48px] min-h-[48px] max-h-[48px] px-3 box-content"
       data-node-id={id}
       data-testid={`title-${id}`}
     >
