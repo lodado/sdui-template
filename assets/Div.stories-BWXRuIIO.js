@@ -1,4 +1,4 @@
-import{j as e}from"./jsx-runtime-Cb4Z16sN.js";/* empty css               */import{S as c,T as p,D as d,a}from"./Text-xwKBzp0m.js";import"./iframe-CpJpjxFN.js";import"./preload-helper-ggYluGXI.js";function i(){return{Div:(t,u)=>e.jsx(d,{id:t,parentPath:u}),Text:t=>e.jsx(p,{id:t}),Span:t=>e.jsx(c,{id:t})}}const v={title:"Shared/UI/Div",component:d,tags:["autodocs"],parameters:{docs:{description:{component:`
+import{j as o}from"./jsx-runtime-D2LRXxLP.js";/* empty css               */import{D as d,S as a,s as i}from"./sduiComponents-DHxdXZOo.js";import"./iframe-DKnaJEuY.js";import"./preload-helper-ggYluGXI.js";import"./index-Bhtou3Fa.js";const b={title:"Shared/UI/Div",component:d,tags:["autodocs"],parameters:{docs:{description:{component:`
 ## Overview
 
 The **Div** component is a container component with built-in **Error Boundary** and **Suspense** support, providing robust error handling and loading states out of the box.
@@ -28,7 +28,7 @@ When used in the **SDUI template system**, the Div component:
 - Components that may fail
 - Async component loading
 - Error-prone sections
-        `}}}},n={render:()=>{const t={version:"1.0.0",root:{id:"root",type:"Div",attributes:{className:"p-6"},children:[{id:"title",type:"Span",state:{text:"Basic Div Component"},attributes:{className:"text-lg font-bold mb-4"}},{id:"description",type:"Span",state:{text:"The Div component includes built-in Error Boundary and Suspense."},attributes:{className:"text-gray-600 mb-4"}},{id:"div-container",type:"Div",attributes:{className:"p-4 border border-gray-300 rounded bg-gray-50"},children:[{id:"div-content",type:"Span",state:{text:"This div is wrapped with Error Boundary and Suspense."}}]}]}};return e.jsx(a,{document:t,components:i()})},parameters:{docs:{description:{story:`
+        `}}}},n={render:()=>{const t={version:"1.0.0",root:{id:"root",type:"Div",attributes:{className:"p-6"},children:[{id:"title",type:"Span",state:{text:"Basic Div Component"},attributes:{className:"text-lg font-bold mb-4"}},{id:"description",type:"Span",state:{text:"The Div component includes built-in Error Boundary and Suspense."},attributes:{className:"text-gray-600 mb-4"}},{id:"div-container",type:"Div",attributes:{className:"p-4 border border-gray-300 rounded bg-gray-50"},children:[{id:"div-content",type:"Span",state:{text:"This div is wrapped with Error Boundary and Suspense."}}]}]}};return o.jsx(a,{document:t,components:i})},parameters:{docs:{description:{story:`
 ## Overview
 
 Basic usage of the **Div component** demonstrating its core functionality.
@@ -48,7 +48,7 @@ The component automatically:
 ## Configuration
 
 No additional configuration needed - error handling and async loading support are built-in!
-        `}}}},s={render:()=>{const t={version:"1.0.0",root:{id:"root",type:"Div",attributes:{className:"p-6"},children:[{id:"title",type:"Span",state:{text:"Nested Divs Example"},attributes:{className:"text-lg font-bold mb-4"}},{id:"outer-div",type:"Div",attributes:{className:"p-4 border-2 border-blue-300 rounded bg-blue-50"},children:[{id:"outer-text",type:"Span",state:{text:"Outer Div"},attributes:{className:"font-semibold mb-2"}},{id:"inner-div",type:"Div",attributes:{className:"p-3 border border-blue-500 rounded bg-blue-100"},children:[{id:"inner-text",type:"Span",state:{text:"Inner Div"}}]}]}]}};return e.jsx(a,{document:t,components:i()})},parameters:{docs:{description:{story:`
+        `}}}},e={render:()=>{const t={version:"1.0.0",root:{id:"root",type:"Div",attributes:{className:"p-6"},children:[{id:"title",type:"Span",state:{text:"Nested Divs Example"},attributes:{className:"text-lg font-bold mb-4"}},{id:"outer-div",type:"Div",attributes:{className:"p-4 border-2 border-blue-300 rounded bg-blue-50"},children:[{id:"outer-text",type:"Span",state:{text:"Outer Div"},attributes:{className:"font-semibold mb-2"}},{id:"inner-div",type:"Div",attributes:{className:"p-3 border border-blue-500 rounded bg-blue-100"},children:[{id:"inner-text",type:"Span",state:{text:"Inner Div"}}]}]}]}};return o.jsx(a,{document:t,components:i})},parameters:{docs:{description:{story:`
 ## Overview
 
 Demonstrates how **Div components** can be nested to create complex layouts.
@@ -63,7 +63,7 @@ Demonstrates how **Div components** can be nested to create complex layouts.
 - Creating layout sections
 - Grouping related content
 - Building complex UI structures
-        `}}}},r={render:()=>{const t={version:"1.0.0",root:{id:"root",type:"Div",attributes:{className:"p-6"},children:[{id:"title",type:"Span",state:{text:"Custom Styling Example"},attributes:{className:"text-lg font-bold mb-4"}},{id:"styled-div",type:"Div",attributes:{className:"p-6 bg-gradient-to-r from-purple-400 to-pink-400 rounded-lg shadow-lg"},children:[{id:"styled-text",type:"Span",state:{text:"This Div has custom styling with gradient background and shadow"},attributes:{className:"text-white font-semibold"}}]}]}};return e.jsx(a,{document:t,components:i()})},parameters:{docs:{description:{story:`
+        `}}}},s={render:()=>{const t={version:"1.0.0",root:{id:"root",type:"Div",attributes:{className:"p-6"},children:[{id:"title",type:"Span",state:{text:"Custom Styling Example"},attributes:{className:"text-lg font-bold mb-4"}},{id:"styled-div",type:"Div",attributes:{className:"p-6 bg-gradient-to-r from-purple-400 to-pink-400 rounded-lg shadow-lg"},children:[{id:"styled-text",type:"Span",state:{text:"This Div has custom styling with gradient background and shadow"},attributes:{className:"text-white font-semibold"}}]}]}};return o.jsx(a,{document:t,components:i})},parameters:{docs:{description:{story:`
 ## Overview
 
 Shows how to apply **custom styling** to Div components using className attributes.
@@ -79,7 +79,7 @@ Shows how to apply **custom styling** to Div components using className attribut
 - Use Tailwind utilities for consistency
 - Keep styling in attributes for SDUI compatibility
 - Maintain design system tokens
-        `}}}},o={render:()=>{const t={version:"1.0.0",root:{id:"root",type:"Div",attributes:{className:"p-6"},children:[{id:"title",type:"Span",state:{text:"Container Example"},attributes:{className:"text-lg font-bold mb-4"}},{id:"container-div",type:"Div",attributes:{className:"flex flex-col gap-4 p-4 border border-gray-300 rounded"},children:[{id:"item-1",type:"Span",state:{text:"Item 1"},attributes:{className:"p-2 bg-gray-100 rounded"}},{id:"item-2",type:"Span",state:{text:"Item 2"},attributes:{className:"p-2 bg-gray-100 rounded"}},{id:"item-3",type:"Span",state:{text:"Item 3"},attributes:{className:"p-2 bg-gray-100 rounded"}}]}]}};return e.jsx(a,{document:t,components:i()})},parameters:{docs:{description:{story:`
+        `}}}},r={render:()=>{const t={version:"1.0.0",root:{id:"root",type:"Div",attributes:{className:"p-6"},children:[{id:"title",type:"Span",state:{text:"Container Example"},attributes:{className:"text-lg font-bold mb-4"}},{id:"container-div",type:"Div",attributes:{className:"flex flex-col gap-4 p-4 border border-gray-300 rounded"},children:[{id:"item-1",type:"Span",state:{text:"Item 1"},attributes:{className:"p-2 bg-gray-100 rounded"}},{id:"item-2",type:"Span",state:{text:"Item 2"},attributes:{className:"p-2 bg-gray-100 rounded"}},{id:"item-3",type:"Span",state:{text:"Item 3"},attributes:{className:"p-2 bg-gray-100 rounded"}}]}]}};return o.jsx(a,{document:t,components:i})},parameters:{docs:{description:{story:`
 ## Overview
 
 Demonstrates using **Div as a container** to group multiple child elements.
@@ -141,7 +141,7 @@ Demonstrates using **Div as a container** to group multiple child elements.
         }]
       }
     };
-    return <SduiLayoutRenderer document={document} components={getDivComponents()} />;
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />;
   },
   parameters: {
     docs: {
@@ -170,7 +170,7 @@ No additional configuration needed - error handling and async loading support ar
       }
     }
   }
-}`,...n.parameters?.docs?.source}}};s.parameters={...s.parameters,docs:{...s.parameters?.docs,source:{originalSource:`{
+}`,...n.parameters?.docs?.source}}};e.parameters={...e.parameters,docs:{...e.parameters?.docs,source:{originalSource:`{
   render: () => {
     const document: SduiLayoutDocument = {
       version: '1.0.0',
@@ -221,7 +221,7 @@ No additional configuration needed - error handling and async loading support ar
         }]
       }
     };
-    return <SduiLayoutRenderer document={document} components={getDivComponents()} />;
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />;
   },
   parameters: {
     docs: {
@@ -245,7 +245,7 @@ Demonstrates how **Div components** can be nested to create complex layouts.
       }
     }
   }
-}`,...s.parameters?.docs?.source}}};r.parameters={...r.parameters,docs:{...r.parameters?.docs,source:{originalSource:`{
+}`,...e.parameters?.docs?.source}}};s.parameters={...s.parameters,docs:{...s.parameters?.docs,source:{originalSource:`{
   render: () => {
     const document: SduiLayoutDocument = {
       version: '1.0.0',
@@ -283,7 +283,7 @@ Demonstrates how **Div components** can be nested to create complex layouts.
         }]
       }
     };
-    return <SduiLayoutRenderer document={document} components={getDivComponents()} />;
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />;
   },
   parameters: {
     docs: {
@@ -308,7 +308,7 @@ Shows how to apply **custom styling** to Div components using className attribut
       }
     }
   }
-}`,...r.parameters?.docs?.source}}};o.parameters={...o.parameters,docs:{...o.parameters?.docs,source:{originalSource:`{
+}`,...s.parameters?.docs?.source}}};r.parameters={...r.parameters,docs:{...r.parameters?.docs,source:{originalSource:`{
   render: () => {
     const document: SduiLayoutDocument = {
       version: '1.0.0',
@@ -364,7 +364,7 @@ Shows how to apply **custom styling** to Div components using className attribut
         }]
       }
     };
-    return <SduiLayoutRenderer document={document} components={getDivComponents()} />;
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />;
   },
   parameters: {
     docs: {
@@ -391,4 +391,4 @@ Demonstrates using **Div as a container** to group multiple child elements.
       }
     }
   }
-}`,...o.parameters?.docs?.source}}};const h=["Default","NestedDivs","WithCustomStyling","AsContainer"];export{o as AsContainer,n as Default,s as NestedDivs,r as WithCustomStyling,h as __namedExportsOrder,v as default};
+}`,...r.parameters?.docs?.source}}};const g=["Default","NestedDivs","WithCustomStyling","AsContainer"];export{r as AsContainer,n as Default,e as NestedDivs,s as WithCustomStyling,g as __namedExportsOrder,b as default};
