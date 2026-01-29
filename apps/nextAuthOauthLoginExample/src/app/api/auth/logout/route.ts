@@ -1,9 +1,9 @@
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
-import { refreshCookieName } from '@/auth'
 import { isProduction } from '@/app/lib/env'
 import { revokeRefreshToken } from '@/app/lib/refresh-token'
+import { refreshCookieName } from '@/auth'
 
 export async function POST() {
   const cookieStore = await cookies()

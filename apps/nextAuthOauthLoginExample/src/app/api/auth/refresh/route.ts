@@ -2,7 +2,6 @@ import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { encode } from 'next-auth/jwt'
 
-import { auth, refreshCookieName, sessionCookieName, sessionMaxAgeSeconds } from '@/auth'
 import { isProduction, requireEnv } from '@/app/lib/env'
 import {
   createRefreshToken,
@@ -11,6 +10,7 @@ import {
   rotateRefreshToken,
   storeRefreshToken,
 } from '@/app/lib/refresh-token'
+import { auth, refreshCookieName, sessionCookieName, sessionMaxAgeSeconds } from '@/auth'
 
 const refreshCookieOptions = {
   httpOnly: true,
