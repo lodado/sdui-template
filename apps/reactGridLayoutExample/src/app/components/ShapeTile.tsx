@@ -3,15 +3,17 @@
 import type { ComponentFactory } from '@lodado/sdui-template'
 import { useSduiLayoutAction, useSduiNodeSubscription } from '@lodado/sdui-template'
 import React from 'react'
+import { z } from 'zod'
 
-const shapes = ['square', 'triangle', 'circle'] as const
+const shapes = ['square', 'triangle', 'circle']
 
-type ShapeType = (typeof shapes)[number]
+type ShapeType = 'square' | 'triangle' | 'circle'
 
-type ShapeTileState = {
-  shape?: ShapeType
-  label?: string
-}
+const shapeTileStateSchema = z.object({
+  shape: z.enum(['square', 'triangle', 'circle']).optional(),
+  label: z.string().optional(),
+})
+
 
 const shapeClassName: Record<ShapeType, string> = {
   square: 'rounded-xl',
@@ -21,11 +23,15 @@ const shapeClassName: Record<ShapeType, string> = {
 
 const ShapeTileComponent: React.FC<{ nodeId: string }> = ({ nodeId }) => {
   const store = useSduiLayoutAction()
-  const { state } = useSduiNodeSubscription({ nodeId })
-  const typedState = state as ShapeTileState | undefined
+  // @ts-expect-error - Zod schema type compatibility issue between zod versions
+  const { state } = useSduiNodeSubscription<typeof shapeTileStateSchema>({
+    nodeId,
+    schema: shapeTileStateSchema,
+  })
 
-  const shape = typedState?.shape ?? 'square'
-  const label = typedState?.label ?? 'Shape'
+  const parsedState = shapeTileStateSchema.parse(state ?? {})
+  const shape = parsedState.shape ?? 'square'
+  const label = parsedState.label ?? 'Shape'
 
   const handleToggle = () => {
     const currentIndex = shapes.indexOf(shape)

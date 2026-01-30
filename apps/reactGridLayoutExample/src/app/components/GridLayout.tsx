@@ -5,25 +5,26 @@ import { useRenderNode, useSduiLayoutAction, useSduiNodeReference, useSduiNodeSu
 import React from 'react'
 import GridLayoutBase, { type Layout } from 'react-grid-layout'
 import { WidthProvider } from 'react-grid-layout'
+import { z } from 'zod'
 
 const ReactGridLayout = WidthProvider(GridLayoutBase)
 
-type GridLayoutItemState = {
-  x: number
-  y: number
-  w: number
-  h: number
-}
+const gridLayoutStateSchema = z.object({
+  cols: z.number().optional(),
+  rowHeight: z.number().optional(),
+  margin: z.tuple([z.number(), z.number()]).optional(),
+})
 
-type GridLayoutState = {
-  cols?: number
-  rowHeight?: number
-  margin?: [number, number]
-}
+const gridLayoutItemSchema = z.object({
+  x: z.number(),
+  y: z.number(),
+  w: z.number(),
+  h: z.number(),
+})
 
-type GridLayoutChildState = {
-  layout?: GridLayoutItemState
-}
+const gridLayoutChildStateSchema = z.object({
+  layout: gridLayoutItemSchema.optional(),
+})
 
 interface GridLayoutProps {
   id: string
@@ -45,18 +46,26 @@ const buildFallbackLayout = (childrenIds: string[] | undefined): Layout[] => {
 
 const GridLayoutComponent: React.FC<GridLayoutProps> = ({ id, parentPath = [] }) => {
   const store = useSduiLayoutAction()
-  const { state, childrenIds } = useSduiNodeSubscription({ nodeId: id })
+  // @ts-expect-error - Zod schema type compatibility issue between zod versions
+  const { state, childrenIds } = useSduiNodeSubscription<typeof gridLayoutStateSchema>({
+    nodeId: id,
+    schema: gridLayoutStateSchema,
+  })
   const { renderNode, currentPath } = useRenderNode({ nodeId: id, parentPath })
-  const typedState = state as GridLayoutState | undefined
-  const { referencedNodesMap } = useSduiNodeReference({ nodeId: id })
+  const typedState = gridLayoutStateSchema.parse(state ?? {})
+  // @ts-expect-error - Zod schema type compatibility issue between zod versions
+  const { referencedNodesMap } = useSduiNodeReference<typeof gridLayoutChildStateSchema>({
+    nodeId: id,
+    schema: gridLayoutChildStateSchema,
+  })
 
   const layout = React.useMemo<Layout[]>(() => {
     const fallbackLayout = buildFallbackLayout(childrenIds)
 
     return (childrenIds ?? []).map((childId, index) => {
       const referencedNode = referencedNodesMap[childId]
-      const childState = referencedNode?.state as GridLayoutChildState | undefined
-      const item = childState?.layout
+      const parsedChildState = gridLayoutChildStateSchema.safeParse(referencedNode?.state ?? {})
+      const item = parsedChildState.success ? parsedChildState.data.layout : undefined
 
       return item
         ? { i: childId, x: item.x, y: item.y, w: item.w, h: item.h }
