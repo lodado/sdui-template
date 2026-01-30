@@ -1,0 +1,30 @@
+@import 'tailwindcss';
+
+@source "../../../../packages/sdui-template-component/src/**/*.{ts,tsx}";
+@source "../**/*.{ts,tsx}";
+
+:root {
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #0b0b12;
+  color: #f4f4f5;
+}
+
+main {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px;
+}
+
+button {
+  font-family: inherit;
+}

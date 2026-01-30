@@ -18,6 +18,7 @@ build
 *.pem
 **/storybook-static/*
 **/*.d.*
+!apps/reactGridLayoutExample/src/types/react-grid-layout.d.ts
 
 stats.html
 
