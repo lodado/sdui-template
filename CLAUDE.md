@@ -180,13 +180,21 @@ Key example locations:
 
 ## Important: After Code Changes
 
-**Always run tests after completing any modifications:**
+**You MUST run tests from the monorepo root after completing any code modifications:**
 
 ```bash
 pnpm run test
 ```
 
-This is mandatory to ensure changes don't break existing functionality. Do not skip this step.
+**Rules:**
+1. Run tests at the END of your response after all code changes are complete
+2. If tests **FAIL**, you MUST fix the issues and re-run tests until they pass
+3. Do NOT consider the task complete until all tests pass
+4. Report the final test result to the user:
+   - ✅ Tests passed (X tests)
+   - ❌ Tests failed → fix and retry
+
+**This is mandatory. Never skip tests. Never leave failing tests.**
 
 ---
 
