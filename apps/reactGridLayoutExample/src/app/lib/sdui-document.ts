@@ -47,17 +47,11 @@ export const gridLayoutDocument: SduiLayoutDocument = {
       {
         id: 'grid-layout',
         type: 'GridLayout',
+        reference: ['shape-1', 'shape-2', 'shape-3', 'shape-4', 'shape-5'],
         state: {
           cols: 12,
           rowHeight: 80,
           margin: [16, 16],
-          layout: [
-            { id: 'shape-1', x: 0, y: 0, w: 4, h: 4 },
-            { id: 'shape-2', x: 4, y: 0, w: 4, h: 4 },
-            { id: 'shape-3', x: 8, y: 0, w: 4, h: 4 },
-            { id: 'shape-4', x: 0, y: 4, w: 6, h: 4 },
-            { id: 'shape-5', x: 6, y: 4, w: 6, h: 4 },
-          ],
         },
         children: [
           {
@@ -66,6 +60,7 @@ export const gridLayoutDocument: SduiLayoutDocument = {
             state: {
               shape: 'square',
               label: 'Tile 1',
+              layout: { x: 0, y: 0, w: 4, h: 4 },
             },
           },
           {
@@ -74,6 +69,7 @@ export const gridLayoutDocument: SduiLayoutDocument = {
             state: {
               shape: 'triangle',
               label: 'Tile 2',
+              layout: { x: 4, y: 0, w: 4, h: 4 },
             },
           },
           {
@@ -82,6 +78,7 @@ export const gridLayoutDocument: SduiLayoutDocument = {
             state: {
               shape: 'circle',
               label: 'Tile 3',
+              layout: { x: 8, y: 0, w: 4, h: 4 },
             },
           },
           {
@@ -90,6 +87,7 @@ export const gridLayoutDocument: SduiLayoutDocument = {
             state: {
               shape: 'square',
               label: 'Tile 4',
+              layout: { x: 0, y: 4, w: 6, h: 4 },
             },
           },
           {
@@ -98,6 +96,7 @@ export const gridLayoutDocument: SduiLayoutDocument = {
             state: {
               shape: 'triangle',
               label: 'Tile 5',
+              layout: { x: 6, y: 4, w: 6, h: 4 },
             },
           },
         ],

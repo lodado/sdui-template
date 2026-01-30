@@ -1,7 +1,7 @@
 'use client'
 
 import type { ComponentFactory, ParentPath } from '@lodado/sdui-template'
-import { useRenderNode, useSduiLayoutAction, useSduiNodeSubscription } from '@lodado/sdui-template'
+import { useRenderNode, useSduiLayoutAction, useSduiNodeReference, useSduiNodeSubscription } from '@lodado/sdui-template'
 import React from 'react'
 import GridLayoutBase, { type Layout } from 'react-grid-layout'
 import { WidthProvider } from 'react-grid-layout'
@@ -9,7 +9,6 @@ import { WidthProvider } from 'react-grid-layout'
 const ReactGridLayout = WidthProvider(GridLayoutBase)
 
 type GridLayoutItemState = {
-  id: string
   x: number
   y: number
   w: number
@@ -17,10 +16,13 @@ type GridLayoutItemState = {
 }
 
 type GridLayoutState = {
-  layout?: GridLayoutItemState[]
   cols?: number
   rowHeight?: number
   margin?: [number, number]
+}
+
+type GridLayoutChildState = {
+  layout?: GridLayoutItemState
 }
 
 interface GridLayoutProps {
@@ -46,35 +48,36 @@ const GridLayoutComponent: React.FC<GridLayoutProps> = ({ id, parentPath = [] })
   const { state, childrenIds } = useSduiNodeSubscription({ nodeId: id })
   const { renderNode, currentPath } = useRenderNode({ nodeId: id, parentPath })
   const typedState = state as GridLayoutState | undefined
+  const { referencedNodesMap } = useSduiNodeReference({ nodeId: id })
 
   const layout = React.useMemo<Layout[]>(() => {
-    const storedLayout = typedState?.layout ?? []
     const fallbackLayout = buildFallbackLayout(childrenIds)
-    const layoutById = new Map(storedLayout.map((item) => [item.id, item]))
 
     return (childrenIds ?? []).map((childId, index) => {
-      const item = layoutById.get(childId)
-      if (item) {
-        return { i: childId, x: item.x, y: item.y, w: item.w, h: item.h }
-      }
+      const referencedNode = referencedNodesMap[childId]
+      const childState = referencedNode?.state as GridLayoutChildState | undefined
+      const item = childState?.layout
 
-      return fallbackLayout[index]
+      return item
+        ? { i: childId, x: item.x, y: item.y, w: item.w, h: item.h }
+        : fallbackLayout[index]
     })
-  }, [childrenIds, typedState?.layout])
+  }, [childrenIds, referencedNodesMap])
 
   const handleLayoutChange = React.useCallback(
     (updatedLayout: Layout[]) => {
-      const nextLayout = updatedLayout.map((item) => ({
-        id: item.i,
-        x: item.x,
-        y: item.y,
-        w: item.w,
-        h: item.h,
-      }))
-
-      store.updateNodeState(id, { layout: nextLayout })
+      updatedLayout.forEach((item) => {
+        store.updateNodeState(item.i, {
+          layout: {
+            x: item.x,
+            y: item.y,
+            w: item.w,
+            h: item.h,
+          },
+        })
+      })
     },
-    [id, store],
+    [store],
   )
 
   return (
