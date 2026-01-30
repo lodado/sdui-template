@@ -1,0 +1,35 @@
+{
+  "name": "react-grid-layout-example",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev:internal": "next dev",
+    "build:internal": "next build",
+    "start:internal": "next start",
+    "lint": "eslint \"src/**/*.{ts,tsx}\""
+  },
+  "dependencies": {
+    "@lodado/sdui-design-files": "^1.0.0",
+    "@lodado/sdui-template": "workspace:*",
+    "@lodado/sdui-template-component": "workspace:*",
+    "next": "^16.1.6",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-grid-layout": "^1.5.2",
+    "react-resizable": "^3.0.5",
+    "zod": "^4.3.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.18",
+    "@types/node": "^20.12.7",
+    "@types/react": "^19.2.10",
+    "@types/react-dom": "^19.2.3",
+    "@types/react-grid-layout": "^2.1.0",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^8.57.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.18",
+    "tsconfig": "workspace:*",
+    "typescript": "^5.6.3"
+  }
+}
