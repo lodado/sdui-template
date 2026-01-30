@@ -1091,3 +1091,4 @@ n_context7_context7__query-docs\\\",\\n      \\\"Bash(pnpm why:*)\\\",\\n      \
 {"event":"tool_start","tool":"Write","session":"a7a923ca-8cc5-4f2d-8fa5-c65c6c48f056","timestamp":"2026-01-30T17:09:22.330Z"}
 {"event":"tool_start","tool":"Read","session":"a7a923ca-8cc5-4f2d-8fa5-c65c6c48f056","timestamp":"2026-01-30T17:09:34.768Z"}
 {"event":"tool_start","tool":"Write","session":"a7a923ca-8cc5-4f2d-8fa5-c65c6c48f056","timestamp":"2026-01-30T17:09:49.804Z"}
+{"event":"tool_complete","tool":"Bash","session":"a7a923ca-8cc5-4f2d-8fa5-c65c6c48f056","timestamp":"2026-01-30T17:23:39.558Z"}

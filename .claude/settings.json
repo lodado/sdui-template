@@ -7,14 +7,14 @@
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": "tool == \"Edit\" && tool_input.file_path matches \"\\\\.(ts|tsx|js|jsx)$\"",
+        "matcher": "*",
         "hooks": [
           {
             "type": "command",
             "command": "node ./.claude/hooks/post-tool-use.js"
           }
         ],
-        "description": "Track edited JS/TS files"
+        "description": "Observe + track edited files"
       }
     ],
     "Stop": [
