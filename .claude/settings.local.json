@@ -9,10 +9,18 @@
       "Bash(pnpm why:*)",
       "Bash(find:*)",
       "WebFetch(domain:www.figma.com)",
-      "Bash(claude mcp add:*)"
+      "Bash(claude mcp add:*)",
+      "Bash(pnpm --filter @lodado/sdui-template test)",
+      "Bash(npx prettier:*)",
+      "Bash(node:*)",
+      "Bash(node -c:*)",
+      "Bash(DEBUG=1 echo:*)",
+      "Bash(echo:*)",
+      "Bash(DEBUG=1 node -e \"\nconst { execSync } = require\\(''child_process''\\);\nconst fs = require\\(''fs''\\);\nconst path = require\\(''path''\\);\n\nconst filePath = ''C:\\\\\\\\Users\\\\\\\\chungheonlee\\\\\\\\Desktop\\\\\\\\programming\\\\\\\\sdui-template\\\\\\\\test-format-temp.js'';\nconsole.log\\(''File exists:'', fs.existsSync\\(filePath\\)\\);\nconsole.log\\(''Before:'', fs.readFileSync\\(filePath, ''utf8''\\)\\);\n\ntry {\n  execSync\\(''npx prettier --write \"\"'' + filePath + ''\"\"'', {\n    cwd: ''C:\\\\\\\\Users\\\\\\\\chungheonlee\\\\\\\\Desktop\\\\\\\\programming\\\\\\\\sdui-template'',\n    stdio: [''pipe'', ''pipe'', ''pipe''],\n    timeout: 30000,\n    shell: true,\n  }\\);\n  console.log\\(''After:'', fs.readFileSync\\(filePath, ''utf8''\\)\\);\n} catch \\(e\\) {\n  console.error\\(''Error:'', e.message\\);\n  console.error\\(''stdout:'', e.stdout\\);\n  console.error\\(''stderr:'', e.stderr\\);\n}\n\")"
     ]
   },
   "enabledPlugins": {
+    "everything-claude-code@everything-claude-code": true,
     "frontend-design@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true

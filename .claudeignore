@@ -1,0 +1,56 @@
+# Dependencies - largest token savings
+node_modules/
+.pnp/
+.pnp.js
+
+# Build outputs
+.next/
+out/
+build/
+dist/
+**/dist/*
+**/storybook-static/*
+
+# Cache directories
+.turbo/
+.vercel/
+.parcel-cache/
+.eslintcache
+
+# Generated files
+**/*.d.ts
+**/*.d.tsx
+**/*.css.map
+stats.html
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*storybook.log
+apps/docs/build-storybook.log
+
+# Lock files (large, not needed for context)
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# IDE/Editor
+.idea/
+.vscode/
+.cursor/
+
+# Testing
+coverage/
+
+# Environment files
+.env
+.env.*
+
+# Claude internal
+.claude/homunculus/
+
+# Misc
+.DS_Store
+*.pem

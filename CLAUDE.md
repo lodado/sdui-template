@@ -187,3 +187,30 @@ pnpm run test
 ```
 
 This is mandatory to ensure changes don't break existing functionality. Do not skip this step.
+
+---
+
+## Token Optimization Guidelines
+
+### Context Efficiency
+
+- Request only the files you need, not the entire project
+- Limit queries to specific functions or line ranges
+- For large files (50KB+), reference only relevant sections
+
+### Compact Mode
+
+- Use `/compact` command to compress conversation history
+- Recommended during long sessions to reduce token usage
+
+### Task-Specific Strategies
+
+| Task            | Optimization Strategy              |
+| --------------- | ---------------------------------- |
+| Code generation | Generate in small, iterative units |
+| Debugging       | Include only error context         |
+| Code review     | Focus on structure and core logic  |
+
+### Files for Token Reduction
+
+- `.claudeignore` - Excludes unnecessary files from context (node_modules, dist, lock files, etc.)
