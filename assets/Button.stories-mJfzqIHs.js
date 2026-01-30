@@ -1,4 +1,4 @@
-import{j as i}from"./jsx-runtime-D2LRXxLP.js";import{B as g,S as s,s as a}from"./sduiComponents-DHxdXZOo.js";import"./iframe-DKnaJEuY.js";import"./preload-helper-ggYluGXI.js";import"./index-Bhtou3Fa.js";const M={title:"Shared/UI/Button",component:g,tags:["autodocs"],parameters:{docs:{description:{component:`
+import{j as i}from"./jsx-runtime-D4-xOupc.js";import{B as g,S as s,s as a}from"./sduiComponents-BCppMfUV.js";import"./iframe-CNeGMKeE.js";import"./preload-helper-ggYluGXI.js";import"./index-C94IiFzP.js";const M={title:"Shared/UI/Button",component:g,tags:["autodocs"],parameters:{docs:{description:{component:`
 ## Overview
 
 The **Button** component is an interactive element that triggers specific actions when clicked. It's a fundamental UI component used throughout the application for user interactions.
