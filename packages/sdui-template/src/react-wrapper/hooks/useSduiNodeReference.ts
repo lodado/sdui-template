@@ -74,6 +74,10 @@ function useMultipleNodeSubscriptions<
     nodeIdsKey: string
     values: string[]
   } | null>(null)
+  const serverSnapshotCacheRef = React.useRef<{
+    nodeIdsKey: string
+    values: string[]
+  } | null>(null)
 
   // useSyncExternalStore를 사용하여 모든 노드 구독
   // 각 노드의 lastModified 값만 추출하여 비교
@@ -110,10 +114,22 @@ function useMultipleNodeSubscriptions<
       lastModifiedCacheRef.current = { nodeIdsKey, values }
       return values
     },
-    // getServerSnapshot: SSR용
+    // getServerSnapshot: SSR용 (캐싱하여 무한 루프 방지)
     () => {
+      const nodeIdsKey = nodeIds.join(',')
+      
+      // 서버 스냅샷은 한 번만 계산하고 캐시하여 안정적인 참조 유지
+      if (
+        serverSnapshotCacheRef.current &&
+        serverSnapshotCacheRef.current.nodeIdsKey === nodeIdsKey
+      ) {
+        return serverSnapshotCacheRef.current.values
+      }
+
       const lastModifiedSnapshot = store.getServerSnapshot()
-      return nodeIds.map((id) => lastModifiedSnapshot[id] || 'none')
+      const values = nodeIds.map((id) => lastModifiedSnapshot[id] || 'none')
+      serverSnapshotCacheRef.current = { nodeIdsKey, values }
+      return values
     },
   )
 

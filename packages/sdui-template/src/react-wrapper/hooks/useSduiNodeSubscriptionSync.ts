@@ -76,6 +76,7 @@ export function useSduiNodeSubscriptionSync<
   // useSyncExternalStore를 사용하여 구독 및 스냅샷 선택
   // 해당 노드의 lastModified 값만 비교하여 효율적인 변경 감지
   const lastModifiedCacheRef = React.useRef<string | null>(null)
+  const serverSnapshotCacheRef = React.useRef<string | null>(null)
 
   const lastModifiedValue = useSyncExternalStore<string>(
     // subscribe 함수: 노드 변경 및 version 변경 모두 구독
@@ -104,10 +105,14 @@ export function useSduiNodeSubscriptionSync<
       lastModifiedCacheRef.current = value
       return value
     },
-    // getServerSnapshot 함수: SSR 시 스냅샷 반환
+    // getServerSnapshot 함수: SSR 시 스냅샷 반환 (캐싱하여 무한 루프 방지)
     () => {
-      const lastModifiedSnapshot = store.getServerSnapshot()
-      return lastModifiedSnapshot[nodeId] || 'none'
+      // 서버 스냅샷은 한 번만 계산하고 캐시하여 안정적인 참조 유지
+      if (serverSnapshotCacheRef.current === null) {
+        const lastModifiedSnapshot = store.getServerSnapshot()
+        serverSnapshotCacheRef.current = lastModifiedSnapshot[nodeId] || 'none'
+      }
+      return serverSnapshotCacheRef.current
     },
   )
 
