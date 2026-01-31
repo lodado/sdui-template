@@ -1,4 +1,4 @@
-import{j as n}from"./jsx-runtime-By_FrHQR.js";/* empty css               */import{I as v,S as s,s as z}from"./sduiComponents-DZgOKK1R.js";import"./iframe-BK2SSWqO.js";import"./preload-helper-ggYluGXI.js";import"./index-BffUe_yV.js";const L={title:"Shared/UI/Icon",component:v,tags:["autodocs"],parameters:{docs:{description:{component:`
+import{j as n}from"./jsx-runtime-DW6Y6VjF.js";/* empty css               */import{I as v,S as s,s as z}from"./sduiComponents-BEBXi30m.js";import"./iframe-BcAlf7YW.js";import"./preload-helper-ggYluGXI.js";import"./index-DX1Fviu9.js";import"./index-DCBZS9C1.js";const _={title:"Shared/UI/Icon",component:v,tags:["autodocs"],parameters:{docs:{description:{component:`
 ## Overview
 
 The **Icon** component serves as a placeholder for icons that may not be loaded yet or are missing. It accepts SVG children and automatically applies sizing.
@@ -671,4 +671,4 @@ Custom sizes are applied via inline styles.
       description: 'A side-by-side comparison of all predefined icon sizes. This visual comparison helps designers and developers understand the size relationships and choose the appropriate size for their design. All sizes are aligned at the bottom to show height differences clearly.'
     }
   }
-}`,...g.parameters?.docs?.source}}};const _=["Default","Size12px","Size16px","Size20px","Size24px","Size32px","Size40px","Size48px","Size64px","Placeholder","AllSizes","DifferentIcons","Accessibility","SizeComparison"];export{f as Accessibility,x as AllSizes,o as Default,y as DifferentIcons,h as Placeholder,r as Size12px,a as Size16px,c as Size20px,d as Size24px,l as Size32px,p as Size40px,m as Size48px,u as Size64px,g as SizeComparison,_ as __namedExportsOrder,L as default};
+}`,...g.parameters?.docs?.source}}};const A=["Default","Size12px","Size16px","Size20px","Size24px","Size32px","Size40px","Size48px","Size64px","Placeholder","AllSizes","DifferentIcons","Accessibility","SizeComparison"];export{f as Accessibility,x as AllSizes,o as Default,y as DifferentIcons,h as Placeholder,r as Size12px,a as Size16px,c as Size20px,d as Size24px,l as Size32px,p as Size40px,m as Size48px,u as Size64px,g as SizeComparison,A as __namedExportsOrder,_ as default};

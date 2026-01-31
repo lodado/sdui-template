@@ -1,4 +1,4 @@
-import{j as r}from"./jsx-runtime-By_FrHQR.js";/* empty css               */import{F as w,o as n,a as e,r as o,S as s,s as i,E as g}from"./sduiComponents-DZgOKK1R.js";import"./iframe-BK2SSWqO.js";import"./preload-helper-ggYluGXI.js";import"./index-BffUe_yV.js";const P={title:"Features/UI/Form",component:w,tags:["autodocs"],parameters:{docs:{description:{component:`
+import{j as r}from"./jsx-runtime-DW6Y6VjF.js";/* empty css               */import{F as w,o as n,a as e,r as o,S as s,s as i,E as g}from"./sduiComponents-BEBXi30m.js";import"./iframe-BcAlf7YW.js";import"./preload-helper-ggYluGXI.js";import"./index-DX1Fviu9.js";import"./index-DCBZS9C1.js";const X={title:"Features/UI/Form",component:w,tags:["autodocs"],parameters:{docs:{description:{component:`
 ## Overview
 
 The **Form** component integrates **react-hook-form** with **zod** to provide comprehensive form validation with excellent developer experience.
@@ -799,4 +799,4 @@ The Form component supports:
       }
     }
   }
-}`,...b.parameters?.docs?.source}}};const X=["Basic","RegistrationForm","WithHelpMessages","WithoutSchema","CustomValidation","WithSchemaName","DisabledFields","SchemaMismatch"];export{l as Basic,p as CustomValidation,h as DisabledFields,d as RegistrationForm,b as SchemaMismatch,c as WithHelpMessages,f as WithSchemaName,u as WithoutSchema,X as __namedExportsOrder,P as default};
+}`,...b.parameters?.docs?.source}}};const z=["Basic","RegistrationForm","WithHelpMessages","WithoutSchema","CustomValidation","WithSchemaName","DisabledFields","SchemaMismatch"];export{l as Basic,p as CustomValidation,h as DisabledFields,d as RegistrationForm,b as SchemaMismatch,c as WithHelpMessages,f as WithSchemaName,u as WithoutSchema,z as __namedExportsOrder,X as default};

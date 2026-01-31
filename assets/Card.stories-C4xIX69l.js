@@ -1,4 +1,4 @@
-import{j as s}from"./jsx-runtime-By_FrHQR.js";import{C as d,S as i,s as o}from"./sduiComponents-DZgOKK1R.js";import"./iframe-BK2SSWqO.js";import"./preload-helper-ggYluGXI.js";import"./index-BffUe_yV.js";const h={title:"Shared/UI/Card",component:d,tags:["autodocs"],parameters:{docs:{description:{component:`
+import{j as s}from"./jsx-runtime-DW6Y6VjF.js";import{C as d,S as i,s as o}from"./sduiComponents-BEBXi30m.js";import"./iframe-BcAlf7YW.js";import"./preload-helper-ggYluGXI.js";import"./index-DX1Fviu9.js";import"./index-DCBZS9C1.js";const g={title:"Shared/UI/Card",component:d,tags:["autodocs"],parameters:{docs:{description:{component:`
 ## Overview
 
 The **Card** component is a container component that provides a visual card with rounded corners, shadow, and background color. It's used to group related content together in a visually distinct container.
@@ -409,4 +409,4 @@ This is the recommended starting point for most card implementations. Use this v
       }
     }
   }
-}`,...a.parameters?.docs?.source}}};const g=["Default","WithTitle","WithListItems","SduiIntegration"];export{t as Default,a as SduiIntegration,r as WithListItems,n as WithTitle,g as __namedExportsOrder,h as default};
+}`,...a.parameters?.docs?.source}}};const y=["Default","WithTitle","WithListItems","SduiIntegration"];export{t as Default,a as SduiIntegration,r as WithListItems,n as WithTitle,y as __namedExportsOrder,g as default};

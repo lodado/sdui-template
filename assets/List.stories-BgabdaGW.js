@@ -1,4 +1,4 @@
-import{j as e}from"./jsx-runtime-By_FrHQR.js";import{L as t,S as u,s as v}from"./sduiComponents-DZgOKK1R.js";import"./iframe-BK2SSWqO.js";import"./preload-helper-ggYluGXI.js";import"./index-BffUe_yV.js";const y={title:"Shared/UI/List",component:t,tags:["autodocs"],parameters:{docs:{description:{component:`
+import{j as e}from"./jsx-runtime-DW6Y6VjF.js";import{L as t,S as u,s as v}from"./sduiComponents-BEBXi30m.js";import"./iframe-BcAlf7YW.js";import"./preload-helper-ggYluGXI.js";import"./index-DX1Fviu9.js";import"./index-DCBZS9C1.js";const b={title:"Shared/UI/List",component:t,tags:["autodocs"],parameters:{docs:{description:{component:`
 ## Overview
 
 The **List** component is a compound component pattern for creating interactive navigation list items. It consists of an icon, content (title and description), and an arrow indicator.
@@ -596,4 +596,4 @@ The compound pattern allows you to:
       }
     }
   }
-}`,...d.parameters?.docs?.source}}};const b=["Default","WithMultipleItems","Interactive","States","CompoundPattern","SduiIntegration"];export{l as CompoundPattern,o as Default,a as Interactive,d as SduiIntegration,c as States,r as WithMultipleItems,b as __namedExportsOrder,y as default};
+}`,...d.parameters?.docs?.source}}};const C=["Default","WithMultipleItems","Interactive","States","CompoundPattern","SduiIntegration"];export{l as CompoundPattern,o as Default,a as Interactive,d as SduiIntegration,c as States,r as WithMultipleItems,C as __namedExportsOrder,b as default};

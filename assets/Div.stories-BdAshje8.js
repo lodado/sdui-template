@@ -1,4 +1,4 @@
-import{j as o}from"./jsx-runtime-By_FrHQR.js";/* empty css               */import{D as d,S as a,s as i}from"./sduiComponents-DZgOKK1R.js";import"./iframe-BK2SSWqO.js";import"./preload-helper-ggYluGXI.js";import"./index-BffUe_yV.js";const b={title:"Shared/UI/Div",component:d,tags:["autodocs"],parameters:{docs:{description:{component:`
+import{j as o}from"./jsx-runtime-DW6Y6VjF.js";/* empty css               */import{D as d,S as a,s as i}from"./sduiComponents-BEBXi30m.js";import"./iframe-BcAlf7YW.js";import"./preload-helper-ggYluGXI.js";import"./index-DX1Fviu9.js";import"./index-DCBZS9C1.js";const g={title:"Shared/UI/Div",component:d,tags:["autodocs"],parameters:{docs:{description:{component:`
 ## Overview
 
 The **Div** component is a container component with built-in **Error Boundary** and **Suspense** support, providing robust error handling and loading states out of the box.
@@ -391,4 +391,4 @@ Demonstrates using **Div as a container** to group multiple child elements.
       }
     }
   }
-}`,...r.parameters?.docs?.source}}};const g=["Default","NestedDivs","WithCustomStyling","AsContainer"];export{r as AsContainer,n as Default,e as NestedDivs,s as WithCustomStyling,g as __namedExportsOrder,b as default};
+}`,...r.parameters?.docs?.source}}};const v=["Default","NestedDivs","WithCustomStyling","AsContainer"];export{r as AsContainer,n as Default,e as NestedDivs,s as WithCustomStyling,v as __namedExportsOrder,g as default};
