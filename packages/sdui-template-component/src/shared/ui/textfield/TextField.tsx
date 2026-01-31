@@ -24,11 +24,11 @@ import type {
  * @description
  * Root component for TextField compound component pattern.
  * Provides Context to child components (Wrapper, Label, Input, HelpMessage).
- * Manages shared state (error, disabled, required, inputId).
+ * Manages shared state (error, disabled, required, inputId, size, appearance).
  *
  * @example
  * ```tsx
- * <TextField error={true} errorMessage="Invalid email">
+ * <TextField error={true} errorMessage="Invalid email" size="default" appearance="standard">
  *   <TextField.Wrapper>
  *     <TextField.Label>Email</TextField.Label>
  *     <TextField.Input placeholder="Enter email" />
@@ -45,6 +45,8 @@ const TextFieldRoot = React.forwardRef<HTMLDivElement, TextFieldRootProps>(
       helpMessage,
       disabled = false,
       required = false,
+      size = 'default',
+      appearance = 'standard',
       nodeId,
       eventId,
       id,
@@ -66,8 +68,10 @@ const TextFieldRoot = React.forwardRef<HTMLDivElement, TextFieldRootProps>(
         required,
         errorMessage,
         helpMessage,
+        size,
+        appearance,
       }),
-      [inputId, error, disabled, required, errorMessage, helpMessage],
+      [inputId, error, disabled, required, errorMessage, helpMessage, size, appearance],
     )
 
     return (
@@ -149,7 +153,7 @@ TextFieldLabel.displayName = 'TextField.Label'
  * @description
  * Input component for TextField.
  * Supports left/right icons, all standard input props.
- * Uses Context for error and disabled states.
+ * Uses Context for error, disabled, size, and appearance states.
  *
  * @example
  * ```tsx
@@ -183,7 +187,7 @@ const TextFieldInput = React.forwardRef<HTMLInputElement, TextFieldInputProps>(
     },
     ref,
   ) => {
-    const { inputId, error, disabled, required, helpMessage, errorMessage } = useTextFieldContext()
+    const { inputId, error, disabled, required, helpMessage, errorMessage, size, appearance } = useTextFieldContext()
     const helpMessageId = helpMessage || errorMessage ? `${inputId}-help` : undefined
     const labelId = `${inputId}-label`
 
@@ -194,8 +198,10 @@ const TextFieldInput = React.forwardRef<HTMLInputElement, TextFieldInputProps>(
     const hasLeftIcon = Boolean(leftIcon)
     const hasRightIcon = Boolean(rightIcon)
 
-    // Get variant classes
+    // Get variant classes with new size and appearance variants
     const containerClasses = textFieldVariants({
+      size,
+      appearance,
       error,
       disabled,
       hasLeftIcon,
@@ -208,7 +214,7 @@ const TextFieldInput = React.forwardRef<HTMLInputElement, TextFieldInputProps>(
       <div className={cn(containerClasses, className)}>
         {/* Left Icon */}
         {leftIcon && (
-          <div className="flex h-6 w-6 shrink-0 items-center justify-center" aria-hidden="true">
+          <div className="flex size-4 shrink-0 items-center justify-center" aria-hidden="true">
             {leftIcon}
           </div>
         )}
@@ -244,7 +250,7 @@ const TextFieldInput = React.forwardRef<HTMLInputElement, TextFieldInputProps>(
             type="button"
             onClick={onRightIconClick}
             disabled={disabled}
-            className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 outline-none focus-visible:outline-none disabled:cursor-not-allowed"
+            className="flex size-4 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 outline-none focus-visible:outline-none disabled:cursor-not-allowed"
             aria-label="Clear input"
             tabIndex={disabled ? -1 : 0}
           >

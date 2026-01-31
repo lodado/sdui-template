@@ -6,9 +6,11 @@ export { TextFieldInputContainer } from './TextFieldInputContainer'
 export { TextFieldLabelContainer } from './TextFieldLabelContainer'
 export { TextFieldWrapperContainer } from './TextFieldWrapperContainer'
 export type {
+  TextFieldAppearance,
   TextFieldHelpMessageProps,
   TextFieldInputProps,
   TextFieldLabelProps,
   TextFieldRootProps,
+  TextFieldSize,
   TextFieldWrapperProps,
 } from './types'

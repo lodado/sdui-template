@@ -1,11 +1,13 @@
 import React from 'react'
 
+import type { TextFieldAppearance, TextFieldSize } from './types'
+
 /**
  * TextField Context Value
  *
  * @description
  * Context value shared between TextField compound components.
- * Provides input ID, error state, disabled state, and required state.
+ * Provides input ID, error state, disabled state, required state, size, and appearance.
  */
 export interface TextFieldContextValue {
   /** Unique input ID for label-input connection */
@@ -20,6 +22,10 @@ export interface TextFieldContextValue {
   errorMessage?: string
   /** Help message (if error is false) */
   helpMessage?: string
+  /** Size variant - default (40px) or compact (32px) */
+  size: TextFieldSize
+  /** Appearance style - standard, subtle, or none */
+  appearance: TextFieldAppearance
 }
 
 /**

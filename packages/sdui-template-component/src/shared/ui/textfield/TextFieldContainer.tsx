@@ -4,7 +4,7 @@ import { useRenderNode, useSduiNodeSubscription } from '@lodado/sdui-template'
 import React from 'react'
 
 import { TextField } from './TextField'
-import type { TextFieldInputProps, TextFieldRootProps, TextFieldWrapperProps } from './types'
+import type { TextFieldAppearance, TextFieldRootProps, TextFieldSize } from './types'
 
 interface TextFieldContainerProps {
   id: string
@@ -24,6 +24,8 @@ export const TextFieldContainer = ({ id, parentPath = [] }: TextFieldContainerPr
   const helpMessage = state?.helpMessage as string | undefined
   const required = state?.required as boolean | undefined
   const disabled = state?.disabled as boolean | undefined
+  const size = state?.size as TextFieldSize | undefined
+  const appearance = state?.appearance as TextFieldAppearance | undefined
 
   // Render children (should contain TextField.Wrapper with Label, Input, HelpMessage)
   const children = childrenIds.length > 0 ? renderChildren(childrenIds) : undefined
@@ -35,6 +37,8 @@ export const TextFieldContainer = ({ id, parentPath = [] }: TextFieldContainerPr
       helpMessage={helpMessage}
       disabled={disabled}
       required={required}
+      size={size}
+      appearance={appearance}
       className={className}
       nodeId={id}
     >

@@ -57,7 +57,7 @@ const meta: Meta<typeof TextField> = {
         component: `
 ## Overview
 
-The **TextField** component is an input field that accepts text input from users. Built with flexibility and accessibility in mind.
+The **TextField** component is an input field that accepts text input from users. Built with flexibility and accessibility in mind. Updated based on **Figma ADS Components** design.
 
 ## Architecture
 
@@ -73,20 +73,44 @@ The **Wrapper** component allows you to choose:
 - **Horizontal layout**: Side-by-side (compact)
 - **Custom layout**: Full control with CSS Grid/Flexbox
 
+## Size Variants (NEW)
+
+- **default**: 40px height - standard size for most use cases
+- **compact**: 32px height - for dense UI layouts
+
+## Appearance Variants (NEW)
+
+- **standard**: Visible border and white background (default)
+- **subtle**: Transparent background, border appears on hover/focus
+- **none**: No border or background styling
+
 ## Features
 
 ### States
 - ✅ Default (empty)
-- ✅ Focus (active)
+- ✅ Hover (background change)
+- ✅ Focus (active with 2px border)
 - ✅ Filled (with value)
 - ✅ Disabled (read-only)
 - ✅ Error (validation failure)
 
 ### Additional Features
-- ✅ **Icons**: Left and/or right icons
+- ✅ **Icons**: Left and/or right icons (16x16px)
 - ✅ **Validation**: Built-in error handling
 - ✅ **Accessibility**: ARIA attributes, keyboard navigation
 - ✅ **Help messages**: Contextual guidance
+
+## Design Specs (Figma ADS Components)
+
+| Property | Value |
+|----------|-------|
+| Height (default) | 40px |
+| Height (compact) | 32px |
+| Padding | 8px |
+| Gap | 6px |
+| Border radius | 3px |
+| Border (default) | 1px solid |
+| Border (focus) | 2px solid |
 
 ## Use Cases
 
@@ -1324,6 +1348,543 @@ export const WithBothIcons: Story = {
       description: {
         story:
           'Demonstrates a TextField with both left and right icons. This is useful for search fields where you want to indicate the search functionality with a left icon and provide a clear action with a right icon. Both icons work together to enhance the user experience.',
+      },
+    },
+  },
+}
+
+// Compact Size
+export const CompactSize: Story = {
+  render: () => {
+    const document: SduiLayoutDocument = {
+      version: '1.0.0',
+      root: {
+        id: 'root',
+        type: 'Div',
+        attributes: {
+          className: 'flex justify-center p-20 bg-gray-100',
+        },
+        children: [
+          {
+            id: 'container',
+            type: 'Div',
+            attributes: {
+              className: 'w-[328px] flex flex-col gap-6',
+            },
+            children: [
+              {
+                id: 'default-size-section',
+                type: 'Div',
+                attributes: {
+                  className: 'flex flex-col gap-2',
+                },
+                children: [
+                  {
+                    id: 'default-title',
+                    type: 'Span',
+                    state: {
+                      text: 'Default Size (40px)',
+                    },
+                    attributes: {
+                      className: 'text-sm font-medium text-gray-700',
+                    },
+                  },
+                  {
+                    id: 'textfield-default-size',
+                    type: 'TextField',
+                    state: {
+                      size: 'default',
+                    },
+                    children: [
+                      {
+                        id: 'wrapper-default-size',
+                        type: 'TextFieldWrapper',
+                        children: [
+                          {
+                            id: 'input-default-size',
+                            type: 'TextFieldInput',
+                            attributes: {
+                              placeholder: 'Default size input',
+                            },
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                id: 'compact-size-section',
+                type: 'Div',
+                attributes: {
+                  className: 'flex flex-col gap-2',
+                },
+                children: [
+                  {
+                    id: 'compact-title',
+                    type: 'Span',
+                    state: {
+                      text: 'Compact Size (32px)',
+                    },
+                    attributes: {
+                      className: 'text-sm font-medium text-gray-700',
+                    },
+                  },
+                  {
+                    id: 'textfield-compact-size',
+                    type: 'TextField',
+                    state: {
+                      size: 'compact',
+                    },
+                    children: [
+                      {
+                        id: 'wrapper-compact-size',
+                        type: 'TextFieldWrapper',
+                        children: [
+                          {
+                            id: 'input-compact-size',
+                            type: 'TextFieldInput',
+                            attributes: {
+                              placeholder: 'Compact size input',
+                            },
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    }
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the two size variants based on Figma ADS Components design. Default size has 40px height, while Compact size has 32px height. Use compact size for dense UI layouts or when vertical space is limited.',
+      },
+    },
+  },
+}
+
+// Appearance Variants
+export const AppearanceVariants: Story = {
+  render: () => {
+    const document: SduiLayoutDocument = {
+      version: '1.0.0',
+      root: {
+        id: 'root',
+        type: 'Div',
+        attributes: {
+          className: 'flex justify-center p-20 bg-gray-100',
+        },
+        children: [
+          {
+            id: 'container',
+            type: 'Div',
+            attributes: {
+              className: 'w-[328px] flex flex-col gap-6',
+            },
+            children: [
+              {
+                id: 'standard-section',
+                type: 'Div',
+                attributes: {
+                  className: 'flex flex-col gap-2',
+                },
+                children: [
+                  {
+                    id: 'standard-title',
+                    type: 'Span',
+                    state: {
+                      text: 'Standard Appearance',
+                    },
+                    attributes: {
+                      className: 'text-sm font-medium text-gray-700',
+                    },
+                  },
+                  {
+                    id: 'standard-desc',
+                    type: 'Span',
+                    state: {
+                      text: 'Visible border and background (default)',
+                    },
+                    attributes: {
+                      className: 'text-xs text-gray-500',
+                    },
+                  },
+                  {
+                    id: 'textfield-standard',
+                    type: 'TextField',
+                    state: {
+                      appearance: 'standard',
+                    },
+                    children: [
+                      {
+                        id: 'wrapper-standard',
+                        type: 'TextFieldWrapper',
+                        children: [
+                          {
+                            id: 'input-standard',
+                            type: 'TextFieldInput',
+                            attributes: {
+                              placeholder: 'Standard appearance',
+                            },
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                id: 'subtle-section',
+                type: 'Div',
+                attributes: {
+                  className: 'flex flex-col gap-2',
+                },
+                children: [
+                  {
+                    id: 'subtle-title',
+                    type: 'Span',
+                    state: {
+                      text: 'Subtle Appearance',
+                    },
+                    attributes: {
+                      className: 'text-sm font-medium text-gray-700',
+                    },
+                  },
+                  {
+                    id: 'subtle-desc',
+                    type: 'Span',
+                    state: {
+                      text: 'Transparent background, border appears on hover/focus',
+                    },
+                    attributes: {
+                      className: 'text-xs text-gray-500',
+                    },
+                  },
+                  {
+                    id: 'textfield-subtle',
+                    type: 'TextField',
+                    state: {
+                      appearance: 'subtle',
+                    },
+                    children: [
+                      {
+                        id: 'wrapper-subtle',
+                        type: 'TextFieldWrapper',
+                        children: [
+                          {
+                            id: 'input-subtle',
+                            type: 'TextFieldInput',
+                            attributes: {
+                              placeholder: 'Subtle appearance (hover me)',
+                            },
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                id: 'none-section',
+                type: 'Div',
+                attributes: {
+                  className: 'flex flex-col gap-2',
+                },
+                children: [
+                  {
+                    id: 'none-title',
+                    type: 'Span',
+                    state: {
+                      text: 'None Appearance',
+                    },
+                    attributes: {
+                      className: 'text-sm font-medium text-gray-700',
+                    },
+                  },
+                  {
+                    id: 'none-desc',
+                    type: 'Span',
+                    state: {
+                      text: 'No border or background styling',
+                    },
+                    attributes: {
+                      className: 'text-xs text-gray-500',
+                    },
+                  },
+                  {
+                    id: 'textfield-none',
+                    type: 'TextField',
+                    state: {
+                      appearance: 'none',
+                    },
+                    children: [
+                      {
+                        id: 'wrapper-none',
+                        type: 'TextFieldWrapper',
+                        children: [
+                          {
+                            id: 'input-none',
+                            type: 'TextFieldInput',
+                            attributes: {
+                              placeholder: 'None appearance',
+                            },
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    }
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the three appearance variants based on Figma ADS Components design. Standard shows visible border and background, Subtle has transparent background with border appearing on hover/focus, and None removes all border and background styling.',
+      },
+    },
+  },
+}
+
+// All Sizes and Appearances Combined
+export const SizesAndAppearances: Story = {
+  render: () => {
+    const document: SduiLayoutDocument = {
+      version: '1.0.0',
+      root: {
+        id: 'root',
+        type: 'Div',
+        attributes: {
+          className: 'flex justify-center p-20 bg-gray-100',
+        },
+        children: [
+          {
+            id: 'container',
+            type: 'Div',
+            attributes: {
+              className: 'w-[500px] flex flex-col gap-8',
+            },
+            children: [
+              {
+                id: 'row-default',
+                type: 'Div',
+                attributes: {
+                  className: 'flex flex-col gap-2',
+                },
+                children: [
+                  {
+                    id: 'row-default-title',
+                    type: 'Span',
+                    state: {
+                      text: 'Default Size (40px)',
+                    },
+                    attributes: {
+                      className: 'text-sm font-bold text-gray-800',
+                    },
+                  },
+                  {
+                    id: 'row-default-content',
+                    type: 'Div',
+                    attributes: {
+                      className: 'grid grid-cols-3 gap-4',
+                    },
+                    children: [
+                      {
+                        id: 'default-standard',
+                        type: 'TextField',
+                        state: {
+                          size: 'default',
+                          appearance: 'standard',
+                        },
+                        children: [
+                          {
+                            id: 'wrapper-default-standard',
+                            type: 'TextFieldWrapper',
+                            children: [
+                              {
+                                id: 'input-default-standard',
+                                type: 'TextFieldInput',
+                                attributes: {
+                                  placeholder: 'Standard',
+                                },
+                              },
+                            ],
+                          },
+                        ],
+                      },
+                      {
+                        id: 'default-subtle',
+                        type: 'TextField',
+                        state: {
+                          size: 'default',
+                          appearance: 'subtle',
+                        },
+                        children: [
+                          {
+                            id: 'wrapper-default-subtle',
+                            type: 'TextFieldWrapper',
+                            children: [
+                              {
+                                id: 'input-default-subtle',
+                                type: 'TextFieldInput',
+                                attributes: {
+                                  placeholder: 'Subtle',
+                                },
+                              },
+                            ],
+                          },
+                        ],
+                      },
+                      {
+                        id: 'default-none',
+                        type: 'TextField',
+                        state: {
+                          size: 'default',
+                          appearance: 'none',
+                        },
+                        children: [
+                          {
+                            id: 'wrapper-default-none',
+                            type: 'TextFieldWrapper',
+                            children: [
+                              {
+                                id: 'input-default-none',
+                                type: 'TextFieldInput',
+                                attributes: {
+                                  placeholder: 'None',
+                                },
+                              },
+                            ],
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                id: 'row-compact',
+                type: 'Div',
+                attributes: {
+                  className: 'flex flex-col gap-2',
+                },
+                children: [
+                  {
+                    id: 'row-compact-title',
+                    type: 'Span',
+                    state: {
+                      text: 'Compact Size (32px)',
+                    },
+                    attributes: {
+                      className: 'text-sm font-bold text-gray-800',
+                    },
+                  },
+                  {
+                    id: 'row-compact-content',
+                    type: 'Div',
+                    attributes: {
+                      className: 'grid grid-cols-3 gap-4',
+                    },
+                    children: [
+                      {
+                        id: 'compact-standard',
+                        type: 'TextField',
+                        state: {
+                          size: 'compact',
+                          appearance: 'standard',
+                        },
+                        children: [
+                          {
+                            id: 'wrapper-compact-standard',
+                            type: 'TextFieldWrapper',
+                            children: [
+                              {
+                                id: 'input-compact-standard',
+                                type: 'TextFieldInput',
+                                attributes: {
+                                  placeholder: 'Standard',
+                                },
+                              },
+                            ],
+                          },
+                        ],
+                      },
+                      {
+                        id: 'compact-subtle',
+                        type: 'TextField',
+                        state: {
+                          size: 'compact',
+                          appearance: 'subtle',
+                        },
+                        children: [
+                          {
+                            id: 'wrapper-compact-subtle',
+                            type: 'TextFieldWrapper',
+                            children: [
+                              {
+                                id: 'input-compact-subtle',
+                                type: 'TextFieldInput',
+                                attributes: {
+                                  placeholder: 'Subtle',
+                                },
+                              },
+                            ],
+                          },
+                        ],
+                      },
+                      {
+                        id: 'compact-none',
+                        type: 'TextField',
+                        state: {
+                          size: 'compact',
+                          appearance: 'none',
+                        },
+                        children: [
+                          {
+                            id: 'wrapper-compact-none',
+                            type: 'TextFieldWrapper',
+                            children: [
+                              {
+                                id: 'input-compact-none',
+                                type: 'TextFieldInput',
+                                attributes: {
+                                  placeholder: 'None',
+                                },
+                              },
+                            ],
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    }
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A comprehensive matrix showing all combinations of size (default, compact) and appearance (standard, subtle, none) variants. This helps designers and developers understand the complete variant system based on Figma ADS Components design.',
       },
     },
   },

@@ -87,6 +87,18 @@ export interface TextFieldHelpMessageProps extends React.HTMLAttributes<HTMLDivE
 }
 
 /**
+ * TextField Size type
+ * @description Size variants based on Figma ADS Components design
+ */
+export type TextFieldSize = 'default' | 'compact'
+
+/**
+ * TextField Appearance type
+ * @description Appearance variants based on Figma ADS Components design
+ */
+export type TextFieldAppearance = 'standard' | 'subtle' | 'none'
+
+/**
  * TextField Root Props
  *
  * @description
@@ -104,6 +116,21 @@ export interface TextFieldRootProps {
   disabled?: boolean
   /** Required field indicator */
   required?: boolean
+  /**
+   * Size variant - controls height and padding
+   * - default: 40px height
+   * - compact: 32px height
+   * @default 'default'
+   */
+  size?: TextFieldSize
+  /**
+   * Appearance style - controls background and border visibility
+   * - standard: visible border and background
+   * - subtle: transparent background, border appears on hover/focus
+   * - none: no border or background
+   * @default 'standard'
+   */
+  appearance?: TextFieldAppearance
   /** SDUI node ID for integration */
   nodeId?: string
   /** Event ID for event emission */
