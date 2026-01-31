@@ -124,7 +124,7 @@ export function registerSchemas<TSchemas extends Record<string, z.ZodTypeAny>>(s
 export interface FormRootProps<TFieldValues extends FieldValues = FieldValues, TContext = unknown>
   extends Omit<UseFormProps<TFieldValues, TContext>, 'resolver'> {
   /** Zod schema for validation */
-  schema?: z.ZodTypeAny
+  schema?: z.ZodType<TFieldValues, TFieldValues>
   /** Form submission handler */
   onSubmit: (data: TFieldValues) => void | Promise<void>
   /** Form children (can access form methods via FormProvider) */

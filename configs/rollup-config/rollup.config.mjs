@@ -5,7 +5,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import terser from "@rollup/plugin-terser";
 import url from "@rollup/plugin-url";
-import { readFileSync } from "fs";
+import { mkdirSync, readFileSync } from "fs";
 import path, { join } from "path";
 import postcssImport from "postcss-import";
 import { nodeExternals } from "rollup-plugin-node-externals";
@@ -42,6 +42,9 @@ if (!packageJSON.publishConfig) {
 const BUILD_OUTPUT_LOCATION = `${dirname}/dist`;
 
 const ENTRY_POINT = `${dirname}/${packageJSON.source}`;
+const CACHE_ROOT = join(dirname, ".cache", "rollup-plugin-typescript2");
+
+mkdirSync(CACHE_ROOT, { recursive: true });
 
 const inputSrc = [
   { input: ENTRY_POINT, format: "es", additionalFolderDirectiory: "client" },
@@ -109,6 +112,7 @@ const rollupConfigFunc = (config) =>
           tsconfig: "./tsconfig.json",
           tsconfigOverride: {},
           useTsconfigDeclarationDir: true,
+          cacheRoot: CACHE_ROOT,
         }),
         peerDepsExternal(),
 
