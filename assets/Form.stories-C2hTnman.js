@@ -1,4 +1,4 @@
-import{j as r}from"./jsx-runtime-CSRg7ELR.js";/* empty css               */import{F as w,o as n,a as e,r as o,S as s,s as i,E as g}from"./sduiComponents-BxyohcWd.js";import"./iframe-GxiwcPgV.js";import"./preload-helper-ggYluGXI.js";import"./index-C35lKGvD.js";const P={title:"Features/UI/Form",component:w,tags:["autodocs"],parameters:{docs:{description:{component:`
+import{j as r}from"./jsx-runtime-By_FrHQR.js";/* empty css               */import{F as w,o as n,a as e,r as o,S as s,s as i,E as g}from"./sduiComponents-DZgOKK1R.js";import"./iframe-BK2SSWqO.js";import"./preload-helper-ggYluGXI.js";import"./index-BffUe_yV.js";const P={title:"Features/UI/Form",component:w,tags:["autodocs"],parameters:{docs:{description:{component:`
 ## Overview
 
 The **Form** component integrates **react-hook-form** with **zod** to provide comprehensive form validation with excellent developer experience.
