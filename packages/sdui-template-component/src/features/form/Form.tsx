@@ -43,7 +43,7 @@ const FormRoot = <TFieldValues extends FieldValues = FieldValues, TContext = unk
   ...formOptions
 }: FormRootProps<TFieldValues, TContext>) => {
   // Create zodResolver - it automatically extracts error messages from zod schema
-  const resolver = schema ? zodResolver(schema) : undefined
+  const resolver = schema ? zodResolver<TFieldValues, TContext, TFieldValues>(schema) : undefined
 
   const methods = useForm<TFieldValues, TContext>({
     mode: 'onSubmit', // 첫 제출 시에만 validation 실행
@@ -61,7 +61,7 @@ const FormRoot = <TFieldValues extends FieldValues = FieldValues, TContext = unk
 
   const contextValue = React.useMemo<{
     formMethods: UseFormReturn<TFieldValues, TContext>
-    schema?: z.ZodType<any, any, any>
+    schema?: z.ZodType<TFieldValues, TFieldValues>
   }>(
     () => ({
       formMethods: methods,
@@ -119,9 +119,11 @@ export const FormContainer = ({ id, parentPath = [] }: FormContainerProps) => {
   const { renderChildren } = useRenderNode({ nodeId: id, parentPath })
 
   // Get schema from attributes
-  const schemaFromAttributes = attributes?.schema as z.ZodType<any, any, any> | undefined
+  const schemaFromAttributes = attributes?.schema as z.ZodType<FieldValues, FieldValues> | undefined
   const schemaName = attributes?.schemaName as string | undefined
-  const schemaFromRegistry = schemaName ? getSchema(schemaName) : undefined
+  const schemaFromRegistry = schemaName
+    ? (getSchema(schemaName) as z.ZodType<FieldValues, FieldValues> | undefined)
+    : undefined
   const schema = schemaFromAttributes || schemaFromRegistry
 
   // Get onSubmit handler from attributes (can be a function name or handler)

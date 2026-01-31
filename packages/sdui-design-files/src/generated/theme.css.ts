@@ -331,17 +331,29 @@ const spaceContract = {
  *   color: colorVars.text.inverse,
  * })
  */
-export const colorVars = createGlobalThemeContract(colorContract, (value) => `color-${value}`)
+export const colorVars = createGlobalThemeContract(colorContract, (value: string | null, path: string[]) => {
+  const tokenName = value ?? path.join('-')
+  return `color-${tokenName}`
+})
 
 /**
  * Elevation theme contract for vanilla-extract
  */
-export const elevationVars = createGlobalThemeContract(elevationContract, (value) => `elevation-${value}`)
+export const elevationVars = createGlobalThemeContract(
+  elevationContract,
+  (value: string | null, path: string[]) => {
+    const tokenName = value ?? path.join('-')
+    return `elevation-${tokenName}`
+  },
+)
 
 /**
  * Space theme contract for vanilla-extract
  */
-export const spaceVars = createGlobalThemeContract(spaceContract, (value) => `space-${value}`)
+export const spaceVars = createGlobalThemeContract(spaceContract, (value: string | null, path: string[]) => {
+  const tokenName = value ?? path.join('-')
+  return `space-${tokenName}`
+})
 
 // ============================================================================
 // Combined Vars Export
