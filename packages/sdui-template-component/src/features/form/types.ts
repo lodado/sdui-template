@@ -12,7 +12,7 @@ import type { z } from 'zod'
  * type SchemaKeys = ExtractSchemaKeys<typeof schema> // "email" | "password"
  * ```
  */
-export type ExtractSchemaKeys<T> = T extends z.ZodObject<infer TShape, any, any, any, any>
+export type ExtractSchemaKeys<T> = T extends z.ZodObject<infer TShape, any>
   ? keyof TShape
   : never
 
@@ -26,8 +26,8 @@ export type ExtractSchemaKeys<T> = T extends z.ZodObject<infer TShape, any, any,
  * type SchemaKeys = ExtractSchemaKeysFromRefined<typeof schema> // "email"
  * ```
  */
-export type ExtractSchemaKeysFromRefined<T> = T extends z.ZodEffects<infer TInput, any, any>
-  ? ExtractSchemaKeys<TInput>
+export type ExtractSchemaKeysFromRefined<T> = T extends { _def: { schema: infer TSchema } }
+  ? ExtractSchemaKeys<TSchema>
   : ExtractSchemaKeys<T>
 
 /**
@@ -45,11 +45,9 @@ export type ExtractSchemaKeysFromRefined<T> = T extends z.ZodEffects<infer TInpu
  * ```
  */
 export type ExtractSchemaFields<
-  TSchemas extends Record<string, any>,
+  TSchemas extends Record<string, z.ZodTypeAny>,
   TSchemaName extends keyof TSchemas,
-> = TSchemas[TSchemaName] extends z.ZodType<any, any, any>
-  ? ExtractSchemaKeysFromRefined<TSchemas[TSchemaName]>
-  : never
+> = ExtractSchemaKeysFromRefined<TSchemas[TSchemaName]>
 
 /**
  * Schema Registry
@@ -58,7 +56,7 @@ export type ExtractSchemaFields<
  * Registry for zod schemas that can be referenced by name in SDUI attributes.
  * Allows schemas to be registered and retrieved by string identifier.
  */
-export const schemaRegistry = new Map<string, z.ZodType<any, any, any>>()
+export const schemaRegistry = new Map<string, z.ZodTypeAny>()
 
 /**
  * Register a zod schema with a name
@@ -66,7 +64,7 @@ export const schemaRegistry = new Map<string, z.ZodType<any, any, any>>()
  * @param name - Schema identifier
  * @param schema - Zod schema to register
  */
-export function registerSchema(name: string, schema: z.ZodType<any, any, any>): void {
+export function registerSchema(name: string, schema: z.ZodTypeAny): void {
   schemaRegistry.set(name, schema)
 }
 
@@ -76,7 +74,7 @@ export function registerSchema(name: string, schema: z.ZodType<any, any, any>): 
  * @param name - Schema identifier
  * @returns Zod schema or undefined if not found
  */
-export function getSchema(name: string): z.ZodType<any, any, any> | undefined {
+export function getSchema(name: string): z.ZodTypeAny | undefined {
   return schemaRegistry.get(name)
 }
 
@@ -110,7 +108,7 @@ export function getSchema(name: string): z.ZodType<any, any, any> | undefined {
  * <SduiLayoutRenderer document={document} components={sduiComponents} />
  * ```
  */
-export function registerSchemas<TSchemas extends Record<string, z.ZodType<any, any, any>>>(schemas: TSchemas): void {
+export function registerSchemas<TSchemas extends Record<string, z.ZodTypeAny>>(schemas: TSchemas): void {
   Object.entries(schemas).forEach(([name, schema]) => {
     registerSchema(name, schema)
   })
@@ -126,7 +124,7 @@ export function registerSchemas<TSchemas extends Record<string, z.ZodType<any, a
 export interface FormRootProps<TFieldValues extends FieldValues = FieldValues, TContext = unknown>
   extends Omit<UseFormProps<TFieldValues, TContext>, 'resolver'> {
   /** Zod schema for validation */
-  schema?: z.ZodType<any, any, any>
+  schema?: z.ZodTypeAny
   /** Form submission handler */
   onSubmit: (data: TFieldValues) => void | Promise<void>
   /** Form children (can access form methods via FormProvider) */
@@ -178,7 +176,7 @@ export interface FormFieldProps<TFieldValues extends FieldValues = FieldValues> 
  * @param schema - Zod schema to extract keys from
  * @returns Array of field names or empty array if not a ZodObject
  */
-export function extractSchemaKeys(schema: z.ZodType<any, any, any>): string[] {
+export function extractSchemaKeys(schema: z.ZodTypeAny): string[] {
   // Handle ZodObject
   if ('shape' in schema) {
     const shape = schema.shape as Record<string, unknown> | null | undefined
@@ -189,7 +187,7 @@ export function extractSchemaKeys(schema: z.ZodType<any, any, any>): string[] {
 
   // Handle ZodEffects (refined schemas)
   if ('_def' in schema && typeof schema._def === 'object' && schema._def !== null) {
-    const def = schema._def as { schema?: z.ZodType<any, any, any> }
+    const def = schema._def as { schema?: z.ZodTypeAny }
     if ('schema' in def && def.schema) {
       const innerSchema = def.schema
       if ('shape' in innerSchema) {
@@ -214,5 +212,5 @@ export function extractSchemaKeys(schema: z.ZodType<any, any, any>): string[] {
 export interface FormContextValue<TFieldValues extends FieldValues = FieldValues, TContext = unknown> {
   formMethods: UseFormReturn<TFieldValues, TContext>
   /** Schema for validation (optional, used for runtime field validation) */
-  schema?: z.ZodType<any, any, any>
+  schema?: z.ZodTypeAny
 }
