@@ -12,6 +12,16 @@ pnpm add @lodado/sdui-template-component
 yarn add @lodado/sdui-template-component
 ```
 
+This package relies on the latest **zod v4** types for schema validation. Install a compatible zod version:
+
+```bash
+pnpm add zod@^4.3.6
+# or
+npm install zod@^4.3.6
+# or
+yarn add zod@^4.3.6
+```
+
 ## Usage
 
 ```tsx
