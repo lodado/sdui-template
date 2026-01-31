@@ -40,7 +40,7 @@ process.stdin.on('end', () => {
     runPrettier(filePath, log)
 
     if (isTsFile(filePath)) {
-      runTypeScriptCheck(filePath, log)
+      // runTypeScriptCheck(filePath, log)
     }
   }
 

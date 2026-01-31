@@ -30,7 +30,8 @@
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
     "lint": "eslint \"src/**/*.ts*\" \"*.ts*\"",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "jest --passWithNoTests"
+    "test": "jest --passWithNoTests",
+    "generate:tokens": "ts-node scripts/extract-tokens.ts"
   },
   "packageManager": "pnpm@9.0.6",
   "devDependencies": {
@@ -49,6 +50,16 @@
       "require": "./index.ts",
       "types": "./index.ts"
     },
+    "./tokens": {
+      "import": "./src/generated/tokens.ts",
+      "require": "./src/generated/tokens.ts",
+      "types": "./src/generated/tokens.ts"
+    },
+    "./theme": {
+      "import": "./src/generated/theme.css.ts",
+      "require": "./src/generated/theme.css.ts",
+      "types": "./src/generated/theme.css.ts"
+    },
     "./index.css": "./src/index.css",
     "./colors.css": "./src/colors.css",
     "./layout.css": "./src/layout.css",
@@ -57,6 +68,7 @@
   "files": [
     "dist/**",
     "src/**/*.css",
+    "src/generated/**",
     "README.md"
   ],
   "publishConfig": {
@@ -72,6 +84,26 @@
           "types": "./dist/types/index.d.ts"
         }
       },
+      "./tokens": {
+        "import": {
+          "default": "./dist/es/client/generated/tokens.mjs",
+          "types": "./dist/types/generated/tokens.d.ts"
+        },
+        "require": {
+          "default": "./dist/cjs/client/generated/tokens.cjs",
+          "types": "./dist/types/generated/tokens.d.ts"
+        }
+      },
+      "./theme": {
+        "import": {
+          "default": "./dist/es/client/generated/theme.css.mjs",
+          "types": "./dist/types/generated/theme.css.d.ts"
+        },
+        "require": {
+          "default": "./dist/cjs/client/generated/theme.css.cjs",
+          "types": "./dist/types/generated/theme.css.d.ts"
+        }
+      },
       "./index.css": "./src/index.css",
       "./colors.css": "./src/colors.css",
       "./layout.css": "./src/layout.css"
@@ -80,5 +112,8 @@
     "module": "./dist/es/client/index.mjs",
     "source": "./index.ts",
     "types": "./dist/types/index.d.ts"
+  },
+  "dependencies": {
+    "@vanilla-extract/css": "^1.18.0"
   }
 }
