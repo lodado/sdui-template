@@ -44,6 +44,16 @@ pnpm add @lodado/sdui-template
 yarn add @lodado/sdui-template
 ```
 
+This package uses the latest **zod v4** types. Make sure you install a compatible zod version alongside it:
+
+```bash
+pnpm add zod@^4.3.6
+# or
+npm install zod@^4.3.6
+# or
+yarn add zod@^4.3.6
+```
+
 ## Quick Start
 
 ### Basic Usage
