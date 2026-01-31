@@ -28,13 +28,7 @@ const LoadingSpinner = () => (
 /**
  * Icon wrapper for consistent sizing
  */
-const IconWrapper = ({
-  children,
-  position,
-}: {
-  children: React.ReactNode
-  position: 'before' | 'after'
-}) => (
+const IconWrapper = ({ children, position }: { children: React.ReactNode; position: 'before' | 'after' }) => (
   <span
     className={cn('inline-flex items-center justify-center shrink-0', position === 'before' ? 'w-4 h-4' : 'w-3 h-3')}
     aria-hidden="true"

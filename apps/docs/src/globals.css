@@ -2,3 +2,15 @@
 
 @source "../../../packages/sdui-template-component/src/**/*.{ts,tsx}";
 @source "../**/*.{ts,tsx}";
+
+/* Base styles */
+html {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure all components inherit the font */
+* {
+  font-family: inherit;
+}
