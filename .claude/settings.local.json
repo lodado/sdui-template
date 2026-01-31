@@ -20,7 +20,8 @@
       "Bash(pnpm run test)",
       "Bash(pnpm run generate:tokens:*)",
       "Bash(pnpm run typecheck:*)",
-      "Bash(pnpm install:*)"
+      "Bash(pnpm install:*)",
+      "Bash(pnpm --filter @lodado/sdui-template-component build:*)"
     ]
   },
   "enabledPlugins": {

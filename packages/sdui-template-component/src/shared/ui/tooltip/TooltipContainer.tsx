@@ -4,8 +4,7 @@ import { useRenderNode, useSduiNodeSubscription } from '@lodado/sdui-template'
 import React from 'react'
 
 import { Tooltip } from './Tooltip'
-import type { TooltipAlign, TooltipSide } from './types'
-import { tooltipStatesSchema } from './types'
+import { type TooltipState, tooltipStatesSchema } from './types'
 
 interface TooltipContainerProps {
   id: string
@@ -46,30 +45,18 @@ export const TooltipContainer = ({ id, parentPath = [] }: TooltipContainerProps)
   })
   const { renderChildren } = useRenderNode({ nodeId: id, parentPath })
 
-  // Render children as trigger element
-  const children = childrenIds.length > 0 ? renderChildren(childrenIds) : null
+  const renderedChildren = renderChildren(childrenIds)
+  const { content, side, sideOffset, align, alignOffset, showArrow, delayDuration, open, defaultOpen } = state
 
-  // Get content from state, default to empty string
-  const content = (state?.content as string) ?? ''
-
-  // Don't render tooltip if no content or children
-  if (!content || !children) {
-    return <>{children}</>
+  if (!content) {
+    return <>{renderedChildren}</>
   }
-
-  // Extract tooltip props from state
-  const side = state?.side ?? 'top'
-  const sideOffset = state?.sideOffset ?? 4
-  const align = state?.align ?? 'center'
-  const alignOffset = state?.alignOffset ?? 0
-  const showArrow = state?.showArrow ?? false
-  const delayDuration = state?.delayDuration
-  const open = state?.open
-  const defaultOpen = state?.defaultOpen ?? false
 
   return (
     <Tooltip.Root open={open} defaultOpen={defaultOpen} delayDuration={delayDuration}>
-      <Tooltip.Trigger nodeId={id}>{children}</Tooltip.Trigger>
+      <Tooltip.Trigger asChild nodeId={id}>
+        <span style={{ display: 'inline-block' }}>{renderedChildren}</span>
+      </Tooltip.Trigger>
       <Tooltip.Portal>
         <Tooltip.Content
           side={side}
