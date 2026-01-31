@@ -1,4 +1,4 @@
-import{j as o}from"./jsx-runtime-Di4R9JUv.js";/* empty css               */import{D as d,S as a,s as i}from"./sduiComponents-DE360c9J.js";import"./iframe-Bxff-nsx.js";import"./preload-helper-ggYluGXI.js";import"./index-D3kBWWDE.js";const b={title:"Shared/UI/Div",component:d,tags:["autodocs"],parameters:{docs:{description:{component:`
+import{j as o}from"./jsx-runtime-CSRg7ELR.js";/* empty css               */import{D as d,S as a,s as i}from"./sduiComponents-BxyohcWd.js";import"./iframe-GxiwcPgV.js";import"./preload-helper-ggYluGXI.js";import"./index-C35lKGvD.js";const b={title:"Shared/UI/Div",component:d,tags:["autodocs"],parameters:{docs:{description:{component:`
 ## Overview
 
 The **Div** component is a container component with built-in **Error Boundary** and **Suspense** support, providing robust error handling and loading states out of the box.

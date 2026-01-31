@@ -1,4 +1,4 @@
-import{j as n}from"./jsx-runtime-Di4R9JUv.js";/* empty css               */import{I as v,S as s,s as z}from"./sduiComponents-DE360c9J.js";import"./iframe-Bxff-nsx.js";import"./preload-helper-ggYluGXI.js";import"./index-D3kBWWDE.js";const L={title:"Shared/UI/Icon",component:v,tags:["autodocs"],parameters:{docs:{description:{component:`
+import{j as n}from"./jsx-runtime-CSRg7ELR.js";/* empty css               */import{I as v,S as s,s as z}from"./sduiComponents-BxyohcWd.js";import"./iframe-GxiwcPgV.js";import"./preload-helper-ggYluGXI.js";import"./index-C35lKGvD.js";const L={title:"Shared/UI/Icon",component:v,tags:["autodocs"],parameters:{docs:{description:{component:`
 ## Overview
 
 The **Icon** component serves as a placeholder for icons that may not be loaded yet or are missing. It accepts SVG children and automatically applies sizing.
