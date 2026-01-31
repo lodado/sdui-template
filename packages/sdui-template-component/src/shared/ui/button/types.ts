@@ -2,54 +2,79 @@ import React from 'react'
 import { z } from 'zod'
 
 /**
- * Button style variants
+ * Button appearance variants (ADS style)
+ * @description
+ * - default: Neutral button with border (outline style)
+ * - primary: Brand blue filled button for primary actions
+ * - subtle: Transparent button without border (text style)
+ * - warning: Yellow/orange filled button for warning actions
+ * - danger: Red filled button for destructive actions
  */
-export type ButtonStyle = 'filled' | 'outline' | 'text'
+export type ButtonAppearance = 'default' | 'primary' | 'subtle' | 'warning' | 'danger'
 
 /**
- * Button size options (design system)
+ * Button spacing options (ADS style)
+ * @description
+ * - default: 32px height, 12px horizontal padding
+ * - compact: 24px height, 8px horizontal padding
  */
-export type ButtonSize = 'L' | 'M' | 'S'
+export type ButtonSpacing = 'default' | 'compact'
 
 /**
- * Button type options
- */
-export type ButtonType = 'primary' | 'secondary'
-
-/**
- * Button component props
+ * Button component props (ADS style)
  *
  * @description
- * Button component supporting design system specifications.
- * - Supports buttonStyle (filled/outline/text), size (L/M/S), buttonType (primary/secondary)
+ * Button component following Atlassian Design System (ADS) specifications.
+ * - Supports 5 appearance variants (default/primary/subtle/warning/danger)
+ * - Supports 2 spacing sizes (default/compact)
+ * - Includes loading, selected, and icon support
  * - Integrates with SDUI via nodeId prop
  * - Uses CSS variables from @lodado/sdui-design-files
  * - Full keyboard navigation support (Enter, Space)
  * - Accessible by default (ARIA attributes)
  *
- * @param buttonStyle - Button style: filled, outline, or text (default: 'filled')
- * @param size - Button size: L, M, or S (default: 'M')
- * @param buttonType - Button type: primary or secondary (default: 'primary')
- * @param disabled - Whether button is disabled (default: false)
+ * @param appearance - Button appearance: default, primary, subtle, warning, or danger (default: 'default')
+ * @param spacing - Button spacing: default or compact (default: 'default')
+ * @param isDisabled - Whether button is disabled (default: false)
+ * @param isLoading - Whether button is in loading state (default: false)
+ * @param isSelected - Whether button is selected/toggled (default: false)
+ * @param iconBefore - Icon element to render before label
+ * @param iconAfter - Icon element to render after label
  * @param children - Button content
  * @param onClick - Click event handler
  * @param className - Additional CSS classes (merged with defaults)
  * @param nodeId - SDUI node ID for integration (optional)
  * @param eventId - Event ID for event emission (optional)
- * @param 'aria-label' - Accessible label (optional, uses children if not provided)
- * @param 'aria-describedby' - Element ID that describes button (optional)
+ * @param type - HTML button type (optional)
+ * @param asChild - Render as child element instead of button
  *
  * @example
  * ```tsx
- * <Button buttonStyle="filled" size="L" buttonType="primary" onClick={handleClick}>
+ * <Button appearance="primary" onClick={handleClick}>
  *   Submit
  * </Button>
  * ```
  *
  * @example
  * ```tsx
+ * // Compact size with icon
+ * <Button appearance="default" spacing="compact" iconBefore={<SearchIcon />}>
+ *   Search
+ * </Button>
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Loading state
+ * <Button appearance="primary" isLoading>
+ *   Saving...
+ * </Button>
+ * ```
+ *
+ * @example
+ * ```tsx
  * // SDUI integration
- * <Button nodeId="button-1" eventId="submit-click" buttonStyle="outline" size="M">
+ * <Button nodeId="button-1" eventId="submit-click" appearance="primary">
  *   Submit
  * </Button>
  * ```
@@ -57,20 +82,26 @@ export type ButtonType = 'primary' | 'secondary'
  * @example
  * ```tsx
  * // asChild를 사용하여 Link에 Button 스타일 적용
- * <Button asChild buttonStyle="text" size="S" buttonType="secondary">
+ * <Button asChild appearance="subtle">
  *   <Link href="/about">About</Link>
  * </Button>
  * ```
  */
 export interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'type'> {
-  /** Button style: filled, outline, or text */
-  buttonStyle?: ButtonStyle
-  /** Button size: L, M, or S */
-  size?: ButtonSize
-  /** Button type: primary or secondary */
-  buttonType?: ButtonType
+  /** Button appearance: default, primary, subtle, warning, or danger */
+  appearance?: ButtonAppearance
+  /** Button spacing: default (32px) or compact (24px) */
+  spacing?: ButtonSpacing
   /** Whether button is disabled */
-  disabled?: boolean
+  isDisabled?: boolean
+  /** Whether button is in loading state */
+  isLoading?: boolean
+  /** Whether button is selected/toggled */
+  isSelected?: boolean
+  /** Icon element to render before label */
+  iconBefore?: React.ReactNode
+  /** Icon element to render after label */
+  iconAfter?: React.ReactNode
   /** Button content */
   children?: React.ReactNode
   /** Click event handler */
@@ -95,10 +126,11 @@ export interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonE
  * Used with useSduiNodeSubscription to ensure type safety.
  */
 export const buttonStatesSchema: z.ZodSchema<Record<string, unknown>> = z.object({
-  buttonStyle: z.enum(['filled', 'outline', 'text']).optional(),
-  size: z.enum(['L', 'M', 'S']).optional(),
-  buttonType: z.enum(['primary', 'secondary']).optional(),
-  disabled: z.boolean().optional(),
+  appearance: z.enum(['default', 'primary', 'subtle', 'warning', 'danger']).optional(),
+  spacing: z.enum(['default', 'compact']).optional(),
+  isDisabled: z.boolean().optional(),
+  isLoading: z.boolean().optional(),
+  isSelected: z.boolean().optional(),
 }) as z.ZodSchema<Record<string, unknown>>
 
 export type ButtonState = z.infer<typeof buttonStatesSchema>

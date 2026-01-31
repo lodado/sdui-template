@@ -1,40 +1,45 @@
 ---
-description: Requirements Analysis - Button Component
+description: Requirements Analysis - Button Component (ADS Style)
 ---
 
-# Requirements Analysis: Button Component
+# Requirements Analysis: Button Component (ADS Style)
 
 ## Input
 
-- **Product Description**: Button 컴포넌트는 특정 작업을 실행하도록 하는 상호작용 요소로, 클릭 시 지정된 액션이 실행되며 일반적으로 폼 제출, 페이지 이동 등의 작업에 사용됩니다.
+- **Product Description**: Button 컴포넌트는 Atlassian Design System (ADS) 스펙을 따르는 상호작용 요소로, 클릭 시 지정된 액션이 실행되며 일반적으로 폼 제출, 페이지 이동 등의 작업에 사용됩니다.
 - **Primary Users**: SDUI 개발자, UI/UX 디자이너, 최종 사용자
 - **Constraints**:
   - React 18+, TypeScript 4.3+
   - SDUI 템플릿 시스템과의 통합 필수
   - WCAG 2.1 AA 접근성 준수
   - Tailwind CSS 기반 스타일링
+  - ADS (Atlassian Design System) 스펙 준수
 - **Existing APIs**: `@lodado/sdui-template`의 SDUI 통합 API
 
 ---
 
 ## 1) Problem
 
-**Problem Statement**: 디자인 시스템 스펙에 따라 Button 컴포넌트가 3가지 스타일(filled/outline/text), 3가지 크기(L/M/S), 2가지 타입(primary/secondary)을 지원해야 하며, 각 조합에서 State(Default/Hover/Press/Disabled)를 모두 지원해야 합니다.
+**Problem Statement**: ADS 스펙에 따라 Button 컴포넌트가 5가지 appearance (default/primary/subtle/warning/danger), 2가지 spacing (default/compact)을 지원해야 하며, 로딩/선택/아이콘 상태와 함께 State(Default/Hover/Press/Focus/Disabled)를 모두 지원해야 합니다.
 
 **User Value**:
 
-- 디자인 시스템 스펙과 일치하는 일관된 버튼 컴포넌트 사용
-- 18가지 조합을 모두 지원하여 다양한 UI 요구사항 충족
+- ADS 스펙과 일치하는 일관된 버튼 컴포넌트 사용
+- 10가지 기본 조합 + 상태 옵션을 통한 다양한 UI 요구사항 충족
+- 로딩/선택/아이콘 상태 지원으로 향상된 UX
 
 **Business Value**:
 
-- 디자인 시스템 준수로 브랜드 일관성 유지
+- ADS 디자인 시스템 준수로 브랜드 일관성 유지
 - 개발자 생산성 향상
+- Figma 디자인과 1:1 매핑
 
 **Success Criteria**:
 
-- buttonStyle(filled/outline/text), size(L/M/S), buttonType(primary/secondary) 조합 모두 지원
-- 총 18가지 조합 모두 동작
+- appearance(default/primary/subtle/warning/danger) 5가지 지원
+- spacing(default/compact) 2가지 지원
+- 총 10가지 기본 조합 모두 동작
+- isLoading, isSelected, iconBefore, iconAfter 상태 지원
 - WCAG 2.1 AA 접근성 준수
 - SDUI 템플릿 시스템과 통합 가능
 - TypeScript 타입 정의 완료
@@ -47,7 +52,7 @@ description: Requirements Analysis - Button Component
 ### Actors
 
 1. **SDUI Developer**: SDUI 템플릿 시스템을 사용하는 개발자
-2. **UI/UX Designer**: 디자인 시스템을 사용하는 디자이너
+2. **UI/UX Designer**: ADS 디자인 시스템을 사용하는 디자이너
 3. **End User**: 최종 사용자 (마우스/키보드/스크린 리더 사용자)
 
 ### Use Cases
@@ -55,21 +60,25 @@ description: Requirements Analysis - Button Component
 **SDUI Developer**:
 
 1. Button 컴포넌트를 import하여 사용
-2. buttonStyle(filled/outline/text) prop 전달
-3. size(L/M/S) prop 전달
-4. buttonType(primary/secondary) prop 전달
-5. Disabled 상태 설정
-6. onClick 이벤트 핸들러 연결
-7. SDUI 문서에서 컴포넌트 사용 (ComponentFactory)
-8. nodeId를 통한 상태 구독
-9. eventId를 통한 이벤트 발생
+2. appearance(default/primary/subtle/warning/danger) prop 전달
+3. spacing(default/compact) prop 전달
+4. isDisabled 상태 설정
+5. isLoading 로딩 상태 설정
+6. isSelected 선택 상태 설정
+7. iconBefore/iconAfter 아이콘 설정
+8. onClick 이벤트 핸들러 연결
+9. SDUI 문서에서 컴포넌트 사용 (ComponentFactory)
+10. nodeId를 통한 상태 구독
+11. eventId를 통한 이벤트 발생
 
 **UI/UX Designer**:
 
-1. 디자인 시스템 스펙과 일치하는지 확인
-2. 각 스타일별 Size, Type 조합 검증
-3. State별 시각적 피드백 확인 (Default/Hover/Press/Disabled)
-4. 접근성 기능 확인 (키보드 네비게이션, 포커스 표시)
+1. ADS 스펙과 일치하는지 확인
+2. 각 appearance별 spacing 조합 검증
+3. State별 시각적 피드백 확인 (Default/Hover/Press/Focus/Disabled)
+4. 로딩/선택 상태 시각적 피드백 확인
+5. 아이콘 배치 확인 (iconBefore/iconAfter)
+6. 접근성 기능 확인 (키보드 네비게이션, 포커스 표시)
 
 **End User**:
 
@@ -77,28 +86,33 @@ description: Requirements Analysis - Button Component
 2. 키보드(Tab/Enter/Space)로 버튼 활성화
 3. 스크린 리더로 버튼 정보 인지
 4. Disabled 상태에서 상호작용 불가 확인
-5. Hover/Press 상태의 시각적 피드백 인지
+5. Loading 상태에서 로딩 스피너 인지
+6. Selected 상태의 시각적 피드백 인지
+7. Hover/Press 상태의 시각적 피드백 인지
 
 ---
 
 ## 3) FR (table)
 
-| ID   | Feature             | Description                                         | Priority | Testable Statement                                                            |
-| ---- | ------------------- | --------------------------------------------------- | -------- | ----------------------------------------------------------------------------- |
-| FR1  | ButtonStyle Support | buttonStyle(filled/outline/text) 지원               | MUST     | Given buttonStyle="filled", when rendered, then filled styles applied         |
-| FR2  | Size Support        | size(L/M/S) 지원                                    | MUST     | Given size="L", when rendered, then large size styles applied                 |
-| FR3  | ButtonType Support  | buttonType(primary/secondary) 지원                  | MUST     | Given buttonType="primary", when rendered, then primary type styles applied   |
-| FR4  | State Default       | Default 상태 지원                                   | MUST     | Given default state, when rendered, then default styles applied               |
-| FR5  | State Hover         | 마우스 호버 시 Hover 상태 표시                      | MUST     | Given hover event, when mouse over, then hover styles applied                 |
-| FR6  | State Press         | 클릭/키보드 활성화 시 Press 상태 표시               | MUST     | Given click/keyboard event, when activated, then press styles applied         |
-| FR7  | State Disabled      | Disabled 상태에서 상호작용 차단                     | MUST     | Given disabled=true, when clicked, then onClick not called                    |
-| FR8  | All Combinations    | 모든 buttonStyle/size/buttonType 조합 지원 (18가지) | MUST     | Given all combinations, when rendered, then all 18 combinations work          |
-| FR9  | Event Handling      | onClick 이벤트 핸들러 지원                          | MUST     | Given onClick handler, when clicked, then handler called with event           |
-| FR10 | Keyboard Navigation | Enter/Space 키로 버튼 활성화                        | MUST     | Given keyboard focus, when Enter/Space pressed, then onClick called           |
-| FR11 | SDUI Integration    | nodeId를 통한 SDUI 통합                             | MUST     | Given nodeId, when used with SDUI, then component subscribes to node state    |
-| FR12 | Event Emission      | eventId를 통한 이벤트 발생                          | SHOULD   | Given eventId, when event occurs, then event can be emitted                   |
-| FR13 | TypeScript Types    | 모든 props에 대한 TypeScript 타입 정의              | MUST     | Given TypeScript project, when imported, then types are available and correct |
-| FR14 | Custom Styling      | className을 통한 스타일 오버라이드                  | COULD    | Given className prop, when provided, then merged with default styles          |
+| ID   | Feature              | Description                                                | Priority | Testable Statement                                                            |
+| ---- | -------------------- | ---------------------------------------------------------- | -------- | ----------------------------------------------------------------------------- |
+| FR1  | Appearance Support   | appearance(default/primary/subtle/warning/danger) 지원     | MUST     | Given appearance="primary", when rendered, then primary styles applied        |
+| FR2  | Spacing Support      | spacing(default/compact) 지원                              | MUST     | Given spacing="compact", when rendered, then compact size styles applied      |
+| FR3  | State Default        | Default 상태 지원                                          | MUST     | Given default state, when rendered, then default styles applied               |
+| FR4  | State Hover          | 마우스 호버 시 Hover 상태 표시                             | MUST     | Given hover event, when mouse over, then hover styles applied                 |
+| FR5  | State Press          | 클릭/키보드 활성화 시 Press 상태 표시                      | MUST     | Given click/keyboard event, when activated, then press styles applied         |
+| FR6  | State Disabled       | isDisabled=true 상태에서 상호작용 차단                     | MUST     | Given isDisabled=true, when clicked, then onClick not called                  |
+| FR7  | State Loading        | isLoading=true 상태에서 스피너 표시 및 상호작용 차단       | MUST     | Given isLoading=true, when rendered, then spinner shown, onClick not called   |
+| FR8  | State Selected       | isSelected=true 상태에서 선택 스타일 표시                  | MUST     | Given isSelected=true, when rendered, then selected styles applied            |
+| FR9  | Icon Before          | iconBefore prop으로 라벨 앞 아이콘 표시                    | MUST     | Given iconBefore, when rendered, then icon shown before label                 |
+| FR10 | Icon After           | iconAfter prop으로 라벨 뒤 아이콘 표시                     | MUST     | Given iconAfter, when rendered, then icon shown after label                   |
+| FR11 | All Combinations     | 모든 appearance/spacing 조합 지원 (10가지)                 | MUST     | Given all combinations, when rendered, then all 10 combinations work          |
+| FR12 | Event Handling       | onClick 이벤트 핸들러 지원                                 | MUST     | Given onClick handler, when clicked, then handler called with event           |
+| FR13 | Keyboard Navigation  | Enter/Space 키로 버튼 활성화                               | MUST     | Given keyboard focus, when Enter/Space pressed, then onClick called           |
+| FR14 | SDUI Integration     | nodeId를 통한 SDUI 통합                                    | MUST     | Given nodeId, when used with SDUI, then component subscribes to node state    |
+| FR15 | Event Emission       | eventId를 통한 이벤트 발생                                 | SHOULD   | Given eventId, when event occurs, then event can be emitted                   |
+| FR16 | TypeScript Types     | 모든 props에 대한 TypeScript 타입 정의                     | MUST     | Given TypeScript project, when imported, then types are available and correct |
+| FR17 | Custom Styling       | className을 통한 스타일 오버라이드                         | COULD    | Given className prop, when provided, then merged with default styles          |
 
 ---
 
@@ -120,14 +134,12 @@ description: Requirements Analysis - Button Component
 | NFR12 | Reliability - Error Handling    | 잘못된 prop 전달 시 기본값 사용                 | Error boundary tests | SHOULD   |
 | NFR13 | Maintainability - Documentation | JSDoc 및 Storybook 문서화                       | Code review          | MUST     |
 | NFR14 | Security - XSS Prevention       | React auto-escaping, no dangerouslySetInnerHTML | Code review          | MUST     |
-| NFR15 | Design System Compliance        | 디자인 시스템 스펙과 100% 일치                  | Visual regression    | MUST     |
+| NFR15 | Design System Compliance        | ADS 스펙과 100% 일치                            | Visual regression    | MUST     |
 
 ---
 
 ## 5) Out of scope
 
-- **Icon Support**: 버튼 내부 아이콘 표시 (별도 작업)
-- **Loading State**: 로딩 상태 표시 (별도 작업)
 - **Animation Library**: 복잡한 애니메이션 (CSS transitions만 사용)
 - **Form Validation**: 폼 검증 로직 (애플리케이션 레이어에서 처리)
 - **Theming System**: 커스텀 테마 설정 (CSS variables 또는 Tailwind 사용)
@@ -140,13 +152,13 @@ description: Requirements Analysis - Button Component
 
 ## 6) User flows
 
-### Flow 1: Button 사용 (Happy Path)
+### Flow 1: Primary Button 사용 (Happy Path)
 
 ```
 1. Developer imports Button from library
-2. Developer sets buttonStyle="filled", size="L", buttonType="primary"
+2. Developer sets appearance="primary"
 3. Developer sets onClick handler
-4. Component renders with Filled style, Large size, Primary type
+4. Component renders with Primary appearance
 5. User hovers over button
 6. Button shows Hover state (visual feedback)
 7. User clicks button
@@ -155,12 +167,12 @@ description: Requirements Analysis - Button Component
 10. Button returns to Default state
 ```
 
-### Flow 2: Text Style Size S 사용 (Happy Path)
+### Flow 2: Compact Danger Button 사용 (Happy Path)
 
 ```
 1. Developer imports Button from library
-2. Developer sets buttonStyle="text", size="S", buttonType="secondary"
-3. Component renders with Text style, Small size, Secondary type
+2. Developer sets appearance="danger", spacing="compact"
+3. Component renders with Danger appearance, Compact size (24px height)
 4. User tabs to button (keyboard navigation)
 5. Button receives focus (visible focus indicator)
 6. User presses Enter
@@ -168,47 +180,49 @@ description: Requirements Analysis - Button Component
 8. Focus moves to next element
 ```
 
-### Flow 3: Disabled State (Happy Path)
+### Flow 3: Loading State (Happy Path)
 
 ```
-1. Developer sets disabled=true
-2. Component renders with Disabled state styles
+1. Developer sets isLoading=true
+2. Component renders with loading spinner
 3. User attempts to click button
 4. onClick handler is NOT called
-5. User attempts keyboard activation (Enter/Space)
-6. onClick handler is NOT called
-7. Button remains in Disabled state
+5. Spinner animation plays
+6. Developer sets isLoading=false
+7. Button returns to interactive state
 ```
 
-### Flow 4: SDUI Integration (Happy Path)
+### Flow 4: Button with Icons (Happy Path)
+
+```
+1. Developer sets iconBefore={<SearchIcon />}
+2. Developer sets iconAfter={<ChevronIcon />}
+3. Component renders with icons before and after label
+4. Icons are properly sized (before: 16px, after: 12px)
+5. User clicks button
+6. onClick handler is called
+```
+
+### Flow 5: Selected/Toggle State (Happy Path)
+
+```
+1. Developer sets isSelected=true
+2. Component renders with selected background
+3. aria-pressed="true" is set
+4. User clicks button
+5. Developer toggles isSelected to false
+6. Button returns to unselected state
+```
+
+### Flow 6: SDUI Integration (Happy Path)
 
 ```
 1. Developer uses Button with nodeId="button-1"
 2. Component subscribes to SDUI node state via useSduiNodeSubscription
-3. Server updates node state (e.g., disabled: true)
+3. Server updates node state (e.g., isDisabled: true)
 4. Component receives updated state
 5. Component re-renders with disabled state
 6. User sees updated button (disabled)
-```
-
-### Flow 5: Invalid Props (Failure Path)
-
-```
-1. Developer passes invalid size prop (e.g., size="XL")
-2. Component uses default size (M)
-3. Component continues to render with default size
-```
-
-### Flow 6: State Transitions (Edge Case)
-
-```
-1. User quickly hovers and clicks button
-2. Hover state applied
-3. Press state applied immediately
-4. onClick handler called
-5. Mouse leaves button
-6. Button returns to Default state
-7. No visual glitches or state conflicts
 ```
 
 ---
@@ -217,18 +231,22 @@ description: Requirements Analysis - Button Component
 
 ### Component Props
 
-**Button Component**:
+**Button Component (ADS Style)**:
 
-- `buttonStyle?: 'filled' | 'outline' | 'text'` (default: 'filled')
-- `size?: 'L' | 'M' | 'S'` (default: 'M')
-- `buttonType?: 'primary' | 'secondary'` (default: 'primary')
-- `disabled?: boolean` (default: false)
+- `appearance?: 'default' | 'primary' | 'subtle' | 'warning' | 'danger'` (default: 'default')
+- `spacing?: 'default' | 'compact'` (default: 'default')
+- `isDisabled?: boolean` (default: false)
+- `isLoading?: boolean` (default: false)
+- `isSelected?: boolean` (default: false)
+- `iconBefore?: React.ReactNode`
+- `iconAfter?: React.ReactNode`
 - `children: React.ReactNode` (required)
 - `onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void`
 - `nodeId?: string` (SDUI integration)
 - `eventId?: string` (event emission)
 - `className?: string` (custom styling)
 - `type?: 'submit' | 'reset' | 'button'` (default: 'button')
+- `asChild?: boolean` (Radix Slot pattern)
 
 ### Component State (internal)
 
@@ -237,6 +255,7 @@ description: Requirements Analysis - Button Component
 - `default`: 기본 상태
 - `hover`: 마우스 호버 상태
 - `press`: 클릭/키보드 활성화 상태
+- `focus`: 포커스 상태
 - `disabled`: 비활성화 상태
 
 **State Transitions**:
@@ -245,8 +264,12 @@ description: Requirements Analysis - Button Component
 Default --[hover]--> Hover
 Hover --[mouse leave]--> Default
 Hover --[click]--> Press --[mouse up]--> Default
-Default --[disabled=true]--> Disabled
-Disabled --[disabled=false]--> Default
+Default --[focus]--> Focus
+Focus --[blur]--> Default
+Default --[isDisabled=true]--> Disabled
+Disabled --[isDisabled=false]--> Default
+Default --[isLoading=true]--> Loading (non-interactive)
+Loading --[isLoading=false]--> Default
 ```
 
 **SDUI Integration**:
@@ -263,16 +286,20 @@ Disabled --[disabled=false]--> Default
 
 ```typescript
 interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'type'> {
-  buttonStyle?: 'filled' | 'outline' | 'text'
-  size?: 'L' | 'M' | 'S'
-  buttonType?: 'primary' | 'secondary'
-  disabled?: boolean
+  appearance?: 'default' | 'primary' | 'subtle' | 'warning' | 'danger'
+  spacing?: 'default' | 'compact'
+  isDisabled?: boolean
+  isLoading?: boolean
+  isSelected?: boolean
+  iconBefore?: React.ReactNode
+  iconAfter?: React.ReactNode
   children: React.ReactNode
   onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void
   className?: string
   nodeId?: string
   eventId?: string
   type?: 'submit' | 'reset' | 'button'
+  asChild?: boolean
 }
 
 export const Button: React.ForwardRefExoticComponent<ButtonProps & React.RefAttributes<HTMLButtonElement>>
@@ -286,9 +313,10 @@ const ButtonFactory: ComponentFactory = (id, renderNode) => {
   return (
     <Button
       nodeId={id}
-      buttonStyle={renderNode.props.buttonStyle}
-      size={renderNode.props.size}
-      buttonType={renderNode.props.buttonType}
+      appearance={renderNode.props.appearance}
+      spacing={renderNode.props.spacing}
+      isDisabled={renderNode.props.isDisabled}
+      isLoading={renderNode.props.isLoading}
     />
   )
 }
@@ -320,10 +348,10 @@ type EventHandler = (eventId: string, props: Record<string, unknown>) => void
 
 ### Risks
 
-1. **State 관리 복잡도**
+1. **상태 관리 복잡도**
 
-   - **Risk**: Default/Hover/Press/Disabled 4가지 상태 관리 복잡
-   - **Mitigation**: CSS 기반 상태 관리 (hover, active, disabled), JavaScript 상태 최소화
+   - **Risk**: Default/Hover/Press/Focus/Disabled + Loading/Selected 상태 관리 복잡
+   - **Mitigation**: CSS 기반 상태 관리 (hover, active, disabled), props 기반 loading/selected
 
 2. **접근성 회귀**
 
@@ -332,7 +360,7 @@ type EventHandler = (eventId: string, props: Record<string, unknown>) => void
 
 3. **번들 크기 증가**
 
-   - **Risk**: 모든 조합 지원으로 인한 번들 크기 증가
+   - **Risk**: 로딩 스피너, 아이콘 래퍼 등 추가 기능으로 인한 번들 크기 증가
    - **Mitigation**: Tree-shaking 최적화, CSS 변수 사용, 번들 크기 모니터링
 
 4. **CSS 변수 의존성**
@@ -341,28 +369,23 @@ type EventHandler = (eventId: string, props: Record<string, unknown>) => void
 
 ### Open Questions
 
-1. **Size 기본값**
+1. **Appearance 기본값**
 
-   - **Question**: 기본 Size는 무엇인가?
-   - **Decision**: 'M' (가장 많이 사용)
+   - **Question**: 기본 Appearance는 무엇인가?
+   - **Decision**: 'default' (ADS 스펙 준수)
 
-2. **ButtonType 기본값**
+2. **Spacing 기본값**
 
-   - **Question**: 기본 ButtonType은 무엇인가?
-   - **Decision**: 'primary' (가장 중요한 기능)
+   - **Question**: 기본 Spacing은 무엇인가?
+   - **Decision**: 'default' (32px height)
 
-3. **ButtonStyle 기본값**
-
-   - **Question**: 기본 ButtonStyle은 무엇인가?
-   - **Decision**: 'filled' (가장 많이 사용)
-
-4. **State 스타일 정의**
-   - **Question**: Hover/Press 상태의 구체적인 스타일은 어떻게 정의되는가?
-   - **Decision**: 디자인 시스템에서 제공하는 CSS 변수 사용
+3. **Loading 시 아이콘 처리**
+   - **Question**: Loading 상태에서 아이콘은 어떻게 처리하는가?
+   - **Decision**: 아이콘 숨김, 스피너만 표시
 
 ### Assumptions
 
-1. 디자인 시스템에서 제공하는 CSS 변수가 정의되어 있음 (@lodado/sdui-design-files)
+1. ADS 디자인 시스템에서 제공하는 CSS 변수가 정의되어 있음 (@lodado/sdui-design-files)
 2. Tailwind CSS를 사용한 스타일링
 3. React 18+ 사용
 4. TypeScript 필수
@@ -378,22 +401,24 @@ type EventHandler = (eventId: string, props: Record<string, unknown>) => void
 
 **Phase 1: Core Implementation**
 
-- Button 컴포넌트 구현
-- buttonStyle: filled, outline, text 지원
-- size: L, M, S 지원
-- buttonType: primary, secondary 지원
-- State: Default, Hover, Press, Disabled 지원
+- Button 컴포넌트 구현 (ADS Style)
+- appearance: default, primary, subtle, warning, danger 지원
+- spacing: default, compact 지원
+- State: Default, Hover, Press, Focus, Disabled 지원
+- isLoading 로딩 상태 지원
+- isSelected 선택 상태 지원
+- iconBefore/iconAfter 아이콘 지원
 - onClick 이벤트 핸들링
 - 키보드 네비게이션 (Enter, Space)
-- SDUI 통합 (nodeId)
+- SDUI 통합 (nodeId, eventId)
 - TypeScript 타입 정의
-- 시나리오 테스트 (15-20개)
+- 시나리오 테스트 (32개)
 - Storybook 문서화
 
 **Success Criteria for MVP**:
 
-- Button 컴포넌트가 모든 조합(18가지)에서 동작
-- 디자인 시스템 스펙과 일치
+- Button 컴포넌트가 모든 조합(10가지 기본)에서 동작
+- ADS 스펙과 일치
 - 접근성 테스트 통과
 - SDUI 통합 동작 확인
 - 모든 테스트 통과
@@ -425,30 +450,34 @@ type EventHandler = (eventId: string, props: Record<string, unknown>) => void
 
 **Scenario Tests (P0, Required)**:
 
-1. Success flow - buttonStyle="filled", size="L", buttonType="primary", Default state (mouse click)
-2. Success flow - buttonStyle="outline", size="M", buttonType="secondary", Hover state
-3. Success flow - buttonStyle="text", size="S", buttonType="primary", Press state (keyboard Enter)
-4. Success flow - Press state (keyboard Space)
-5. Disabled state - 모든 buttonStyle/size/buttonType 조합에서 클릭 차단
-6. State transitions - Hover → Press → Default
-7. SDUI integration - nodeId를 통한 상태 구독
-8. Event emission - eventId를 통한 이벤트 발생
-9. Boundary: invalid size (defaults to M)
-10. Boundary: invalid buttonType (defaults to primary)
-11. Boundary: invalid buttonStyle (defaults to filled)
-12. Accessibility: focus management
-13. Accessibility: keyboard navigation
-14. Accessibility: screen reader announcement
-15. Visual: 모든 buttonStyle/size/buttonType 조합 렌더링 확인 (18가지)
-16. Visual: 모든 State 조합 확인 (4가지)
+1. Success flow - appearance="default", spacing="default"
+2. Success flow - appearance="primary", spacing="default"
+3. Success flow - appearance="subtle", spacing="default"
+4. Success flow - appearance="warning", spacing="default"
+5. Success flow - appearance="danger", spacing="default"
+6. Success flow - spacing="compact" for all appearances
+7. Disabled state - isDisabled=true blocks interaction
+8. Loading state - isLoading=true shows spinner, blocks interaction
+9. Selected state - isSelected=true shows selected styles
+10. Icon before - iconBefore renders correctly
+11. Icon after - iconAfter renders correctly
+12. Both icons - iconBefore + iconAfter renders correctly
+13. Loading hides icons - isLoading=true hides icons
+14. State transitions - Hover → Press → Default
+15. SDUI integration - nodeId를 통한 상태 구독
+16. Event emission - eventId를 통한 이벤트 발생
+17. Accessibility: focus management
+18. Accessibility: keyboard navigation
+19. All combinations - 10가지 appearance/spacing 조합
 
 **EP/BVA Application**:
 
-- **buttonStyle**: filled, outline, text (boundary: invalid value)
-- **size**: L, M, S (boundary: invalid value)
-- **buttonType**: primary, secondary (boundary: invalid value)
-- **State**: Default, Hover, Press, Disabled
-- **Disabled**: true, false
+- **appearance**: default, primary, subtle, warning, danger (boundary: invalid value)
+- **spacing**: default, compact (boundary: invalid value)
+- **State**: Default, Hover, Press, Focus, Disabled
+- **isDisabled**: true, false
+- **isLoading**: true, false
+- **isSelected**: true, false
 - **Event handlers**: with handler, without handler
 
 **Deterministic Async**:
@@ -459,6 +488,7 @@ type EventHandler = (eventId: string, props: Record<string, unknown>) => void
 
 **Visual Regression**:
 
-- 모든 buttonStyle/size/buttonType 조합 스크린샷 비교
+- 모든 appearance/spacing 조합 스크린샷 비교
 - 모든 State 조합 스크린샷 비교
-- 총 18가지 조합 시각적 검증
+- Loading/Selected 상태 시각적 검증
+- 총 10가지 기본 조합 + 상태 옵션 시각적 검증

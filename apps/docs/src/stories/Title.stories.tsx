@@ -350,10 +350,10 @@ export const WithButtons: Story = {
     const ButtonContainer = ({ id }: { id: string }) => {
       return (
         <div className="flex items-center gap-2">
-          <Button buttonStyle="outline" buttonType="secondary" size="M">
+          <Button appearance="subtle">
             Sign In
           </Button>
-          <Button buttonStyle="filled" buttonType="primary" size="M">
+          <Button appearance="primary">
             Sign Up
           </Button>
         </div>

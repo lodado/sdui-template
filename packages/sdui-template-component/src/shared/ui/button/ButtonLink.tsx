@@ -1,9 +1,8 @@
 import NextLink, { type LinkProps } from 'next/link'
 import React from 'react'
 
-import { cn } from '../../lib/cn'
 import { Button } from './Button'
-import type { ButtonSize, ButtonStyle, ButtonType } from './types'
+import type { ButtonAppearance, ButtonSpacing } from './types'
 
 /**
  * ButtonLink component props
@@ -11,14 +10,12 @@ import type { ButtonSize, ButtonStyle, ButtonType } from './types'
 export interface ButtonLinkProps
   extends Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'>,
     Pick<LinkProps, 'href'> {
-  /** Button style: filled, outline, or text */
-  buttonStyle?: ButtonStyle
-  /** Button size: L, M, or S */
-  size?: ButtonSize
-  /** Button type: primary or secondary */
-  buttonType?: ButtonType
+  /** Button appearance: default, primary, subtle, warning, danger */
+  appearance?: ButtonAppearance
+  /** Button spacing: default (32px), compact (24px) */
+  spacing?: ButtonSpacing
   /** Whether link is disabled */
-  disabled?: boolean
+  isDisabled?: boolean
   /** Link content */
   children?: React.ReactNode
   /** Additional CSS classes */
@@ -34,12 +31,12 @@ export interface ButtonLinkProps
  *
  * @description
  * Button-styled link component that wraps Next.js Link using Button's asChild pattern.
- * Supports the same button styles as Button component (filled/outline/text, sizes L/M/S, types primary/secondary).
+ * Supports the same button styles as Button component (ADS style).
  * Requires Next.js to be installed as a peer dependency.
  *
  * @example
  * ```tsx
- * <ButtonLink href="/about" buttonStyle="text" size="S" buttonType="secondary">
+ * <ButtonLink href="/about" appearance="subtle">
  *   About
  * </ButtonLink>
  * ```
@@ -47,7 +44,7 @@ export interface ButtonLinkProps
  * @example
  * ```tsx
  * // SDUI integration
- * <ButtonLink href="/products" nodeId="link-1" eventId="nav-click" buttonStyle="filled" size="M">
+ * <ButtonLink href="/products" nodeId="link-1" eventId="nav-click" appearance="primary">
  *   Products
  * </ButtonLink>
  * ```
@@ -56,10 +53,9 @@ export const ButtonLink = React.forwardRef<React.ElementRef<typeof NextLink>, Bu
   (
     {
       href,
-      buttonStyle = 'text',
-      size = 'M',
-      buttonType = 'primary',
-      disabled = false,
+      appearance = 'subtle',
+      spacing = 'default',
+      isDisabled = false,
       children,
       className,
       nodeId,
@@ -70,10 +66,9 @@ export const ButtonLink = React.forwardRef<React.ElementRef<typeof NextLink>, Bu
   ) => {
     return (
       <Button
-        buttonStyle={buttonStyle}
-        size={size}
-        buttonType={buttonType}
-        disabled={disabled}
+        appearance={appearance}
+        spacing={spacing}
+        isDisabled={isDisabled}
         className={className}
         nodeId={nodeId}
         eventId={eventId}

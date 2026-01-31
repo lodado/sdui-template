@@ -138,9 +138,7 @@ export const Basic: Story = {
                         id: 'submit-button',
                         type: 'Button',
                         state: {
-                          buttonStyle: 'filled',
-                          buttonType: 'primary',
-                          size: 'L',
+                          appearance: 'primary',
                         },
                         attributes: {
                           type: 'submit',
@@ -279,9 +277,7 @@ export const RegistrationForm: Story = {
                         id: 'submit-button',
                         type: 'Button',
                         state: {
-                          buttonStyle: 'filled',
-                          buttonType: 'primary',
-                          size: 'L',
+                          appearance: 'primary',
                         },
                         attributes: {
                           type: 'submit',
@@ -394,9 +390,7 @@ export const WithHelpMessages: Story = {
                         id: 'submit-button',
                         type: 'Button',
                         state: {
-                          buttonStyle: 'filled',
-                          buttonType: 'primary',
-                          size: 'L',
+                          appearance: 'primary',
                         },
                         attributes: {
                           type: 'submit',
@@ -493,9 +487,7 @@ export const WithoutSchema: Story = {
                         id: 'submit-button',
                         type: 'Button',
                         state: {
-                          buttonStyle: 'filled',
-                          buttonType: 'primary',
-                          size: 'L',
+                          appearance: 'primary',
                         },
                         attributes: {
                           type: 'submit',
@@ -616,9 +608,7 @@ export const CustomValidation: Story = {
                         id: 'submit-button',
                         type: 'Button',
                         state: {
-                          buttonStyle: 'filled',
-                          buttonType: 'primary',
-                          size: 'L',
+                          appearance: 'primary',
                         },
                         attributes: {
                           type: 'submit',
@@ -725,9 +715,7 @@ export const WithSchemaName: Story = {
                         id: 'submit-button',
                         type: 'Button',
                         state: {
-                          buttonStyle: 'filled',
-                          buttonType: 'primary',
-                          size: 'L',
+                          appearance: 'primary',
                         },
                         attributes: {
                           type: 'submit',
@@ -833,9 +821,7 @@ export const DisabledFields: Story = {
                         id: 'submit-button',
                         type: 'Button',
                         state: {
-                          buttonStyle: 'filled',
-                          buttonType: 'primary',
-                          size: 'L',
+                          appearance: 'primary',
                         },
                         attributes: {
                           type: 'submit',
@@ -955,9 +941,7 @@ export const SchemaMismatch: Story = {
                         id: 'submit-button',
                         type: 'Button',
                         state: {
-                          buttonStyle: 'filled',
-                          buttonType: 'primary',
-                          size: 'L',
+                          appearance: 'primary',
                         },
                         attributes: {
                           type: 'submit',

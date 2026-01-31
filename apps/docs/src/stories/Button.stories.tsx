@@ -2,34 +2,85 @@ import { type SduiLayoutDocument, SduiLayoutRenderer } from '@lodado/sdui-templa
 import { Button, sduiComponents } from '@lodado/sdui-template-component'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import React from 'react'
- 
+
 const meta: Meta<typeof Button> = {
   title: 'Shared/UI/Button',
   component: Button,
   tags: ['autodocs'],
+  argTypes: {
+    appearance: {
+      control: 'select',
+      options: ['default', 'primary', 'subtle', 'warning', 'danger'],
+      description: 'Button appearance style',
+      table: {
+        defaultValue: { summary: 'default' },
+      },
+    },
+    spacing: {
+      control: 'select',
+      options: ['default', 'compact'],
+      description: 'Button spacing (size)',
+      table: {
+        defaultValue: { summary: 'default' },
+      },
+    },
+    isDisabled: {
+      control: 'boolean',
+      description: 'Whether the button is disabled',
+      table: {
+        defaultValue: { summary: 'false' },
+      },
+    },
+    isLoading: {
+      control: 'boolean',
+      description: 'Whether the button is in loading state',
+      table: {
+        defaultValue: { summary: 'false' },
+      },
+    },
+    isSelected: {
+      control: 'boolean',
+      description: 'Whether the button is selected (toggle state)',
+      table: {
+        defaultValue: { summary: 'false' },
+      },
+    },
+  },
   parameters: {
     docs: {
       description: {
         component: `
 ## Overview
 
-The **Button** component is an interactive element that triggers specific actions when clicked. It's a fundamental UI component used throughout the application for user interactions.
+The **Button** component follows the Atlassian Design System (ADS) specifications. It's an interactive element that triggers specific actions when clicked.
 
-## Features
+## Appearance Variants
 
-### Visual Variants
-- **Filled**: Solid background, highest emphasis
-- **Outline**: Transparent with border, medium emphasis
-- **Text**: No background/border, lowest emphasis
+| Appearance | Description | Use Case |
+|------------|-------------|----------|
+| \`default\` | Neutral button with border | Secondary actions |
+| \`primary\` | Brand blue filled button | Primary actions |
+| \`subtle\` | Transparent button, no border | Tertiary actions |
+| \`warning\` | Yellow/orange filled button | Warning actions |
+| \`danger\` | Red filled button | Destructive actions |
 
-### Sizes
-- **L (Large)**: 40px height, 16px text
-- **M (Medium)**: 32px height, 14px text (default)
-- **S (Small)**: 24px height, 12px text (text buttons only)
+## Spacing Options
 
-### Types
-- **Primary**: Main action color scheme
-- **Secondary**: Alternative action color scheme
+| Spacing | Height | Description |
+|---------|--------|-------------|
+| \`default\` | 32px | Standard button size |
+| \`compact\` | 24px | Compact button for dense UIs |
+
+## States
+
+- **isDisabled**: Non-interactive disabled state
+- **isLoading**: Shows spinner, blocks interaction
+- **isSelected**: Toggle/selected state with visual feedback
+
+## Icons
+
+- **iconBefore**: Icon before the label (16px)
+- **iconAfter**: Icon after the label (12px)
 
 ## Integration
 
@@ -37,13 +88,6 @@ The **Button** component is an interactive element that triggers specific action
 - ✅ **Keyboard navigation** (Enter & Space keys)
 - ✅ **Accessibility features** built-in
 - ✅ **ARIA attributes** for screen readers
-
-## Common Use Cases
-
-- Form submissions
-- Navigation actions
-- Dialog confirmations
-- Feature toggles
         `,
       },
     },
@@ -53,1194 +97,768 @@ The **Button** component is an interactive element that triggers specific action
 export default meta
 type Story = StoryObj<typeof Button>
 
-// Default story
-export const Default: Story = {
-  render: () => {
-    const document: SduiLayoutDocument = {
-      version: '1.0.0',
-      root: {
-        id: 'root',
-        type: 'Div',
-        attributes: {
-          className: 'flex items-center justify-center p-4',
-        },
-        children: [
-          {
-            id: 'button-1',
-            type: 'Button',
-            state: {
-              buttonStyle: 'filled',
-              size: 'M',
-              buttonType: 'primary',
-              disabled: false,
-            },
-            attributes: {
-              type: 'button',
-            },
-            children: [
-              {
-                id: 'button-text',
-                type: 'Span',
-                state: {
-                  text: 'Button',
-                },
-              },
-            ],
-          },
-        ],
-      },
-    }
+// ============================================================================
+// Basic Stories with Controls
+// ============================================================================
 
-    return <SduiLayoutRenderer document={document} components={sduiComponents} />
+export const Playground: Story = {
+  args: {
+    appearance: 'default',
+    spacing: 'default',
+    isDisabled: false,
+    isLoading: false,
+    isSelected: false,
+    children: 'Button',
   },
   parameters: {
     docs: {
       description: {
         story: `
-## Overview
+## Interactive Playground
 
-The **default button configuration** represents the most commonly used variant in the design system.
+Use the controls panel to experiment with different button configurations.
 
-## Configuration
+### Available Controls
 
-- **Style**: Filled
-- **Size**: Medium (M)
-- **Type**: Primary
-
-## Usage
-
-This is the recommended starting point for most button implementations. Use this variant for primary actions that need clear visual emphasis.
+- **appearance**: default, primary, subtle, warning, danger
+- **spacing**: default (32px), compact (24px)
+- **isDisabled**: Enable/disable the button
+- **isLoading**: Show loading spinner
+- **isSelected**: Toggle selected state
         `,
       },
     },
   },
 }
 
-// Style variants
-export const Filled: Story = {
+// ============================================================================
+// Appearance Variants
+// ============================================================================
+
+export const AppearanceDefault: Story = {
   render: () => {
     const document: SduiLayoutDocument = {
       version: '1.0.0',
       root: {
         id: 'root',
         type: 'Div',
-        attributes: {
-          className: 'flex items-center justify-center p-4',
-        },
+        attributes: { className: 'flex items-center justify-center p-4 gap-4' },
         children: [
           {
-            id: 'button-1',
+            id: 'btn-default',
             type: 'Button',
-            state: {
-              buttonStyle: 'filled',
-              size: 'M',
-              buttonType: 'primary',
-              disabled: false,
-            },
-            attributes: {
-              type: 'button',
-            },
-            children: [
-              {
-                id: 'button-text',
-                type: 'Span',
-                state: {
-                  text: 'Filled Button',
-                },
-              },
-            ],
+            state: { appearance: 'default' },
+            children: [{ id: 'text', type: 'Span', state: { text: 'Default' } }],
           },
         ],
       },
     }
-
     return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
       description: {
         story: `
-## Overview
+## Default Appearance
 
-**Filled buttons** feature a solid background color and provide the highest visual emphasis among all button styles.
+Neutral button with border. Use for secondary actions that need less visual emphasis.
 
-## Characteristics
-
-- Solid background color
-- Highest visual weight
-- Strong call-to-action presence
-
-## Best Practices
-
-- Use for **primary actions** only
-- Limit to **1-2 per screen** to maintain hierarchy
-- Reserve for the most important user actions
-
-## When to Use
-
-- Submit forms
-- Confirm critical actions
-- Primary navigation
+### Characteristics
+- Transparent background with border
+- Uses \`--color-border-default\` for border
+- \`--color-text-default\` for text color
         `,
       },
     },
   },
 }
 
-export const Outline: Story = {
+export const AppearancePrimary: Story = {
   render: () => {
     const document: SduiLayoutDocument = {
       version: '1.0.0',
       root: {
         id: 'root',
         type: 'Div',
-        attributes: {
-          className: 'flex items-center justify-center p-4',
-        },
+        attributes: { className: 'flex items-center justify-center p-4 gap-4' },
         children: [
           {
-            id: 'button-1',
+            id: 'btn-primary',
             type: 'Button',
-            state: {
-              buttonStyle: 'outline',
-              size: 'M',
-              buttonType: 'primary',
-              disabled: false,
-            },
-            attributes: {
-              type: 'button',
-            },
-            children: [
-              {
-                id: 'button-text',
-                type: 'Span',
-                state: {
-                  text: 'Outline Button',
-                },
-              },
-            ],
+            state: { appearance: 'primary' },
+            children: [{ id: 'text', type: 'Span', state: { text: 'Primary' } }],
           },
         ],
       },
     }
-
     return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
       description: {
         story: `
-## Overview
+## Primary Appearance
 
-**Outline buttons** feature a transparent background with a visible border, providing medium visual emphasis.
+Brand blue filled button for primary actions. The highest visual emphasis.
 
-## Characteristics
-
-- Transparent background
-- Visible border
-- Medium visual weight
-
-## Best Practices
-
-- Use for **secondary actions**
-- Pair with filled buttons for hierarchy
-- Suitable for cancel/dismiss actions
-
-## When to Use
-
-- Secondary form actions
-- Cancel buttons
-- Alternative navigation options
+### Characteristics
+- Solid brand blue background
+- White text for contrast
+- Use for the most important action on a page
         `,
       },
     },
   },
 }
 
-export const Text: Story = {
+export const AppearanceSubtle: Story = {
   render: () => {
     const document: SduiLayoutDocument = {
       version: '1.0.0',
       root: {
         id: 'root',
         type: 'Div',
-        attributes: {
-          className: 'flex items-center justify-center p-4',
-        },
+        attributes: { className: 'flex items-center justify-center p-4 gap-4' },
         children: [
           {
-            id: 'button-1',
+            id: 'btn-subtle',
             type: 'Button',
-            state: {
-              buttonStyle: 'text',
-              size: 'M',
-              buttonType: 'primary',
-              disabled: false,
-            },
-            attributes: {
-              type: 'button',
-            },
-            children: [
-              {
-                id: 'button-text',
-                type: 'Span',
-                state: {
-                  text: 'Text Button',
-                },
-              },
-            ],
+            state: { appearance: 'subtle' },
+            children: [{ id: 'text', type: 'Span', state: { text: 'Subtle' } }],
           },
         ],
       },
     }
-
     return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
       description: {
         story: `
-## Overview
+## Subtle Appearance
 
-**Text buttons** have no background or border, relying solely on text color for visibility. They provide the least visual emphasis.
+Transparent button without border. Lowest visual emphasis, similar to text links.
 
-## Characteristics
-
-- No background or border
-- Lowest visual weight
-- Minimal visual footprint
-
-## Size Support
-
-Unlike filled and outline buttons, text buttons support **all three sizes**:
-- **L** (Large)
-- **M** (Medium)
-- **S** (Small)
-
-## Best Practices
-
-- Use for **tertiary actions**
-- Ideal for less critical actions
-- Great for compact UIs
-
-## When to Use
-
-- Tertiary actions
-- Link-like buttons
-- Compact interfaces
-- Mobile-friendly designs
+### Characteristics
+- Transparent background, no border
+- Subtle text color
+- Use for tertiary actions or link-like buttons
         `,
       },
     },
   },
 }
 
-// Sizes
-export const SizeL: Story = {
+export const AppearanceWarning: Story = {
   render: () => {
     const document: SduiLayoutDocument = {
       version: '1.0.0',
       root: {
         id: 'root',
         type: 'Div',
-        attributes: {
-          className: 'flex items-center justify-center p-4',
-        },
+        attributes: { className: 'flex items-center justify-center p-4 gap-4' },
         children: [
           {
-            id: 'button-1',
+            id: 'btn-warning',
             type: 'Button',
-            state: {
-              buttonStyle: 'filled',
-              size: 'L',
-              buttonType: 'primary',
-              disabled: false,
-            },
-            attributes: {
-              type: 'button',
-            },
-            children: [
-              {
-                id: 'button-text',
-                type: 'Span',
-                state: {
-                  text: 'Size L',
-                },
-              },
-            ],
+            state: { appearance: 'warning' },
+            children: [{ id: 'text', type: 'Span', state: { text: 'Warning' } }],
           },
         ],
       },
     }
-
     return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
       description: {
         story: `
-## Overview
+## Warning Appearance
 
-**Large buttons (Size L)** are the most prominent size, ideal for important call-to-action elements.
+Yellow/orange filled button for warning actions.
 
-## Specifications
-
-- **Height**: 40px
-- **Text size**: 16px
-- **Visual weight**: High
-
-## Best Use Cases
-
-- Hero section CTAs
-- Primary user flows
-- Landing page actions
-- Mobile-friendly touch targets
-
-## When to Use
-
-Use Size L when you need maximum visibility and want to guide users toward the primary action.
+### Characteristics
+- Warning background color
+- Dark text for contrast
+- Use for actions that need user attention but aren't destructive
         `,
       },
     },
   },
 }
 
-export const SizeM: Story = {
+export const AppearanceDanger: Story = {
   render: () => {
     const document: SduiLayoutDocument = {
       version: '1.0.0',
       root: {
         id: 'root',
         type: 'Div',
-        attributes: {
-          className: 'flex items-center justify-center p-4',
-        },
+        attributes: { className: 'flex items-center justify-center p-4 gap-4' },
         children: [
           {
-            id: 'button-1',
+            id: 'btn-danger',
             type: 'Button',
-            state: {
-              buttonStyle: 'filled',
-              size: 'M',
-              buttonType: 'primary',
-              disabled: false,
-            },
-            attributes: {
-              type: 'button',
-            },
-            children: [
-              {
-                id: 'button-text',
-                type: 'Span',
-                state: {
-                  text: 'Size M',
-                },
-              },
-            ],
+            state: { appearance: 'danger' },
+            children: [{ id: 'text', type: 'Span', state: { text: 'Danger' } }],
           },
         ],
       },
     }
-
     return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
       description: {
         story: `
-## Overview
+## Danger Appearance
 
-**Medium buttons (Size M)** are the default size and the most versatile option for general use.
+Red filled button for destructive actions.
 
-## Specifications
-
-- **Height**: 32px
-- **Text size**: 14px
-- **Visual weight**: Medium
-
-## Why Default?
-
-- Balanced proportions
-- Works well in most contexts
-- Good readability
-- Standard touch target size
-
-## Best Use Cases
-
-- Standard form buttons
-- General UI actions
-- Navigation elements
-- Most common use cases
+### Characteristics
+- Danger/red background color
+- White text for contrast
+- Use for delete, remove, or other destructive actions
         `,
       },
     },
   },
 }
 
-export const SizeS: Story = {
+// ============================================================================
+// Spacing Variants
+// ============================================================================
+
+export const SpacingDefault: Story = {
   render: () => {
     const document: SduiLayoutDocument = {
       version: '1.0.0',
       root: {
         id: 'root',
         type: 'Div',
-        attributes: {
-          className: 'flex items-center justify-center p-4',
-        },
+        attributes: { className: 'flex items-center justify-center p-4 gap-4' },
         children: [
           {
-            id: 'button-1',
+            id: 'btn-default-spacing',
             type: 'Button',
-            state: {
-              buttonStyle: 'text',
-              size: 'S',
-              buttonType: 'primary',
-              disabled: false,
-            },
-            attributes: {
-              type: 'button',
-            },
-            children: [
-              {
-                id: 'button-text',
-                type: 'Span',
-                state: {
-                  text: 'Size S',
-                },
-              },
-            ],
+            state: { appearance: 'primary', spacing: 'default' },
+            children: [{ id: 'text', type: 'Span', state: { text: 'Default (32px)' } }],
           },
         ],
       },
     }
-
     return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
       description: {
         story: `
-## Overview
+## Default Spacing
 
-**Small buttons (Size S)** provide a compact option for space-constrained interfaces.
+Standard button size with 32px height.
 
-## Specifications
-
-- **Height**: 24px
-- **Text size**: 12px
-- **Visual weight**: Low
-
-## Important Note
-
-⚠️ **Size S is only available for text buttons**, not filled or outline buttons.
-
-## Best Use Cases
-
-- Compact toolbars
-- Inline actions
-- Dense interfaces
-- Secondary actions in tight spaces
-
-## When to Use
-
-Use Size S when space is limited but you still need a clickable action element.
+### Specifications
+- **Height**: 32px minimum
+- **Padding**: 12px horizontal
+- **Font size**: 14px
         `,
       },
     },
   },
 }
 
-// Types
-export const Primary: Story = {
+export const SpacingCompact: Story = {
   render: () => {
     const document: SduiLayoutDocument = {
       version: '1.0.0',
       root: {
         id: 'root',
         type: 'Div',
-        attributes: {
-          className: 'flex items-center justify-center p-4',
-        },
+        attributes: { className: 'flex items-center justify-center p-4 gap-4' },
         children: [
           {
-            id: 'button-1',
+            id: 'btn-compact-spacing',
             type: 'Button',
-            state: {
-              buttonStyle: 'filled',
-              size: 'M',
-              buttonType: 'primary',
-              disabled: false,
-            },
-            attributes: {
-              type: 'button',
-            },
-            children: [
-              {
-                id: 'button-text',
-                type: 'Span',
-                state: {
-                  text: 'Primary Button',
-                },
-              },
-            ],
+            state: { appearance: 'primary', spacing: 'compact' },
+            children: [{ id: 'text', type: 'Span', state: { text: 'Compact (24px)' } }],
           },
         ],
       },
     }
-
     return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
       description: {
         story: `
-## Overview
+## Compact Spacing
 
-**Primary buttons** use the primary color scheme from the design system, indicating the most important action.
+Smaller button size with 24px height for dense UIs.
 
-## Characteristics
-
-- Primary brand color
-- Highest priority indication
-- Main call-to-action
-
-## Best Practices
-
-- Use for **the most important action** on a page
-- Typically only **one per screen**
-- Should be visually distinct from secondary buttons
-
-## Common Use Cases
-
-- Submit forms
-- Save changes
-- Confirm actions
-- Primary navigation
+### Specifications
+- **Height**: 24px minimum
+- **Padding**: 8px horizontal
+- **Font size**: 12px
         `,
       },
     },
   },
 }
 
-export const Secondary: Story = {
-  render: () => {
-    const document: SduiLayoutDocument = {
-      version: '1.0.0',
-      root: {
-        id: 'root',
-        type: 'Div',
-        attributes: {
-          className: 'flex items-center justify-center p-4',
-        },
-        children: [
-          {
-            id: 'button-1',
-            type: 'Button',
-            state: {
-              buttonStyle: 'filled',
-              size: 'M',
-              buttonType: 'secondary',
-              disabled: false,
-            },
-            attributes: {
-              type: 'button',
-            },
-            children: [
-              {
-                id: 'button-text',
-                type: 'Span',
-                state: {
-                  text: 'Secondary Button',
-                },
-              },
-            ],
-          },
-        ],
-      },
-    }
-
-    return <SduiLayoutRenderer document={document} components={sduiComponents} />
-  },
-  parameters: {
-    docs: {
-      description: {
-        story: `
-## Overview
-
-**Secondary buttons** use the secondary color scheme, indicating important but less critical actions.
-
-## Characteristics
-
-- Secondary brand color
-- Medium priority indication
-- Alternative action option
-
-## Best Practices
-
-- Use alongside primary buttons
-- Provides alternative actions
-- Maintains visual hierarchy
-
-## Common Use Cases
-
-- Cancel actions
-- Alternative options
-- Secondary form actions
-- Additional navigation paths
-        `,
-      },
-    },
-  },
-}
-
+// ============================================================================
 // States
-export const Disabled: Story = {
+// ============================================================================
+
+export const StateDisabled: Story = {
   render: () => {
     const document: SduiLayoutDocument = {
       version: '1.0.0',
       root: {
         id: 'root',
         type: 'Div',
-        attributes: {
-          className: 'flex items-center justify-center p-4',
-        },
+        attributes: { className: 'flex items-center justify-center p-4 gap-4' },
         children: [
           {
-            id: 'button-1',
+            id: 'btn-disabled',
             type: 'Button',
-            state: {
-              buttonStyle: 'filled',
-              size: 'M',
-              buttonType: 'primary',
-              disabled: true,
-            },
-            attributes: {
-              type: 'button',
-            },
+            state: { appearance: 'primary', isDisabled: true },
+            children: [{ id: 'text', type: 'Span', state: { text: 'Disabled' } }],
+          },
+        ],
+      },
+    }
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: `
+## Disabled State
+
+Non-interactive button indicating an action is unavailable.
+
+### Behavior
+- Cannot be clicked
+- Keyboard navigation disabled
+- Visual feedback: reduced opacity, disabled colors
+- \`aria-disabled="true"\` for accessibility
+        `,
+      },
+    },
+  },
+}
+
+export const StateLoading: Story = {
+  render: () => {
+    const document: SduiLayoutDocument = {
+      version: '1.0.0',
+      root: {
+        id: 'root',
+        type: 'Div',
+        attributes: { className: 'flex items-center justify-center p-4 gap-4' },
+        children: [
+          {
+            id: 'btn-loading',
+            type: 'Button',
+            state: { appearance: 'primary', isLoading: true },
+            children: [{ id: 'text', type: 'Span', state: { text: 'Loading...' } }],
+          },
+        ],
+      },
+    }
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: `
+## Loading State
+
+Shows a spinner and blocks interaction during async operations.
+
+### Behavior
+- Spinner animation displayed
+- Click events blocked
+- Original content hidden but preserves width
+- \`aria-busy="true"\` for accessibility
+- Icons are hidden during loading
+        `,
+      },
+    },
+  },
+}
+
+export const StateSelected: Story = {
+  render: () => {
+    const document: SduiLayoutDocument = {
+      version: '1.0.0',
+      root: {
+        id: 'root',
+        type: 'Div',
+        attributes: { className: 'flex items-center justify-center p-4 gap-4' },
+        children: [
+          {
+            id: 'btn-selected',
+            type: 'Button',
+            state: { appearance: 'default', isSelected: true },
+            children: [{ id: 'text', type: 'Span', state: { text: 'Selected' } }],
+          },
+        ],
+      },
+    }
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: `
+## Selected State
+
+Toggle/selected state for buttons that act as toggles.
+
+### Behavior
+- Visual feedback with selected background color
+- \`aria-pressed="true"\` for accessibility
+- Can be combined with any appearance
+- Useful for toggle buttons, filters, etc.
+        `,
+      },
+    },
+  },
+}
+
+// ============================================================================
+// Icons
+// ============================================================================
+
+export const WithIconBefore: Story = {
+  render: () => (
+    <div className="flex items-center justify-center p-4 gap-4">
+      <Button
+        appearance="primary"
+        iconBefore={
+          <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" strokeWidth="2" fill="none" />
+          </svg>
+        }
+      >
+        Search
+      </Button>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: `
+## Icon Before Label
+
+Add an icon before the button label using \`iconBefore\` prop.
+
+### Specifications
+- Icon size: 16x16px
+- Gap between icon and label: 6px
+- Icon inherits text color
+        `,
+      },
+    },
+  },
+}
+
+export const WithIconAfter: Story = {
+  render: () => (
+    <div className="flex items-center justify-center p-4 gap-4">
+      <Button
+        appearance="default"
+        iconAfter={
+          <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+            <path d="M19 9l-7 7-7-7" stroke="currentColor" strokeWidth="2" fill="none" />
+          </svg>
+        }
+      >
+        Dropdown
+      </Button>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: `
+## Icon After Label
+
+Add an icon after the button label using \`iconAfter\` prop.
+
+### Specifications
+- Icon size: 12x12px (smaller for chevrons)
+- Gap between label and icon: 6px
+- Commonly used for dropdown indicators
+        `,
+      },
+    },
+  },
+}
+
+export const WithBothIcons: Story = {
+  render: () => (
+    <div className="flex items-center justify-center p-4 gap-4">
+      <Button
+        appearance="primary"
+        iconBefore={
+          <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+            <path d="M12 4v16m8-8H4" stroke="currentColor" strokeWidth="2" fill="none" />
+          </svg>
+        }
+        iconAfter={
+          <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+            <path d="M19 9l-7 7-7-7" stroke="currentColor" strokeWidth="2" fill="none" />
+          </svg>
+        }
+      >
+        Add Item
+      </Button>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: `
+## Both Icons
+
+Buttons can have both iconBefore and iconAfter simultaneously.
+
+### Use Case
+- Split button patterns
+- Complex action indicators
+        `,
+      },
+    },
+  },
+}
+
+// ============================================================================
+// All Appearances Grid
+// ============================================================================
+
+export const AllAppearances: Story = {
+  render: () => {
+    const document: SduiLayoutDocument = {
+      version: '1.0.0',
+      root: {
+        id: 'root',
+        type: 'Div',
+        attributes: { className: 'flex flex-col gap-6 p-6' },
+        children: [
+          {
+            id: 'title',
+            type: 'Span',
+            state: { text: 'All Appearances' },
+            attributes: { className: 'text-xl font-bold' },
+          },
+          {
+            id: 'buttons-row',
+            type: 'Div',
+            attributes: { className: 'flex flex-wrap gap-4 items-center' },
+            children: (['default', 'primary', 'subtle', 'warning', 'danger'] as const).map((appearance) => ({
+              id: `btn-${appearance}`,
+              type: 'Button',
+              state: { appearance },
+              children: [
+                {
+                  id: `text-${appearance}`,
+                  type: 'Span',
+                  state: { text: appearance.charAt(0).toUpperCase() + appearance.slice(1) },
+                },
+              ],
+            })),
+          },
+        ],
+      },
+    }
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: `
+## All Appearances Overview
+
+Visual comparison of all 5 appearance variants side by side.
+
+| Appearance | Use Case |
+|------------|----------|
+| Default | Secondary actions |
+| Primary | Primary actions |
+| Subtle | Tertiary/link-like |
+| Warning | Attention needed |
+| Danger | Destructive actions |
+        `,
+      },
+    },
+  },
+}
+
+// ============================================================================
+// Spacing Comparison
+// ============================================================================
+
+export const SpacingComparison: Story = {
+  render: () => {
+    const document: SduiLayoutDocument = {
+      version: '1.0.0',
+      root: {
+        id: 'root',
+        type: 'Div',
+        attributes: { className: 'flex flex-col gap-6 p-6' },
+        children: [
+          {
+            id: 'title',
+            type: 'Span',
+            state: { text: 'Spacing Comparison' },
+            attributes: { className: 'text-xl font-bold' },
+          },
+          {
+            id: 'comparison-row',
+            type: 'Div',
+            attributes: { className: 'flex gap-8 items-end' },
             children: [
               {
-                id: 'button-text',
-                type: 'Span',
-                state: {
-                  text: 'Disabled Button',
-                },
+                id: 'default-col',
+                type: 'Div',
+                attributes: { className: 'flex flex-col gap-2 items-center' },
+                children: [
+                  {
+                    id: 'default-label',
+                    type: 'Span',
+                    state: { text: 'Default (32px)' },
+                    attributes: { className: 'text-sm font-medium' },
+                  },
+                  {
+                    id: 'default-btn',
+                    type: 'Button',
+                    state: { appearance: 'primary', spacing: 'default' },
+                    children: [{ id: 'default-text', type: 'Span', state: { text: 'Button' } }],
+                  },
+                ],
+              },
+              {
+                id: 'compact-col',
+                type: 'Div',
+                attributes: { className: 'flex flex-col gap-2 items-center' },
+                children: [
+                  {
+                    id: 'compact-label',
+                    type: 'Span',
+                    state: { text: 'Compact (24px)' },
+                    attributes: { className: 'text-sm font-medium' },
+                  },
+                  {
+                    id: 'compact-btn',
+                    type: 'Button',
+                    state: { appearance: 'primary', spacing: 'compact' },
+                    children: [{ id: 'compact-text', type: 'Span', state: { text: 'Button' } }],
+                  },
+                ],
               },
             ],
           },
         ],
       },
     }
-
     return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
       description: {
         story: `
-## Overview
+## Spacing Side-by-Side
 
-**Disabled buttons** are non-interactive elements that indicate an action is currently unavailable.
+Compare default and compact spacing options.
 
-## Visual Characteristics
-
-- Reduced opacity (50%)
-- Non-clickable state
-- Maintains visual style
-- Clear "unavailable" indication
-
-## Behavior
-
-- ❌ Cannot be clicked
-- ❌ Keyboard navigation disabled
-- ❌ No hover/press states
-- ✅ Visual style preserved
-
-## When to Use
-
-- Form validation pending
-- Permission restrictions
-- Loading states
-- Conditional availability
-
-## Best Practices
-
-- Provide clear feedback about why disabled
-- Consider showing tooltip explaining restriction
-- Re-enable when conditions are met
+| Spacing | Height | Padding | Font |
+|---------|--------|---------|------|
+| Default | 32px | 12px | 14px |
+| Compact | 24px | 8px | 12px |
         `,
       },
     },
   },
 }
 
-// All Combinations - Filled
-export const FilledCombinations: Story = {
-  render: () => {
-    const document: SduiLayoutDocument = {
-      version: '1.0.0',
-      root: {
-        id: 'root',
-        type: 'Div',
-        attributes: {
-          className: 'flex flex-col gap-4 p-6',
-        },
-        children: [
-          {
-            id: 'title',
-            type: 'Span',
-            state: {
-              text: 'Filled Style - All Combinations',
-            },
-            attributes: {
-              className: 'text-lg font-bold mb-4',
-            },
-          },
-          {
-            id: 'buttons-container',
-            type: 'Div',
-            attributes: {
-              className: 'flex flex-wrap gap-4',
-            },
-            children: [
-              ...(['L', 'M'] as const).flatMap((size) =>
-                (['primary', 'secondary'] as const).map((buttonType, index) => ({
-                  id: `button-filled-${size}-${buttonType}`,
-                  type: 'Button',
-                  state: {
-                    buttonStyle: 'filled' as const,
-                    size,
-                    buttonType,
-                  },
-                  children: [
-                    {
-                      id: `button-text-filled-${size}-${buttonType}`,
-                      type: 'Span',
-                      state: {
-                        text: `Filled ${size} ${buttonType}`,
-                      },
-                    },
-                  ],
-                })),
-              ),
-            ],
-          },
-        ],
-      },
-    }
-
-    return <SduiLayoutRenderer document={document} components={sduiComponents} />
-  },
-  parameters: {
-    docs: {
-      description: {
-        story: `
-## Overview
-
-Displays **all available combinations** of filled button style variants.
-
-## Available Combinations
-
-Filled buttons support:
-- **2 sizes**: L, M
-- **2 types**: Primary, Secondary
-- **Total**: 4 combinations
-
-## Combinations Shown
-
-1. Filled L Primary
-2. Filled L Secondary
-3. Filled M Primary
-4. Filled M Secondary
-
-## Usage
-
-Use this reference to see all filled button options at a glance and choose the appropriate combination for your use case.
-        `,
-      },
-    },
-  },
-}
-
-// All Combinations - Outline
-export const OutlineCombinations: Story = {
-  render: () => {
-    const document: SduiLayoutDocument = {
-      version: '1.0.0',
-      root: {
-        id: 'root',
-        type: 'Div',
-        attributes: {
-          className: 'flex flex-col gap-4 p-6',
-        },
-        children: [
-          {
-            id: 'title',
-            type: 'Span',
-            state: {
-              text: 'Outline Style - All Combinations',
-            },
-            attributes: {
-              className: 'text-lg font-bold mb-4',
-            },
-          },
-          {
-            id: 'buttons-container',
-            type: 'Div',
-            attributes: {
-              className: 'flex flex-wrap gap-4',
-            },
-            children: [
-              ...(['L', 'M'] as const).flatMap((size) =>
-                (['primary', 'secondary'] as const).map((buttonType) => ({
-                  id: `button-outline-${size}-${buttonType}`,
-                  type: 'Button',
-                  state: {
-                    buttonStyle: 'outline' as const,
-                    size,
-                    buttonType,
-                  },
-                  children: [
-                    {
-                      id: `button-text-outline-${size}-${buttonType}`,
-                      type: 'Span',
-                      state: {
-                        text: `Outline ${size} ${buttonType}`,
-                      },
-                    },
-                  ],
-                })),
-              ),
-            ],
-          },
-        ],
-      },
-    }
-
-    return <SduiLayoutRenderer document={document} components={sduiComponents} />
-  },
-  parameters: {
-    docs: {
-      description: {
-        story: `
-## Overview
-
-Displays **all available combinations** of outline button style variants.
-
-## Available Combinations
-
-Outline buttons support:
-- **2 sizes**: L, M
-- **2 types**: Primary, Secondary
-- **Total**: 4 combinations
-
-## Combinations Shown
-
-1. Outline L Primary
-2. Outline L Secondary
-3. Outline M Primary
-4. Outline M Secondary
-
-## Usage
-
-Use this reference to see all outline button options and choose the appropriate combination for secondary actions.
-        `,
-      },
-    },
-  },
-}
-
-// All Combinations - Text
-export const TextCombinations: Story = {
-  render: () => {
-    const document: SduiLayoutDocument = {
-      version: '1.0.0',
-      root: {
-        id: 'root',
-        type: 'Div',
-        attributes: {
-          className: 'flex flex-col gap-4 p-6',
-        },
-        children: [
-          {
-            id: 'title',
-            type: 'Span',
-            state: {
-              text: 'Text Style - All Combinations',
-            },
-            attributes: {
-              className: 'text-lg font-bold mb-4',
-            },
-          },
-          {
-            id: 'buttons-container',
-            type: 'Div',
-            attributes: {
-              className: 'flex flex-wrap gap-4',
-            },
-            children: [
-              ...(['L', 'M', 'S'] as const).flatMap((size) =>
-                (['primary', 'secondary'] as const).map((buttonType) => ({
-                  id: `button-text-${size}-${buttonType}`,
-                  type: 'Button',
-                  state: {
-                    buttonStyle: 'text' as const,
-                    size,
-                    buttonType,
-                  },
-                  children: [
-                    {
-                      id: `button-text-text-${size}-${buttonType}`,
-                      type: 'Span',
-                      state: {
-                        text: `Text ${size} ${buttonType}`,
-                      },
-                    },
-                  ],
-                })),
-              ),
-            ],
-          },
-        ],
-      },
-    }
-
-    return <SduiLayoutRenderer document={document} components={sduiComponents} />
-  },
-  parameters: {
-    docs: {
-      description: {
-        story: `
-## Overview
-
-Displays **all available combinations** of text button style variants.
-
-## Available Combinations
-
-Text buttons support:
-- **3 sizes**: L, M, S (unique!)
-- **2 types**: Primary, Secondary
-- **Total**: 6 combinations
-
-## Unique Feature
-
-✨ **Text buttons are the only style** that supports the small (S) size variant.
-
-## Combinations Shown
-
-1. Text L Primary
-2. Text L Secondary
-3. Text M Primary
-4. Text M Secondary
-5. Text S Primary
-6. Text S Secondary
-
-## Usage
-
-Use this reference to see all text button options, including the compact Size S variant.
-        `,
-      },
-    },
-  },
-}
-
+// ============================================================================
 // States Matrix
+// ============================================================================
+
 export const StatesMatrix: Story = {
   render: () => {
+    const appearances = ['default', 'primary', 'subtle', 'warning', 'danger'] as const
+
     const document: SduiLayoutDocument = {
       version: '1.0.0',
       root: {
         id: 'root',
         type: 'Div',
-        attributes: {
-          className: 'flex flex-col gap-6 p-6',
-        },
+        attributes: { className: 'flex flex-col gap-6 p-6' },
         children: [
           {
             id: 'title',
             type: 'Span',
-            state: {
-              text: 'States - Default, Hover, Press, Disabled',
-            },
-            attributes: {
-              className: 'text-lg font-bold mb-4',
-            },
+            state: { text: 'States Matrix' },
+            attributes: { className: 'text-xl font-bold mb-4' },
           },
-          ...(['filled', 'outline', 'text'] as const).map((buttonStyle) => ({
-            id: `style-${buttonStyle}`,
+          // Header row
+          {
+            id: 'header',
             type: 'Div',
-            attributes: {
-              className: 'flex flex-col gap-2',
-            },
+            attributes: { className: 'grid grid-cols-6 gap-4 items-center mb-2' },
+            children: [
+              { id: 'h-appearance', type: 'Span', state: { text: 'Appearance' }, attributes: { className: 'font-bold' } },
+              { id: 'h-default', type: 'Span', state: { text: 'Default' }, attributes: { className: 'text-center text-sm' } },
+              { id: 'h-disabled', type: 'Span', state: { text: 'Disabled' }, attributes: { className: 'text-center text-sm' } },
+              { id: 'h-loading', type: 'Span', state: { text: 'Loading' }, attributes: { className: 'text-center text-sm' } },
+              { id: 'h-selected', type: 'Span', state: { text: 'Selected' }, attributes: { className: 'text-center text-sm' } },
+              { id: 'h-hover', type: 'Span', state: { text: 'Hover (try)' }, attributes: { className: 'text-center text-sm' } },
+            ],
+          },
+          // Data rows
+          ...appearances.map((appearance) => ({
+            id: `row-${appearance}`,
+            type: 'Div',
+            attributes: { className: 'grid grid-cols-6 gap-4 items-center' },
             children: [
               {
-                id: `style-title-${buttonStyle}`,
+                id: `label-${appearance}`,
                 type: 'Span',
-                state: {
-                  text: `${buttonStyle.charAt(0).toUpperCase() + buttonStyle.slice(1)} Style`,
-                },
-                attributes: {
-                  className: 'text-base font-semibold capitalize',
-                },
+                state: { text: appearance.charAt(0).toUpperCase() + appearance.slice(1) },
+                attributes: { className: 'font-medium capitalize' },
               },
               {
-                id: `buttons-row-${buttonStyle}`,
-                type: 'Div',
-                attributes: {
-                  className: 'flex gap-4 items-center',
-                },
-                children: [
-                  {
-                    id: `button-default-${buttonStyle}`,
-                    type: 'Div',
-                    attributes: {
-                      className: 'flex flex-col gap-1',
-                    },
-                    children: [
-                      {
-                        id: `label-default-${buttonStyle}`,
-                        type: 'Span',
-                        state: {
-                          text: 'Default',
-                        },
-                        attributes: {
-                          className: 'text-xs mb-1',
-                        },
-                      },
-                      {
-                        id: `button-default-btn-${buttonStyle}`,
-                        type: 'Button',
-                        state: {
-                          buttonStyle,
-                          size: 'M',
-                          buttonType: 'primary',
-                        },
-                        children: [
-                          {
-                            id: `button-text-default-${buttonStyle}`,
-                            type: 'Span',
-                            state: {
-                              text: 'Label',
-                            },
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                  {
-                    id: `button-hover-${buttonStyle}`,
-                    type: 'Div',
-                    attributes: {
-                      className: 'flex flex-col gap-1',
-                    },
-                    children: [
-                      {
-                        id: `label-hover-${buttonStyle}`,
-                        type: 'Span',
-                        state: {
-                          text: 'Hover (hover to see)',
-                        },
-                        attributes: {
-                          className: 'text-xs mb-1',
-                        },
-                      },
-                      {
-                        id: `button-hover-btn-${buttonStyle}`,
-                        type: 'Button',
-                        state: {
-                          buttonStyle,
-                          size: 'M',
-                          buttonType: 'primary',
-                        },
-                        children: [
-                          {
-                            id: `button-text-hover-${buttonStyle}`,
-                            type: 'Span',
-                            state: {
-                              text: 'Label',
-                            },
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                  {
-                    id: `button-press-${buttonStyle}`,
-                    type: 'Div',
-                    attributes: {
-                      className: 'flex flex-col gap-1',
-                    },
-                    children: [
-                      {
-                        id: `label-press-${buttonStyle}`,
-                        type: 'Span',
-                        state: {
-                          text: 'Press (click to see)',
-                        },
-                        attributes: {
-                          className: 'text-xs mb-1',
-                        },
-                      },
-                      {
-                        id: `button-press-btn-${buttonStyle}`,
-                        type: 'Button',
-                        state: {
-                          buttonStyle,
-                          size: 'M',
-                          buttonType: 'primary',
-                        },
-                        children: [
-                          {
-                            id: `button-text-press-${buttonStyle}`,
-                            type: 'Span',
-                            state: {
-                              text: 'Label',
-                            },
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                  {
-                    id: `button-disabled-${buttonStyle}`,
-                    type: 'Div',
-                    attributes: {
-                      className: 'flex flex-col gap-1',
-                    },
-                    children: [
-                      {
-                        id: `label-disabled-${buttonStyle}`,
-                        type: 'Span',
-                        state: {
-                          text: 'Disabled',
-                        },
-                        attributes: {
-                          className: 'text-xs mb-1',
-                        },
-                      },
-                      {
-                        id: `button-disabled-btn-${buttonStyle}`,
-                        type: 'Button',
-                        state: {
-                          buttonStyle,
-                          size: 'M',
-                          buttonType: 'primary',
-                        },
-                        attributes: {
-                          disabled: true,
-                        },
-                        children: [
-                          {
-                            id: `button-text-disabled-${buttonStyle}`,
-                            type: 'Span',
-                            state: {
-                              text: 'Label',
-                            },
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                ],
+                id: `btn-default-${appearance}`,
+                type: 'Button',
+                state: { appearance },
+                children: [{ id: `text-default-${appearance}`, type: 'Span', state: { text: 'Button' } }],
+              },
+              {
+                id: `btn-disabled-${appearance}`,
+                type: 'Button',
+                state: { appearance, isDisabled: true },
+                children: [{ id: `text-disabled-${appearance}`, type: 'Span', state: { text: 'Button' } }],
+              },
+              {
+                id: `btn-loading-${appearance}`,
+                type: 'Button',
+                state: { appearance, isLoading: true },
+                children: [{ id: `text-loading-${appearance}`, type: 'Span', state: { text: 'Button' } }],
+              },
+              {
+                id: `btn-selected-${appearance}`,
+                type: 'Button',
+                state: { appearance, isSelected: true },
+                children: [{ id: `text-selected-${appearance}`, type: 'Span', state: { text: 'Button' } }],
+              },
+              {
+                id: `btn-hover-${appearance}`,
+                type: 'Button',
+                state: { appearance },
+                children: [{ id: `text-hover-${appearance}`, type: 'Span', state: { text: 'Button' } }],
               },
             ],
           })),
@@ -1254,225 +872,77 @@ export const StatesMatrix: Story = {
     docs: {
       description: {
         story: `
-## Overview
+## Complete States Matrix
 
-Demonstrates the **interactive states** of buttons across all three styles (filled, outline, text).
+A comprehensive view of all appearance variants across different states.
 
-## Interactive States
-
-### 1. Default
-- Initial state
-- Ready for interaction
-- Standard appearance
-
-### 2. Hover
-- Mouse over state
-- Visual feedback on hover
-- Indicates interactivity
-
-### 3. Press/Active
-- Click/press state
-- Immediate feedback
-- Confirms interaction
-
-### 4. Disabled
-- Non-interactive state
-- Reduced opacity
-- Clear "unavailable" indication
-
-## Consistency
-
-All styles maintain **consistent state behavior** while using their respective color schemes, ensuring a cohesive user experience across all button variants.
-
-## Try It
-
-- **Hover** over buttons to see hover states
-- **Click** buttons to see press/active states
-- Observe disabled buttons for non-interactive state
+### States Shown
+- **Default**: Normal interactive state
+- **Disabled**: Non-interactive, reduced opacity
+- **Loading**: Spinner shown, interaction blocked
+- **Selected**: Toggle/selected state
+- **Hover**: Hover over to see hover state
         `,
       },
     },
   },
 }
 
-// Complete Matrix - All combinations
-export const AllCombinations: Story = {
+// ============================================================================
+// Complete Matrix
+// ============================================================================
+
+export const CompleteMatrix: Story = {
   render: () => {
+    const appearances = ['default', 'primary', 'subtle', 'warning', 'danger'] as const
+    const spacings = ['default', 'compact'] as const
+
     const document: SduiLayoutDocument = {
       version: '1.0.0',
       root: {
         id: 'root',
         type: 'Div',
-        attributes: {
-          className: 'flex flex-col gap-8 p-6',
-        },
+        attributes: { className: 'flex flex-col gap-8 p-6' },
         children: [
           {
             id: 'title',
             type: 'Span',
-            state: {
-              text: 'Button - All Combinations',
-            },
-            attributes: {
-              className: 'text-2xl font-bold mb-2',
-            },
+            state: { text: 'Complete Button Matrix (ADS Style)' },
+            attributes: { className: 'text-2xl font-bold' },
           },
           {
-            id: 'note',
+            id: 'subtitle',
             type: 'Span',
-            state: {
-              text: '*To reduce complexity, styles are separated into individual components rather than being properties',
-            },
-            attributes: {
-              className: 'text-sm text-gray-600 mb-4',
-            },
+            state: { text: '5 Appearances × 2 Spacings = 10 Combinations' },
+            attributes: { className: 'text-sm text-gray-600 mb-4' },
           },
-          ...(['filled', 'outline', 'text'] as const).map((buttonStyle) => ({
-            id: `section-${buttonStyle}`,
+          ...spacings.map((spacing) => ({
+            id: `section-${spacing}`,
             type: 'Div',
-            attributes: {
-              className: 'flex flex-col gap-6 border-t border-gray-200 pt-6',
-            },
+            attributes: { className: 'flex flex-col gap-4' },
             children: [
               {
-                id: `section-title-${buttonStyle}`,
+                id: `section-title-${spacing}`,
                 type: 'Span',
-                state: {
-                  text: `Button_${buttonStyle.charAt(0).toUpperCase() + buttonStyle.slice(1)}`,
-                },
-                attributes: {
-                  className: 'text-xl font-bold capitalize',
-                },
+                state: { text: `Spacing: ${spacing} (${spacing === 'default' ? '32px' : '24px'})` },
+                attributes: { className: 'text-lg font-semibold' },
               },
-              // Sizes section
               {
-                id: `sizes-section-${buttonStyle}`,
+                id: `buttons-${spacing}`,
                 type: 'Div',
-                attributes: {
-                  className: 'flex flex-col gap-4',
-                },
-                children: [
-                  {
-                    id: `sizes-title-${buttonStyle}`,
-                    type: 'Span',
-                    state: {
-                      text: 'Size',
+                attributes: { className: 'flex flex-wrap gap-4 items-center' },
+                children: appearances.map((appearance) => ({
+                  id: `btn-${spacing}-${appearance}`,
+                  type: 'Button',
+                  state: { appearance, spacing },
+                  children: [
+                    {
+                      id: `text-${spacing}-${appearance}`,
+                      type: 'Span',
+                      state: { text: appearance.charAt(0).toUpperCase() + appearance.slice(1) },
                     },
-                    attributes: {
-                      className: 'text-base font-semibold',
-                    },
-                  },
-                  {
-                    id: `sizes-container-${buttonStyle}`,
-                    type: 'Div',
-                    attributes: {
-                      className: 'flex gap-4 flex-wrap',
-                    },
-                    children: (buttonStyle === 'text' ? (['L', 'M', 'S'] as const) : (['L', 'M'] as const)).map(
-                      (size) => ({
-                        id: `size-item-${buttonStyle}-${size}`,
-                        type: 'Div',
-                        attributes: {
-                          className: 'flex flex-col gap-2 items-center',
-                        },
-                        children: [
-                          {
-                            id: `size-label-${buttonStyle}-${size}`,
-                            type: 'Span',
-                            state: {
-                              text: `Size ${size}`,
-                            },
-                            attributes: {
-                              className: 'text-sm font-bold',
-                            },
-                          },
-                          {
-                            id: `size-button-${buttonStyle}-${size}`,
-                            type: 'Button',
-                            state: {
-                              buttonStyle,
-                              size,
-                              buttonType: 'primary',
-                            },
-                            children: [
-                              {
-                                id: `size-button-text-${buttonStyle}-${size}`,
-                                type: 'Span',
-                                state: {
-                                  text: 'Label',
-                                },
-                              },
-                            ],
-                          },
-                        ],
-                      }),
-                    ),
-                  },
-                ],
-              },
-              // Types section
-              {
-                id: `types-section-${buttonStyle}`,
-                type: 'Div',
-                attributes: {
-                  className: 'flex flex-col gap-4',
-                },
-                children: [
-                  {
-                    id: `types-title-${buttonStyle}`,
-                    type: 'Span',
-                    state: {
-                      text: 'Type',
-                    },
-                    attributes: {
-                      className: 'text-base font-semibold',
-                    },
-                  },
-                  {
-                    id: `types-container-${buttonStyle}`,
-                    type: 'Div',
-                    attributes: {
-                      className: 'flex gap-4 flex-wrap',
-                    },
-                    children: (['primary', 'secondary'] as const).map((buttonType) => ({
-                      id: `type-item-${buttonStyle}-${buttonType}`,
-                      type: 'Div',
-                      attributes: {
-                        className: 'flex flex-col gap-2 items-center',
-                      },
-                      children: [
-                        {
-                          id: `type-label-${buttonStyle}-${buttonType}`,
-                          type: 'Span',
-                          state: {
-                            text: `Type ${buttonType.charAt(0).toUpperCase() + buttonType.slice(1)}`,
-                          },
-                          attributes: {
-                            className: 'text-sm font-bold',
-                          },
-                        },
-                        {
-                          id: `type-button-${buttonStyle}-${buttonType}`,
-                          type: 'Button',
-                          state: {
-                            buttonStyle,
-                            size: 'M',
-                            buttonType,
-                          },
-                          children: [
-                            {
-                              id: `type-button-text-${buttonStyle}-${buttonType}`,
-                              type: 'Span',
-                              state: {
-                                text: 'Label',
-                              },
-                            },
-                          ],
-                        },
-                      ],
-                    })),
-                  },
-                ],
+                  ],
+                })),
               },
             ],
           })),
@@ -1486,42 +956,24 @@ export const AllCombinations: Story = {
     docs: {
       description: {
         story: `
-## Overview
+## Complete Button Matrix
 
-A **comprehensive showcase** of all button combinations organized by style, providing a complete reference for the button design system.
+All 10 button combinations organized by spacing.
 
-## Organization
+### Matrix Overview
 
-Each style section displays:
-- ✅ Available sizes
-- ✅ Type variants
-- ✅ Interactive states (Default, Hover, Press, Disabled)
+| Spacing \\ Appearance | Default | Primary | Subtle | Warning | Danger |
+|----------------------|---------|---------|--------|---------|--------|
+| Default (32px) | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Compact (24px) | ✓ | ✓ | ✓ | ✓ | ✓ |
 
-## What's Included
+### Usage Guidelines
 
-### Style Sections
-1. **Filled** - All combinations
-2. **Outline** - All combinations
-3. **Text** - All combinations
-
-### For Each Style
-- Size variations
-- Type variations (Primary/Secondary)
-- State demonstrations
-
-## Purpose
-
-This matrix helps:
-- **Designers** understand visual options
-- **Developers** choose appropriate variants
-- **Teams** maintain design consistency
-
-## Usage
-
-Use this comprehensive reference to:
-- Compare all button options
-- Understand the complete system
-- Make informed design decisions
+- **Primary actions**: Use \`primary\` appearance
+- **Secondary actions**: Use \`default\` appearance
+- **Tertiary actions**: Use \`subtle\` appearance
+- **Warning actions**: Use \`warning\` appearance
+- **Destructive actions**: Use \`danger\` appearance
         `,
       },
     },
