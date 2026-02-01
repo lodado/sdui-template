@@ -26,6 +26,7 @@ import {
 } from '../shared/ui/dropdown/DropdownContainer'
 import { IconContainer } from '../shared/ui/icon/IconContainer'
 import { ListContainer } from '../shared/ui/list/ListContainer'
+import { TagContainer } from '../shared/ui/tag/TagContainer'
 import { Span, Text } from '../shared/ui/text'
 import { TextFieldContainer } from '../shared/ui/textfield/TextFieldContainer'
 import { TextFieldHelpMessageContainer } from '../shared/ui/textfield/TextFieldHelpMessageContainer'
@@ -99,6 +100,9 @@ export const sduiComponents: Record<string, ComponentFactory> = {
 
   // List
   List: (id, parentPath) => <ListContainer id={id} parentPath={parentPath} />,
+
+  // Tag
+  Tag: (id) => <TagContainer id={id} />,
 
   // TextField
   TextField: (id, parentPath) => <TextFieldContainer id={id} parentPath={parentPath} />,
