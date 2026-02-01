@@ -28,15 +28,17 @@ const document: SduiLayoutDocument = {
     },
     children: [
       {
-        id: 'child-1',           // Unique, meaningful ID
-        type: 'ComponentType',   // Component type
-        state: {                 // Dynamic data (mutable)
+        id: 'child-1', // Unique, meaningful ID
+        type: 'ComponentType', // Component type
+        state: {
+          // Dynamic data (mutable)
           text: 'Dynamic content',
         },
-        attributes: {            // Static props (className, as, etc.)
+        attributes: {
+          // Static props (className, as, etc.)
           className: 'styling-class',
         },
-        children: [],            // Child nodes
+        children: [], // Child nodes
       },
     ],
   },
@@ -44,6 +46,7 @@ const document: SduiLayoutDocument = {
 ```
 
 **Key Rules:**
+
 - `id`: Assign unique, meaningful IDs to all nodes (e.g., `form-field-email`, `submit-button`)
 - `state`: Dynamic data that can change at runtime
 - `attributes`: Static HTML attributes (className, type, placeholder, etc.)
@@ -83,12 +86,14 @@ const MyComponent: React.FC<{ nodeId: string }> = ({ nodeId }) => {
 ```
 
 **Why is this required:**
+
 - `useSduiNodeSubscription`'s `state` defaults to `Record<string, unknown>` type
 - Without Zod schema, runtime type validation is not possible
 - Without type casting, IDE autocomplete and type checking won't work
 - Schema acts as a contract for document structure
 
 **Anti-pattern (DON'T do this):**
+
 ```typescript
 // ❌ Bad: Using any without schema
 const { state } = useSduiNodeSubscription({ nodeId })
@@ -104,11 +109,7 @@ state.label // Error: Property 'label' does not exist on type 'Record<string, un
 ```typescript
 'use client'
 
-import {
-  type ComponentFactory,
-  useSduiNodeSubscription,
-  useRenderNode,
-} from '@lodado/sdui-template'
+import { type ComponentFactory, useSduiNodeSubscription, useRenderNode } from '@lodado/sdui-template'
 import { sduiComponents as baseSduiComponents } from '@lodado/sdui-template-component'
 import { z } from 'zod'
 
@@ -121,10 +122,7 @@ const myComponentStateSchema = z.object({
 type MyComponentState = z.infer<typeof myComponentStateSchema>
 
 // 2. Implement component
-const MyComponent: React.FC<{ nodeId: string; parentPath?: string[] }> = ({
-  nodeId,
-  parentPath = [],
-}) => {
+const MyComponent: React.FC<{ nodeId: string; parentPath?: string[] }> = ({ nodeId, parentPath = [] }) => {
   // @ts-expect-error - Zod version compatibility issue
   const { state, childrenIds } = useSduiNodeSubscription<typeof myComponentStateSchema>({
     nodeId,
@@ -143,9 +141,7 @@ const MyComponent: React.FC<{ nodeId: string; parentPath?: string[] }> = ({
 }
 
 // 3. Create ComponentFactory
-const MyComponentFactory: ComponentFactory = (id, parentPath) => (
-  <MyComponent nodeId={id} parentPath={parentPath} />
-)
+const MyComponentFactory: ComponentFactory = (id, parentPath) => <MyComponent nodeId={id} parentPath={parentPath} />
 
 // 4. Export component map (extending base components)
 export const sduiComponents: Record<string, ComponentFactory> = {
@@ -184,7 +180,9 @@ export const Default: Story = {
       root: {
         id: 'root',
         type: 'Div',
-        children: [/* ... */],
+        children: [
+          /* ... */
+        ],
       },
     }
     return <SduiLayoutRenderer document={document} components={sduiComponents} />
@@ -230,13 +228,15 @@ const document: SduiLayoutDocument = {
 
 ```typescript
 // lib/sdui-document.ts - Document definition
-export const loginDocument: SduiLayoutDocument = { /* ... */ }
+export const loginDocument: SduiLayoutDocument = {
+  /* ... */
+}
 
 // components/sdui-components.tsx - Component map
 export const sduiComponents = { ...baseSduiComponents, CustomComponent }
 
 // components/page-sdui.tsx - Renderer
-'use client'
+;('use client')
 import { SduiLayoutRenderer } from '@lodado/sdui-template'
 
 export default function PageSdui() {
