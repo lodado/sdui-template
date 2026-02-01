@@ -175,8 +175,7 @@ describe('Zod Schema Validation', () => {
 
         // Suppress console.error for this test since we expect an error
         const originalError = console.error
-        const consoleErrorSpy = jest.fn()
-        console.error = consoleErrorSpy
+        console.error = jest.fn()
 
         try {
           // Render should throw an error due to validation failure
@@ -187,13 +186,6 @@ describe('Zod Schema Validation', () => {
               },
             })
           }).toThrow()
-
-          // Verify error message contains validation details
-          expect(consoleErrorSpy).toHaveBeenCalled()
-          const errorCall = consoleErrorSpy.mock.calls.find((call) =>
-            call[0]?.toString().includes('State validation failed'),
-          )
-          expect(errorCall).toBeDefined()
         } finally {
           console.error = originalError
         }

@@ -1,11 +1,11 @@
 ---
 name: figma-pr
-description: "Figma design sync + isolated worktree PR workflow (figma-sync + pr-orchestrator integration)"
+description: "Figma design sync + isolated worktree PR workflow"
 ---
 
-You are a **Figma-to-PR orchestrator** that combines two workflows:
-1. **Worktree-based PR isolation** (from `pr-orchestrator`)
-2. **Figma design sync** (from `/figma-sync`)
+You are a **Figma-to-PR orchestrator** that combines:
+1. **Worktree-based PR isolation** (@worktree-pr-workflow.mdc)
+2. **Figma design sync** (/figma-sync)
 
 # Input Parameters
 
@@ -20,14 +20,14 @@ Collect from user:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  Phase 0: Worktree Setup (from pr-orchestrator)         │
-│  └── .claude/scripts/pr-task.sh                         │
+│  Phase 0: Worktree Setup                                │
+│  └── @worktree-pr-workflow.mdc Phase 0 참조             │
 ├─────────────────────────────────────────────────────────┤
-│  Phase 1-5: Figma Sync (delegate to /figma-sync)        │
-│  └── Analysis → Plan → Implementation → Verification   │
+│  Phase 1-5: Figma Sync                                  │
+│  └── /figma-sync 명령어 위임                            │
 ├─────────────────────────────────────────────────────────┤
-│  Phase 6: PR Creation (from pr-orchestrator)            │
-│  └── commit → push → gh pr create                       │
+│  Phase 6-7: PR Creation & Report                        │
+│  └── @worktree-pr-workflow.mdc Phase N, N+1 참조        │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -35,42 +35,26 @@ Collect from user:
 
 # Phase 0: Worktree Setup
 
-## 0.1 Generate PR Title
+> **Reference**: @worktree-pr-workflow.mdc Phase 0
 
-Based on component name and scope:
-```
-feat(<component>): update styles from Figma design
-```
+## Variables
 
-Example:
 ```
-feat(TextField): update styles from Figma design
+pr_title = "feat(<component_name>): update styles from Figma design"
 ```
 
-## 0.2 Create Worktree
-
-Execute:
-```bash
-./.claude/scripts/pr-task.sh "feat(<component>): update styles from Figma design"
-```
-
-Parse output to get:
-- `worktreePath`: e.g., `.worktrees/feat-textfield-update-styles-from-figma-design`
-- `branchName`: e.g., `chore/feat-textfield-update-styles-from-figma-design`
-
-## 0.3 Navigate to Worktree
+## Execute
 
 ```bash
+./.claude/scripts/pr-task.sh "<pr_title>"
 cd <worktreePath>
 ```
-
-Verify correct branch before proceeding.
 
 ---
 
 # Phase 1-5: Delegate to /figma-sync
 
-Execute the `/figma-sync` command workflow **within the worktree context**:
+Execute `/figma-sync` **within the worktree context**:
 
 ```
 /figma-sync
@@ -93,36 +77,24 @@ With parameters:
 
 # Phase 6: PR Creation
 
-After /figma-sync completes successfully:
+> **Reference**: @worktree-pr-workflow.mdc Phase N
 
-## 6.1 Commit Changes
+## Commit Message Template
 
-```bash
-cd <worktreePath>
-git add .
-git commit -m "$(cat <<'EOF'
-feat(<component>): update styles from Figma design
+```
+feat(<component_name>): update styles from Figma design
 
 - Updated colors, sizes, spacing based on Figma
 - Figma URL: <figma_url>
 
 Co-Authored-By: Claude <noreply@anthropic.com>
-EOF
-)"
 ```
 
-## 6.2 Push to Remote
+## PR Body Template
 
-```bash
-git push -u origin <branchName>
-```
-
-## 6.3 Create Pull Request
-
-```bash
-gh pr create --title "feat(<component>): update styles from Figma design" --body "$(cat <<'EOF'
+```markdown
 ## Summary
-- Updated <component> styles based on Figma design
+- Updated <component_name> styles based on Figma design
 - Figma: <figma_url>
 
 ## Changes
@@ -136,51 +108,36 @@ gh pr create --title "feat(<component>): update styles from Figma design" --body
 
 ---
 Generated with [Claude Code](https://claude.ai/code)
-EOF
-)"
 ```
 
 ---
 
 # Phase 7: Final Report
 
-```markdown
-## PR Created Successfully
+> **Reference**: @worktree-pr-workflow.mdc Phase N+1
 
-### PR Info
-- **URL**: <pr_url>
-- **Branch**: <branchName>
-- **Worktree**: <worktreePath>
-
-### Figma Sync Summary
-<insert figma-sync Phase 5 report>
-
-### Next Steps
-1. Review PR: <pr_url>
-2. After merge, clean up:
-   ```bash
-   git worktree remove <worktreePath>
-   ```
-```
+Include in report:
+- PR Info (URL, Branch, Worktree)
+- Figma Sync Summary (from Phase 5)
+- Next Steps (PR review link, cleanup command)
 
 ---
 
 # Rules
 
-1. **Worktree isolation**: ALL changes happen inside worktree, never in main repo
-2. **Delegate to /figma-sync**: Do not duplicate figma-sync logic, invoke it
-3. **Wait for approval**: Honor /figma-sync's Phase 2 approval checkpoint
-4. **Sequential execution**: Phase 0 → 1-5 (figma-sync) → 6 → 7
-5. **Clean failure**: If any phase fails, preserve worktree and report status
+> **Reference**: @worktree-pr-workflow.mdc Rules 섹션
+
+Additional Figma-specific rules:
+1. **Delegate to /figma-sync**: figma-sync 로직 중복 금지, 명령어 호출
+2. **Wait for approval**: /figma-sync Phase 2 승인 대기점 준수
 
 ---
 
 # Error Handling
 
-| Error | Action |
-|-------|--------|
-| Worktree exists | Suggest cleanup command, abort |
-| figma-sync fails | Keep worktree, report for manual fix |
-| Tests fail | Retry fix via figma-sync, max 3 attempts |
-| Push fails | Check upstream, suggest rebase |
-| PR creation fails | Provide manual gh command |
+> **Reference**: @worktree-pr-workflow.mdc Error Handling 섹션
+
+Figma-specific errors handled by /figma-sync:
+- Figma API 실패
+- Component not found
+- Style extraction 실패

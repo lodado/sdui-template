@@ -2,6 +2,15 @@
 
 import { type ComponentFactory } from '@lodado/sdui-template'
 
+import {
+  DialogBodyContainer,
+  DialogContainer,
+  DialogContentContainer,
+  DialogFooterContainer,
+  DialogHeaderContainer,
+  DialogPortalContainer,
+  DialogTriggerContainer,
+} from '../features/dialog/DialogContainer'
 import { FormContainer } from '../features/form/Form'
 import { FormFieldContainer } from '../features/form/FormField'
 import { Title, TitleLogo } from '../features/title/components'
@@ -62,6 +71,15 @@ export const sduiComponents: Record<string, ComponentFactory> = {
 
   // Card
   Card: (id, parentPath) => <CardContainer id={id} parentPath={parentPath} />,
+
+  // Dialog
+  Dialog: (id, parentPath) => <DialogContainer id={id} parentPath={parentPath} />,
+  DialogTrigger: (id, parentPath) => <DialogTriggerContainer id={id} parentPath={parentPath} />,
+  DialogPortal: (id, parentPath) => <DialogPortalContainer id={id} parentPath={parentPath} />,
+  DialogContent: (id, parentPath) => <DialogContentContainer id={id} parentPath={parentPath} />,
+  DialogHeader: (id, parentPath) => <DialogHeaderContainer id={id} parentPath={parentPath} />,
+  DialogBody: (id, parentPath) => <DialogBodyContainer id={id} parentPath={parentPath} />,
+  DialogFooter: (id, parentPath) => <DialogFooterContainer id={id} parentPath={parentPath} />,
 
   // Dropdown
   Dropdown: (id, parentPath) => <DropdownContainer id={id} parentPath={parentPath} />,

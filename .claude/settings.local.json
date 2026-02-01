@@ -1,4 +1,28 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(pnpm:*)",
+      "Bash(npm:*)",
+      "Bash(git:*)",
+      "Bash(cat:*)",
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(cd:*)",
+      "Bash(echo:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(bash:*)",
+      "mcp__figma__get_design_context",
+      "mcp__figma__get_screenshot",
+      "mcp__figma__get_metadata"
+    ]
+  },
+  "enabledPlugins": {
+    "everything-claude-code@everything-claude-code": true,
+    "frontend-design@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true
+  },
   "approvalPolicy": "never",
   "commandPermissions": {
     "deny": [
@@ -14,11 +38,5 @@
       "chmod 777 *",
       "chown *"
     ]
-  },
-  "enabledPlugins": {
-    "everything-claude-code@everything-claude-code": true,
-    "frontend-design@claude-plugins-official": true,
-    "context7@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true
   }
 }

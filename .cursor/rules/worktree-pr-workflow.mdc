@@ -1,0 +1,193 @@
+---
+description: "Worktree 기반 PR 생성 워크플로우 (재사용 가능)"
+alwaysApply: false
+---
+
+# Worktree-based PR Workflow
+
+Git worktree를 활용한 **격리된 PR 생성** 워크플로우. 다양한 작업(Figma sync, feature 개발, refactoring 등)에 재사용 가능.
+
+---
+
+## Overview
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  Phase 0: Worktree Setup                                │
+│  └── .claude/scripts/pr-task.sh로 격리된 작업공간 생성  │
+├─────────────────────────────────────────────────────────┤
+│  [작업 수행 단계]                                       │
+│  └── 호출하는 워크플로우에서 정의                       │
+├─────────────────────────────────────────────────────────┤
+│  Phase N: PR Creation                                   │
+│  └── commit → push → gh pr create                       │
+├─────────────────────────────────────────────────────────┤
+│  Phase N+1: Final Report                                │
+│  └── 결과 요약 및 cleanup 가이드                        │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Phase 0: Worktree Setup
+
+### 0.1 PR 제목 생성
+
+Conventional Commits 형식:
+```
+<type>(<scope>): <description>
+```
+
+| Type     | 용도                          |
+|----------|-------------------------------|
+| feat     | 새로운 기능                   |
+| fix      | 버그 수정                     |
+| refactor | 리팩토링                      |
+| style    | 스타일/UI 변경                |
+| docs     | 문서 변경                     |
+| chore    | 기타 변경                     |
+
+### 0.2 Worktree 생성
+
+```bash
+./.claude/scripts/pr-task.sh "<pr_title>"
+```
+
+**출력 파싱:**
+- `worktreePath`: 생성된 worktree 경로 (예: `.worktrees/feat-component-update`)
+- `branchName`: 생성된 브랜치명 (예: `chore/feat-component-update`)
+
+### 0.3 Worktree로 이동
+
+```bash
+cd <worktreePath>
+```
+
+**검증:** 이동 후 `git branch --show-current`로 올바른 브랜치인지 확인.
+
+---
+
+## Phase N: PR Creation (작업 완료 후)
+
+### N.1 변경사항 커밋
+
+```bash
+cd <worktreePath>
+git add .
+git commit -m "$(cat <<'EOF'
+<type>(<scope>): <description>
+
+- 변경사항 1
+- 변경사항 2
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+EOF
+)"
+```
+
+### N.2 원격 푸시
+
+```bash
+git push -u origin <branchName>
+```
+
+### N.3 PR 생성
+
+```bash
+gh pr create --title "<pr_title>" --body "$(cat <<'EOF'
+## Summary
+- 주요 변경사항 요약
+
+## Changes
+<변경 내용 상세>
+
+## Test plan
+- [x] Unit tests pass
+- [x] Build succeeds
+- [x] Typecheck passes
+- [x] Lint passes
+
+---
+Generated with [Claude Code](https://claude.ai/code)
+EOF
+)"
+```
+
+---
+
+## Phase N+1: Final Report
+
+```markdown
+## PR Created Successfully
+
+### PR Info
+- **URL**: <pr_url>
+- **Branch**: <branchName>
+- **Worktree**: <worktreePath>
+
+### Summary
+<작업 요약>
+
+### Next Steps
+1. Review PR: <pr_url>
+2. After merge, clean up:
+   ```bash
+   git worktree remove <worktreePath>
+   ```
+```
+
+---
+
+## Rules
+
+1. **격리 원칙**: 모든 변경사항은 worktree 내에서만 발생, main repo 건드리지 않음
+2. **순차 실행**: Phase 0 → 작업 수행 → PR Creation → Final Report
+3. **실패 시 보존**: 오류 발생 시 worktree 유지하고 상태 리포트
+4. **검증 필수**: PR 생성 전 테스트/빌드/타입체크 통과 확인
+
+---
+
+## Error Handling
+
+| Error | Action |
+|-------|--------|
+| Worktree 이미 존재 | cleanup 명령어 제안 후 abort |
+| 작업 중 실패 | worktree 유지, 수동 수정 가이드 제공 |
+| Tests 실패 | 최대 3회 재시도 후 실패 리포트 |
+| Push 실패 | upstream 확인, rebase 제안 |
+| PR 생성 실패 | 수동 gh 명령어 제공 |
+
+---
+
+## Usage Example
+
+다른 워크플로우에서 참조:
+
+```markdown
+## Workflow
+
+### Step 1: Worktree Setup
+@worktree-pr-workflow.mdc Phase 0 참조
+
+### Step 2-4: [작업 수행]
+...
+
+### Step 5: PR Creation  
+@worktree-pr-workflow.mdc Phase N 참조
+
+### Step 6: Final Report
+@worktree-pr-workflow.mdc Phase N+1 참조
+```
+
+---
+
+## Variables Template
+
+호출하는 워크플로우에서 설정할 변수:
+
+| Variable      | Description                    | Example                                    |
+|---------------|--------------------------------|--------------------------------------------|
+| `pr_title`    | PR 제목 (Conventional Commits) | `feat(Button): add hover states`           |
+| `worktreePath`| 생성된 worktree 경로           | `.worktrees/feat-button-add-hover-states`  |
+| `branchName`  | 생성된 브랜치명                | `chore/feat-button-add-hover-states`       |
+| `pr_body`     | PR 본문 내용                   | Summary + Changes + Test plan              |
