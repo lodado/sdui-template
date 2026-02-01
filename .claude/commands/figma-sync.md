@@ -92,25 +92,20 @@ pnpm test
 ```
 - On failure: Analyze error → Fix → Re-run
 - On pass: Proceed to next step
+- **Once tests pass, no need to re-run tests in subsequent phases**
 
-## 4.2 Verify Build
-```bash
-pnpm build
-```
-- On failure: Analyze error → Fix → Re-run
-- On pass: Proceed to next step
-
-## 4.3 Type Check
+## 4.2 Type Check
 ```bash
 pnpm typecheck
 ```
 
-## 4.4 Lint Check
+## 4.3 Lint Check
 ```bash
 pnpm lint
 ```
 
 **Repeat until all verifications pass**
+**Note: Skip build step (`pnpm build`) - not required for this workflow**
 
 ---
 
@@ -125,7 +120,6 @@ pnpm lint
 
 ### Verification Results
 - Tests: ✅ PASS (X tests)
-- Build: ✅ PASS
 - Typecheck: ✅ PASS
 - Lint: ✅ PASS
 

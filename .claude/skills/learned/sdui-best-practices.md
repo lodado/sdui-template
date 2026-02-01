@@ -48,7 +48,58 @@ const document: SduiLayoutDocument = {
 - `state`: Dynamic data that can change at runtime
 - `attributes`: Static HTML attributes (className, type, placeholder, etc.)
 
-### 2. Custom Component Creation Pattern
+### 2. Zod Schema Type Casting (REQUIRED)
+
+**You MUST define a Zod schema and type cast the state in every custom component.**
+
+```typescript
+import { useSduiNodeSubscription } from '@lodado/sdui-template'
+import { z } from 'zod'
+
+// 1. Define Zod schema (REQUIRED)
+const componentStateSchema = z.object({
+  label: z.string().optional(),
+  value: z.number().default(0),
+  isActive: z.boolean().optional(),
+})
+
+// 2. Extract type from schema
+type ComponentState = z.infer<typeof componentStateSchema>
+
+// 3. Use in component
+const MyComponent: React.FC<{ nodeId: string }> = ({ nodeId }) => {
+  // @ts-expect-error - Zod version compatibility issue
+  const { state, childrenIds } = useSduiNodeSubscription<typeof componentStateSchema>({
+    nodeId,
+    schema: componentStateSchema, // Pass schema (REQUIRED)
+  })
+
+  // 4. Type cast (REQUIRED)
+  const typedState = state as ComponentState
+
+  // typedState now has full type safety
+  return <div>{typedState.label}</div>
+}
+```
+
+**Why is this required:**
+- `useSduiNodeSubscription`'s `state` defaults to `Record<string, unknown>` type
+- Without Zod schema, runtime type validation is not possible
+- Without type casting, IDE autocomplete and type checking won't work
+- Schema acts as a contract for document structure
+
+**Anti-pattern (DON'T do this):**
+```typescript
+// ❌ Bad: Using any without schema
+const { state } = useSduiNodeSubscription({ nodeId })
+const label = (state as any).label // No type safety
+
+// ❌ Bad: Schema defined but not type cast
+const { state } = useSduiNodeSubscription({ nodeId, schema: mySchema })
+state.label // Error: Property 'label' does not exist on type 'Record<string, unknown>'
+```
+
+### 3. Custom Component Creation Pattern
 
 ```typescript
 'use client'
@@ -103,7 +154,7 @@ export const sduiComponents: Record<string, ComponentFactory> = {
 }
 ```
 
-### 3. Storybook Story Writing Pattern
+### 4. Storybook Story Writing Pattern
 
 ```typescript
 import { type SduiLayoutDocument, SduiLayoutRenderer } from '@lodado/sdui-template'
@@ -141,7 +192,7 @@ export const Default: Story = {
 }
 ```
 
-### 4. Form + Zod Validation Pattern
+### 5. Form + Zod Validation Pattern
 
 ```typescript
 import { registerSchemas } from '@lodado/sdui-template-component'
@@ -175,7 +226,7 @@ const document: SduiLayoutDocument = {
 }
 ```
 
-### 5. Next.js Integration Pattern
+### 6. Next.js Integration Pattern
 
 ```typescript
 // lib/sdui-document.ts - Document definition
@@ -193,7 +244,7 @@ export default function PageSdui() {
 }
 ```
 
-### 6. Conditional Rendering Pattern (AuthSwitch Example)
+### 7. Conditional Rendering Pattern (AuthSwitch Example)
 
 ```typescript
 // AuthSlot: Compare slot value with current state
