@@ -15,6 +15,8 @@ export {
   DialogTrigger,
   // Preset components
   SimpleDialog,
+  // Context hook for providerId inheritance
+  useDialogContext,
 } from './Dialog'
 
 // SDUI containers
@@ -53,8 +55,30 @@ export type {
   SimpleDialogProps,
 } from './types'
 
-// Zod schema
+// Zod schemas (legacy)
 export { dialogStatesSchema } from './types'
+
+// Compound component state schemas (providerId pattern)
+export {
+  dialogBodyStateSchema,
+  dialogContentStateSchema,
+  dialogFooterStateSchema,
+  dialogHeaderStateSchema,
+  dialogPortalStateSchema,
+  dialogRootStateSchema,
+  dialogTriggerStateSchema,
+} from './types'
+
+// Compound component state types
+export type {
+  DialogBodyState,
+  DialogContentState,
+  DialogFooterState,
+  DialogHeaderState,
+  DialogPortalState,
+  DialogRootState,
+  DialogTriggerState,
+} from './types'
 
 // Variants
 export {

@@ -1,9 +1,25 @@
 'use client'
 
 import * as DialogPrimitive from '@radix-ui/react-dialog'
-import React from 'react'
+import React, { createContext, useContext, useMemo } from 'react'
 
 import { cn } from '../../shared/lib/cn'
+
+// =============================================================================
+// Dialog Context for providerId inheritance
+// =============================================================================
+
+interface DialogContextValue {
+  providerId: string
+}
+
+const DialogContext = createContext<DialogContextValue | null>(null)
+
+/**
+ * Hook to get providerId from Dialog context
+ * Used by child components when providerId is not explicitly provided in state
+ */
+export const useDialogContext = () => useContext(DialogContext)
 import {
   dialogBodyVariants,
   dialogCancelButtonVariants,
@@ -83,9 +99,19 @@ const LoadingSpinner = ({ className }: { className?: string }) => (
 
 /**
  * Dialog.Root - Context provider and state management
+ * Provides DialogContext for child components to inherit providerId
  */
-const DialogRoot = ({ children, ...props }: DialogRootProps) => {
-  return <DialogPrimitive.Root {...props}>{children}</DialogPrimitive.Root>
+const DialogRoot = ({ id, children, ...props }: DialogRootProps & { id?: string }) => {
+  const contextValue = useMemo(() => (id ? { providerId: id } : null), [id])
+
+  const content = <DialogPrimitive.Root {...props}>{children}</DialogPrimitive.Root>
+
+  // Wrap with context only if id is provided
+  if (contextValue) {
+    return <DialogContext.Provider value={contextValue}>{content}</DialogContext.Provider>
+  }
+
+  return content
 }
 DialogRoot.displayName = 'Dialog.Root'
 

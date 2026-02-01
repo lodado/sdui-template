@@ -43,7 +43,7 @@ export interface DialogRootProps {
 /**
  * Dialog.Trigger props
  */
-export interface DialogTriggerProps {
+export interface DialogTriggerProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   /** Trigger element */
   children: React.ReactNode
   /** Whether to render as child element */
@@ -131,7 +131,7 @@ export interface DialogDescriptionProps {
 /**
  * Dialog.Close props
  */
-export interface DialogCloseProps {
+export interface DialogCloseProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   /** Close button element (default: X icon) */
   children?: React.ReactNode
   /** Whether to render as child element */
@@ -292,3 +292,98 @@ export const dialogStatesSchema: z.ZodSchema<Record<string, unknown>> = z.object
 }) as z.ZodSchema<Record<string, unknown>>
 
 export type DialogState = z.infer<typeof dialogStatesSchema>
+
+// =============================================================================
+// Compound Component State Schemas (providerId pattern)
+// =============================================================================
+
+/**
+ * DialogRoot state schema
+ * @description Root component holds the shared state for all children
+ */
+export const dialogRootStateSchema = z.object({
+  /** Whether the dialog is open */
+  open: z.boolean().optional(),
+})
+
+export type DialogRootState = z.infer<typeof dialogRootStateSchema>
+
+/**
+ * DialogTrigger state schema
+ * @description Trigger subscribes to provider and controls open state
+ */
+export const dialogTriggerStateSchema = z.object({
+  /** Optional: ID of the Dialog provider to subscribe to. If omitted, inherits from parent context. */
+  providerId: z.string().optional(),
+})
+
+export type DialogTriggerState = z.infer<typeof dialogTriggerStateSchema>
+
+/**
+ * DialogPortal state schema
+ * @description Portal subscribes to provider for rendering
+ */
+export const dialogPortalStateSchema = z.object({
+  /** Optional: ID of the Dialog provider to subscribe to. If omitted, inherits from parent context. */
+  providerId: z.string().optional(),
+})
+
+export type DialogPortalState = z.infer<typeof dialogPortalStateSchema>
+
+/**
+ * DialogContent state schema
+ * @description Content subscribes to provider for open state
+ *
+ * Radix UI props are placed in state (not attributes) per SDUI convention
+ */
+export const dialogContentStateSchema = z.object({
+  /** Optional: ID of the Dialog provider to subscribe to. If omitted, inherits from parent context. */
+  providerId: z.string().optional(),
+  /** Dialog size */
+  size: z.enum(['small', 'medium', 'large', 'xlarge']).optional(),
+})
+
+export type DialogContentState = z.infer<typeof dialogContentStateSchema>
+
+/**
+ * DialogHeader state schema
+ * @description Header with title and close button
+ */
+export const dialogHeaderStateSchema = z.object({
+  /** Optional: ID of the Dialog provider to subscribe to. If omitted, inherits from parent context. */
+  providerId: z.string().optional(),
+  /** Dialog title */
+  title: z.string().optional(),
+  /** Whether to show close button */
+  hasCloseButton: z.boolean().optional(),
+})
+
+export type DialogHeaderState = z.infer<typeof dialogHeaderStateSchema>
+
+/**
+ * DialogBody state schema
+ * @description Body content section
+ */
+export const dialogBodyStateSchema = z.object({
+  /** Optional: ID of the Dialog provider to subscribe to. If omitted, inherits from parent context. */
+  providerId: z.string().optional(),
+})
+
+export type DialogBodyState = z.infer<typeof dialogBodyStateSchema>
+
+/**
+ * DialogFooter state schema
+ * @description Footer with action buttons
+ */
+export const dialogFooterStateSchema = z.object({
+  /** Optional: ID of the Dialog provider to subscribe to. If omitted, inherits from parent context. */
+  providerId: z.string().optional(),
+  /** Cancel button label */
+  cancelLabel: z.string().optional(),
+  /** Confirm button label */
+  confirmLabel: z.string().optional(),
+  /** Footer appearance */
+  appearance: z.enum(['default', 'danger', 'warning']).optional(),
+})
+
+export type DialogFooterState = z.infer<typeof dialogFooterStateSchema>

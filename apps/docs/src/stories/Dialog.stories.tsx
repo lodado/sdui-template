@@ -40,6 +40,179 @@ const meta: Meta<typeof SimpleDialog> = {
 
 The **Dialog** component is a modal overlay following the Atlassian Design System (ADS) specifications. It provides a focused interaction layer for important content or actions.
 
+## Compound Pattern Structure
+
+\`\`\`json
+{
+  "id": "dialog-root",
+  "type": "Dialog",
+  "state": { "open": false },
+  "children": [
+    { "type": "DialogTrigger", "children": [...] },
+    { "type": "DialogPortal", "children": [
+      { "type": "DialogContent", "state": { "size": "small" }, "children": [
+        { "type": "DialogHeader", "state": { "title": "Title", "hasCloseButton": true } },
+        { "type": "DialogBody", "children": [...] },
+        { "type": "DialogFooter", "state": { "cancelLabel": "Cancel", "confirmLabel": "OK" } }
+      ]}
+    ]}
+  ]
+}
+\`\`\`
+
+---
+
+## Why Provider Pattern?
+
+### The Problem
+
+In SDUI, components are rendered from JSON documents. Unlike React components that share state via props drilling or Context, SDUI nodes are **isolated** - each node only knows its own \`id\`, \`state\`, and \`attributes\`.
+
+**How does a DialogTrigger know which Dialog's \`open\` state to toggle?**
+**How does a DialogFooter's Cancel button know which Dialog to close?**
+
+### The Solution: Provider Pattern
+
+The **Provider Pattern** solves this by:
+
+1. **Provider (Root)**: The \`Dialog\` component holds shared state (\`open\`)
+2. **Subscriber (Children)**: Child components subscribe to the provider's state via \`providerId\`
+
+\`\`\`
+┌─────────────────────────────────────────────┐
+│  Dialog (id: "dialog-root")                 │
+│  state: { open: false }                     │
+│                                             │
+│  ┌─────────────────────────────────────┐    │
+│  │  DialogTrigger                      │    │
+│  │  → subscribes to "dialog-root"      │    │
+│  │  → toggles open state on click      │    │
+│  └─────────────────────────────────────┘    │
+│                                             │
+│  ┌─────────────────────────────────────┐    │
+│  │  DialogPortal                       │    │
+│  │  └─────────────────────────────┐    │    │
+│  │    DialogContent               │    │    │
+│  │    ├── DialogHeader            │    │    │
+│  │    │   → subscribes to root    │    │    │
+│  │    │   → close button updates  │    │    │
+│  │    │     open to false         │    │    │
+│  │    │                           │    │    │
+│  │    ├── DialogBody              │    │    │
+│  │    │   → renders content       │    │    │
+│  │    │                           │    │    │
+│  │    └── DialogFooter            │    │    │
+│  │        → subscribes to root    │    │    │
+│  │        → cancel updates open   │    │    │
+│  │          to false              │    │    │
+│  │  └─────────────────────────────┘    │    │
+│  └─────────────────────────────────────┘    │
+└─────────────────────────────────────────────┘
+\`\`\`
+
+### Why Not Just Use React Context?
+
+| Approach | SDUI Compatibility | Serializable | Nested Support |
+|----------|-------------------|--------------|----------------|
+| React Context only | ❌ Lost on SSR/hydration | ❌ Not JSON | ⚠️ Complex |
+| Props drilling | ❌ Not possible in SDUI | ✅ Yes | ❌ Verbose |
+| **providerId + Context** | ✅ Full support | ✅ Yes | ✅ Explicit |
+
+**Key benefits of providerId:**
+
+1. **SDUI documents are JSON** - Must be serializable for server-side rendering
+2. **Explicit targeting** - Nested dialogs can reference specific providers
+3. **Store-based state** - Changes tracked in SDUI store, enabling debugging/time-travel
+
+---
+
+## providerId Inheritance
+
+**providerId is optional!** Child components automatically inherit from parent Dialog context.
+
+### How it works:
+
+1. If \`state.providerId\` is specified → use that explicit ID
+2. If omitted → inherit from nearest parent \`Dialog\` via React Context
+
+### When to use explicit providerId:
+
+- **Nested dialogs**: Inner dialog's children should reference the inner provider
+- **Cross-referencing**: A component outside the tree needs to reference a specific dialog
+- **Dynamic scenarios**: Provider ID changes at runtime
+
+### Example: Simplified SDUI Document (providerId omitted)
+
+\`\`\`json
+{
+  "id": "dialog-root",
+  "type": "Dialog",
+  "state": { "open": false },
+  "children": [
+    {
+      "type": "DialogTrigger",
+      "children": [{ "type": "Button", "children": [...] }]
+    },
+    {
+      "type": "DialogPortal",
+      "children": [{
+        "type": "DialogContent",
+        "state": { "size": "small" },
+        "children": [
+          { "type": "DialogHeader", "state": { "title": "Title", "hasCloseButton": true } },
+          { "type": "DialogBody", "children": [...] },
+          { "type": "DialogFooter", "state": { "cancelLabel": "Cancel", "confirmLabel": "OK" } }
+        ]
+      }]
+    }
+  ]
+}
+\`\`\`
+
+### Example: Nested Dialogs (explicit providerId required)
+
+\`\`\`json
+{
+  "id": "outer-dialog",
+  "type": "Dialog",
+  "state": { "open": false },
+  "children": [
+    { "type": "DialogTrigger", "children": [...] },
+    { "type": "DialogPortal", "children": [{
+      "type": "DialogContent",
+      "children": [
+        { "type": "DialogBody", "children": [
+          {
+            "id": "inner-dialog",
+            "type": "Dialog",
+            "state": { "open": false },
+            "children": [
+              {
+                "type": "DialogTrigger",
+                "state": { "providerId": "inner-dialog" },
+                "children": [{ "type": "Button", "children": [...] }]
+              },
+              { "type": "DialogPortal", "children": [{
+                "type": "DialogContent",
+                "state": { "providerId": "inner-dialog", "size": "small" },
+                "children": [
+                  {
+                    "type": "DialogHeader",
+                    "state": { "providerId": "inner-dialog", "title": "Inner Dialog" }
+                  }
+                ]
+              }]}
+            ]
+          }
+        ]}
+      ]
+    }]}
+  ]
+}
+\`\`\`
+
+---
+
 ## Size Variants
 
 | Size | Width | Use Case |
@@ -57,12 +230,25 @@ The **Dialog** component is a modal overlay following the Atlassian Design Syste
 | \`danger\` | Destructive actions (delete, remove) |
 | \`warning\` | Warning actions |
 
+---
+
+## Key Rules
+
+| Field | Location | Examples |
+|-------|----------|----------|
+| HTML attributes | \`attributes\` | \`className\`, \`id\`, \`style\`, \`data-*\` |
+| Radix UI props | \`state\` | \`size\`, \`hasCloseButton\` |
+| SDUI-specific | \`state\` | \`providerId\` (optional), \`title\`, \`open\`, \`cancelLabel\`, \`confirmLabel\` |
+
+---
+
 ## Features
 
-- Compound component pattern for flexibility
+- Compound component pattern for maximum flexibility
+- Automatic providerId inheritance from parent context
 - Keyboard navigation (Escape to close)
 - Focus trap and restoration
-- ARIA attributes for accessibility
+- ARIA attributes for screen readers
 - SDUI template integration
         `,
       },
@@ -150,12 +336,12 @@ export const SizeSmall: Story = {
               {
                 id: 'content',
                 type: 'DialogContent',
-                attributes: { size: 'small' },
+                state: { size: 'small' },
                 children: [
                   {
                     id: 'header',
                     type: 'DialogHeader',
-                    attributes: { title: 'Small Dialog (400px)', hasCloseButton: true },
+                    state: { title: 'Small Dialog (400px)', hasCloseButton: true },
                   },
                   {
                     id: 'body',
@@ -171,7 +357,7 @@ export const SizeSmall: Story = {
                   {
                     id: 'footer',
                     type: 'DialogFooter',
-                    attributes: { cancelLabel: 'Cancel', confirmLabel: 'Confirm' },
+                    state: { cancelLabel: 'Cancel', confirmLabel: 'Confirm' },
                   },
                 ],
               },
@@ -226,12 +412,12 @@ export const SizeMedium: Story = {
               {
                 id: 'content',
                 type: 'DialogContent',
-                attributes: { size: 'medium' },
+                state: { size: 'medium' },
                 children: [
                   {
                     id: 'header',
                     type: 'DialogHeader',
-                    attributes: { title: 'Medium Dialog (600px)', hasCloseButton: true },
+                    state: { title: 'Medium Dialog (600px)', hasCloseButton: true },
                   },
                   {
                     id: 'body',
@@ -247,7 +433,7 @@ export const SizeMedium: Story = {
                   {
                     id: 'footer',
                     type: 'DialogFooter',
-                    attributes: { cancelLabel: 'Cancel', confirmLabel: 'Save' },
+                    state: { cancelLabel: 'Cancel', confirmLabel: 'Save' },
                   },
                 ],
               },
@@ -302,12 +488,12 @@ export const SizeLarge: Story = {
               {
                 id: 'content',
                 type: 'DialogContent',
-                attributes: { size: 'large' },
+                state: { size: 'large' },
                 children: [
                   {
                     id: 'header',
                     type: 'DialogHeader',
-                    attributes: { title: 'Large Dialog (800px)', hasCloseButton: true },
+                    state: { title: 'Large Dialog (800px)', hasCloseButton: true },
                   },
                   {
                     id: 'body',
@@ -323,7 +509,7 @@ export const SizeLarge: Story = {
                   {
                     id: 'footer',
                     type: 'DialogFooter',
-                    attributes: { cancelLabel: 'Cancel', confirmLabel: 'Apply' },
+                    state: { cancelLabel: 'Cancel', confirmLabel: 'Apply' },
                   },
                 ],
               },
@@ -378,12 +564,12 @@ export const SizeXLarge: Story = {
               {
                 id: 'content',
                 type: 'DialogContent',
-                attributes: { size: 'xlarge' },
+                state: { size: 'xlarge' },
                 children: [
                   {
                     id: 'header',
                     type: 'DialogHeader',
-                    attributes: { title: 'XLarge Dialog (968px)', hasCloseButton: true },
+                    state: { title: 'XLarge Dialog (968px)', hasCloseButton: true },
                   },
                   {
                     id: 'body',
@@ -399,7 +585,7 @@ export const SizeXLarge: Story = {
                   {
                     id: 'footer',
                     type: 'DialogFooter',
-                    attributes: { cancelLabel: 'Cancel', confirmLabel: 'Submit' },
+                    state: { cancelLabel: 'Cancel', confirmLabel: 'Submit' },
                   },
                 ],
               },
@@ -569,12 +755,12 @@ export const WithFormContent: Story = {
               {
                 id: 'content',
                 type: 'DialogContent',
-                attributes: { size: 'medium' },
+                state: { size: 'medium' },
                 children: [
                   {
                     id: 'header',
                     type: 'DialogHeader',
-                    attributes: { title: 'Edit Profile', hasCloseButton: true },
+                    state: { title: 'Edit Profile', hasCloseButton: true },
                   },
                   {
                     id: 'body',
@@ -602,7 +788,7 @@ export const WithFormContent: Story = {
                   {
                     id: 'footer',
                     type: 'DialogFooter',
-                    attributes: { cancelLabel: 'Cancel', confirmLabel: 'Save Changes' },
+                    state: { cancelLabel: 'Cancel', confirmLabel: 'Save Changes' },
                   },
                 ],
               },
@@ -662,12 +848,12 @@ export const ConfirmationPattern: Story = {
                   {
                     id: 'content-save',
                     type: 'DialogContent',
-                    attributes: { size: 'small' },
+                    state: { size: 'small' },
                     children: [
                       {
                         id: 'header-save',
                         type: 'DialogHeader',
-                        attributes: { title: 'Save Draft?', hasCloseButton: true },
+                        state: { title: 'Save Draft?', hasCloseButton: true },
                       },
                       {
                         id: 'body-save',
@@ -683,7 +869,7 @@ export const ConfirmationPattern: Story = {
                       {
                         id: 'footer-save',
                         type: 'DialogFooter',
-                        attributes: { cancelLabel: 'Discard', confirmLabel: 'Save Draft' },
+                        state: { cancelLabel: 'Discard', confirmLabel: 'Save Draft' },
                       },
                     ],
                   },
@@ -715,12 +901,12 @@ export const ConfirmationPattern: Story = {
                   {
                     id: 'content-delete',
                     type: 'DialogContent',
-                    attributes: { size: 'small' },
+                    state: { size: 'small' },
                     children: [
                       {
                         id: 'header-delete',
                         type: 'DialogHeader',
-                        attributes: { title: 'Delete Item?', hasCloseButton: true },
+                        state: { title: 'Delete Item?', hasCloseButton: true },
                       },
                       {
                         id: 'body-delete',
@@ -736,7 +922,7 @@ export const ConfirmationPattern: Story = {
                       {
                         id: 'footer-delete',
                         type: 'DialogFooter',
-                        attributes: { cancelLabel: 'Cancel', confirmLabel: 'Delete', appearance: 'danger' },
+                        state: { cancelLabel: 'Cancel', confirmLabel: 'Delete', appearance: 'danger' },
                       },
                     ],
                   },
