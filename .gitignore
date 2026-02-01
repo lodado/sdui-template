@@ -7,6 +7,7 @@ node_modules
 
 # testing
 coverage
+**/.cache/*
 
 # next.js
 .next/
@@ -52,3 +53,6 @@ apps/docs/build-storybook.log
 **/*.css.map
 
 *storybook.log
+
+# git worktrees
+.worktrees/

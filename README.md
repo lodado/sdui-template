@@ -996,6 +996,48 @@ export default function Page() {
 }
 ```
 
+## 🚀 Worktree-Based Development
+
+This repository uses a **git worktree** workflow for isolated PR development:
+
+> "1 Task = 1 Worktree = 1 PR"
+
+### Quick Start
+
+```bash
+# Create a new worktree for your feature
+./.claude/scripts/pr-task.sh "feat: add billing table"
+
+# Navigate to the worktree
+cd .worktrees/feat-add-billing-table
+
+# Make changes, then commit and push
+git add .
+git commit -m "feat: add billing table"
+git push -u origin chore/feat-add-billing-table
+
+# Create PR
+gh pr create --title "feat: add billing table"
+
+# After merge, clean up
+cd ../..
+git worktree remove .worktrees/feat-add-billing-table
+```
+
+### Why Worktrees?
+
+- **Isolation**: Each feature is completely isolated
+- **Parallel work**: Work on multiple features simultaneously
+- **Clean main**: Never develop directly on main branch
+- **Easy cleanup**: Remove worktree after PR merge
+
+### Agent Workflow
+
+See `agents/` directory for orchestrator and implementer agent specifications:
+
+- `agents/pr-orchestrator.md` - Manages PR lifecycle
+- `agents/pr-implementer.md` - Handles code implementation
+
 ## 📝 License
 
 MIT

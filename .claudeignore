@@ -10,6 +10,7 @@ build/
 dist/
 **/dist/*
 **/storybook-static/*
+**/.cache/*
 
 # Cache directories
 .turbo/
