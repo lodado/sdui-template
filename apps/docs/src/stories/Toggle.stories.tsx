@@ -1,5 +1,5 @@
 import { type SduiLayoutDocument, SduiLayoutRenderer } from '@lodado/sdui-template'
-import { Toggle, sduiComponents } from '@lodado/sdui-template-component'
+import { sduiComponents,Toggle } from '@lodado/sdui-template-component'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import React, { useState } from 'react'
 

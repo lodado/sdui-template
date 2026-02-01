@@ -2,6 +2,13 @@
 
 import { type ComponentFactory } from '@lodado/sdui-template'
 
+import {
+  DropdownMenuCheckboxItemContainer,
+  DropdownMenuContainer,
+  DropdownMenuItemContainer,
+  DropdownMenuLabelContainer,
+  DropdownMenuSeparatorContainer,
+} from '../features/dropdown-menu/DropdownMenuContainer'
 import { FormContainer } from '../features/form/Form'
 import { FormFieldContainer } from '../features/form/FormField'
 import { Title, TitleLogo } from '../features/title/components'
@@ -91,4 +98,11 @@ export const sduiComponents: Record<string, ComponentFactory> = {
 
   // Tooltip
   Tooltip: (id, parentPath) => <TooltipContainer id={id} parentPath={parentPath} />,
+
+  // DropdownMenu
+  DropdownMenu: (id, parentPath) => <DropdownMenuContainer id={id} parentPath={parentPath} />,
+  DropdownMenuItem: (id) => <DropdownMenuItemContainer id={id} />,
+  DropdownMenuCheckboxItem: (id) => <DropdownMenuCheckboxItemContainer id={id} />,
+  DropdownMenuLabel: (id) => <DropdownMenuLabelContainer id={id} />,
+  DropdownMenuSeparator: (id) => <DropdownMenuSeparatorContainer id={id} />,
 }
