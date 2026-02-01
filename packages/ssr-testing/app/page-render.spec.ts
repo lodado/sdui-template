@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { expect,test } from '@playwright/test'
 
 /**
  * 페이지 렌더링 테스트
@@ -31,19 +31,19 @@ test.describe('페이지 렌더링', () => {
     const layoutContainer = page.locator('[data-testid="grid-layout"]').first()
     await expect(layoutContainer).toBeVisible({ timeout: 10000 })
 
-    // Toggle 컴포넌트들이 렌더링되는지 확인 (label 텍스트로 확인)
-    const toggle1Label = page.getByText('알림 받기')
-    const toggle2Label = page.getByText('다크 모드')
-    const toggle3Label = page.getByText('자동 저장')
+    // Toggle 컴포넌트들이 렌더링되는지 확인 (aria-label로 확인)
+    const toggle1 = page.getByRole('switch', { name: '알림 받기' })
+    const toggle2 = page.getByRole('switch', { name: '다크 모드' })
+    const toggle3 = page.getByRole('switch', { name: '자동 저장' })
 
-    await expect(toggle1Label).toBeVisible({ timeout: 10000 })
-    await expect(toggle2Label).toBeVisible({ timeout: 10000 })
-    await expect(toggle3Label).toBeVisible({ timeout: 10000 })
+    await expect(toggle1).toBeVisible({ timeout: 10000 })
+    await expect(toggle2).toBeVisible({ timeout: 10000 })
+    await expect(toggle3).toBeVisible({ timeout: 10000 })
 
-    // Toggle 버튼들이 렌더링되는지 확인 (data-testid 사용)
-    const toggle1Button = page.locator('[data-testid="toggle-button-toggle-1"]')
-    const toggle2Button = page.locator('[data-testid="toggle-button-toggle-2"]')
-    const toggle3Button = page.locator('[data-testid="toggle-button-toggle-3"]')
+    // Toggle 버튼들이 렌더링되는지 확인 (data-node-id 사용)
+    const toggle1Button = page.locator('[data-node-id="toggle-1"]')
+    const toggle2Button = page.locator('[data-node-id="toggle-2"]')
+    const toggle3Button = page.locator('[data-node-id="toggle-3"]')
 
     await expect(toggle1Button).toBeVisible({ timeout: 10000 })
     await expect(toggle2Button).toBeVisible({ timeout: 10000 })
@@ -54,42 +54,42 @@ test.describe('페이지 렌더링', () => {
     await page.goto('/')
     await page.waitForLoadState('networkidle')
 
-    // 첫 번째 토글: checked=false (aria-pressed로 확인)
-    const toggle1 = page.locator('[data-testid="toggle-button-toggle-1"]')
+    // 첫 번째 토글: isChecked=false (aria-checked로 확인 - Radix Switch 사용)
+    const toggle1 = page.locator('[data-node-id="toggle-1"]')
     await expect(toggle1).toBeVisible({ timeout: 10000 })
-    await expect(toggle1).toHaveAttribute('aria-pressed', 'false')
+    await expect(toggle1).toHaveAttribute('aria-checked', 'false')
 
-    // 두 번째 토글: checked=true
-    const toggle2 = page.locator('[data-testid="toggle-button-toggle-2"]')
+    // 두 번째 토글: isChecked=true
+    const toggle2 = page.locator('[data-node-id="toggle-2"]')
     await expect(toggle2).toBeVisible({ timeout: 10000 })
-    await expect(toggle2).toHaveAttribute('aria-pressed', 'true')
+    await expect(toggle2).toHaveAttribute('aria-checked', 'true')
 
-    // 세 번째 토글: checked=false
-    const toggle3 = page.locator('[data-testid="toggle-button-toggle-3"]')
+    // 세 번째 토글: isChecked=false
+    const toggle3 = page.locator('[data-node-id="toggle-3"]')
     await expect(toggle3).toBeVisible({ timeout: 10000 })
-    await expect(toggle3).toHaveAttribute('aria-pressed', 'false')
+    await expect(toggle3).toHaveAttribute('aria-checked', 'false')
   })
 
   test('Toggle 컴포넌트가 클릭 시 상태가 변경된다', async ({ page }) => {
     await page.goto('/')
     await page.waitForLoadState('networkidle')
 
-    const toggle1 = page.locator('[data-testid="toggle-button-toggle-1"]')
+    const toggle1 = page.locator('[data-node-id="toggle-1"]')
 
     // 초기 상태 확인
     await expect(toggle1).toBeVisible({ timeout: 10000 })
-    await expect(toggle1).toHaveAttribute('aria-pressed', 'false')
+    await expect(toggle1).toHaveAttribute('aria-checked', 'false')
 
     // 클릭하여 상태 변경
     await toggle1.click()
     // 상태 변경이 반영될 때까지 잠시 대기
     await page.waitForTimeout(100)
-    await expect(toggle1).toHaveAttribute('aria-pressed', 'true')
+    await expect(toggle1).toHaveAttribute('aria-checked', 'true')
 
     // 다시 클릭하여 원래 상태로 복귀
     await toggle1.click()
     await page.waitForTimeout(100)
-    await expect(toggle1).toHaveAttribute('aria-pressed', 'false')
+    await expect(toggle1).toHaveAttribute('aria-checked', 'false')
   })
 
   test('페이지가 반응형으로 렌더링된다', async ({ page }) => {

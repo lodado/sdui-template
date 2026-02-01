@@ -1,7 +1,8 @@
 'use client'
 
-import { SduiLayoutRenderer } from '@lodado/sdui-template'
 import type { SduiLayoutDocument } from '@lodado/sdui-template'
+import { SduiLayoutRenderer } from '@lodado/sdui-template'
+
 import { componentMap } from './components/componentMap'
 
 /**
@@ -25,7 +26,7 @@ const exampleDocument: SduiLayoutDocument = {
         id: 'toggle-1',
         type: 'Toggle',
         state: {
-          checked: false,
+          isChecked: false,
           label: '알림 받기',
         },
       },
@@ -33,7 +34,7 @@ const exampleDocument: SduiLayoutDocument = {
         id: 'toggle-2',
         type: 'Toggle',
         state: {
-          checked: true,
+          isChecked: true,
           label: '다크 모드',
         },
       },
@@ -41,7 +42,7 @@ const exampleDocument: SduiLayoutDocument = {
         id: 'toggle-3',
         type: 'Toggle',
         state: {
-          checked: false,
+          isChecked: false,
           label: '자동 저장',
         },
       },
@@ -49,28 +50,27 @@ const exampleDocument: SduiLayoutDocument = {
   },
 }
 
-export default function Home() {
-  return (
-    <div className="flex min-h-screen flex-col bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex-1 w-full max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-black dark:text-zinc-50 mb-2">SDUI Template SSR Testing</h1>
-          <p className="text-lg text-zinc-600 dark:text-zinc-400">
-            Next.js App Router를 사용한 Server-Driven UI 테스트 페이지입니다.
-          </p>
+const Home = () => (
+  <div className="flex min-h-screen flex-col bg-zinc-50 font-sans dark:bg-black">
+    <main className="flex-1 w-full max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-black dark:text-zinc-50 mb-2">SDUI Template SSR Testing</h1>
+        <p className="text-lg text-zinc-600 dark:text-zinc-400">
+          Next.js App Router를 사용한 Server-Driven UI 테스트 페이지입니다.
+        </p>
+      </div>
+      <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-800 p-6">
+        <div className="h-[400px]">
+          <SduiLayoutRenderer
+            document={exampleDocument}
+            components={componentMap}
+             
+            onError={(error: Error) => console.error('SDUI Layout Error:', error)}
+          />
         </div>
-        <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-800 p-6">
-          <div className="h-[400px]">
-            <SduiLayoutRenderer
-              document={exampleDocument}
-              components={componentMap}
-              onError={(error: Error) => {
-                console.error('SDUI Layout Error:', error)
-              }}
-            />
-          </div>
-        </div>
-      </main>
-    </div>
-  )
-}
+      </div>
+    </main>
+  </div>
+)
+
+export default Home

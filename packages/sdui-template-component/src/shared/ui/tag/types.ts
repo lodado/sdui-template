@@ -56,6 +56,17 @@ export interface TagProps extends React.HTMLAttributes<HTMLSpanElement> {
 }
 
 /**
+ * Tag state interface for component state
+ *
+ * @description
+ * Interface for Tag component state in SDUI.
+ */
+export interface TagState {
+  text?: string
+  color?: TagColor
+}
+
+/**
  * Tag state schema for component state validation
  *
  * @description
@@ -68,5 +79,3 @@ export const tagStatesSchema: z.ZodSchema<Record<string, unknown>> = z.object({
     .enum(['standard', 'blue', 'red', 'yellow', 'green', 'teal', 'purple', 'grey', 'lime', 'orange', 'magenta'])
     .optional(),
 }) as z.ZodSchema<Record<string, unknown>>
-
-export type TagState = z.infer<typeof tagStatesSchema>
