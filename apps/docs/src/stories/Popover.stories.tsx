@@ -33,11 +33,36 @@ The **Popover** component displays contextual content on trigger. It uses Radix 
   "type": "Popover",
   "state": { "open": false },
   "children": [
-    { "type": "PopoverTrigger", "children": [...] },
     {
+      "id": "trigger",
+      "type": "PopoverTrigger",
+      "children": [
+        {
+          "id": "trigger-btn",
+          "type": "Button",
+          "state": { "appearance": "primary" },
+          "children": [
+            { "id": "btn-text", "type": "Span", "state": { "text": "Open Popover" } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "content",
       "type": "PopoverContent",
       "state": { "size": "medium", "side": "bottom", "sideOffset": 4 },
-      "children": [...]
+      "children": [
+        {
+          "id": "content-inner",
+          "type": "Div",
+          "attributes": { "className": "space-y-2" },
+          "children": [
+            { "id": "title", "type": "Span", "state": { "text": "Popover Title" } },
+            { "id": "desc", "type": "Span", "state": { "text": "Content here..." } },
+            { "id": "close", "type": "PopoverClose" }
+          ]
+        }
+      ]
     }
   ]
 }
@@ -594,7 +619,7 @@ export const CompoundPatternSdui: Story = {
                         attributes: { className: 'flex justify-between items-center' },
                         children: [
                           { id: 'label-1', type: 'Span', state: { text: 'Enable notifications' }, attributes: { className: 'text-sm' } },
-                          { id: 'toggle-1', type: 'Toggle', state: { checked: true, size: 'small' } },
+                          { id: 'toggle-1', type: 'Toggle', state: { isChecked: true, size: 'regular' } },
                         ],
                       },
                       {
@@ -603,7 +628,7 @@ export const CompoundPatternSdui: Story = {
                         attributes: { className: 'flex justify-between items-center' },
                         children: [
                           { id: 'label-2', type: 'Span', state: { text: 'Dark mode' }, attributes: { className: 'text-sm' } },
-                          { id: 'toggle-2', type: 'Toggle', state: { checked: false, size: 'small' } },
+                          { id: 'toggle-2', type: 'Toggle', state: { isChecked: false, size: 'regular' } },
                         ],
                       },
                     ],
@@ -633,8 +658,44 @@ No explicit \`providerId\` is needed in child components' state.
   "type": "Popover",
   "state": { "open": false },
   "children": [
-    { "type": "PopoverTrigger", "children": [...] },
-    { "type": "PopoverContent", "state": { "size": "large" }, "children": [...] }
+    {
+      "id": "trigger",
+      "type": "PopoverTrigger",
+      "children": [
+        {
+          "id": "trigger-btn",
+          "type": "Button",
+          "state": { "appearance": "primary" },
+          "children": [
+            { "id": "btn-text", "type": "Span", "state": { "text": "User Settings" } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "content",
+      "type": "PopoverContent",
+      "state": { "size": "large", "side": "bottom", "sideOffset": 4 },
+      "children": [
+        {
+          "id": "header",
+          "type": "Div",
+          "attributes": { "className": "flex justify-between items-center" },
+          "children": [
+            { "id": "title", "type": "Span", "state": { "text": "Settings" } },
+            { "id": "close", "type": "PopoverClose" }
+          ]
+        },
+        {
+          "id": "body",
+          "type": "Div",
+          "children": [
+            { "id": "setting-label", "type": "Span", "state": { "text": "Enable notifications" } },
+            { "id": "toggle", "type": "Toggle", "state": { "isChecked": true } }
+          ]
+        }
+      ]
+    }
   ]
 }
 \`\`\`
