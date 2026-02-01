@@ -21,7 +21,15 @@
       "Bash(pnpm run generate:tokens:*)",
       "Bash(pnpm run typecheck:*)",
       "Bash(pnpm install:*)",
-      "Bash(pnpm --filter @lodado/sdui-template-component build:*)"
+      "Bash(pnpm --filter @lodado/sdui-template-component build:*)",
+      "Bash(./.claude/scripts/pr-task.sh:*)",
+      "mcp__figma__get_design_context",
+      "mcp__figma__get_screenshot",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm build:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr create --title \"feat\\(Toggle\\): create toggle component from Figma design\" --body \"$\\(cat <<''EOF''\n## Summary\n- Created Toggle \\(Switch\\) component based on ADS Figma design\n- Figma: https://www.figma.com/design/v5a3riuR6uhKl2pQSvqRxN/ADS-Components--Community-?node-id=1966-3031\n\n## Changes\n| File | Description |\n|------|-------------|\n| `toggle/Toggle.tsx` | Main Toggle component |\n| `toggle/ToggleContainer.tsx` | SDUI container wrapper |\n| `toggle/toggle-variants.ts` | CVA style variants |\n| `toggle/types.ts` | TypeScript types |\n| `toggle/index.ts` | Exports |\n| `toggle/__tests__/toggle.logic.test.tsx` | Test suite |\n| `toggle/__docs__/requirement-analysis.md` | Documentation |\n| `Toggle.stories.tsx` | Storybook stories |\n| `sduiComponents.tsx` | Register Toggle in SDUI |\n| `shared/ui/index.ts` | Export toggle module |\n\n## Features\n- **Sizes**: regular \\(32x16px\\), large \\(40x20px\\)\n- **States**: checked, unchecked, disabled, loading\n- **Colors**: Green \\(checked\\), Gray \\(unchecked\\)\n- **Accessibility**: role=\"switch\", aria-checked, keyboard navigation\n\n## Test plan\n- [x] Unit tests pass \\(157 tests\\)\n- [x] Build succeeds\n- [ ] Storybook verification\n\n---\nGenerated with [Claude Code]\\(https://claude.ai/code\\)\nEOF\n\\)\")"
     ]
   },
   "enabledPlugins": {
