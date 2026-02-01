@@ -209,8 +209,8 @@ export type DropdownRootState = z.infer<typeof dropdownRootStateSchema>
  * @description Trigger subscribes to provider and controls open state
  */
 export const dropdownTriggerStateSchema = z.object({
-  /** Required: ID of the Dropdown provider to subscribe to */
-  providerId: z.string(),
+  /** Optional: ID of the Dropdown provider to subscribe to. If omitted, inherits from parent context. */
+  providerId: z.string().optional(),
 })
 
 export type DropdownTriggerState = z.infer<typeof dropdownTriggerStateSchema>
@@ -224,8 +224,8 @@ export type DropdownTriggerState = z.infer<typeof dropdownTriggerStateSchema>
  * - state: Dynamic data + Radix UI / third-party component props
  */
 export const dropdownContentStateSchema = z.object({
-  /** Required: ID of the Dropdown provider to subscribe to */
-  providerId: z.string(),
+  /** Optional: ID of the Dropdown provider to subscribe to. If omitted, inherits from parent context. */
+  providerId: z.string().optional(),
   /** Radix UI: Side to render content on */
   side: z.enum(['top', 'right', 'bottom', 'left']).optional(),
   /** Radix UI: Offset from the trigger */
@@ -247,8 +247,8 @@ export type DropdownContentState = z.infer<typeof dropdownContentStateSchema>
  * Note: label, disabled are in state (Radix UI props), not attributes
  */
 export const dropdownItemStateSchema = z.object({
-  /** Required: ID of the Dropdown provider to subscribe to */
-  providerId: z.string(),
+  /** Optional: ID of the Dropdown provider to subscribe to. If omitted, inherits from parent context. */
+  providerId: z.string().optional(),
   /** This item's value (used for selection comparison) */
   value: z.string(),
   /** Display label for the item */
@@ -258,3 +258,28 @@ export const dropdownItemStateSchema = z.object({
 })
 
 export type DropdownItemState = z.infer<typeof dropdownItemStateSchema>
+
+/**
+ * DropdownValue state schema
+ * @description Displays the currently selected value's label inside the trigger
+ *
+ * This component subscribes to a Dropdown via providerId and renders
+ * the label corresponding to the current selectedId.
+ */
+export const dropdownValueStateSchema = z.object({
+  /** Optional: ID of the Dropdown provider to subscribe to. If omitted, inherits from parent context. */
+  providerId: z.string().optional(),
+  /** Option list to resolve selectedId to label */
+  options: z
+    .array(
+      z.object({
+        id: z.string(),
+        label: z.string(),
+      }),
+    )
+    .optional(),
+  /** Placeholder text when no option is selected */
+  placeholder: z.string().optional(),
+})
+
+export type DropdownValueState = z.infer<typeof dropdownValueStateSchema>

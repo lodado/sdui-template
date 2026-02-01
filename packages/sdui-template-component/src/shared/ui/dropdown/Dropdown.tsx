@@ -1,5 +1,5 @@
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react'
 
 import { cn } from '../../lib/cn'
 import {
@@ -9,6 +9,24 @@ import {
   dropdownTriggerVariants,
 } from './dropdown-variants'
 import type { DropdownItemOption, DropdownMenuItemProps, DropdownMenuProps, DropdownPlacement } from './types'
+
+// ============================================
+// Dropdown Context for providerId inheritance
+// ============================================
+
+interface DropdownContextValue {
+  providerId: string
+}
+
+const DropdownContext = createContext<DropdownContextValue | null>(null)
+
+/**
+ * Hook to get providerId from context
+ * Used by child components when providerId is not explicitly provided
+ */
+export const useDropdownContext = () => {
+  return useContext(DropdownContext)
+}
 
 /**
  * Chevron down icon (12px as per Figma spec)
@@ -288,18 +306,32 @@ DropdownMenu.displayName = 'DropdownMenu'
 /**
  * DropdownRoot - Root component for compound pattern
  * Wraps Radix UI Root with controlled open state
+ * Provides context for child components to inherit providerId
  */
 export interface DropdownRootProps {
+  /** SDUI node ID - also used as default providerId for children */
+  id?: string
   children?: React.ReactNode
   open?: boolean
   onOpenChange?: (open: boolean) => void
 }
 
-export const DropdownRoot = ({ children, open, onOpenChange }: DropdownRootProps) => (
-  <DropdownMenuPrimitive.Root open={open} onOpenChange={onOpenChange}>
-    {children}
-  </DropdownMenuPrimitive.Root>
-)
+export const DropdownRoot = ({ id, children, open, onOpenChange }: DropdownRootProps) => {
+  const contextValue = useMemo(() => (id ? { providerId: id } : null), [id])
+
+  const content = (
+    <DropdownMenuPrimitive.Root open={open} onOpenChange={onOpenChange}>
+      {children}
+    </DropdownMenuPrimitive.Root>
+  )
+
+  // Only wrap with context if id is provided
+  if (contextValue) {
+    return <DropdownContext.Provider value={contextValue}>{content}</DropdownContext.Provider>
+  }
+
+  return content
+}
 
 DropdownRoot.displayName = 'DropdownRoot'
 
@@ -398,6 +430,25 @@ export const DropdownItem = ({
 DropdownItem.displayName = 'DropdownItem'
 
 /**
+ * DropdownValue - Displays the selected option's label
+ * Used inside DropdownTrigger to show current selection
+ */
+export interface DropdownValueProps {
+  /** Label text to display (resolved from options) */
+  label?: string
+  /** Placeholder when no selection */
+  placeholder?: string
+  /** Additional CSS classes */
+  className?: string
+}
+
+export const DropdownValue = ({ label, placeholder = 'Select...', className }: DropdownValueProps) => {
+  return <span className={cn('truncate', className)}>{label || placeholder}</span>
+}
+
+DropdownValue.displayName = 'DropdownValue'
+
+/**
  * Dropdown namespace for compound pattern usage
  *
  * @example
@@ -418,6 +469,7 @@ export const Dropdown = {
   Trigger: DropdownTrigger,
   Content: DropdownContent,
   Item: DropdownItem,
+  Value: DropdownValue,
   CheckboxItem: DropdownCheckboxItem,
   MenuItem: DropdownMenuItem,
 }

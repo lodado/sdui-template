@@ -6,7 +6,7 @@ import React from 'react'
 import { Button } from './Button'
 import { type ButtonProps, buttonStatesSchema } from './types'
 
-interface ButtonContainerProps {
+interface ButtonContainerProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   id: string
   parentPath?: string[]
 }
@@ -18,9 +18,12 @@ interface ButtonContainerProps {
  * Uses forwardRef to enable Radix UI's asChild pattern.
  * When used as a child of Dialog.Trigger or Dropdown.Trigger,
  * the ref and event handlers are properly forwarded.
+ *
+ * IMPORTANT: Must accept and forward ...restProps for Radix asChild to work!
+ * Radix passes onClick, onPointerDown, etc. that must reach the Button.
  */
 export const ButtonContainer = React.forwardRef<HTMLButtonElement, ButtonContainerProps>(
-  ({ id, parentPath = [] }, ref) => {
+  ({ id, parentPath = [], ...restProps }, ref) => {
     const { childrenIds, attributes, state } = useSduiNodeSubscription({
       nodeId: id,
       schema: buttonStatesSchema,
@@ -37,6 +40,9 @@ export const ButtonContainer = React.forwardRef<HTMLButtonElement, ButtonContain
         {...(attributes as ButtonProps)}
         // eslint-disable-next-line react/jsx-props-no-spreading
         {...(state as ButtonProps)}
+        // Forward Radix's onClick, onPointerDown, etc.
+        // eslint-disable-next-line react/jsx-props-no-spreading
+        {...restProps}
       >
         {children}
       </Button>

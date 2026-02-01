@@ -9,11 +9,14 @@ export {
   DropdownItem,
   DropdownRoot,
   DropdownTrigger,
+  DropdownValue,
+  useDropdownContext,
 } from './Dropdown'
 export {
   DropdownContentContainer,
   DropdownItemContainer,
   DropdownTriggerContainer,
+  DropdownValueContainer,
 } from './DropdownContainer'
 
 // Type exports
@@ -34,6 +37,7 @@ export type {
   DropdownItemState,
   DropdownRootState,
   DropdownTriggerState,
+  DropdownValueState,
 } from './types'
 
 // Schema exports for validation
@@ -43,4 +47,5 @@ export {
   dropdownMenuStatesSchema,
   dropdownRootStateSchema,
   dropdownTriggerStateSchema,
+  dropdownValueStateSchema,
 } from './types'

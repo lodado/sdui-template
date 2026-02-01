@@ -22,6 +22,7 @@ import {
   DropdownContentContainer,
   DropdownItemContainer,
   DropdownTriggerContainer,
+  DropdownValueContainer,
 } from '../shared/ui/dropdown/DropdownContainer'
 import { IconContainer } from '../shared/ui/icon/IconContainer'
 import { ListContainer } from '../shared/ui/list/ListContainer'
@@ -91,6 +92,7 @@ export const sduiComponents: Record<string, ComponentFactory> = {
   DropdownTrigger: (id, parentPath) => <DropdownTriggerContainer id={id} parentPath={parentPath} />,
   DropdownContent: (id, parentPath) => <DropdownContentContainer id={id} parentPath={parentPath} />,
   DropdownItem: (id, parentPath) => <DropdownItemContainer id={id} parentPath={parentPath} />,
+  DropdownValue: (id) => <DropdownValueContainer id={id} />,
 
   // Icon
   Icon: (id, parentPath) => <IconContainer id={id} parentPath={parentPath} />,

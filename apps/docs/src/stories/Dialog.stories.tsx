@@ -86,12 +86,12 @@ export const Playground: Story = {
   },
   render: (args) => (
     <SimpleDialog
+      {...args}
       trigger={
         <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
           Open Dialog
         </button>
       }
-      {...args}
     >
       <p className="text-sm text-gray-600">
         Dialog body content goes here. You can put any content inside the dialog.

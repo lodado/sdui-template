@@ -71,7 +71,6 @@ type ComponentState = z.infer<typeof componentStateSchema>
 
 // 3. Use in component
 const MyComponent: React.FC<{ nodeId: string }> = ({ nodeId }) => {
-  // @ts-expect-error - Zod version compatibility issue
   const { state, childrenIds } = useSduiNodeSubscription<typeof componentStateSchema>({
     nodeId,
     schema: componentStateSchema, // Pass schema (REQUIRED)
@@ -123,7 +122,7 @@ type MyComponentState = z.infer<typeof myComponentStateSchema>
 
 // 2. Implement component
 const MyComponent: React.FC<{ nodeId: string; parentPath?: string[] }> = ({ nodeId, parentPath = [] }) => {
-  // @ts-expect-error - Zod version compatibility issue
+  issue
   const { state, childrenIds } = useSduiNodeSubscription<typeof myComponentStateSchema>({
     nodeId,
     schema: myComponentStateSchema,
@@ -334,9 +333,9 @@ const AuthSlot: React.FC<{ nodeId: string }> = ({ nodeId }) => {
 When implementing compound components (like Dropdown, Dialog) with SDUI:
 
 1. **Provider (Root)**: Holds shared state (`open`, `selectedId`)
-2. **Children**: Use `state.providerId` to subscribe to provider's state
+2. **Children**: Use `state.providerId` to subscribe to provider's state (optional - can inherit from context)
 
-**Pattern:**
+**Pattern (Simplified - providerId inherited from context):**
 
 ```typescript
 {
@@ -347,37 +346,66 @@ When implementing compound components (like Dropdown, Dialog) with SDUI:
     {
       id: 'trigger',
       type: 'DropdownTrigger',
-      state: { providerId: 'dropdown-root' },  // Subscribe to provider
+      // providerId omitted - automatically inherits from parent Dropdown
       children: [{ type: 'Button', ... }],
     },
     {
       id: 'content',
       type: 'DropdownContent',
-      state: { providerId: 'dropdown-root', side: 'bottom' },  // Radix props in state
+      state: { side: 'bottom' },  // Radix props in state
+      // providerId omitted - automatically inherits from parent Dropdown
       children: [
-        { id: 'item-1', type: 'DropdownItem', state: { providerId: 'dropdown-root', value: 'opt-1', label: 'Option 1' } },
-        { id: 'item-2', type: 'DropdownItem', state: { providerId: 'dropdown-root', value: 'opt-2', label: 'Option 2' } },
+        { id: 'item-1', type: 'DropdownItem', state: { value: 'opt-1', label: 'Option 1' } },
+        { id: 'item-2', type: 'DropdownItem', state: { value: 'opt-2', label: 'Option 2' } },
       ],
     },
   ],
 }
 ```
 
-**Why providerId instead of React Context:**
+**Pattern (Explicit providerId - for nested/cross-referencing):**
 
-- SDUI documents are serializable JSON
-- Nested providers need explicit targeting (e.g., nested Dropdowns)
-- State changes are tracked through the SDUI store, not React Context
+```typescript
+{
+  id: 'dropdown-root',
+  type: 'Dropdown',
+  state: { open: false, selectedId: 'opt-1' },
+  children: [
+    {
+      id: 'trigger',
+      type: 'DropdownTrigger',
+      state: { providerId: 'dropdown-root' },  // Explicit - useful for nested dropdowns
+      children: [{ type: 'Button', ... }],
+    },
+    // ...
+  ],
+}
+```
+
+**providerId Inheritance Rules:**
+
+1. If `state.providerId` is specified, use that explicit ID
+2. If omitted, inherit from nearest parent compound component via React Context
+3. Use explicit `providerId` when referencing a different provider (e.g., nested Dropdowns)
+
+**Why this hybrid approach:**
+
+- Simplifies common cases (single dropdown) - no need to repeat providerId everywhere
+- Supports complex cases (nested dropdowns) via explicit providerId
+- Documents remain serializable JSON
+- State changes still tracked through SDUI store
 
 **Container Implementation Pattern:**
 
 ```typescript
-// Child component subscribes to provider via providerId
+// Child component uses providerId from state, falls back to context
 export const DropdownItemContainer = ({ id }) => {
   const { state } = useSduiNodeSubscription({ nodeId: id })
   const store = useSduiLayoutAction()
+  const dropdownContext = useDropdownContext()  // React Context for inheritance
 
-  const providerId = state?.providerId as string
+  // Use explicit providerId if specified, otherwise inherit from context
+  const providerId = state?.providerId ?? dropdownContext?.providerId
   const value = state?.value as string
   const label = state?.label as string
 

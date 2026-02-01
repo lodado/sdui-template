@@ -3,22 +3,24 @@
 import { useRenderNode, useSduiLayoutAction, useSduiNodeSubscription } from '@lodado/sdui-template'
 import React, { useCallback } from 'react'
 
-import { Dropdown, DropdownMenu } from './Dropdown'
+import { Dropdown, DropdownMenu, useDropdownContext } from './Dropdown'
 import {
   type DropdownContentState,
   dropdownContentStateSchema,
   type DropdownItemState,
   dropdownItemStateSchema,
   type DropdownMenuProps,
-  dropdownMenuStatesSchema,
   type DropdownRootState,
   dropdownRootStateSchema,
   type DropdownTriggerState,
   dropdownTriggerStateSchema,
+  type DropdownValueState,
+  dropdownValueStateSchema,
 } from './types'
 
 interface DropdownContainerProps {
   id: string
+  // eslint-disable-next-line react/no-unused-prop-types
   parentPath?: string[]
 }
 
@@ -39,17 +41,15 @@ interface DropdownContainerProps {
  *   "type": "Dropdown",
  *   "state": { "open": false, "selectedId": "opt-1" },
  *   "children": [
- *     { "type": "DropdownTrigger", "state": { "providerId": "dropdown-root" }, ... },
- *     { "type": "DropdownContent", "state": { "providerId": "dropdown-root" }, ... }
+ *     { "type": "DropdownTrigger", ... },
+ *     { "type": "DropdownContent", ... }
  *   ]
  * }
  * ```
  */
 export const DropdownContainer = ({ id, parentPath = [] }: DropdownContainerProps) => {
-  // @ts-expect-error - Zod version compatibility
-  const { childrenIds, attributes, state } = useSduiNodeSubscription<typeof dropdownRootStateSchema>({
+  const { childrenIds, attributes, state } = useSduiNodeSubscription({
     nodeId: id,
-    schema: dropdownRootStateSchema,
   })
   const { renderChildren } = useRenderNode({ nodeId: id, parentPath })
   const store = useSduiLayoutAction()
@@ -65,9 +65,10 @@ export const DropdownContainer = ({ id, parentPath = [] }: DropdownContainerProp
   )
 
   // If children exist, use compound pattern
+  // Pass id to Root so children can inherit providerId from context
   if (childrenIds.length > 0) {
     return (
-      <Dropdown.Root open={typedState?.open ?? false} onOpenChange={handleOpenChange}>
+      <Dropdown.Root id={id} open={typedState?.open ?? false} onOpenChange={handleOpenChange}>
         {renderChildren(childrenIds)}
       </Dropdown.Root>
     )
@@ -106,33 +107,32 @@ DropdownContainer.displayName = 'DropdownContainer'
  * Subscribes to the provider (Dropdown) via providerId and controls open state.
  * Clicking the trigger toggles the provider's open state.
  *
+ * If providerId is not specified, it inherits from parent Dropdown context.
+ *
  * @example SDUI Document
  * ```json
  * {
  *   "id": "trigger",
  *   "type": "DropdownTrigger",
- *   "state": { "providerId": "dropdown-root" },
  *   "children": [{ "type": "Button", ... }]
  * }
  * ```
  */
 export const DropdownTriggerContainer = ({ id, parentPath = [] }: DropdownContainerProps) => {
-  // @ts-expect-error - Zod version compatibility
-  const { childrenIds, state } = useSduiNodeSubscription<typeof dropdownTriggerStateSchema>({
+  const { childrenIds, state } = useSduiNodeSubscription({
     nodeId: id,
-    schema: dropdownTriggerStateSchema,
   })
   const { renderChildren } = useRenderNode({ nodeId: id, parentPath })
   const store = useSduiLayoutAction()
+  const dropdownContext = useDropdownContext()
 
   const typedState = state as DropdownTriggerState
 
-  // Subscribe to provider state
-  const providerId = typedState?.providerId
-  // @ts-expect-error - Zod version compatibility
-  const { state: providerState } = useSduiNodeSubscription<typeof dropdownRootStateSchema>({
+  // Use providerId from state, fallback to context
+  const providerId = typedState?.providerId ?? dropdownContext?.providerId
+
+  const { state: providerState } = useSduiNodeSubscription({
     nodeId: providerId ?? '',
-    schema: dropdownRootStateSchema,
   })
 
   const providerTypedState = providerState as DropdownRootState
@@ -174,6 +174,8 @@ DropdownTriggerContainer.displayName = 'DropdownTriggerContainer'
  * Subscribes to the provider (Dropdown) via providerId for open state.
  * Renders children (DropdownItem) when open.
  *
+ * If providerId is not specified, it inherits from parent Dropdown context.
+ *
  * Radix UI props (side, sideOffset, align, alignOffset) are read from state.
  *
  * @example SDUI Document
@@ -181,36 +183,27 @@ DropdownTriggerContainer.displayName = 'DropdownTriggerContainer'
  * {
  *   "id": "content",
  *   "type": "DropdownContent",
- *   "state": { "providerId": "dropdown-root", "side": "bottom", "sideOffset": 4 },
+ *   "state": { "side": "bottom", "sideOffset": 4 },
  *   "children": [
- *     { "type": "DropdownItem", "state": { "providerId": "dropdown-root", "value": "opt-1", "label": "Option 1" } }
+ *     { "type": "DropdownItem", "state": { "value": "opt-1", "label": "Option 1" } }
  *   ]
  * }
  * ```
  */
 export const DropdownContentContainer = ({ id, parentPath = [] }: DropdownContainerProps) => {
-  // @ts-expect-error - Zod version compatibility
-  const { childrenIds, state } = useSduiNodeSubscription<typeof dropdownContentStateSchema>({
+  const { childrenIds, state } = useSduiNodeSubscription({
     nodeId: id,
-    schema: dropdownContentStateSchema,
   })
   const { renderChildren } = useRenderNode({ nodeId: id, parentPath })
+  const dropdownContext = useDropdownContext()
 
   const typedState = state as DropdownContentState
 
-  // Subscribe to provider state for open check
-  const providerId = typedState?.providerId
-  // @ts-expect-error - Zod version compatibility
-  const { state: providerState } = useSduiNodeSubscription<typeof dropdownRootStateSchema>({
-    nodeId: providerId ?? '',
-    schema: dropdownRootStateSchema,
-  })
+  // Use providerId from state, fallback to context
+  const providerId = typedState?.providerId ?? dropdownContext?.providerId
 
-  const providerTypedState = providerState as DropdownRootState
-  const isOpen = providerTypedState?.open ?? false
-
-  // Don't render if not open (Radix Portal handles this, but explicit for clarity)
-  if (!isOpen) return null
+  // NOTE: Do NOT add `if (!isOpen) return null` here!
+  // Radix Portal must always be mounted for the dropdown to work.
 
   // Read Radix UI props from state (not attributes!)
   const side = typedState?.side
@@ -235,6 +228,8 @@ DropdownContentContainer.displayName = 'DropdownContentContainer'
  * Subscribes to the provider (Dropdown) via providerId for selection state.
  * On select, updates provider's selectedId and closes the dropdown.
  *
+ * If providerId is not specified, it inherits from parent Dropdown context.
+ *
  * Props (label, disabled) are read from state (Radix UI convention).
  *
  * @example SDUI Document
@@ -242,30 +237,27 @@ DropdownContentContainer.displayName = 'DropdownContentContainer'
  * {
  *   "id": "item-1",
  *   "type": "DropdownItem",
- *   "state": { "providerId": "dropdown-root", "value": "opt-1", "label": "Option 1" }
+ *   "state": { "value": "opt-1", "label": "Option 1" }
  * }
  * ```
  */
-export const DropdownItemContainer = ({ id, parentPath = [] }: DropdownContainerProps) => {
-  // @ts-expect-error - Zod version compatibility
-  const { state } = useSduiNodeSubscription<typeof dropdownItemStateSchema>({
+export const DropdownItemContainer = ({ id }: DropdownContainerProps) => {
+  const { state } = useSduiNodeSubscription({
     nodeId: id,
-    schema: dropdownItemStateSchema,
   })
   const store = useSduiLayoutAction()
+  const dropdownContext = useDropdownContext()
 
   const typedState = state as DropdownItemState
 
-  // Subscribe to provider state for selection comparison
-  const providerId = typedState?.providerId
+  // Use providerId from state, fallback to context
+  const providerId = typedState?.providerId ?? dropdownContext?.providerId
   const value = typedState?.value
   const label = typedState?.label
   const disabled = typedState?.disabled
 
-  // @ts-expect-error - Zod version compatibility
-  const { state: providerState } = useSduiNodeSubscription<typeof dropdownRootStateSchema>({
+  const { state: providerState } = useSduiNodeSubscription({
     nodeId: providerId ?? '',
-    schema: dropdownRootStateSchema,
   })
 
   const providerTypedState = providerState as DropdownRootState
@@ -283,3 +275,59 @@ export const DropdownItemContainer = ({ id, parentPath = [] }: DropdownContainer
 }
 
 DropdownItemContainer.displayName = 'DropdownItemContainer'
+
+/**
+ * DropdownValueContainer - SDUI Container for Dropdown.Value
+ *
+ * @description
+ * Displays the currently selected option's label inside the trigger.
+ * Subscribes to the provider (Dropdown) via providerId and resolves
+ * selectedId to the corresponding label from options.
+ *
+ * If providerId is not specified, it inherits from parent Dropdown context.
+ *
+ * @example SDUI Document
+ * ```json
+ * {
+ *   "id": "dropdown-value",
+ *   "type": "DropdownValue",
+ *   "state": {
+ *     "placeholder": "Select...",
+ *     "options": [
+ *       { "id": "opt-1", "label": "Option 1" },
+ *       { "id": "opt-2", "label": "Option 2" }
+ *     ]
+ *   }
+ * }
+ * ```
+ */
+export const DropdownValueContainer = ({ id }: DropdownContainerProps) => {
+  const { state, attributes } = useSduiNodeSubscription({
+    nodeId: id,
+  })
+  const dropdownContext = useDropdownContext()
+
+  const typedState = state as DropdownValueState
+
+  // Use providerId from state, fallback to context
+  const providerId = typedState?.providerId ?? dropdownContext?.providerId
+  const options = typedState?.options ?? []
+  const placeholder = typedState?.placeholder ?? 'Select...'
+
+  const { state: providerState } = useSduiNodeSubscription({
+    nodeId: providerId ?? '',
+  })
+
+  const providerTypedState = providerState as DropdownRootState
+  const selectedId = providerTypedState?.selectedId
+
+  // Find label for selected option
+  const selectedOption = options.find((opt) => opt.id === selectedId)
+  const label = selectedOption?.label
+
+  const className = attributes?.className as string | undefined
+
+  return <Dropdown.Value label={label} placeholder={placeholder} className={className} />
+}
+
+DropdownValueContainer.displayName = 'DropdownValueContainer'

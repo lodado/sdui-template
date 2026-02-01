@@ -603,6 +603,9 @@ importers:
       '@lodado/sdui-template':
         specifier: workspace:*
         version: link:../sdui-template
+      '@lodado/sdui-template-component':
+        specifier: workspace:*
+        version: link:../sdui-template-component
       next:
         specifier: 16.1.1
         version: 16.1.1(@babel/core@7.28.5)(@playwright/test@1.57.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(sass@1.97.2)

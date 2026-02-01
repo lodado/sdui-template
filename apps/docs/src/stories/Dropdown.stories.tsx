@@ -5,9 +5,9 @@ import {
   useSduiNodeReference,
   useSduiNodeSubscription,
 } from '@lodado/sdui-template'
-import { DropdownMenu, sduiComponents } from '@lodado/sdui-template-component'
+import { Dropdown, sduiComponents } from '@lodado/sdui-template-component'
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import React, { useState } from 'react'
+import React from 'react'
 
 // ============================================================================
 // Custom Reference Components for Storybook Examples
@@ -15,58 +15,24 @@ import React, { useState } from 'react'
 
 /**
  * ReferenceText - Displays text from a referenced node's state
- *
- * Uses `useSduiNodeReference` to subscribe to referenced node's state changes.
- * Displays the `selectedId` or `selectedIds` from the referenced dropdown.
  */
 const ReferenceText: React.FC<{ id: string }> = ({ id }) => {
   const { attributes } = useSduiNodeSubscription({ nodeId: id })
   const { referencedNodes, hasReference } = useSduiNodeReference({ nodeId: id })
 
   const className = attributes?.className as string | undefined
-  const prefix = attributes?.prefix as string | undefined
-  const suffix = attributes?.suffix as string | undefined
   const optionsAttr = attributes?.options as Array<{ id: string; label: string }> | undefined
 
   if (!hasReference || referencedNodes.length === 0) {
-    return (
-      <span className={className} data-node-id={id}>
-        No reference
-      </span>
-    )
+    return <span className={className}>No reference</span>
   }
 
   const refNode = referencedNodes[0]
   const selectedId = refNode?.state?.selectedId as string | undefined
-  const selectedIds = refNode?.state?.selectedIds as string[] | undefined
 
-  // Try to get label from options
-  let displayText = ''
-  if (selectedIds && selectedIds.length > 0) {
-    if (optionsAttr) {
-      displayText = selectedIds
-        .map((sid) => optionsAttr.find((opt) => opt.id === sid)?.label || sid)
-        .join(', ')
-    } else {
-      displayText = selectedIds.join(', ')
-    }
-  } else if (selectedId) {
-    if (optionsAttr) {
-      displayText = optionsAttr.find((opt) => opt.id === selectedId)?.label || selectedId
-    } else {
-      displayText = selectedId
-    }
-  } else {
-    displayText = 'None'
-  }
+  const displayText = optionsAttr?.find((opt) => opt.id === selectedId)?.label || selectedId || 'None'
 
-  return (
-    <span className={className} data-node-id={id}>
-      {prefix}
-      {displayText}
-      {suffix}
-    </span>
-  )
+  return <span className={className}>{displayText}</span>
 }
 
 ReferenceText.displayName = 'ReferenceText'
@@ -82,15 +48,11 @@ const ReferenceDisplay: React.FC<{ id: string }> = ({ id }) => {
   const optionsMap = attributes?.optionsMap as Record<string, Array<{ id: string; label: string }>> | undefined
 
   if (!hasReference) {
-    return (
-      <div className={className} data-node-id={id}>
-        No references configured
-      </div>
-    )
+    return <div className={className}>No references configured</div>
   }
 
   return (
-    <div className={className} data-node-id={id}>
+    <div className={className}>
       {referencedNodes.map((refNode, index) => {
         const selectedId = refNode?.state?.selectedId as string | undefined
         const options = optionsMap?.[refNode.id]
@@ -112,93 +74,156 @@ ReferenceDisplay.displayName = 'ReferenceDisplay'
 // Extended sduiComponents with custom reference components
 const extendedSduiComponents: Record<string, ComponentFactory> = {
   ...sduiComponents,
-  ReferenceText: (id) => <ReferenceText id={id} />,
-  ReferenceDisplay: (id) => <ReferenceDisplay id={id} />,
+  ReferenceText: (nodeId) => <ReferenceText id={nodeId} />,
+  ReferenceDisplay: (nodeId) => <ReferenceDisplay id={nodeId} />,
 }
 
-const meta: Meta<typeof DropdownMenu> = {
+// ============================================================================
+// Meta
+// ============================================================================
+
+const meta: Meta<typeof Dropdown.Root> = {
   title: 'Shared/UI/Dropdown',
-  component: DropdownMenu,
+  component: Dropdown.Root,
   tags: ['autodocs'],
-  argTypes: {
-    appearance: {
-      control: 'select',
-      options: ['default', 'primary', 'subtle'],
-      description: 'Trigger button appearance',
-      table: {
-        defaultValue: { summary: 'default' },
-      },
-    },
-    spacing: {
-      control: 'select',
-      options: ['default', 'compact', 'cozy'],
-      description: 'Dropdown spacing/size',
-      table: {
-        defaultValue: { summary: 'default' },
-      },
-    },
-    placement: {
-      control: 'select',
-      options: ['bottom-start', 'bottom-end', 'bottom', 'top-start', 'top-end', 'top', 'left', 'right'],
-      description: 'Menu placement relative to trigger',
-      table: {
-        defaultValue: { summary: 'bottom-start' },
-      },
-    },
-    isDisabled: {
-      control: 'boolean',
-      description: 'Whether the dropdown is disabled',
-      table: {
-        defaultValue: { summary: 'false' },
-      },
-    },
-    isMultiSelect: {
-      control: 'boolean',
-      description: 'Enable multi-selection with checkboxes',
-      table: {
-        defaultValue: { summary: 'false' },
-      },
-    },
-    triggerLabel: {
-      control: 'text',
-      description: 'Label displayed on trigger button',
-    },
-  },
   parameters: {
     docs: {
       description: {
         component: `
 ## Overview
 
-The **DropdownMenu** component follows the Atlassian Design System (ADS) specifications. It provides a menu of options triggered by a button.
+The **Dropdown** component follows the Atlassian Design System (ADS) specifications and uses the **Compound Pattern**.
 
-## Appearance Variants
+## Compound Pattern Structure
 
-| Appearance | Description | Use Case |
-|------------|-------------|----------|
-| \`default\` | Neutral button with border | Standard dropdowns |
-| \`primary\` | Brand blue filled button | Primary actions |
-| \`subtle\` | Transparent button, no border | Inline/compact use |
+\`\`\`json
+{
+  "id": "dropdown-root",
+  "type": "Dropdown",
+  "state": { "open": false, "selectedId": "opt-1" },
+  "children": [
+    { "type": "DropdownTrigger", ... },
+    { "type": "DropdownContent", "state": { "side": "bottom" },
+      "children": [
+        { "type": "DropdownItem", "state": { "value": "opt-1", "label": "Option 1" } }
+      ]
+    }
+  ]
+}
+\`\`\`
 
-## Spacing Options
+---
 
-| Spacing | Trigger Height | Description |
-|---------|----------------|-------------|
-| \`default\` | 32px | Standard size |
-| \`compact\` | 24px | Compact/dense UIs |
-| \`cozy\` | 32px | Alias for default |
+## Why Provider Pattern?
 
-## Selection Modes
+### The Problem
 
-- **Single Select**: One option at a time (default)
-- **Multi Select**: Multiple options with checkboxes
+In SDUI, components are rendered from JSON documents. Unlike React components that share state via props drilling or Context, SDUI nodes are **isolated** - each node only knows its own \`id\`, \`state\`, and \`attributes\`.
+
+**How does a DropdownItem know which Dropdown's \`selectedId\` to compare against?**
+
+### The Solution: Provider Pattern
+
+The **Provider Pattern** solves this by:
+
+1. **Provider (Root)**: The \`Dropdown\` component holds shared state (\`open\`, \`selectedId\`)
+2. **Subscriber (Children)**: Child components subscribe to the provider's state via \`providerId\`
+
+\`\`\`
+┌─────────────────────────────────────────────┐
+│  Dropdown (id: "dropdown-root")             │
+│  state: { open: false, selectedId: "opt-1" }│
+│                                             │
+│  ┌─────────────────────────────────────┐    │
+│  │  DropdownTrigger                    │    │
+│  │  → subscribes to "dropdown-root"    │    │
+│  │  → toggles open state on click      │    │
+│  └─────────────────────────────────────┘    │
+│                                             │
+│  ┌─────────────────────────────────────┐    │
+│  │  DropdownContent                    │    │
+│  │  → subscribes to "dropdown-root"    │    │
+│  │                                     │    │
+│  │  ┌─────────────────────────────┐    │    │
+│  │  │  DropdownItem (value: opt-1)│    │    │
+│  │  │  → compares with selectedId │    │    │
+│  │  │  → updates selectedId       │    │    │
+│  │  └─────────────────────────────┘    │    │
+│  └─────────────────────────────────────┘    │
+└─────────────────────────────────────────────┘
+\`\`\`
+
+### Why Not Just Use React Context?
+
+| Approach | SDUI Compatibility | Serializable | Nested Support |
+|----------|-------------------|--------------|----------------|
+| React Context only | ❌ Lost on SSR/hydration | ❌ Not JSON | ⚠️ Complex |
+| Props drilling | ❌ Not possible in SDUI | ✅ Yes | ❌ Verbose |
+| **providerId + Context** | ✅ Full support | ✅ Yes | ✅ Explicit |
+
+**Key benefits of providerId:**
+
+1. **SDUI documents are JSON** - Must be serializable for server-side rendering
+2. **Explicit targeting** - Nested dropdowns can reference specific providers
+3. **Store-based state** - Changes tracked in SDUI store, enabling debugging/time-travel
+
+---
+
+## providerId Inheritance
+
+**providerId is optional!** Child components automatically inherit from parent Dropdown context.
+
+### How it works:
+
+1. If \`state.providerId\` is specified → use that explicit ID
+2. If omitted → inherit from nearest parent \`Dropdown\` via React Context
+
+### When to use explicit providerId:
+
+- **Nested dropdowns**: Inner dropdown's children should reference the inner provider
+- **Cross-referencing**: A component outside the tree needs to reference a specific dropdown
+- **Dynamic scenarios**: Provider ID changes at runtime
+
+### Example: Nested Dropdowns
+
+\`\`\`json
+{
+  "id": "outer-dropdown",
+  "type": "Dropdown",
+  "children": [
+    {
+      "id": "inner-dropdown",
+      "type": "Dropdown",
+      "children": [
+        {
+          "type": "DropdownItem",
+          "state": {
+            "providerId": "inner-dropdown",  // Explicit - targets inner dropdown
+            "value": "inner-opt"
+          }
+        }
+      ]
+    }
+  ]
+}
+\`\`\`
+
+---
+
+## Key Rules
+
+| Field | Location | Examples |
+|-------|----------|----------|
+| HTML attributes | \`attributes\` | \`className\`, \`id\`, \`style\`, \`data-*\` |
+| Radix UI props | \`state\` | \`side\`, \`sideOffset\`, \`align\`, \`disabled\` |
+| SDUI-specific | \`state\` | \`providerId\` (optional), \`value\`, \`label\`, \`open\` |
 
 ## Features
 
 - Keyboard navigation (Arrow keys, Enter, Escape)
-- Focus management
-- ARIA attributes for accessibility
-- SDUI template integration
+- Custom trigger support via compound pattern
+- Automatic providerId inheritance from parent context
+- Reference pattern for external state display
         `,
       },
     },
@@ -206,7 +231,7 @@ The **DropdownMenu** component follows the Atlassian Design System (ADS) specifi
 }
 
 export default meta
-type Story = StoryObj<typeof DropdownMenu>
+type Story = StoryObj<typeof Dropdown.Root>
 
 // Sample options
 const sampleOptions = [
@@ -233,56 +258,6 @@ const priorityOptions = [
 ]
 
 // ============================================================================
-// Playground
-// ============================================================================
-
-export const Playground: Story = {
-  args: {
-    triggerLabel: 'Select option',
-    appearance: 'default',
-    spacing: 'default',
-    placement: 'bottom-start',
-    isDisabled: false,
-    isMultiSelect: false,
-    options: sampleOptions,
-  },
-  render: (args) => {
-    const [selectedId, setSelectedId] = useState<string | undefined>()
-    const [selectedIds, setSelectedIds] = useState<string[]>([])
-
-    return (
-      <DropdownMenu
-        {...args}
-        selectedId={selectedId}
-        selectedIds={selectedIds}
-        onSelect={setSelectedId}
-        onSelectionChange={setSelectedIds}
-      />
-    )
-  },
-  parameters: {
-    docs: {
-      description: {
-        story: `
-## Interactive Playground
-
-Use the controls panel to experiment with different dropdown configurations.
-
-### Available Controls
-
-- **appearance**: default, primary, subtle
-- **spacing**: default, compact, cozy
-- **placement**: bottom-start, bottom-end, top-start, etc.
-- **isDisabled**: Enable/disable the dropdown
-- **isMultiSelect**: Enable checkbox multi-selection
-- **triggerLabel**: Customize trigger button text
-        `,
-      },
-    },
-  },
-}
-
-// ============================================================================
 // Appearance Variants
 // ============================================================================
 
@@ -293,12 +268,46 @@ export const AppearanceDefault: Story = {
       root: {
         id: 'dropdown-default',
         type: 'Dropdown',
-        attributes: {
-          triggerLabel: 'Default',
-          appearance: 'default',
-          options: sampleOptions,
-        },
-        state: { selectedId: '1' },
+        state: { selectedId: '1', open: false },
+        children: [
+          {
+            id: 'dropdown-default-trigger',
+            type: 'DropdownTrigger',
+            children: [
+              {
+                id: 'dropdown-default-btn',
+                type: 'Button',
+                state: { appearance: 'default' },
+                children: [
+                  {
+                    id: 'dropdown-default-value',
+                    type: 'DropdownValue',
+                    state: {
+                      placeholder: 'Default Style',
+                      options: [
+                        { id: '1', label: 'Option 1' },
+                        { id: '2', label: 'Option 2' },
+                        { id: '3', label: 'Option 3' },
+                        { id: '4', label: 'Option 4' },
+                      ],
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'dropdown-default-content',
+            type: 'DropdownContent',
+            state: { side: 'bottom', sideOffset: 4 },
+            children: [
+              { id: 'dropdown-default-item-0', type: 'DropdownItem', state: { value: '1', label: 'Option 1' } },
+              { id: 'dropdown-default-item-1', type: 'DropdownItem', state: { value: '2', label: 'Option 2' } },
+              { id: 'dropdown-default-item-2', type: 'DropdownItem', state: { value: '3', label: 'Option 3' } },
+              { id: 'dropdown-default-item-3', type: 'DropdownItem', state: { value: '4', label: 'Option 4' } },
+            ],
+          },
+        ],
       },
     }
     return <SduiLayoutRenderer document={document} components={sduiComponents} />
@@ -309,12 +318,7 @@ export const AppearanceDefault: Story = {
         story: `
 ## Default Appearance
 
-Neutral button with border. Standard dropdown trigger style.
-
-### Characteristics
-- Transparent background with border
-- Uses \`--color-border-default\` for border
-- \`--color-text-default\` for text color
+Neutral button with border. Uses \`DropdownValue\` to display selected option.
         `,
       },
     },
@@ -328,12 +332,46 @@ export const AppearancePrimary: Story = {
       root: {
         id: 'dropdown-primary',
         type: 'Dropdown',
-        attributes: {
-          triggerLabel: 'Primary',
-          appearance: 'primary',
-          options: sampleOptions,
-        },
-        state: { selectedId: '1' },
+        state: { selectedId: '1', open: false },
+        children: [
+          {
+            id: 'dropdown-primary-trigger',
+            type: 'DropdownTrigger',
+            children: [
+              {
+                id: 'dropdown-primary-btn',
+                type: 'Button',
+                state: { appearance: 'primary' },
+                children: [
+                  {
+                    id: 'dropdown-primary-value',
+                    type: 'DropdownValue',
+                    state: {
+                      placeholder: 'Primary Style',
+                      options: [
+                        { id: '1', label: 'Option 1' },
+                        { id: '2', label: 'Option 2' },
+                        { id: '3', label: 'Option 3' },
+                        { id: '4', label: 'Option 4' },
+                      ],
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'dropdown-primary-content',
+            type: 'DropdownContent',
+            state: { side: 'bottom', sideOffset: 4 },
+            children: [
+              { id: 'dropdown-primary-item-0', type: 'DropdownItem', state: { value: '1', label: 'Option 1' } },
+              { id: 'dropdown-primary-item-1', type: 'DropdownItem', state: { value: '2', label: 'Option 2' } },
+              { id: 'dropdown-primary-item-2', type: 'DropdownItem', state: { value: '3', label: 'Option 3' } },
+              { id: 'dropdown-primary-item-3', type: 'DropdownItem', state: { value: '4', label: 'Option 4' } },
+            ],
+          },
+        ],
       },
     }
     return <SduiLayoutRenderer document={document} components={sduiComponents} />
@@ -344,12 +382,7 @@ export const AppearancePrimary: Story = {
         story: `
 ## Primary Appearance
 
-Brand blue filled button trigger. Use when dropdown is a primary action.
-
-### Characteristics
-- Solid brand blue background
-- White text for contrast
-- Higher visual emphasis
+Brand blue filled button trigger. Uses \`DropdownValue\` to display selected option.
         `,
       },
     },
@@ -363,12 +396,46 @@ export const AppearanceSubtle: Story = {
       root: {
         id: 'dropdown-subtle',
         type: 'Dropdown',
-        attributes: {
-          triggerLabel: 'Subtle',
-          appearance: 'subtle',
-          options: sampleOptions,
-        },
-        state: { selectedId: '1' },
+        state: { selectedId: '1', open: false },
+        children: [
+          {
+            id: 'dropdown-subtle-trigger',
+            type: 'DropdownTrigger',
+            children: [
+              {
+                id: 'dropdown-subtle-btn',
+                type: 'Button',
+                state: { appearance: 'subtle' },
+                children: [
+                  {
+                    id: 'dropdown-subtle-value',
+                    type: 'DropdownValue',
+                    state: {
+                      placeholder: 'Subtle Style',
+                      options: [
+                        { id: '1', label: 'Option 1' },
+                        { id: '2', label: 'Option 2' },
+                        { id: '3', label: 'Option 3' },
+                        { id: '4', label: 'Option 4' },
+                      ],
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'dropdown-subtle-content',
+            type: 'DropdownContent',
+            state: { side: 'bottom', sideOffset: 4 },
+            children: [
+              { id: 'dropdown-subtle-item-0', type: 'DropdownItem', state: { value: '1', label: 'Option 1' } },
+              { id: 'dropdown-subtle-item-1', type: 'DropdownItem', state: { value: '2', label: 'Option 2' } },
+              { id: 'dropdown-subtle-item-2', type: 'DropdownItem', state: { value: '3', label: 'Option 3' } },
+              { id: 'dropdown-subtle-item-3', type: 'DropdownItem', state: { value: '4', label: 'Option 4' } },
+            ],
+          },
+        ],
       },
     }
     return <SduiLayoutRenderer document={document} components={sduiComponents} />
@@ -379,12 +446,7 @@ export const AppearanceSubtle: Story = {
         story: `
 ## Subtle Appearance
 
-Transparent button without border. Minimal visual footprint.
-
-### Characteristics
-- Transparent background, no border
-- Subtle text color
-- Use for inline/compact scenarios
+Transparent button without border. Uses \`DropdownValue\` to display selected option.
         `,
       },
     },
@@ -403,32 +465,134 @@ export const AllAppearances: Story = {
           {
             id: 'dropdown-1',
             type: 'Dropdown',
-            attributes: {
-              triggerLabel: 'Default',
-              appearance: 'default',
-              options: sampleOptions,
-            },
-            state: { selectedId: '1' },
+            state: { selectedId: '1', open: false },
+            children: [
+              {
+                id: 'dropdown-1-trigger',
+                type: 'DropdownTrigger',
+                children: [
+                  {
+                    id: 'dropdown-1-btn',
+                    type: 'Button',
+                    state: { appearance: 'default' },
+                    children: [
+                      {
+                        id: 'dropdown-1-value',
+                        type: 'DropdownValue',
+                        state: {
+                          placeholder: 'Default',
+                          options: [
+                            { id: '1', label: 'Option 1' },
+                            { id: '2', label: 'Option 2' },
+                            { id: '3', label: 'Option 3' },
+                            { id: '4', label: 'Option 4' },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                id: 'dropdown-1-content',
+                type: 'DropdownContent',
+                state: { side: 'bottom', sideOffset: 4 },
+                children: [
+                  { id: 'dropdown-1-item-0', type: 'DropdownItem', state: { value: '1', label: 'Option 1' } },
+                  { id: 'dropdown-1-item-1', type: 'DropdownItem', state: { value: '2', label: 'Option 2' } },
+                  { id: 'dropdown-1-item-2', type: 'DropdownItem', state: { value: '3', label: 'Option 3' } },
+                  { id: 'dropdown-1-item-3', type: 'DropdownItem', state: { value: '4', label: 'Option 4' } },
+                ],
+              },
+            ],
           },
           {
             id: 'dropdown-2',
             type: 'Dropdown',
-            attributes: {
-              triggerLabel: 'Primary',
-              appearance: 'primary',
-              options: sampleOptions,
-            },
-            state: { selectedId: '2' },
+            state: { selectedId: '1', open: false },
+            children: [
+              {
+                id: 'dropdown-2-trigger',
+                type: 'DropdownTrigger',
+                children: [
+                  {
+                    id: 'dropdown-2-btn',
+                    type: 'Button',
+                    state: { appearance: 'primary' },
+                    children: [
+                      {
+                        id: 'dropdown-2-value',
+                        type: 'DropdownValue',
+                        state: {
+                          placeholder: 'Primary',
+                          options: [
+                            { id: '1', label: 'Option 1' },
+                            { id: '2', label: 'Option 2' },
+                            { id: '3', label: 'Option 3' },
+                            { id: '4', label: 'Option 4' },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                id: 'dropdown-2-content',
+                type: 'DropdownContent',
+                state: { side: 'bottom', sideOffset: 4 },
+                children: [
+                  { id: 'dropdown-2-item-0', type: 'DropdownItem', state: { value: '1', label: 'Option 1' } },
+                  { id: 'dropdown-2-item-1', type: 'DropdownItem', state: { value: '2', label: 'Option 2' } },
+                  { id: 'dropdown-2-item-2', type: 'DropdownItem', state: { value: '3', label: 'Option 3' } },
+                  { id: 'dropdown-2-item-3', type: 'DropdownItem', state: { value: '4', label: 'Option 4' } },
+                ],
+              },
+            ],
           },
           {
             id: 'dropdown-3',
             type: 'Dropdown',
-            attributes: {
-              triggerLabel: 'Subtle',
-              appearance: 'subtle',
-              options: sampleOptions,
-            },
-            state: { selectedId: '3' },
+            state: { selectedId: '1', open: false },
+            children: [
+              {
+                id: 'dropdown-3-trigger',
+                type: 'DropdownTrigger',
+                children: [
+                  {
+                    id: 'dropdown-3-btn',
+                    type: 'Button',
+                    state: { appearance: 'subtle' },
+                    children: [
+                      {
+                        id: 'dropdown-3-value',
+                        type: 'DropdownValue',
+                        state: {
+                          placeholder: 'Subtle',
+                          options: [
+                            { id: '1', label: 'Option 1' },
+                            { id: '2', label: 'Option 2' },
+                            { id: '3', label: 'Option 3' },
+                            { id: '4', label: 'Option 4' },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                id: 'dropdown-3-content',
+                type: 'DropdownContent',
+                state: { side: 'bottom', sideOffset: 4 },
+                children: [
+                  { id: 'dropdown-3-item-0', type: 'DropdownItem', state: { value: '1', label: 'Option 1' } },
+                  { id: 'dropdown-3-item-1', type: 'DropdownItem', state: { value: '2', label: 'Option 2' } },
+                  { id: 'dropdown-3-item-2', type: 'DropdownItem', state: { value: '3', label: 'Option 3' } },
+                  { id: 'dropdown-3-item-3', type: 'DropdownItem', state: { value: '4', label: 'Option 4' } },
+                ],
+              },
+            ],
           },
         ],
       },
@@ -441,7 +605,7 @@ export const AllAppearances: Story = {
         story: `
 ## All Appearances Comparison
 
-Side-by-side comparison of all appearance variants.
+Side-by-side comparison of all appearance variants with dynamic labels.
         `,
       },
     },
@@ -451,64 +615,6 @@ Side-by-side comparison of all appearance variants.
 // ============================================================================
 // Spacing Variants
 // ============================================================================
-
-export const SpacingDefault: Story = {
-  render: () => {
-    const document: SduiLayoutDocument = {
-      version: '1.0.0',
-      root: {
-        id: 'dropdown-spacing-default',
-        type: 'Dropdown',
-        attributes: {
-          triggerLabel: 'Default Spacing (32px)',
-          spacing: 'default',
-          options: sampleOptions,
-        },
-      },
-    }
-    return <SduiLayoutRenderer document={document} components={sduiComponents} />
-  },
-  parameters: {
-    docs: {
-      description: {
-        story: `
-## Default Spacing
-
-Standard trigger height (32px). Suitable for most use cases.
-        `,
-      },
-    },
-  },
-}
-
-export const SpacingCompact: Story = {
-  render: () => {
-    const document: SduiLayoutDocument = {
-      version: '1.0.0',
-      root: {
-        id: 'dropdown-spacing-compact',
-        type: 'Dropdown',
-        attributes: {
-          triggerLabel: 'Compact Spacing (24px)',
-          spacing: 'compact',
-          options: sampleOptions,
-        },
-      },
-    }
-    return <SduiLayoutRenderer document={document} components={sduiComponents} />
-  },
-  parameters: {
-    docs: {
-      description: {
-        story: `
-## Compact Spacing
-
-Smaller trigger height (24px). Use in dense UIs or tables.
-        `,
-      },
-    },
-  },
-}
 
 export const AllSpacings: Story = {
   render: () => {
@@ -522,20 +628,62 @@ export const AllSpacings: Story = {
           {
             id: 'dropdown-default-spacing',
             type: 'Dropdown',
-            attributes: {
-              triggerLabel: 'Default',
-              spacing: 'default',
-              options: sampleOptions,
-            },
+            state: { selectedId: '1', open: false },
+            children: [
+              {
+                id: 'default-trigger',
+                type: 'DropdownTrigger',
+                state: { providerId: 'dropdown-default-spacing' },
+                children: [
+                  {
+                    id: 'default-btn',
+                    type: 'Button',
+                    state: { spacing: 'default' },
+                    children: [{ id: 'default-text', type: 'Span', state: { text: 'Default (32px)' } }],
+                  },
+                ],
+              },
+              {
+                id: 'default-content',
+                type: 'DropdownContent',
+                state: { providerId: 'dropdown-default-spacing', side: 'bottom', sideOffset: 4 },
+                children: sampleOptions.map((opt, idx) => ({
+                  id: `default-item-${idx}`,
+                  type: 'DropdownItem',
+                  state: { providerId: 'dropdown-default-spacing', value: opt.id, label: opt.label },
+                })),
+              },
+            ],
           },
           {
             id: 'dropdown-compact-spacing',
             type: 'Dropdown',
-            attributes: {
-              triggerLabel: 'Compact',
-              spacing: 'compact',
-              options: sampleOptions,
-            },
+            state: { selectedId: '1', open: false },
+            children: [
+              {
+                id: 'compact-trigger',
+                type: 'DropdownTrigger',
+                state: { providerId: 'dropdown-compact-spacing' },
+                children: [
+                  {
+                    id: 'compact-btn',
+                    type: 'Button',
+                    state: { spacing: 'compact' },
+                    children: [{ id: 'compact-text', type: 'Span', state: { text: 'Compact (24px)' } }],
+                  },
+                ],
+              },
+              {
+                id: 'compact-content',
+                type: 'DropdownContent',
+                state: { providerId: 'dropdown-compact-spacing', side: 'bottom', sideOffset: 4, spacing: 'compact' },
+                children: sampleOptions.map((opt, idx) => ({
+                  id: `compact-item-${idx}`,
+                  type: 'DropdownItem',
+                  state: { providerId: 'dropdown-compact-spacing', value: opt.id, label: opt.label },
+                })),
+              },
+            ],
           },
         ],
       },
@@ -546,146 +694,9 @@ export const AllSpacings: Story = {
     docs: {
       description: {
         story: `
-## All Spacings Comparison
+## Spacing Variants
 
-Side-by-side comparison of spacing variants.
-        `,
-      },
-    },
-  },
-}
-
-// ============================================================================
-// Selection Modes
-// ============================================================================
-
-export const SingleSelect: Story = {
-  render: () => {
-    const SingleSelectExample = () => {
-      const [selectedId, setSelectedId] = useState<string>('open')
-
-      return (
-        <div className="space-y-2">
-          <p className="text-sm text-gray-600">Selected: {selectedId || 'None'}</p>
-          <DropdownMenu
-            triggerLabel="Select Status"
-            options={statusOptions}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
-          />
-        </div>
-      )
-    }
-
-    return <SingleSelectExample />
-  },
-  parameters: {
-    docs: {
-      description: {
-        story: `
-## Single Select Mode
-
-Default selection mode. Only one option can be selected at a time.
-
-- Selected option shows a checkmark
-- Clicking an option selects it and closes the menu
-        `,
-      },
-    },
-  },
-}
-
-export const MultiSelect: Story = {
-  render: () => {
-    const MultiSelectExample = () => {
-      const [selectedIds, setSelectedIds] = useState<string[]>(['high', 'medium'])
-
-      return (
-        <div className="space-y-2">
-          <p className="text-sm text-gray-600">Selected: {selectedIds.join(', ') || 'None'}</p>
-          <DropdownMenu
-            triggerLabel="Select Priorities"
-            options={priorityOptions}
-            isMultiSelect
-            selectedIds={selectedIds}
-            onSelectionChange={setSelectedIds}
-          />
-        </div>
-      )
-    }
-
-    return <MultiSelectExample />
-  },
-  parameters: {
-    docs: {
-      description: {
-        story: `
-## Multi Select Mode
-
-Enable \`isMultiSelect\` for checkbox-based multi-selection.
-
-- Each option has a checkbox
-- Multiple options can be selected
-- Menu stays open for additional selections
-        `,
-      },
-    },
-  },
-}
-
-export const SingleSelectSdui: Story = {
-  render: () => {
-    const document: SduiLayoutDocument = {
-      version: '1.0.0',
-      root: {
-        id: 'dropdown-single',
-        type: 'Dropdown',
-        attributes: {
-          triggerLabel: 'Select Status',
-          options: statusOptions,
-        },
-        state: { selectedId: 'in-progress' },
-      },
-    }
-    return <SduiLayoutRenderer document={document} components={sduiComponents} />
-  },
-  parameters: {
-    docs: {
-      description: {
-        story: `
-## Single Select (SDUI)
-
-SDUI document example for single selection dropdown.
-        `,
-      },
-    },
-  },
-}
-
-export const MultiSelectSdui: Story = {
-  render: () => {
-    const document: SduiLayoutDocument = {
-      version: '1.0.0',
-      root: {
-        id: 'dropdown-multi',
-        type: 'Dropdown',
-        attributes: {
-          triggerLabel: 'Select Priorities',
-          isMultiSelect: true,
-          options: priorityOptions,
-        },
-        state: { selectedIds: ['high', 'medium'] },
-      },
-    }
-    return <SduiLayoutRenderer document={document} components={sduiComponents} />
-  },
-  parameters: {
-    docs: {
-      description: {
-        story: `
-## Multi Select (SDUI)
-
-SDUI document example for multi-selection dropdown with checkboxes.
+Side-by-side comparison of default (32px) and compact (24px) spacing.
         `,
       },
     },
@@ -708,19 +719,62 @@ export const Disabled: Story = {
           {
             id: 'dropdown-enabled',
             type: 'Dropdown',
-            attributes: {
-              triggerLabel: 'Enabled',
-              options: sampleOptions,
-            },
+            state: { selectedId: '1', open: false },
+            children: [
+              {
+                id: 'dropdown-enabled-trigger',
+                type: 'DropdownTrigger',
+                children: [
+                  {
+                    id: 'dropdown-enabled-btn',
+                    type: 'Button',
+                    state: { appearance: 'default', isDisabled: false },
+                    children: [{ id: 'dropdown-enabled-text', type: 'Span', state: { text: 'Enabled' } }],
+                  },
+                ],
+              },
+              {
+                id: 'dropdown-enabled-content',
+                type: 'DropdownContent',
+                state: { side: 'bottom', sideOffset: 4 },
+                children: [
+                  { id: 'dropdown-enabled-item-0', type: 'DropdownItem', state: { value: '1', label: 'Option 1' } },
+                  { id: 'dropdown-enabled-item-1', type: 'DropdownItem', state: { value: '2', label: 'Option 2' } },
+                  { id: 'dropdown-enabled-item-2', type: 'DropdownItem', state: { value: '3', label: 'Option 3' } },
+                  { id: 'dropdown-enabled-item-3', type: 'DropdownItem', state: { value: '4', label: 'Option 4' } },
+                ],
+              },
+            ],
           },
           {
             id: 'dropdown-disabled',
             type: 'Dropdown',
-            attributes: {
-              triggerLabel: 'Disabled',
-              isDisabled: true,
-              options: sampleOptions,
-            },
+            state: { selectedId: '1', open: false },
+            children: [
+              {
+                id: 'dropdown-disabled-trigger',
+                type: 'DropdownTrigger',
+                children: [
+                  {
+                    id: 'dropdown-disabled-btn',
+                    type: 'Button',
+                    state: { appearance: 'default', isDisabled: true },
+                    children: [{ id: 'dropdown-disabled-text', type: 'Span', state: { text: 'Disabled' } }],
+                  },
+                ],
+              },
+              {
+                id: 'dropdown-disabled-content',
+                type: 'DropdownContent',
+                state: { side: 'bottom', sideOffset: 4 },
+                children: [
+                  { id: 'dropdown-disabled-item-0', type: 'DropdownItem', state: { value: '1', label: 'Option 1' } },
+                  { id: 'dropdown-disabled-item-1', type: 'DropdownItem', state: { value: '2', label: 'Option 2' } },
+                  { id: 'dropdown-disabled-item-2', type: 'DropdownItem', state: { value: '3', label: 'Option 3' } },
+                  { id: 'dropdown-disabled-item-3', type: 'DropdownItem', state: { value: '4', label: 'Option 4' } },
+                ],
+              },
+            ],
           },
         ],
       },
@@ -742,23 +796,38 @@ Comparison of enabled and disabled dropdown triggers.
 
 export const WithDisabledOptions: Story = {
   render: () => {
-    const optionsWithDisabled = [
-      { id: '1', label: 'Available Option 1' },
-      { id: '2', label: 'Disabled Option', disabled: true },
-      { id: '3', label: 'Available Option 2' },
-      { id: '4', label: 'Another Disabled', disabled: true },
-      { id: '5', label: 'Available Option 3' },
-    ]
-
     const document: SduiLayoutDocument = {
       version: '1.0.0',
       root: {
         id: 'dropdown-disabled-options',
         type: 'Dropdown',
-        attributes: {
-          triggerLabel: 'Options with Disabled',
-          options: optionsWithDisabled,
-        },
+        state: { selectedId: '1', open: false },
+        children: [
+          {
+            id: 'trigger',
+            type: 'DropdownTrigger',
+            state: { providerId: 'dropdown-disabled-options' },
+            children: [
+              {
+                id: 'btn',
+                type: 'Button',
+                children: [{ id: 'text', type: 'Span', state: { text: 'Options with Disabled' } }],
+              },
+            ],
+          },
+          {
+            id: 'content',
+            type: 'DropdownContent',
+            state: { providerId: 'dropdown-disabled-options', side: 'bottom', sideOffset: 4 },
+            children: [
+              { id: 'item-0', type: 'DropdownItem', state: { providerId: 'dropdown-disabled-options', value: '1', label: 'Available Option 1' } },
+              { id: 'item-1', type: 'DropdownItem', state: { providerId: 'dropdown-disabled-options', value: '2', label: 'Disabled Option', disabled: true } },
+              { id: 'item-2', type: 'DropdownItem', state: { providerId: 'dropdown-disabled-options', value: '3', label: 'Available Option 2' } },
+              { id: 'item-3', type: 'DropdownItem', state: { providerId: 'dropdown-disabled-options', value: '4', label: 'Another Disabled', disabled: true } },
+              { id: 'item-4', type: 'DropdownItem', state: { providerId: 'dropdown-disabled-options', value: '5', label: 'Available Option 3' } },
+            ],
+          },
+        ],
       },
     }
     return <SduiLayoutRenderer document={document} components={sduiComponents} />
@@ -781,30 +850,139 @@ Individual options can be disabled while keeping the dropdown functional.
 // ============================================================================
 
 export const PlacementExamples: Story = {
-  render: () => (
-    <div className="flex flex-wrap gap-4 p-8">
-      <DropdownMenu
-        triggerLabel="Bottom Start"
-        placement="bottom-start"
-        options={sampleOptions}
-      />
-      <DropdownMenu
-        triggerLabel="Bottom End"
-        placement="bottom-end"
-        options={sampleOptions}
-      />
-      <DropdownMenu
-        triggerLabel="Top Start"
-        placement="top-start"
-        options={sampleOptions}
-      />
-      <DropdownMenu
-        triggerLabel="Top End"
-        placement="top-end"
-        options={sampleOptions}
-      />
-    </div>
-  ),
+  render: () => {
+    const document: SduiLayoutDocument = {
+      version: '1.0.0',
+      root: {
+        id: 'root',
+        type: 'Div',
+        attributes: { className: 'flex flex-wrap gap-4 p-8' },
+        children: [
+          {
+            id: 'dropdown-bottom',
+            type: 'Dropdown',
+            state: { selectedId: '1', open: false },
+            children: [
+              {
+                id: 'dropdown-bottom-trigger',
+                type: 'DropdownTrigger',
+                children: [
+                  {
+                    id: 'dropdown-bottom-btn',
+                    type: 'Button',
+                    state: { appearance: 'default' },
+                    children: [{ id: 'dropdown-bottom-text', type: 'Span', state: { text: 'Bottom ↓' } }],
+                  },
+                ],
+              },
+              {
+                id: 'dropdown-bottom-content',
+                type: 'DropdownContent',
+                state: { side: 'bottom', sideOffset: 4 },
+                children: [
+                  { id: 'dropdown-bottom-item-0', type: 'DropdownItem', state: { value: '1', label: 'Option 1' } },
+                  { id: 'dropdown-bottom-item-1', type: 'DropdownItem', state: { value: '2', label: 'Option 2' } },
+                  { id: 'dropdown-bottom-item-2', type: 'DropdownItem', state: { value: '3', label: 'Option 3' } },
+                  { id: 'dropdown-bottom-item-3', type: 'DropdownItem', state: { value: '4', label: 'Option 4' } },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'dropdown-top',
+            type: 'Dropdown',
+            state: { selectedId: '1', open: false },
+            children: [
+              {
+                id: 'dropdown-top-trigger',
+                type: 'DropdownTrigger',
+                children: [
+                  {
+                    id: 'dropdown-top-btn',
+                    type: 'Button',
+                    state: { appearance: 'default' },
+                    children: [{ id: 'dropdown-top-text', type: 'Span', state: { text: 'Top ↑' } }],
+                  },
+                ],
+              },
+              {
+                id: 'dropdown-top-content',
+                type: 'DropdownContent',
+                state: { side: 'top', sideOffset: 4 },
+                children: [
+                  { id: 'dropdown-top-item-0', type: 'DropdownItem', state: { value: '1', label: 'Option 1' } },
+                  { id: 'dropdown-top-item-1', type: 'DropdownItem', state: { value: '2', label: 'Option 2' } },
+                  { id: 'dropdown-top-item-2', type: 'DropdownItem', state: { value: '3', label: 'Option 3' } },
+                  { id: 'dropdown-top-item-3', type: 'DropdownItem', state: { value: '4', label: 'Option 4' } },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'dropdown-left',
+            type: 'Dropdown',
+            state: { selectedId: '1', open: false },
+            children: [
+              {
+                id: 'dropdown-left-trigger',
+                type: 'DropdownTrigger',
+                children: [
+                  {
+                    id: 'dropdown-left-btn',
+                    type: 'Button',
+                    state: { appearance: 'default' },
+                    children: [{ id: 'dropdown-left-text', type: 'Span', state: { text: '← Left' } }],
+                  },
+                ],
+              },
+              {
+                id: 'dropdown-left-content',
+                type: 'DropdownContent',
+                state: { side: 'left', sideOffset: 4 },
+                children: [
+                  { id: 'dropdown-left-item-0', type: 'DropdownItem', state: { value: '1', label: 'Option 1' } },
+                  { id: 'dropdown-left-item-1', type: 'DropdownItem', state: { value: '2', label: 'Option 2' } },
+                  { id: 'dropdown-left-item-2', type: 'DropdownItem', state: { value: '3', label: 'Option 3' } },
+                  { id: 'dropdown-left-item-3', type: 'DropdownItem', state: { value: '4', label: 'Option 4' } },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'dropdown-right',
+            type: 'Dropdown',
+            state: { selectedId: '1', open: false },
+            children: [
+              {
+                id: 'dropdown-right-trigger',
+                type: 'DropdownTrigger',
+                children: [
+                  {
+                    id: 'dropdown-right-btn',
+                    type: 'Button',
+                    state: { appearance: 'default' },
+                    children: [{ id: 'dropdown-right-text', type: 'Span', state: { text: 'Right →' } }],
+                  },
+                ],
+              },
+              {
+                id: 'dropdown-right-content',
+                type: 'DropdownContent',
+                state: { side: 'right', sideOffset: 4 },
+                children: [
+                  { id: 'dropdown-right-item-0', type: 'DropdownItem', state: { value: '1', label: 'Option 1' } },
+                  { id: 'dropdown-right-item-1', type: 'DropdownItem', state: { value: '2', label: 'Option 2' } },
+                  { id: 'dropdown-right-item-2', type: 'DropdownItem', state: { value: '3', label: 'Option 3' } },
+                  { id: 'dropdown-right-item-3', type: 'DropdownItem', state: { value: '4', label: 'Option 4' } },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    }
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
+  },
   parameters: {
     docs: {
       description: {
@@ -813,10 +991,10 @@ export const PlacementExamples: Story = {
 
 Control where the menu appears relative to the trigger button.
 
-- \`bottom-start\`: Below trigger, aligned to start (default)
-- \`bottom-end\`: Below trigger, aligned to end
-- \`top-start\`: Above trigger, aligned to start
-- \`top-end\`: Above trigger, aligned to end
+- \`bottom\`: Below trigger (default)
+- \`top\`: Above trigger
+- \`left\`: Left of trigger
+- \`right\`: Right of trigger
         `,
       },
     },
@@ -824,178 +1002,7 @@ Control where the menu appears relative to the trigger button.
 }
 
 // ============================================================================
-// Practical Examples
-// ============================================================================
-
-export const StatusSelector: Story = {
-  render: () => {
-    const document: SduiLayoutDocument = {
-      version: '1.0.0',
-      root: {
-        id: 'root',
-        type: 'Div',
-        attributes: { className: 'p-4 border rounded-lg max-w-md' },
-        children: [
-          {
-            id: 'header',
-            type: 'Div',
-            attributes: { className: 'flex justify-between items-center mb-4' },
-            children: [
-              {
-                id: 'title',
-                type: 'Span',
-                state: { text: 'Task: Implement feature' },
-                attributes: { className: 'font-medium' },
-              },
-              {
-                id: 'status-dropdown',
-                type: 'Dropdown',
-                attributes: {
-                  triggerLabel: 'In Progress',
-                  appearance: 'subtle',
-                  spacing: 'compact',
-                  options: statusOptions,
-                },
-                state: { selectedId: 'in-progress' },
-              },
-            ],
-          },
-          {
-            id: 'description',
-            type: 'Span',
-            state: { text: 'Implement the new authentication feature with OAuth support.' },
-            attributes: { className: 'text-sm text-gray-600' },
-          },
-        ],
-      },
-    }
-    return <SduiLayoutRenderer document={document} components={sduiComponents} />
-  },
-  parameters: {
-    docs: {
-      description: {
-        story: `
-## Status Selector
-
-A practical example showing a task card with a status selector dropdown.
-        `,
-      },
-    },
-  },
-}
-
-export const FilterDropdowns: Story = {
-  render: () => {
-    const document: SduiLayoutDocument = {
-      version: '1.0.0',
-      root: {
-        id: 'root',
-        type: 'Div',
-        attributes: { className: 'flex items-center gap-2 p-4 bg-gray-50 rounded-lg' },
-        children: [
-          {
-            id: 'label',
-            type: 'Span',
-            state: { text: 'Filter by:' },
-            attributes: { className: 'text-sm text-gray-600' },
-          },
-          {
-            id: 'status-filter',
-            type: 'Dropdown',
-            attributes: {
-              triggerLabel: 'Status',
-              spacing: 'compact',
-              isMultiSelect: true,
-              options: statusOptions,
-            },
-            state: { selectedIds: ['open', 'in-progress'] },
-          },
-          {
-            id: 'priority-filter',
-            type: 'Dropdown',
-            attributes: {
-              triggerLabel: 'Priority',
-              spacing: 'compact',
-              isMultiSelect: true,
-              options: priorityOptions,
-            },
-            state: { selectedIds: ['high'] },
-          },
-        ],
-      },
-    }
-    return <SduiLayoutRenderer document={document} components={sduiComponents} />
-  },
-  parameters: {
-    docs: {
-      description: {
-        story: `
-## Filter Dropdowns
-
-Multiple dropdowns used as filters. Uses compact spacing and multi-select mode.
-        `,
-      },
-    },
-  },
-}
-
-export const FormFieldDropdown: Story = {
-  render: () => {
-    const document: SduiLayoutDocument = {
-      version: '1.0.0',
-      root: {
-        id: 'root',
-        type: 'Div',
-        attributes: { className: 'space-y-4 max-w-sm' },
-        children: [
-          {
-            id: 'field-wrapper',
-            type: 'Div',
-            attributes: { className: 'space-y-1' },
-            children: [
-              {
-                id: 'label',
-                type: 'Span',
-                state: { text: 'Priority' },
-                attributes: { className: 'text-sm font-medium' },
-              },
-              {
-                id: 'priority-dropdown',
-                type: 'Dropdown',
-                attributes: {
-                  triggerLabel: 'Select priority',
-                  options: priorityOptions,
-                },
-                state: { selectedId: 'medium' },
-              },
-              {
-                id: 'help-text',
-                type: 'Span',
-                state: { text: 'Set the priority level for this task.' },
-                attributes: { className: 'text-xs text-gray-500' },
-              },
-            ],
-          },
-        ],
-      },
-    }
-    return <SduiLayoutRenderer document={document} components={sduiComponents} />
-  },
-  parameters: {
-    docs: {
-      description: {
-        story: `
-## Form Field Dropdown
-
-Dropdown used as a form field with label and help text.
-        `,
-      },
-    },
-  },
-}
-
-// ============================================================================
-// Reference Examples (SDUI)
+// Reference Examples
 // ============================================================================
 
 export const WithReferenceSdui: Story = {
@@ -1010,13 +1017,13 @@ export const WithReferenceSdui: Story = {
           {
             id: 'title',
             type: 'Span',
-            state: { text: 'Reference Example (SDUI)' },
+            state: { text: 'Reference Pattern Example' },
             attributes: { className: 'font-medium block' },
           },
           {
             id: 'desc',
             type: 'Span',
-            state: { text: 'The dropdown selection updates the display below in real-time via SDUI reference.' },
+            state: { text: 'The dropdown selection updates the display below via SDUI reference.' },
             attributes: { className: 'text-sm text-gray-600 block' },
           },
           {
@@ -1027,11 +1034,33 @@ export const WithReferenceSdui: Story = {
               {
                 id: 'priority-dropdown',
                 type: 'Dropdown',
-                attributes: {
-                  triggerLabel: 'Select Priority',
-                  options: priorityOptions,
-                },
-                state: { selectedId: 'medium' },
+                state: { selectedId: 'medium', open: false },
+                children: [
+                  {
+                    id: 'priority-dropdown-trigger',
+                    type: 'DropdownTrigger',
+                    children: [
+                      {
+                        id: 'priority-dropdown-btn',
+                        type: 'Button',
+                        state: { appearance: 'primary' },
+                        children: [{ id: 'priority-dropdown-text', type: 'Span', state: { text: 'Select Priority' } }],
+                      },
+                    ],
+                  },
+                  {
+                    id: 'priority-dropdown-content',
+                    type: 'DropdownContent',
+                    state: { side: 'bottom', sideOffset: 4 },
+                    children: [
+                      { id: 'priority-dropdown-item-0', type: 'DropdownItem', state: { value: 'highest', label: 'Highest' } },
+                      { id: 'priority-dropdown-item-1', type: 'DropdownItem', state: { value: 'high', label: 'High' } },
+                      { id: 'priority-dropdown-item-2', type: 'DropdownItem', state: { value: 'medium', label: 'Medium' } },
+                      { id: 'priority-dropdown-item-3', type: 'DropdownItem', state: { value: 'low', label: 'Low' } },
+                      { id: 'priority-dropdown-item-4', type: 'DropdownItem', state: { value: 'lowest', label: 'Lowest' } },
+                    ],
+                  },
+                ],
               },
               {
                 id: 'display-box',
@@ -1048,28 +1077,12 @@ export const WithReferenceSdui: Story = {
                     id: 'value',
                     type: 'ReferenceText',
                     reference: 'priority-dropdown',
-                    attributes: {
-                      className: 'font-medium',
-                      options: priorityOptions,
-                    },
+                    attributes: { className: 'font-medium', options: priorityOptions },
                   },
                 ],
               },
             ],
           },
-          {
-            id: 'info-box',
-            type: 'Div',
-            attributes: { className: 'mt-4 p-3 bg-blue-50 rounded text-sm' },
-            children: [
-              {
-                id: 'info-text',
-                type: 'Span',
-                state: { text: 'ReferenceText component uses useSduiNodeReference hook to subscribe to dropdown state changes.' },
-                attributes: { className: 'text-blue-800' },
-              },
-            ],
-          },
         ],
       },
     }
@@ -1079,94 +1092,11 @@ export const WithReferenceSdui: Story = {
     docs: {
       description: {
         story: `
-## Reference Pattern (SDUI)
+## Reference Pattern
 
-This example uses a custom \`ReferenceText\` component that:
-1. Has \`reference: 'priority-dropdown'\` to link to the dropdown
-2. Uses \`useSduiNodeReference\` hook to subscribe to referenced node's state
-3. Automatically re-renders when dropdown selection changes
+Uses \`useSduiNodeReference\` hook to subscribe to dropdown state changes.
 
-### Custom Component Implementation
-\`\`\`tsx
-const ReferenceText = ({ id }) => {
-  const { referencedNodes } = useSduiNodeReference({ nodeId: id })
-  const selectedId = referencedNodes[0]?.state?.selectedId
-  return <span>{selectedId}</span>
-}
-\`\`\`
-        `,
-      },
-    },
-  },
-}
-
-export const DynamicTriggerLabelSdui: Story = {
-  render: () => {
-    const document: SduiLayoutDocument = {
-      version: '1.0.0',
-      root: {
-        id: 'root',
-        type: 'Div',
-        attributes: { className: 'space-y-4 p-4 border rounded-lg max-w-md' },
-        children: [
-          {
-            id: 'title',
-            type: 'Span',
-            state: { text: 'Dynamic Trigger Label (SDUI)' },
-            attributes: { className: 'font-medium block' },
-          },
-          {
-            id: 'desc',
-            type: 'Span',
-            state: { text: 'Select a status and see the value update below via reference.' },
-            attributes: { className: 'text-sm text-gray-600 block' },
-          },
-          {
-            id: 'status-dropdown',
-            type: 'Dropdown',
-            attributes: {
-              triggerLabel: 'Select status...',
-              options: statusOptions,
-            },
-            state: { selectedId: undefined },
-          },
-          {
-            id: 'result-box',
-            type: 'Div',
-            attributes: { className: 'p-3 bg-gray-50 rounded text-sm' },
-            children: [
-              {
-                id: 'result-label',
-                type: 'Span',
-                state: { text: 'You selected: ' },
-                attributes: { className: 'text-gray-600' },
-              },
-              {
-                id: 'result-value',
-                type: 'ReferenceText',
-                reference: 'status-dropdown',
-                attributes: {
-                  className: 'font-semibold text-gray-900',
-                  options: statusOptions,
-                },
-              },
-            ],
-          },
-        ],
-      },
-    }
-    return <SduiLayoutRenderer document={document} components={extendedSduiComponents} />
-  },
-  parameters: {
-    docs: {
-      description: {
-        story: `
-## Dynamic Trigger Label (SDUI)
-
-The \`ReferenceText\` component subscribes to the dropdown's state and displays the selected label.
-
-- Initial state: \`selectedId: undefined\` → displays "None"
-- After selection: displays the selected option's label
+The \`ReferenceText\` component displays the currently selected value from the referenced dropdown.
         `,
       },
     },
@@ -1197,13 +1127,13 @@ export const CascadingDropdownsSdui: Story = {
           {
             id: 'title',
             type: 'Span',
-            state: { text: 'Cascading Dropdowns (SDUI)' },
+            state: { text: 'Cascading Dropdowns' },
             attributes: { className: 'font-medium block' },
           },
           {
             id: 'desc',
             type: 'Span',
-            state: { text: 'Two dropdowns - select both and see the summary update via reference.' },
+            state: { text: 'Two dropdowns with selections displayed via reference.' },
             attributes: { className: 'text-sm text-gray-600 block' },
           },
           {
@@ -1225,11 +1155,31 @@ export const CascadingDropdownsSdui: Story = {
                   {
                     id: 'category-dropdown',
                     type: 'Dropdown',
-                    attributes: {
-                      triggerLabel: 'Select category',
-                      options: categoryOptions,
-                    },
-                    state: { selectedId: 'frontend' },
+                    state: { selectedId: 'frontend', open: false },
+                    children: [
+                      {
+                        id: 'category-dropdown-trigger',
+                        type: 'DropdownTrigger',
+                        children: [
+                          {
+                            id: 'category-dropdown-btn',
+                            type: 'Button',
+                            state: { appearance: 'default' },
+                            children: [{ id: 'category-dropdown-text', type: 'Span', state: { text: 'Select category' } }],
+                          },
+                        ],
+                      },
+                      {
+                        id: 'category-dropdown-content',
+                        type: 'DropdownContent',
+                        state: { side: 'bottom', sideOffset: 4 },
+                        children: [
+                          { id: 'category-dropdown-item-0', type: 'DropdownItem', state: { value: 'frontend', label: 'Frontend' } },
+                          { id: 'category-dropdown-item-1', type: 'DropdownItem', state: { value: 'backend', label: 'Backend' } },
+                          { id: 'category-dropdown-item-2', type: 'DropdownItem', state: { value: 'devops', label: 'DevOps' } },
+                        ],
+                      },
+                    ],
                   },
                 ],
               },
@@ -1247,11 +1197,31 @@ export const CascadingDropdownsSdui: Story = {
                   {
                     id: 'tech-dropdown',
                     type: 'Dropdown',
-                    attributes: {
-                      triggerLabel: 'Select technology',
-                      options: frontendOptions,
-                    },
-                    state: { selectedId: 'react' },
+                    state: { selectedId: 'react', open: false },
+                    children: [
+                      {
+                        id: 'tech-dropdown-trigger',
+                        type: 'DropdownTrigger',
+                        children: [
+                          {
+                            id: 'tech-dropdown-btn',
+                            type: 'Button',
+                            state: { appearance: 'default' },
+                            children: [{ id: 'tech-dropdown-text', type: 'Span', state: { text: 'Select technology' } }],
+                          },
+                        ],
+                      },
+                      {
+                        id: 'tech-dropdown-content',
+                        type: 'DropdownContent',
+                        state: { side: 'bottom', sideOffset: 4 },
+                        children: [
+                          { id: 'tech-dropdown-item-0', type: 'DropdownItem', state: { value: 'react', label: 'React' } },
+                          { id: 'tech-dropdown-item-1', type: 'DropdownItem', state: { value: 'vue', label: 'Vue' } },
+                          { id: 'tech-dropdown-item-2', type: 'DropdownItem', state: { value: 'angular', label: 'Angular' } },
+                        ],
+                      },
+                    ],
                   },
                 ],
               },
@@ -1272,10 +1242,7 @@ export const CascadingDropdownsSdui: Story = {
                 id: 'category-value',
                 type: 'ReferenceText',
                 reference: 'category-dropdown',
-                attributes: {
-                  className: 'font-medium',
-                  options: categoryOptions,
-                },
+                attributes: { className: 'font-medium', options: categoryOptions },
               },
               {
                 id: 'arrow',
@@ -1287,10 +1254,7 @@ export const CascadingDropdownsSdui: Story = {
                 id: 'tech-value',
                 type: 'ReferenceText',
                 reference: 'tech-dropdown',
-                attributes: {
-                  className: 'font-medium',
-                  options: frontendOptions,
-                },
+                attributes: { className: 'font-medium', options: frontendOptions },
               },
             ],
           },
@@ -1303,100 +1267,9 @@ export const CascadingDropdownsSdui: Story = {
     docs: {
       description: {
         story: `
-## Cascading Dropdowns (SDUI)
+## Cascading Dropdowns
 
 Both dropdowns' selections are displayed in the summary using \`ReferenceText\` components.
-
-Each \`ReferenceText\` has its own \`reference\` to the respective dropdown:
-- \`category-value\` references \`category-dropdown\`
-- \`tech-value\` references \`tech-dropdown\`
-        `,
-      },
-    },
-  },
-}
-
-export const SyncedDropdownsSdui: Story = {
-  render: () => {
-    const document: SduiLayoutDocument = {
-      version: '1.0.0',
-      root: {
-        id: 'root',
-        type: 'Div',
-        attributes: { className: 'space-y-4 p-4 border rounded-lg max-w-lg' },
-        children: [
-          {
-            id: 'title',
-            type: 'Span',
-            state: { text: 'Multi-Select with Reference (SDUI)' },
-            attributes: { className: 'font-medium block' },
-          },
-          {
-            id: 'desc',
-            type: 'Span',
-            state: { text: 'Select multiple priorities and see the selection displayed below via ReferenceText.' },
-            attributes: { className: 'text-sm text-gray-600 block' },
-          },
-          {
-            id: 'dropdown-field',
-            type: 'Div',
-            attributes: { className: 'space-y-1' },
-            children: [
-              {
-                id: 'dropdown-label',
-                type: 'Span',
-                state: { text: 'Priority Filter' },
-                attributes: { className: 'text-xs text-gray-500 block' },
-              },
-              {
-                id: 'priority-dropdown',
-                type: 'Dropdown',
-                attributes: {
-                  triggerLabel: 'Select priorities',
-                  appearance: 'primary',
-                  isMultiSelect: true,
-                  options: priorityOptions,
-                },
-                state: { selectedIds: ['high', 'medium'] },
-              },
-            ],
-          },
-          {
-            id: 'result-box',
-            type: 'Div',
-            attributes: { className: 'mt-4 p-3 bg-green-50 rounded text-sm' },
-            children: [
-              {
-                id: 'result-label',
-                type: 'Span',
-                state: { text: 'Selected priorities: ' },
-                attributes: { className: 'text-green-700' },
-              },
-              {
-                id: 'result-value',
-                type: 'ReferenceText',
-                reference: 'priority-dropdown',
-                attributes: {
-                  className: 'font-semibold text-green-800',
-                  options: priorityOptions,
-                },
-              },
-            ],
-          },
-        ],
-      },
-    }
-    return <SduiLayoutRenderer document={document} components={extendedSduiComponents} />
-  },
-  parameters: {
-    docs: {
-      description: {
-        story: `
-## Multi-Select with Reference (SDUI)
-
-The \`ReferenceText\` component also supports multi-select dropdowns.
-
-When \`selectedIds\` is an array, it displays all selected labels joined by commas.
         `,
       },
     },
@@ -1415,7 +1288,7 @@ export const MultipleReferencesSdui: Story = {
           {
             id: 'title',
             type: 'Span',
-            state: { text: 'Multiple References (SDUI)' },
+            state: { text: 'Multiple References' },
             attributes: { className: 'font-medium block' },
           },
           {
@@ -1432,22 +1305,64 @@ export const MultipleReferencesSdui: Story = {
               {
                 id: 'status-dropdown',
                 type: 'Dropdown',
-                attributes: {
-                  triggerLabel: 'Status',
-                  spacing: 'compact',
-                  options: statusOptions,
-                },
-                state: { selectedId: 'in-progress' },
+                state: { selectedId: 'in-progress', open: false },
+                children: [
+                  {
+                    id: 'status-dropdown-trigger',
+                    type: 'DropdownTrigger',
+                    children: [
+                      {
+                        id: 'status-dropdown-btn',
+                        type: 'Button',
+                        state: { appearance: 'default' },
+                        children: [{ id: 'status-dropdown-text', type: 'Span', state: { text: 'Status' } }],
+                      },
+                    ],
+                  },
+                  {
+                    id: 'status-dropdown-content',
+                    type: 'DropdownContent',
+                    state: { side: 'bottom', sideOffset: 4 },
+                    children: [
+                      { id: 'status-dropdown-item-0', type: 'DropdownItem', state: { value: 'open', label: 'Open' } },
+                      { id: 'status-dropdown-item-1', type: 'DropdownItem', state: { value: 'in-progress', label: 'In Progress' } },
+                      { id: 'status-dropdown-item-2', type: 'DropdownItem', state: { value: 'review', label: 'In Review' } },
+                      { id: 'status-dropdown-item-3', type: 'DropdownItem', state: { value: 'done', label: 'Done' } },
+                      { id: 'status-dropdown-item-4', type: 'DropdownItem', state: { value: 'closed', label: 'Closed' } },
+                    ],
+                  },
+                ],
               },
               {
-                id: 'priority-dropdown',
+                id: 'priority-dropdown-2',
                 type: 'Dropdown',
-                attributes: {
-                  triggerLabel: 'Priority',
-                  spacing: 'compact',
-                  options: priorityOptions,
-                },
-                state: { selectedId: 'high' },
+                state: { selectedId: 'high', open: false },
+                children: [
+                  {
+                    id: 'priority-dropdown-2-trigger',
+                    type: 'DropdownTrigger',
+                    children: [
+                      {
+                        id: 'priority-dropdown-2-btn',
+                        type: 'Button',
+                        state: { appearance: 'default' },
+                        children: [{ id: 'priority-dropdown-2-text', type: 'Span', state: { text: 'Priority' } }],
+                      },
+                    ],
+                  },
+                  {
+                    id: 'priority-dropdown-2-content',
+                    type: 'DropdownContent',
+                    state: { side: 'bottom', sideOffset: 4 },
+                    children: [
+                      { id: 'priority-dropdown-2-item-0', type: 'DropdownItem', state: { value: 'highest', label: 'Highest' } },
+                      { id: 'priority-dropdown-2-item-1', type: 'DropdownItem', state: { value: 'high', label: 'High' } },
+                      { id: 'priority-dropdown-2-item-2', type: 'DropdownItem', state: { value: 'medium', label: 'Medium' } },
+                      { id: 'priority-dropdown-2-item-3', type: 'DropdownItem', state: { value: 'low', label: 'Low' } },
+                      { id: 'priority-dropdown-2-item-4', type: 'DropdownItem', state: { value: 'lowest', label: 'Lowest' } },
+                    ],
+                  },
+                ],
               },
             ],
           },
@@ -1465,27 +1380,14 @@ export const MultipleReferencesSdui: Story = {
               {
                 id: 'summary-display',
                 type: 'ReferenceDisplay',
-                reference: ['status-dropdown', 'priority-dropdown'],
+                reference: ['status-dropdown', 'priority-dropdown-2'],
                 attributes: {
                   className: 'text-sm text-yellow-700 space-y-1',
                   optionsMap: {
                     'status-dropdown': statusOptions,
-                    'priority-dropdown': priorityOptions,
+                    'priority-dropdown-2': priorityOptions,
                   },
                 },
-              },
-            ],
-          },
-          {
-            id: 'code-box',
-            type: 'Div',
-            attributes: { className: 'mt-4 p-3 bg-gray-800 rounded text-sm' },
-            children: [
-              {
-                id: 'code-text',
-                type: 'Span',
-                state: { text: 'reference: ["status-dropdown", "priority-dropdown"]' },
-                attributes: { className: 'text-green-400 font-mono' },
               },
             ],
           },
@@ -1498,34 +1400,15 @@ export const MultipleReferencesSdui: Story = {
     docs: {
       description: {
         story: `
-## Multiple References (SDUI)
+## Multiple References
 
-The \`ReferenceDisplay\` component demonstrates multiple references:
+The \`ReferenceDisplay\` component demonstrates referencing multiple dropdowns:
 
 \`\`\`json
 {
-  "id": "summary-display",
   "type": "ReferenceDisplay",
-  "reference": ["status-dropdown", "priority-dropdown"],
-  "attributes": {
-    "optionsMap": {
-      "status-dropdown": [...],
-      "priority-dropdown": [...]
-    }
-  }
+  "reference": ["status-dropdown", "priority-dropdown"]
 }
-\`\`\`
-
-### ReferenceDisplay Implementation
-
-\`\`\`tsx
-const { referencedNodes } = useSduiNodeReference({ nodeId })
-
-return referencedNodes.map(refNode => (
-  <div key={refNode.id}>
-    {refNode.id}: {refNode.state.selectedId}
-  </div>
-))
 \`\`\`
         `,
       },
@@ -1534,7 +1417,7 @@ return referencedNodes.map(refNode => (
 }
 
 // ============================================================================
-// Compound Pattern Examples (SDUI) with providerId
+// Compound Pattern Examples
 // ============================================================================
 
 export const CompoundPatternSdui: Story = {
@@ -1600,9 +1483,9 @@ export const CompoundPatternSdui: Story = {
     docs: {
       description: {
         story: `
-## Compound Pattern with providerId (SDUI)
+## Compound Pattern with providerId
 
-The Dropdown supports compound pattern using \`state.providerId\`:
+The basic compound pattern structure:
 
 \`\`\`json
 {
@@ -1610,13 +1493,8 @@ The Dropdown supports compound pattern using \`state.providerId\`:
   "id": "dropdown-root",
   "state": { "selectedId": "option-1", "open": false },
   "children": [
-    {
-      "type": "DropdownTrigger",
-      "state": { "providerId": "dropdown-root" }  // Subscribe to provider
-    },
-    {
-      "type": "DropdownContent",
-      "state": { "providerId": "dropdown-root", "side": "bottom" },
+    { "type": "DropdownTrigger", "state": { "providerId": "dropdown-root" } },
+    { "type": "DropdownContent", "state": { "providerId": "dropdown-root" },
       "children": [
         { "type": "DropdownItem", "state": { "providerId": "dropdown-root", "value": "opt-1", "label": "Option 1" } }
       ]
@@ -1626,9 +1504,8 @@ The Dropdown supports compound pattern using \`state.providerId\`:
 \`\`\`
 
 ### Key Points:
-- **attributes**: HTML attributes only (\`className\`, \`id\`, \`style\`, \`data-*\`, \`aria-*\`)
-- **state**: Dynamic data + Radix UI props (\`providerId\`, \`side\`, \`sideOffset\`, \`label\`, \`disabled\`)
 - All child components use \`state.providerId\` to subscribe to the parent Dropdown's state
+- Radix UI props (\`side\`, \`sideOffset\`, \`disabled\`) go in \`state\`, not \`attributes\`
         `,
       },
     },
@@ -1647,14 +1524,8 @@ export const CompoundWithReferenceSdui: Story = {
           {
             id: 'title',
             type: 'Span',
-            state: { text: 'Compound Pattern with providerId + Reference' },
+            state: { text: 'Compound Pattern + Reference' },
             attributes: { className: 'font-medium block' },
-          },
-          {
-            id: 'desc',
-            type: 'Span',
-            state: { text: 'Dropdown uses providerId pattern. ReferenceText uses reference for external display.' },
-            attributes: { className: 'text-sm text-gray-600 block' },
           },
           {
             id: 'dropdown-compound',
@@ -1701,10 +1572,7 @@ export const CompoundWithReferenceSdui: Story = {
                 id: 'result-value',
                 type: 'ReferenceText',
                 reference: 'dropdown-compound',
-                attributes: {
-                  className: 'font-semibold text-gray-900',
-                  options: priorityOptions,
-                },
+                attributes: { className: 'font-semibold text-gray-900', options: priorityOptions },
               },
             ],
           },
@@ -1717,12 +1585,9 @@ export const CompoundWithReferenceSdui: Story = {
     docs: {
       description: {
         story: `
-## Compound Pattern with providerId + Reference
+## Compound Pattern with Reference
 
-Combines the compound pattern (providerId) with reference for external state display.
-
-- **Dropdown children**: Use \`state.providerId\` to subscribe to parent
-- **ReferenceText**: Uses \`reference\` field to read dropdown state for display
+Combines compound pattern (providerId) with reference for external state display.
         `,
       },
     },
@@ -1747,13 +1612,13 @@ export const NestedDropdownsSdui: Story = {
           {
             id: 'title',
             type: 'Span',
-            state: { text: 'Nested Dropdowns with providerId' },
+            state: { text: 'Independent Dropdowns' },
             attributes: { className: 'font-medium block' },
           },
           {
             id: 'desc',
             type: 'Span',
-            state: { text: 'Each Dropdown uses its own providerId, enabling nested structures.' },
+            state: { text: 'Each Dropdown uses its own providerId.' },
             attributes: { className: 'text-sm text-gray-600 block' },
           },
           {
@@ -1837,10 +1702,7 @@ export const NestedDropdownsSdui: Story = {
                 id: 'main-value',
                 type: 'ReferenceText',
                 reference: 'outer-dropdown',
-                attributes: {
-                  className: 'font-medium text-blue-800',
-                  options: statusOptions,
-                },
+                attributes: { className: 'font-medium text-blue-800', options: statusOptions },
               },
               {
                 id: 'separator',
@@ -1852,10 +1714,7 @@ export const NestedDropdownsSdui: Story = {
                 id: 'edit-value',
                 type: 'ReferenceText',
                 reference: 'inner-dropdown',
-                attributes: {
-                  className: 'font-medium text-blue-800',
-                  options: subMenuOptions,
-                },
+                attributes: { className: 'font-medium text-blue-800', options: subMenuOptions },
               },
             ],
           },
@@ -1868,14 +1727,9 @@ export const NestedDropdownsSdui: Story = {
     docs: {
       description: {
         story: `
-## Nested Dropdowns with providerId
+## Independent Dropdowns with providerId
 
-Each Dropdown maintains its own state via its unique \`id\`. Child components use \`state.providerId\` to explicitly target which Dropdown to subscribe to.
-
-This pattern supports:
-- **Multiple independent dropdowns** on the same page
-- **Nested/sub-menus** where each level has its own provider
-- **Clear state ownership** - no ambiguity about which dropdown owns the state
+Each Dropdown maintains its own state via its unique \`id\`. Child components use \`state.providerId\` to target which Dropdown to subscribe to.
         `,
       },
     },
@@ -1894,7 +1748,7 @@ export const CustomTriggerSdui: Story = {
           {
             id: 'title',
             type: 'Span',
-            state: { text: 'Custom Trigger Examples' },
+            state: { text: 'Custom Trigger Styles' },
             attributes: { className: 'font-medium block' },
           },
           {
@@ -1902,95 +1756,93 @@ export const CustomTriggerSdui: Story = {
             type: 'Div',
             attributes: { className: 'flex items-center gap-4' },
             children: [
-              // Primary button trigger
               {
                 id: 'dropdown-primary',
                 type: 'Dropdown',
                 state: { selectedId: '1', open: false },
                 children: [
                   {
-                    id: 'primary-trigger',
+                    id: 'dropdown-primary-trigger',
                     type: 'DropdownTrigger',
-                    state: { providerId: 'dropdown-primary' },
                     children: [
                       {
-                        id: 'primary-btn',
+                        id: 'dropdown-primary-btn',
                         type: 'Button',
                         state: { appearance: 'primary' },
-                        children: [{ id: 'primary-text', type: 'Span', state: { text: 'Primary' } }],
+                        children: [{ id: 'dropdown-primary-text', type: 'Span', state: { text: 'Primary' } }],
                       },
                     ],
                   },
                   {
-                    id: 'primary-content',
+                    id: 'dropdown-primary-content',
                     type: 'DropdownContent',
-                    state: { providerId: 'dropdown-primary', side: 'bottom' },
-                    children: sampleOptions.map((opt, idx) => ({
-                      id: `primary-item-${idx}`,
-                      type: 'DropdownItem',
-                      state: { providerId: 'dropdown-primary', value: opt.id, label: opt.label },
-                    })),
+                    state: { side: 'bottom', sideOffset: 4 },
+                    children: [
+                      { id: 'dropdown-primary-item-0', type: 'DropdownItem', state: { value: '1', label: 'Option 1' } },
+                      { id: 'dropdown-primary-item-1', type: 'DropdownItem', state: { value: '2', label: 'Option 2' } },
+                      { id: 'dropdown-primary-item-2', type: 'DropdownItem', state: { value: '3', label: 'Option 3' } },
+                      { id: 'dropdown-primary-item-3', type: 'DropdownItem', state: { value: '4', label: 'Option 4' } },
+                    ],
                   },
                 ],
               },
-              // Default button trigger
               {
                 id: 'dropdown-default',
                 type: 'Dropdown',
-                state: { selectedId: '2', open: false },
+                state: { selectedId: '1', open: false },
                 children: [
                   {
-                    id: 'default-trigger',
+                    id: 'dropdown-default-trigger',
                     type: 'DropdownTrigger',
-                    state: { providerId: 'dropdown-default' },
                     children: [
                       {
-                        id: 'default-btn',
+                        id: 'dropdown-default-btn',
                         type: 'Button',
-                        children: [{ id: 'default-text', type: 'Span', state: { text: 'Default' } }],
+                        state: { appearance: 'default' },
+                        children: [{ id: 'dropdown-default-text', type: 'Span', state: { text: 'Default' } }],
                       },
                     ],
                   },
                   {
-                    id: 'default-content',
+                    id: 'dropdown-default-content',
                     type: 'DropdownContent',
-                    state: { providerId: 'dropdown-default', side: 'bottom' },
-                    children: sampleOptions.map((opt, idx) => ({
-                      id: `default-item-${idx}`,
-                      type: 'DropdownItem',
-                      state: { providerId: 'dropdown-default', value: opt.id, label: opt.label },
-                    })),
+                    state: { side: 'bottom', sideOffset: 4 },
+                    children: [
+                      { id: 'dropdown-default-item-0', type: 'DropdownItem', state: { value: '1', label: 'Option 1' } },
+                      { id: 'dropdown-default-item-1', type: 'DropdownItem', state: { value: '2', label: 'Option 2' } },
+                      { id: 'dropdown-default-item-2', type: 'DropdownItem', state: { value: '3', label: 'Option 3' } },
+                      { id: 'dropdown-default-item-3', type: 'DropdownItem', state: { value: '4', label: 'Option 4' } },
+                    ],
                   },
                 ],
               },
-              // Subtle button trigger
               {
                 id: 'dropdown-subtle',
                 type: 'Dropdown',
-                state: { selectedId: '3', open: false },
+                state: { selectedId: '1', open: false },
                 children: [
                   {
-                    id: 'subtle-trigger',
+                    id: 'dropdown-subtle-trigger',
                     type: 'DropdownTrigger',
-                    state: { providerId: 'dropdown-subtle' },
                     children: [
                       {
-                        id: 'subtle-btn',
+                        id: 'dropdown-subtle-btn',
                         type: 'Button',
                         state: { appearance: 'subtle' },
-                        children: [{ id: 'subtle-text', type: 'Span', state: { text: 'Subtle' } }],
+                        children: [{ id: 'dropdown-subtle-text', type: 'Span', state: { text: 'Subtle' } }],
                       },
                     ],
                   },
                   {
-                    id: 'subtle-content',
+                    id: 'dropdown-subtle-content',
                     type: 'DropdownContent',
-                    state: { providerId: 'dropdown-subtle', side: 'bottom' },
-                    children: sampleOptions.map((opt, idx) => ({
-                      id: `subtle-item-${idx}`,
-                      type: 'DropdownItem',
-                      state: { providerId: 'dropdown-subtle', value: opt.id, label: opt.label },
-                    })),
+                    state: { side: 'bottom', sideOffset: 4 },
+                    children: [
+                      { id: 'dropdown-subtle-item-0', type: 'DropdownItem', state: { value: '1', label: 'Option 1' } },
+                      { id: 'dropdown-subtle-item-1', type: 'DropdownItem', state: { value: '2', label: 'Option 2' } },
+                      { id: 'dropdown-subtle-item-2', type: 'DropdownItem', state: { value: '3', label: 'Option 3' } },
+                      { id: 'dropdown-subtle-item-3', type: 'DropdownItem', state: { value: '4', label: 'Option 4' } },
+                    ],
                   },
                 ],
               },
@@ -2005,14 +1857,9 @@ export const CustomTriggerSdui: Story = {
     docs: {
       description: {
         story: `
-## Custom Trigger Examples
+## Custom Trigger Styles
 
 The compound pattern allows any component as a trigger via the \`DropdownTrigger\` wrapper.
-
-Each dropdown has:
-- **DropdownTrigger** with \`state.providerId\` pointing to its parent
-- **DropdownContent** with \`state.providerId\` and Radix UI props (\`side\`, \`sideOffset\`)
-- **DropdownItem** children with \`state.providerId\`, \`value\`, and \`label\`
         `,
       },
     },

@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@lodado/sdui-template": "workspace:*",
+    "@lodado/sdui-template-component": "workspace:*",
     "next": "16.1.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
