@@ -1,4 +1,4 @@
-import{j as e}from"./jsx-runtime-D3vVTwfV.js";import{a,S as o,s as i,b,D as n}from"./sduiComponents-BGkBxpaZ.js";import"./iframe-CgFUUG19.js";import"./preload-helper-ggYluGXI.js";import"./index-D1eDAnL8.js";import"./index-9Gwk3rus.js";const z={title:"Features/Dialog",component:a,tags:["autodocs"],argTypes:{size:{control:"select",options:["small","medium","large","xlarge"],description:"Dialog size",table:{defaultValue:{summary:"small"}}},hasCloseButton:{control:"boolean",description:"Whether to show close button",table:{defaultValue:{summary:"true"}}},title:{control:"text",description:"Dialog title"},description:{control:"text",description:"Dialog description (optional)"}},parameters:{docs:{description:{component:`
+import{j as e}from"./jsx-runtime-DUBfAHyP.js";import{a,S as o,s as i,b,D as n}from"./sduiComponents-CIZ_YZ_f.js";import"./iframe-BlPWZXJW.js";import"./preload-helper-ggYluGXI.js";import"./index-uHiNjf4U.js";import"./index-3oRyq0qU.js";const z={title:"Features/Dialog",component:a,tags:["autodocs"],argTypes:{size:{control:"select",options:["small","medium","large","xlarge"],description:"Dialog size",table:{defaultValue:{summary:"small"}}},hasCloseButton:{control:"boolean",description:"Whether to show close button",table:{defaultValue:{summary:"true"}}},title:{control:"text",description:"Dialog title"},description:{control:"text",description:"Dialog description (optional)"}},parameters:{docs:{description:{component:`
 ## Overview
 
 The **Dialog** component is a modal overlay following the Atlassian Design System (ADS) specifications. It provides a focused interaction layer for important content or actions.
@@ -27,7 +27,7 @@ The **Dialog** component is a modal overlay following the Atlassian Design Syste
 - Focus trap and restoration
 - ARIA attributes for accessibility
 - SDUI template integration
-        `}}}},r={args:{title:"Modal Title",description:"This is a description of the dialog content.",size:"small",hasCloseButton:!0},render:t=>e.jsx(a,{trigger:e.jsx("button",{className:"px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700",children:"Open Dialog"}),...t,children:e.jsx("p",{className:"text-sm text-gray-600",children:"Dialog body content goes here. You can put any content inside the dialog."})}),parameters:{docs:{description:{story:`
+        `}}}},r={args:{title:"Modal Title",description:"This is a description of the dialog content.",size:"small",hasCloseButton:!0},render:t=>e.jsx(a,{...t,trigger:e.jsx("button",{className:"px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700",children:"Open Dialog"}),children:e.jsx("p",{className:"text-sm text-gray-600",children:"Dialog body content goes here. You can put any content inside the dialog."})}),parameters:{docs:{description:{story:`
 ## Interactive Playground
 
 Use the controls panel to experiment with different dialog configurations.
@@ -114,9 +114,9 @@ Quick comparison of all available dialog sizes. Click each button to see the dif
     size: 'small',
     hasCloseButton: true
   },
-  render: args => <SimpleDialog trigger={<button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+  render: args => <SimpleDialog {...args} trigger={<button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
           Open Dialog
-        </button>} {...args}>
+        </button>}>
       <p className="text-sm text-gray-600">
         Dialog body content goes here. You can put any content inside the dialog.
       </p>

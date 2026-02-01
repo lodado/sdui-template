@@ -1,4 +1,4 @@
-import{j as r}from"./jsx-runtime-D3vVTwfV.js";import{r as s}from"./iframe-CgFUUG19.js";import"./preload-helper-ggYluGXI.js";const i=`:root,
+import{j as r}from"./jsx-runtime-DUBfAHyP.js";import{r as s}from"./iframe-BlPWZXJW.js";import"./preload-helper-ggYluGXI.js";const i=`:root,
 [data-theme='light'] {
   /* color */
   --color-background-disabled: var(--neutral-alpha-neutral100a, #17171708);
