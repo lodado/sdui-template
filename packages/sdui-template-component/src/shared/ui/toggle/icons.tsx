@@ -2,14 +2,14 @@ import React from 'react'
 
 import { cn } from '../../lib/cn'
 
-interface IconProps {
+interface ToggleSvgIconProps {
   className?: string
 }
 
 /**
  * Check icon for checked state
  */
-export const CheckIcon = ({ className }: IconProps) => (
+export const CheckIcon = ({ className }: ToggleSvgIconProps) => (
   <svg
     className={className}
     viewBox="0 0 12 12"
@@ -32,7 +32,7 @@ CheckIcon.displayName = 'CheckIcon'
 /**
  * Cross icon for unchecked state
  */
-export const CrossIcon = ({ className }: IconProps) => (
+export const CrossIcon = ({ className }: ToggleSvgIconProps) => (
   <svg
     className={className}
     viewBox="0 0 12 12"
@@ -55,7 +55,7 @@ CrossIcon.displayName = 'CrossIcon'
 /**
  * Loading spinner for loading state
  */
-export const LoadingSpinner = ({ className }: IconProps) => (
+export const LoadingSpinner = ({ className }: ToggleSvgIconProps) => (
   <svg
     className={cn('animate-spin', className)}
     viewBox="0 0 12 12"
@@ -81,4 +81,4 @@ export const LoadingSpinner = ({ className }: IconProps) => (
 
 LoadingSpinner.displayName = 'LoadingSpinner'
 
-export type { IconProps }
+export type { ToggleSvgIconProps }

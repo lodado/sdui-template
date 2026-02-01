@@ -8,6 +8,7 @@ import { Title, TitleLogo } from '../features/title/components'
 import { ButtonContainer } from '../shared/ui/button/ButtonContainer'
 import { CardContainer } from '../shared/ui/card/CardContainer'
 import { Div } from '../shared/ui/div/Div'
+import { DropdownContainer } from '../shared/ui/dropdown/DropdownContainer'
 import { IconContainer } from '../shared/ui/icon/IconContainer'
 import { ListContainer } from '../shared/ui/list/ListContainer'
 import { Span, Text } from '../shared/ui/text'
@@ -61,6 +62,9 @@ export const sduiComponents: Record<string, ComponentFactory> = {
 
   // Card
   Card: (id, parentPath) => <CardContainer id={id} parentPath={parentPath} />,
+
+  // Dropdown
+  Dropdown: (id, parentPath) => <DropdownContainer id={id} parentPath={parentPath} />,
 
   // Icon
   Icon: (id, parentPath) => <IconContainer id={id} parentPath={parentPath} />,
