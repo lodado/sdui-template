@@ -1,39 +1,18 @@
 {
-  "permissions": {
-    "allow": [
-      "Bash(chmod:*)",
-      "Bash(npm install:*)",
-      "Bash(pnpm add:*)",
-      "Bash(pnpm run build:internal:*)",
-      "mcp__plugin_context7_context7__query-docs",
-      "Bash(pnpm why:*)",
-      "Bash(find:*)",
-      "WebFetch(domain:www.figma.com)",
-      "Bash(claude mcp add:*)",
-      "Bash(pnpm --filter @lodado/sdui-template test)",
-      "Bash(npx prettier:*)",
-      "Bash(node:*)",
-      "Bash(node -c:*)",
-      "Bash(DEBUG=1 echo:*)",
-      "Bash(echo:*)",
-      "Bash(DEBUG=1 node -e \"\nconst { execSync } = require\\(''child_process''\\);\nconst fs = require\\(''fs''\\);\nconst path = require\\(''path''\\);\n\nconst filePath = ''C:\\\\\\\\Users\\\\\\\\chungheonlee\\\\\\\\Desktop\\\\\\\\programming\\\\\\\\sdui-template\\\\\\\\test-format-temp.js'';\nconsole.log\\(''File exists:'', fs.existsSync\\(filePath\\)\\);\nconsole.log\\(''Before:'', fs.readFileSync\\(filePath, ''utf8''\\)\\);\n\ntry {\n  execSync\\(''npx prettier --write \"\"'' + filePath + ''\"\"'', {\n    cwd: ''C:\\\\\\\\Users\\\\\\\\chungheonlee\\\\\\\\Desktop\\\\\\\\programming\\\\\\\\sdui-template'',\n    stdio: [''pipe'', ''pipe'', ''pipe''],\n    timeout: 30000,\n    shell: true,\n  }\\);\n  console.log\\(''After:'', fs.readFileSync\\(filePath, ''utf8''\\)\\);\n} catch \\(e\\) {\n  console.error\\(''Error:'', e.message\\);\n  console.error\\(''stdout:'', e.stdout\\);\n  console.error\\(''stderr:'', e.stderr\\);\n}\n\")",
-      "Bash(pnpm run test)",
-      "Bash(pnpm run generate:tokens:*)",
-      "Bash(pnpm run typecheck:*)",
-      "Bash(pnpm install:*)",
-      "Bash(pnpm --filter @lodado/sdui-template-component build:*)",
-      "Bash(./.claude/scripts/pr-task.sh:*)",
-      "mcp__figma__get_design_context",
-      "mcp__figma__get_screenshot",
-      "Bash(pnpm test:*)",
-      "Bash(pnpm build:*)",
-      "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "Bash(gh pr create --title \"feat\\(Toggle\\): create toggle component from Figma design\" --body \"$\\(cat <<''EOF''\n## Summary\n- Created Toggle \\(Switch\\) component based on ADS Figma design\n- Figma: https://www.figma.com/design/v5a3riuR6uhKl2pQSvqRxN/ADS-Components--Community-?node-id=1966-3031\n\n## Changes\n| File | Description |\n|------|-------------|\n| `toggle/Toggle.tsx` | Main Toggle component |\n| `toggle/ToggleContainer.tsx` | SDUI container wrapper |\n| `toggle/toggle-variants.ts` | CVA style variants |\n| `toggle/types.ts` | TypeScript types |\n| `toggle/index.ts` | Exports |\n| `toggle/__tests__/toggle.logic.test.tsx` | Test suite |\n| `toggle/__docs__/requirement-analysis.md` | Documentation |\n| `Toggle.stories.tsx` | Storybook stories |\n| `sduiComponents.tsx` | Register Toggle in SDUI |\n| `shared/ui/index.ts` | Export toggle module |\n\n## Features\n- **Sizes**: regular \\(32x16px\\), large \\(40x20px\\)\n- **States**: checked, unchecked, disabled, loading\n- **Colors**: Green \\(checked\\), Gray \\(unchecked\\)\n- **Accessibility**: role=\"switch\", aria-checked, keyboard navigation\n\n## Test plan\n- [x] Unit tests pass \\(157 tests\\)\n- [x] Build succeeds\n- [ ] Storybook verification\n\n---\nGenerated with [Claude Code]\\(https://claude.ai/code\\)\nEOF\n\\)\")",
-      "Bash(pnpm --filter @lodado/sdui-template-component typecheck:*)",
-      "Bash(pnpm --filter @lodado/sdui-template build:*)",
-      "Bash(pnpm --filter @lodado/sdui-template-component lint:*)",
-      "Bash(git add:*)"
+  "approvalPolicy": "never",
+  "commandPermissions": {
+    "deny": [
+      "rm -rf *",
+      "sudo rm *",
+      "sudo *",
+      "ssh *",
+      "scp *",
+      "rsync *",
+      "curl * | sh",
+      "wget * | sh",
+      "powershell * -EncodedCommand *",
+      "chmod 777 *",
+      "chown *"
     ]
   },
   "enabledPlugins": {
