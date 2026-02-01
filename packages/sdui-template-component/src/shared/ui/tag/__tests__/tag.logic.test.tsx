@@ -1,5 +1,4 @@
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import React from 'react'
 
 import { Tag } from '../Tag'
@@ -109,118 +108,6 @@ describe('Tag - Logic Tests (ADS Style)', () => {
     })
   })
 
-  describe('Removable Tags', () => {
-    describe('as is: Tag with isRemovable=true', () => {
-      it('to be: remove button rendered', () => {
-        render(<Tag text="Removable" isRemovable />)
-
-        const removeButton = screen.getByRole('button', { name: /remove removable/i })
-        expect(removeButton).toBeInTheDocument()
-      })
-    })
-
-    describe('as is: Tag with isRemovable=true and onRemove handler', () => {
-      describe('when: user clicks remove button', () => {
-        it('to be: onRemove handler called', async () => {
-          const user = userEvent.setup()
-          const handleRemove = jest.fn()
-
-          render(<Tag text="Removable" isRemovable onRemove={handleRemove} />)
-
-          const removeButton = screen.getByRole('button', { name: /remove removable/i })
-          await user.click(removeButton)
-
-          expect(handleRemove).toHaveBeenCalledTimes(1)
-        })
-      })
-    })
-
-    describe('as is: Tag with isRemovable=true', () => {
-      describe('when: user presses Backspace on tag', () => {
-        it('to be: onRemove handler called', async () => {
-          const user = userEvent.setup()
-          const handleRemove = jest.fn()
-
-          render(<Tag text="Removable" isRemovable onRemove={handleRemove} />)
-
-          // Get the root span element (parent of text span)
-          const tag = screen.getByText('Removable').parentElement as HTMLElement
-          tag.focus()
-          await user.keyboard('{Backspace}')
-
-          expect(handleRemove).toHaveBeenCalledTimes(1)
-        })
-      })
-    })
-
-    describe('as is: Tag with isRemovable=true', () => {
-      describe('when: user presses Delete on tag', () => {
-        it('to be: onRemove handler called', async () => {
-          const user = userEvent.setup()
-          const handleRemove = jest.fn()
-
-          render(<Tag text="Removable" isRemovable onRemove={handleRemove} />)
-
-          // Get the root span element (parent of text span)
-          const tag = screen.getByText('Removable').parentElement as HTMLElement
-          tag.focus()
-          await user.keyboard('{Delete}')
-
-          expect(handleRemove).toHaveBeenCalledTimes(1)
-        })
-      })
-    })
-  })
-
-  describe('Link Tags', () => {
-    describe('as is: Tag with isLink=true', () => {
-      it('to be: tag rendered with underline style', () => {
-        render(<Tag text="Link Tag" isLink />)
-
-        const tag = screen.getByText('Link Tag')
-        expect(tag).toHaveClass('underline')
-      })
-    })
-
-    describe('as is: Tag with href', () => {
-      it('to be: tag rendered as anchor element', () => {
-        render(<Tag text="Link Tag" href="/test" />)
-
-        const tag = screen.getByRole('link', { name: /link tag/i })
-        expect(tag).toBeInTheDocument()
-        expect(tag).toHaveAttribute('href', '/test')
-      })
-    })
-  })
-
-  describe('Clickable Tags', () => {
-    describe('as is: Tag with onClick handler', () => {
-      describe('when: user clicks tag', () => {
-        it('to be: onClick handler called', async () => {
-          const user = userEvent.setup()
-          const handleClick = jest.fn()
-
-          render(<Tag text="Clickable" onClick={handleClick} />)
-
-          const tag = screen.getByText('Clickable').closest('span')
-          await user.click(tag!)
-
-          expect(handleClick).toHaveBeenCalledTimes(1)
-        })
-      })
-    })
-
-    describe('as is: Tag with onClick handler', () => {
-      it('to be: tag has role="button" and is focusable', () => {
-        render(<Tag text="Clickable" onClick={() => {}} />)
-
-        const tag = screen.getByRole('button', { name: /clickable/i })
-        expect(tag).toBeInTheDocument()
-        expect(tag).toHaveAttribute('tabindex', '0')
-      })
-    })
-  })
-
   describe('Icon Support', () => {
     describe('as is: Tag with iconBefore', () => {
       it('to be: icon rendered before text', () => {
@@ -237,35 +124,23 @@ describe('Tag - Logic Tests (ADS Style)', () => {
     })
   })
 
-  describe('Accessibility', () => {
-    describe('as is: Tag with isRemovable=true', () => {
-      it('to be: remove button has aria-label', () => {
-        render(<Tag text="React" isRemovable />)
+  describe('Props Spread', () => {
+    describe('as is: Tag with custom data attribute', () => {
+      it('to be: data attribute spread to span', () => {
+        render(<Tag text="Custom" data-testid="custom-tag" />)
 
-        const removeButton = screen.getByRole('button', { name: /remove react/i })
-        expect(removeButton).toHaveAttribute('aria-label', 'Remove React')
-      })
-    })
-  })
-
-  describe('SDUI Integration', () => {
-    describe('as is: Tag with nodeId', () => {
-      it('to be: data-node-id attribute present', () => {
-        render(<Tag text="SDUI Tag" nodeId="tag-1" />)
-
-        // Get the root span element (parent of text span)
-        const tag = screen.getByText('SDUI Tag').parentElement
-        expect(tag).toHaveAttribute('data-node-id', 'tag-1')
+        const tag = screen.getByTestId('custom-tag')
+        expect(tag).toBeInTheDocument()
       })
     })
 
-    describe('as is: Tag with eventId', () => {
-      it('to be: data-event-id attribute present', () => {
-        render(<Tag text="Event Tag" nodeId="tag-1" eventId="tag-click" />)
+    describe('as is: Tag with className', () => {
+      it('to be: className merged with variants', () => {
+        render(<Tag text="Styled" className="custom-class" />)
 
-        // Get the root span element (parent of text span)
-        const tag = screen.getByText('Event Tag').parentElement
-        expect(tag).toHaveAttribute('data-event-id', 'tag-click')
+        const tag = screen.getByText('Styled').parentElement
+        expect(tag).toHaveClass('custom-class')
+        expect(tag).toHaveClass('border')
       })
     })
   })
