@@ -1,5 +1,6 @@
 export { Toggle } from './Toggle'
 export { ToggleContainer } from './ToggleContainer'
 export { toggleVariants, toggleDotVariants, toggleIconVariants } from './toggle-variants'
-export type { ToggleProps, ToggleContainerProps, ToggleSize } from './types'
+export { toggleStateSchema, toggleAttributesSchema } from './types'
+export type { ToggleProps, ToggleContainerProps, ToggleSize, ToggleState, ToggleAttributes } from './types'
 export type { ToggleVariants, ToggleDotVariants, ToggleIconVariants } from './toggle-variants'

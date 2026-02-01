@@ -1,4 +1,5 @@
 import type { VariantProps } from 'class-variance-authority'
+import { z } from 'zod'
 
 import type { toggleVariants } from './toggle-variants'
 
@@ -82,3 +83,29 @@ export interface ToggleProps extends Omit<VariantProps<typeof toggleVariants>, '
 export interface ToggleContainerProps {
   id: string
 }
+
+/**
+ * Toggle state schema for SDUI validation
+ *
+ * @description
+ * Zod schema for validating Toggle component state in SDUI.
+ * Used with useSduiNodeSubscription to ensure type safety.
+ */
+export const toggleStateSchema = z.object({
+  isChecked: z.boolean().optional(),
+  isDisabled: z.boolean().optional(),
+  isLoading: z.boolean().optional(),
+  size: z.enum(['regular', 'large']).optional(),
+  label: z.string().optional(),
+})
+
+export type ToggleState = z.infer<typeof toggleStateSchema>
+
+/**
+ * Toggle attributes schema for SDUI validation
+ */
+export const toggleAttributesSchema = z.object({
+  className: z.string().optional(),
+})
+
+export type ToggleAttributes = z.infer<typeof toggleAttributesSchema>

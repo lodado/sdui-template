@@ -4,18 +4,8 @@ import { useSduiLayoutAction, useSduiNodeSubscription } from '@lodado/sdui-templ
 import React, { useCallback } from 'react'
 
 import { Toggle } from './Toggle'
-import type { ToggleContainerProps, ToggleProps } from './types'
-
-/**
- * Toggle state schema for SDUI
- */
-interface ToggleState {
-  isChecked?: boolean
-  isDisabled?: boolean
-  isLoading?: boolean
-  size?: ToggleProps['size']
-  label?: string
-}
+import type { ToggleContainerProps } from './types'
+import { toggleStateSchema } from './types'
 
 /**
  * ToggleContainer - SDUI wrapper for Toggle component
@@ -39,32 +29,32 @@ interface ToggleState {
  */
 export const ToggleContainer: React.FC<ToggleContainerProps> = ({ id }) => {
   const store = useSduiLayoutAction()
-  const { state, attributes } = useSduiNodeSubscription({ nodeId: id })
-
-  const toggleState = state as ToggleState
-  const toggleAttributes = attributes as Record<string, unknown>
+  const { state, attributes } = useSduiNodeSubscription({
+    nodeId: id,
+    schema: toggleStateSchema,
+  })
 
   const handleChange = useCallback(
     (checked: boolean) => {
       store.updateNodeState(id, {
-        ...toggleState,
+        ...state,
         isChecked: checked,
       })
     },
-    [id, store, toggleState],
+    [id, store, state],
   )
 
   return (
     <Toggle
       nodeId={id}
       eventId={`${id}-change`}
-      isChecked={toggleState.isChecked ?? false}
-      isDisabled={toggleState.isDisabled ?? false}
-      isLoading={toggleState.isLoading ?? false}
-      size={toggleState.size ?? 'regular'}
-      label={toggleState.label}
+      isChecked={state.isChecked ?? false}
+      isDisabled={state.isDisabled ?? false}
+      isLoading={state.isLoading ?? false}
+      size={state.size ?? 'regular'}
+      label={state.label}
       onChange={handleChange}
-      className={toggleAttributes.className as string | undefined}
+      className={attributes?.className as string | undefined}
     />
   )
 }
