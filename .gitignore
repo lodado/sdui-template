@@ -52,3 +52,6 @@ apps/docs/build-storybook.log
 **/*.css.map
 
 *storybook.log
+
+# git worktrees
+.worktrees/
