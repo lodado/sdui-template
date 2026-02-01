@@ -1,6 +1,7 @@
 export * from './button'
 export * from './card'
 export * from './div'
+export * from './dropdown'
 export * from './icon'
 export * from './list'
 export * from './text'

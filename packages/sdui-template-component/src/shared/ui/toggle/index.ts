@@ -14,6 +14,6 @@ export { toggleAttributesSchema,toggleStateSchema } from './types'
 export { getIconDataState } from './utils'
 
 // Types
-export type { IconProps } from './icons'
+export type { ToggleSvgIconProps } from './icons'
 export type { ToggleDotVariants, ToggleIconVariants,ToggleThumbVariants, ToggleVariants } from './toggle-variants'
 export type { ToggleAttributes,ToggleContainerProps, ToggleProps, ToggleSize, ToggleState } from './types'
