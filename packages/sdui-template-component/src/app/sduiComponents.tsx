@@ -17,7 +17,12 @@ import { Title, TitleLogo } from '../features/title/components'
 import { ButtonContainer } from '../shared/ui/button/ButtonContainer'
 import { CardContainer } from '../shared/ui/card/CardContainer'
 import { Div } from '../shared/ui/div/Div'
-import { DropdownContainer } from '../shared/ui/dropdown/DropdownContainer'
+import {
+  DropdownContainer,
+  DropdownContentContainer,
+  DropdownItemContainer,
+  DropdownTriggerContainer,
+} from '../shared/ui/dropdown/DropdownContainer'
 import { IconContainer } from '../shared/ui/icon/IconContainer'
 import { ListContainer } from '../shared/ui/list/ListContainer'
 import { Span, Text } from '../shared/ui/text'
@@ -81,8 +86,11 @@ export const sduiComponents: Record<string, ComponentFactory> = {
   DialogBody: (id, parentPath) => <DialogBodyContainer id={id} parentPath={parentPath} />,
   DialogFooter: (id, parentPath) => <DialogFooterContainer id={id} parentPath={parentPath} />,
 
-  // Dropdown
+  // Dropdown (compound pattern with providerId)
   Dropdown: (id, parentPath) => <DropdownContainer id={id} parentPath={parentPath} />,
+  DropdownTrigger: (id, parentPath) => <DropdownTriggerContainer id={id} parentPath={parentPath} />,
+  DropdownContent: (id, parentPath) => <DropdownContentContainer id={id} parentPath={parentPath} />,
+  DropdownItem: (id, parentPath) => <DropdownItemContainer id={id} parentPath={parentPath} />,
 
   // Icon
   Icon: (id, parentPath) => <IconContainer id={id} parentPath={parentPath} />,

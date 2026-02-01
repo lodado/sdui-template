@@ -160,7 +160,7 @@ export interface DropdownMenuItemProps {
 }
 
 /**
- * Dropdown menu state schema for SDUI validation
+ * Dropdown menu state schema for SDUI validation (legacy DropdownMenu)
  */
 export const dropdownMenuStatesSchema: z.ZodSchema<Record<string, unknown>> = z.object({
   appearance: z.enum(['default', 'primary', 'subtle']).optional(),
@@ -186,3 +186,75 @@ export const dropdownMenuStatesSchema: z.ZodSchema<Record<string, unknown>> = z.
 }) as z.ZodSchema<Record<string, unknown>>
 
 export type DropdownMenuState = z.infer<typeof dropdownMenuStatesSchema>
+
+// ============================================
+// Compound Component State Schemas (providerId pattern)
+// ============================================
+
+/**
+ * DropdownRoot state schema
+ * @description Root component holds the shared state for all children
+ */
+export const dropdownRootStateSchema = z.object({
+  /** Whether the dropdown is open */
+  open: z.boolean().optional(),
+  /** Currently selected item value */
+  selectedId: z.string().optional(),
+})
+
+export type DropdownRootState = z.infer<typeof dropdownRootStateSchema>
+
+/**
+ * DropdownTrigger state schema
+ * @description Trigger subscribes to provider and controls open state
+ */
+export const dropdownTriggerStateSchema = z.object({
+  /** Required: ID of the Dropdown provider to subscribe to */
+  providerId: z.string(),
+})
+
+export type DropdownTriggerState = z.infer<typeof dropdownTriggerStateSchema>
+
+/**
+ * DropdownContent state schema
+ * @description Content subscribes to provider for open state and renders children
+ *
+ * Radix UI props are placed in state (not attributes) per SDUI convention:
+ * - attributes: HTML-native attributes only (className, id, style, data-*, aria-*)
+ * - state: Dynamic data + Radix UI / third-party component props
+ */
+export const dropdownContentStateSchema = z.object({
+  /** Required: ID of the Dropdown provider to subscribe to */
+  providerId: z.string(),
+  /** Radix UI: Side to render content on */
+  side: z.enum(['top', 'right', 'bottom', 'left']).optional(),
+  /** Radix UI: Offset from the trigger */
+  sideOffset: z.number().optional(),
+  /** Radix UI: Alignment relative to trigger */
+  align: z.enum(['start', 'center', 'end']).optional(),
+  /** Radix UI: Alignment offset */
+  alignOffset: z.number().optional(),
+  /** Spacing variant */
+  spacing: z.enum(['default', 'compact', 'cozy']).optional(),
+})
+
+export type DropdownContentState = z.infer<typeof dropdownContentStateSchema>
+
+/**
+ * DropdownItem state schema
+ * @description Item subscribes to provider for selection state
+ *
+ * Note: label, disabled are in state (Radix UI props), not attributes
+ */
+export const dropdownItemStateSchema = z.object({
+  /** Required: ID of the Dropdown provider to subscribe to */
+  providerId: z.string(),
+  /** This item's value (used for selection comparison) */
+  value: z.string(),
+  /** Display label for the item */
+  label: z.string(),
+  /** Whether the item is disabled */
+  disabled: z.boolean().optional(),
+})
+
+export type DropdownItemState = z.infer<typeof dropdownItemStateSchema>

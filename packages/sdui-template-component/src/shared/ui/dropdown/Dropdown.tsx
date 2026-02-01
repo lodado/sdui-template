@@ -281,5 +281,146 @@ export const DropdownMenu = React.forwardRef<HTMLButtonElement, DropdownMenuProp
 
 DropdownMenu.displayName = 'DropdownMenu'
 
+// ============================================
+// Compound Components for SDUI
+// ============================================
+
+/**
+ * DropdownRoot - Root component for compound pattern
+ * Wraps Radix UI Root with controlled open state
+ */
+export interface DropdownRootProps {
+  children?: React.ReactNode
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+}
+
+export const DropdownRoot = ({ children, open, onOpenChange }: DropdownRootProps) => (
+  <DropdownMenuPrimitive.Root open={open} onOpenChange={onOpenChange}>
+    {children}
+  </DropdownMenuPrimitive.Root>
+)
+
+DropdownRoot.displayName = 'DropdownRoot'
+
+/**
+ * DropdownTrigger - Trigger component for compound pattern
+ * Supports asChild for custom trigger elements
+ */
+export interface DropdownTriggerProps extends React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Trigger> {
+  asChild?: boolean
+}
+
+export const DropdownTrigger = React.forwardRef<HTMLButtonElement, DropdownTriggerProps>(
+  ({ children, asChild = true, className, ...props }, ref) => (
+    <DropdownMenuPrimitive.Trigger
+      ref={ref}
+      asChild={asChild}
+      className={cn(!asChild && dropdownTriggerVariants({ appearance: 'default', spacing: 'default' }), className)}
+      {...props}
+    >
+      {children}
+    </DropdownMenuPrimitive.Trigger>
+  ),
+)
+
+DropdownTrigger.displayName = 'DropdownTrigger'
+
+/**
+ * DropdownContent - Content component for compound pattern
+ * Wraps Radix UI Portal + Content with styling
+ */
+export interface DropdownContentProps extends React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content> {
+  spacing?: 'default' | 'compact' | 'cozy'
+}
+
+export const DropdownContent = React.forwardRef<HTMLDivElement, DropdownContentProps>(
+  ({ children, className, spacing = 'default', side = 'bottom', sideOffset = 8, align = 'start', ...props }, ref) => (
+    <DropdownMenuPrimitive.Portal>
+      <DropdownMenuPrimitive.Content
+        ref={ref}
+        className={cn(dropdownContentVariants({ spacing }), className)}
+        side={side}
+        sideOffset={sideOffset}
+        align={align}
+        onCloseAutoFocus={(e) => e.preventDefault()}
+        {...props}
+      >
+        {children}
+      </DropdownMenuPrimitive.Content>
+    </DropdownMenuPrimitive.Portal>
+  ),
+)
+
+DropdownContent.displayName = 'DropdownContent'
+
+/**
+ * DropdownItem - Item component for compound pattern
+ * Used for single-select items
+ */
+export interface DropdownItemCompoundProps {
+  label?: string
+  disabled?: boolean
+  isSelected?: boolean
+  onSelect?: () => void
+  className?: string
+  children?: React.ReactNode
+}
+
+export const DropdownItem = ({
+  label,
+  disabled = false,
+  isSelected = false,
+  onSelect,
+  className,
+  children,
+}: DropdownItemCompoundProps) => {
+  return (
+    <DropdownMenuPrimitive.Item
+      className={cn(dropdownItemVariants({ isDisabled: disabled, isSelected }), 'gap-3', className)}
+      disabled={disabled}
+      onSelect={() => onSelect?.()}
+    >
+      {children ?? (
+        <>
+          <span className="flex-1 truncate">{label}</span>
+          {isSelected && (
+            <span className="shrink-0 text-[var(--color-text-selected,#1868db)]">
+              <CheckIcon className="w-3 h-3" />
+            </span>
+          )}
+        </>
+      )}
+    </DropdownMenuPrimitive.Item>
+  )
+}
+
+DropdownItem.displayName = 'DropdownItem'
+
+/**
+ * Dropdown namespace for compound pattern usage
+ *
+ * @example
+ * ```tsx
+ * <Dropdown.Root open={open} onOpenChange={setOpen}>
+ *   <Dropdown.Trigger asChild>
+ *     <Button>Open Menu</Button>
+ *   </Dropdown.Trigger>
+ *   <Dropdown.Content>
+ *     <Dropdown.Item label="Option 1" onSelect={() => {}} />
+ *     <Dropdown.Item label="Option 2" onSelect={() => {}} />
+ *   </Dropdown.Content>
+ * </Dropdown.Root>
+ * ```
+ */
+export const Dropdown = {
+  Root: DropdownRoot,
+  Trigger: DropdownTrigger,
+  Content: DropdownContent,
+  Item: DropdownItem,
+  CheckboxItem: DropdownCheckboxItem,
+  MenuItem: DropdownMenuItem,
+}
+
 // Export sub-components for composition
 export { DropdownCheckboxItem, DropdownMenuItem }

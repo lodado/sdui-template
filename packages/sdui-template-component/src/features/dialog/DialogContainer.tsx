@@ -1,6 +1,11 @@
 'use client'
 
-import { useRenderNode, useSduiLayoutAction, useSduiNodeSubscription } from '@lodado/sdui-template'
+import {
+  useRenderNode,
+  useSduiLayoutAction,
+  useSduiNodeReference,
+  useSduiNodeSubscription,
+} from '@lodado/sdui-template'
 import React, { useCallback } from 'react'
 
 import {
@@ -103,6 +108,10 @@ DialogContainer.displayName = 'DialogContainer'
 
 /**
  * DialogTriggerContainer - SDUI Container for Dialog.Trigger
+ *
+ * @description
+ * Uses reference to get parent Dialog's state for open/close control.
+ * Set `reference` field to point to the parent Dialog's id.
  */
 export const DialogTriggerContainer = ({ id, parentPath = [] }: DialogContainerProps) => {
   const { childrenIds } = useSduiNodeSubscription({
@@ -116,10 +125,19 @@ export const DialogTriggerContainer = ({ id, parentPath = [] }: DialogContainerP
     return <Dialog.Trigger asChild={false}>Open</Dialog.Trigger>
   }
 
-  // Wrap children in a single element for asChild
+  // For asChild to work, we need exactly one child element
+  const children = renderChildren(childrenIds)
+  const childArray = React.Children.toArray(children)
+
+  // asChild requires exactly one child - if single child, pass directly
+  if (childArray.length === 1) {
+    return <Dialog.Trigger>{childArray[0]}</Dialog.Trigger>
+  }
+
+  // Multiple children - wrap in div for asChild to work
   return (
     <Dialog.Trigger>
-      <>{renderChildren(childrenIds)}</>
+      <div className="inline-flex">{children}</div>
     </Dialog.Trigger>
   )
 }

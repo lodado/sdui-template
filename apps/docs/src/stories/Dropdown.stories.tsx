@@ -1532,3 +1532,489 @@ return referencedNodes.map(refNode => (
     },
   },
 }
+
+// ============================================================================
+// Compound Pattern Examples (SDUI) with providerId
+// ============================================================================
+
+export const CompoundPatternSdui: Story = {
+  render: () => {
+    const document: SduiLayoutDocument = {
+      version: '1.0.0',
+      root: {
+        id: 'dropdown-root',
+        type: 'Dropdown',
+        state: { selectedId: 'option-1', open: false },
+        children: [
+          {
+            id: 'trigger',
+            type: 'DropdownTrigger',
+            state: { providerId: 'dropdown-root' },
+            children: [
+              {
+                id: 'trigger-btn',
+                type: 'Button',
+                state: { appearance: 'primary' },
+                children: [{ id: 'trigger-text', type: 'Span', state: { text: 'Custom Button Trigger' } }],
+              },
+            ],
+          },
+          {
+            id: 'content',
+            type: 'DropdownContent',
+            state: {
+              providerId: 'dropdown-root',
+              side: 'bottom',
+              sideOffset: 4,
+              align: 'start',
+            },
+            children: [
+              {
+                id: 'item-1',
+                type: 'DropdownItem',
+                state: { providerId: 'dropdown-root', value: 'option-1', label: 'Option 1' },
+              },
+              {
+                id: 'item-2',
+                type: 'DropdownItem',
+                state: { providerId: 'dropdown-root', value: 'option-2', label: 'Option 2' },
+              },
+              {
+                id: 'item-3',
+                type: 'DropdownItem',
+                state: { providerId: 'dropdown-root', value: 'option-3', label: 'Option 3' },
+              },
+              {
+                id: 'item-4',
+                type: 'DropdownItem',
+                state: { providerId: 'dropdown-root', value: 'option-4', label: 'Option 4', disabled: true },
+              },
+            ],
+          },
+        ],
+      },
+    }
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: `
+## Compound Pattern with providerId (SDUI)
+
+The Dropdown supports compound pattern using \`state.providerId\`:
+
+\`\`\`json
+{
+  "type": "Dropdown",
+  "id": "dropdown-root",
+  "state": { "selectedId": "option-1", "open": false },
+  "children": [
+    {
+      "type": "DropdownTrigger",
+      "state": { "providerId": "dropdown-root" }  // Subscribe to provider
+    },
+    {
+      "type": "DropdownContent",
+      "state": { "providerId": "dropdown-root", "side": "bottom" },
+      "children": [
+        { "type": "DropdownItem", "state": { "providerId": "dropdown-root", "value": "opt-1", "label": "Option 1" } }
+      ]
+    }
+  ]
+}
+\`\`\`
+
+### Key Points:
+- **attributes**: HTML attributes only (\`className\`, \`id\`, \`style\`, \`data-*\`, \`aria-*\`)
+- **state**: Dynamic data + Radix UI props (\`providerId\`, \`side\`, \`sideOffset\`, \`label\`, \`disabled\`)
+- All child components use \`state.providerId\` to subscribe to the parent Dropdown's state
+        `,
+      },
+    },
+  },
+}
+
+export const CompoundWithReferenceSdui: Story = {
+  render: () => {
+    const document: SduiLayoutDocument = {
+      version: '1.0.0',
+      root: {
+        id: 'root',
+        type: 'Div',
+        attributes: { className: 'space-y-4 p-4 border rounded-lg max-w-md' },
+        children: [
+          {
+            id: 'title',
+            type: 'Span',
+            state: { text: 'Compound Pattern with providerId + Reference' },
+            attributes: { className: 'font-medium block' },
+          },
+          {
+            id: 'desc',
+            type: 'Span',
+            state: { text: 'Dropdown uses providerId pattern. ReferenceText uses reference for external display.' },
+            attributes: { className: 'text-sm text-gray-600 block' },
+          },
+          {
+            id: 'dropdown-compound',
+            type: 'Dropdown',
+            state: { selectedId: 'medium', open: false },
+            children: [
+              {
+                id: 'trigger',
+                type: 'DropdownTrigger',
+                state: { providerId: 'dropdown-compound' },
+                children: [
+                  {
+                    id: 'trigger-btn',
+                    type: 'Button',
+                    state: { appearance: 'primary' },
+                    children: [{ id: 'trigger-text', type: 'Span', state: { text: 'Select Priority' } }],
+                  },
+                ],
+              },
+              {
+                id: 'content',
+                type: 'DropdownContent',
+                state: { providerId: 'dropdown-compound', side: 'bottom', sideOffset: 4 },
+                children: priorityOptions.map((opt, idx) => ({
+                  id: `priority-item-${idx}`,
+                  type: 'DropdownItem',
+                  state: { providerId: 'dropdown-compound', value: opt.id, label: opt.label },
+                })),
+              },
+            ],
+          },
+          {
+            id: 'result-box',
+            type: 'Div',
+            attributes: { className: 'p-3 bg-gray-50 rounded text-sm' },
+            children: [
+              {
+                id: 'result-label',
+                type: 'Span',
+                state: { text: 'Selected: ' },
+                attributes: { className: 'text-gray-600' },
+              },
+              {
+                id: 'result-value',
+                type: 'ReferenceText',
+                reference: 'dropdown-compound',
+                attributes: {
+                  className: 'font-semibold text-gray-900',
+                  options: priorityOptions,
+                },
+              },
+            ],
+          },
+        ],
+      },
+    }
+    return <SduiLayoutRenderer document={document} components={extendedSduiComponents} />
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: `
+## Compound Pattern with providerId + Reference
+
+Combines the compound pattern (providerId) with reference for external state display.
+
+- **Dropdown children**: Use \`state.providerId\` to subscribe to parent
+- **ReferenceText**: Uses \`reference\` field to read dropdown state for display
+        `,
+      },
+    },
+  },
+}
+
+export const NestedDropdownsSdui: Story = {
+  render: () => {
+    const subMenuOptions = [
+      { id: 'cut', label: 'Cut' },
+      { id: 'copy', label: 'Copy' },
+      { id: 'paste', label: 'Paste' },
+    ]
+
+    const document: SduiLayoutDocument = {
+      version: '1.0.0',
+      root: {
+        id: 'root',
+        type: 'Div',
+        attributes: { className: 'space-y-4 p-4 border rounded-lg max-w-md' },
+        children: [
+          {
+            id: 'title',
+            type: 'Span',
+            state: { text: 'Nested Dropdowns with providerId' },
+            attributes: { className: 'font-medium block' },
+          },
+          {
+            id: 'desc',
+            type: 'Span',
+            state: { text: 'Each Dropdown uses its own providerId, enabling nested structures.' },
+            attributes: { className: 'text-sm text-gray-600 block' },
+          },
+          {
+            id: 'dropdowns-row',
+            type: 'Div',
+            attributes: { className: 'flex items-center gap-4' },
+            children: [
+              {
+                id: 'outer-dropdown',
+                type: 'Dropdown',
+                state: { selectedId: 'in-progress', open: false },
+                children: [
+                  {
+                    id: 'outer-trigger',
+                    type: 'DropdownTrigger',
+                    state: { providerId: 'outer-dropdown' },
+                    children: [
+                      {
+                        id: 'outer-btn',
+                        type: 'Button',
+                        children: [{ id: 'outer-text', type: 'Span', state: { text: 'Main Menu' } }],
+                      },
+                    ],
+                  },
+                  {
+                    id: 'outer-content',
+                    type: 'DropdownContent',
+                    state: { providerId: 'outer-dropdown', side: 'bottom', sideOffset: 4 },
+                    children: statusOptions.map((opt, idx) => ({
+                      id: `outer-item-${idx}`,
+                      type: 'DropdownItem',
+                      state: { providerId: 'outer-dropdown', value: opt.id, label: opt.label },
+                    })),
+                  },
+                ],
+              },
+              {
+                id: 'inner-dropdown',
+                type: 'Dropdown',
+                state: { selectedId: 'copy', open: false },
+                children: [
+                  {
+                    id: 'inner-trigger',
+                    type: 'DropdownTrigger',
+                    state: { providerId: 'inner-dropdown' },
+                    children: [
+                      {
+                        id: 'inner-btn',
+                        type: 'Button',
+                        state: { appearance: 'subtle' },
+                        children: [{ id: 'inner-text', type: 'Span', state: { text: 'Edit Menu' } }],
+                      },
+                    ],
+                  },
+                  {
+                    id: 'inner-content',
+                    type: 'DropdownContent',
+                    state: { providerId: 'inner-dropdown', side: 'bottom', sideOffset: 4 },
+                    children: subMenuOptions.map((opt, idx) => ({
+                      id: `inner-item-${idx}`,
+                      type: 'DropdownItem',
+                      state: { providerId: 'inner-dropdown', value: opt.id, label: opt.label },
+                    })),
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'summary-box',
+            type: 'Div',
+            attributes: { className: 'p-3 bg-blue-50 rounded text-sm' },
+            children: [
+              {
+                id: 'summary-text',
+                type: 'Span',
+                state: { text: 'Main: ' },
+                attributes: { className: 'text-blue-700' },
+              },
+              {
+                id: 'main-value',
+                type: 'ReferenceText',
+                reference: 'outer-dropdown',
+                attributes: {
+                  className: 'font-medium text-blue-800',
+                  options: statusOptions,
+                },
+              },
+              {
+                id: 'separator',
+                type: 'Span',
+                state: { text: ' | Edit: ' },
+                attributes: { className: 'text-blue-500' },
+              },
+              {
+                id: 'edit-value',
+                type: 'ReferenceText',
+                reference: 'inner-dropdown',
+                attributes: {
+                  className: 'font-medium text-blue-800',
+                  options: subMenuOptions,
+                },
+              },
+            ],
+          },
+        ],
+      },
+    }
+    return <SduiLayoutRenderer document={document} components={extendedSduiComponents} />
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: `
+## Nested Dropdowns with providerId
+
+Each Dropdown maintains its own state via its unique \`id\`. Child components use \`state.providerId\` to explicitly target which Dropdown to subscribe to.
+
+This pattern supports:
+- **Multiple independent dropdowns** on the same page
+- **Nested/sub-menus** where each level has its own provider
+- **Clear state ownership** - no ambiguity about which dropdown owns the state
+        `,
+      },
+    },
+  },
+}
+
+export const CustomTriggerSdui: Story = {
+  render: () => {
+    const document: SduiLayoutDocument = {
+      version: '1.0.0',
+      root: {
+        id: 'root',
+        type: 'Div',
+        attributes: { className: 'space-y-4 p-4 border rounded-lg max-w-md' },
+        children: [
+          {
+            id: 'title',
+            type: 'Span',
+            state: { text: 'Custom Trigger Examples' },
+            attributes: { className: 'font-medium block' },
+          },
+          {
+            id: 'triggers-row',
+            type: 'Div',
+            attributes: { className: 'flex items-center gap-4' },
+            children: [
+              // Primary button trigger
+              {
+                id: 'dropdown-primary',
+                type: 'Dropdown',
+                state: { selectedId: '1', open: false },
+                children: [
+                  {
+                    id: 'primary-trigger',
+                    type: 'DropdownTrigger',
+                    state: { providerId: 'dropdown-primary' },
+                    children: [
+                      {
+                        id: 'primary-btn',
+                        type: 'Button',
+                        state: { appearance: 'primary' },
+                        children: [{ id: 'primary-text', type: 'Span', state: { text: 'Primary' } }],
+                      },
+                    ],
+                  },
+                  {
+                    id: 'primary-content',
+                    type: 'DropdownContent',
+                    state: { providerId: 'dropdown-primary', side: 'bottom' },
+                    children: sampleOptions.map((opt, idx) => ({
+                      id: `primary-item-${idx}`,
+                      type: 'DropdownItem',
+                      state: { providerId: 'dropdown-primary', value: opt.id, label: opt.label },
+                    })),
+                  },
+                ],
+              },
+              // Default button trigger
+              {
+                id: 'dropdown-default',
+                type: 'Dropdown',
+                state: { selectedId: '2', open: false },
+                children: [
+                  {
+                    id: 'default-trigger',
+                    type: 'DropdownTrigger',
+                    state: { providerId: 'dropdown-default' },
+                    children: [
+                      {
+                        id: 'default-btn',
+                        type: 'Button',
+                        children: [{ id: 'default-text', type: 'Span', state: { text: 'Default' } }],
+                      },
+                    ],
+                  },
+                  {
+                    id: 'default-content',
+                    type: 'DropdownContent',
+                    state: { providerId: 'dropdown-default', side: 'bottom' },
+                    children: sampleOptions.map((opt, idx) => ({
+                      id: `default-item-${idx}`,
+                      type: 'DropdownItem',
+                      state: { providerId: 'dropdown-default', value: opt.id, label: opt.label },
+                    })),
+                  },
+                ],
+              },
+              // Subtle button trigger
+              {
+                id: 'dropdown-subtle',
+                type: 'Dropdown',
+                state: { selectedId: '3', open: false },
+                children: [
+                  {
+                    id: 'subtle-trigger',
+                    type: 'DropdownTrigger',
+                    state: { providerId: 'dropdown-subtle' },
+                    children: [
+                      {
+                        id: 'subtle-btn',
+                        type: 'Button',
+                        state: { appearance: 'subtle' },
+                        children: [{ id: 'subtle-text', type: 'Span', state: { text: 'Subtle' } }],
+                      },
+                    ],
+                  },
+                  {
+                    id: 'subtle-content',
+                    type: 'DropdownContent',
+                    state: { providerId: 'dropdown-subtle', side: 'bottom' },
+                    children: sampleOptions.map((opt, idx) => ({
+                      id: `subtle-item-${idx}`,
+                      type: 'DropdownItem',
+                      state: { providerId: 'dropdown-subtle', value: opt.id, label: opt.label },
+                    })),
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    }
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: `
+## Custom Trigger Examples
+
+The compound pattern allows any component as a trigger via the \`DropdownTrigger\` wrapper.
+
+Each dropdown has:
+- **DropdownTrigger** with \`state.providerId\` pointing to its parent
+- **DropdownContent** with \`state.providerId\` and Radix UI props (\`side\`, \`sideOffset\`)
+- **DropdownItem** children with \`state.providerId\`, \`value\`, and \`label\`
+        `,
+      },
+    },
+  },
+}

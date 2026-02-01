@@ -270,6 +270,135 @@ const AuthSlot: React.FC<{ nodeId: string }> = ({ nodeId }) => {
 }
 ```
 
+### 8. Attributes vs State: Placement Rules
+
+**Core Rule:**
+
+- `attributes`: HTML-native attributes only (className, id, style, data-\*, aria-\*)
+- `state`: Dynamic data + Radix UI / third-party component props
+
+| Property Type   | Location     | Examples                                                |
+| --------------- | ------------ | ------------------------------------------------------- |
+| HTML attributes | `attributes` | `className`, `id`, `style`, `data-testid`, `aria-label` |
+| Radix UI props  | `state`      | `side`, `sideOffset`, `align`, `disabled`, `open`       |
+| SDUI-specific   | `state`      | `providerId`, `value`, `selectedId`, `label`            |
+
+**Why this separation:**
+
+- `attributes` maps directly to HTML DOM attributes
+- `state` represents component-level logic and third-party library props
+- This distinction enables proper serialization and type safety
+
+**Correct Example:**
+
+```typescript
+{
+  id: 'dropdown-content',
+  type: 'DropdownContent',
+  attributes: {
+    className: 'custom-dropdown',  // HTML attribute
+    'data-testid': 'main-dropdown', // HTML attribute
+  },
+  state: {
+    providerId: 'dropdown-root',  // SDUI-specific
+    side: 'bottom',               // Radix UI prop
+    sideOffset: 4,                // Radix UI prop
+    align: 'start',               // Radix UI prop
+  },
+}
+```
+
+**Anti-pattern (DON'T):**
+
+```typescript
+// ❌ Bad: Radix props in attributes
+{
+  type: 'DropdownContent',
+  attributes: {
+    side: 'bottom',     // Wrong! Radix prop should be in state
+    sideOffset: 4,      // Wrong!
+  },
+}
+
+// ❌ Bad: HTML attributes in state
+{
+  type: 'DropdownContent',
+  state: {
+    className: 'custom', // Wrong! HTML attr should be in attributes
+  },
+}
+```
+
+### 9. Compound Component Pattern with providerId
+
+When implementing compound components (like Dropdown, Dialog) with SDUI:
+
+1. **Provider (Root)**: Holds shared state (`open`, `selectedId`)
+2. **Children**: Use `state.providerId` to subscribe to provider's state
+
+**Pattern:**
+
+```typescript
+{
+  id: 'dropdown-root',
+  type: 'Dropdown',
+  state: { open: false, selectedId: 'opt-1' },  // Provider state
+  children: [
+    {
+      id: 'trigger',
+      type: 'DropdownTrigger',
+      state: { providerId: 'dropdown-root' },  // Subscribe to provider
+      children: [{ type: 'Button', ... }],
+    },
+    {
+      id: 'content',
+      type: 'DropdownContent',
+      state: { providerId: 'dropdown-root', side: 'bottom' },  // Radix props in state
+      children: [
+        { id: 'item-1', type: 'DropdownItem', state: { providerId: 'dropdown-root', value: 'opt-1', label: 'Option 1' } },
+        { id: 'item-2', type: 'DropdownItem', state: { providerId: 'dropdown-root', value: 'opt-2', label: 'Option 2' } },
+      ],
+    },
+  ],
+}
+```
+
+**Why providerId instead of React Context:**
+
+- SDUI documents are serializable JSON
+- Nested providers need explicit targeting (e.g., nested Dropdowns)
+- State changes are tracked through the SDUI store, not React Context
+
+**Container Implementation Pattern:**
+
+```typescript
+// Child component subscribes to provider via providerId
+export const DropdownItemContainer = ({ id }) => {
+  const { state } = useSduiNodeSubscription({ nodeId: id })
+  const store = useSduiLayoutAction()
+
+  const providerId = state?.providerId as string
+  const value = state?.value as string
+  const label = state?.label as string
+
+  // Subscribe to provider's state
+  const { state: providerState } = useSduiNodeSubscription({
+    nodeId: providerId ?? '',
+  })
+
+  const selectedId = providerState?.selectedId as string
+  const isSelected = selectedId === value
+
+  const handleSelect = () => {
+    if (providerId) {
+      store.updateNodeState(providerId, { selectedId: value, open: false })
+    }
+  }
+
+  return <DropdownItem label={label} isSelected={isSelected} onSelect={handleSelect} />
+}
+```
+
 ## When to Use
 
 - Implementing new components with SDUI library
@@ -277,9 +406,11 @@ const AuthSlot: React.FC<{ nodeId: string }> = ({ nodeId }) => {
 - Creating custom SDUI components
 - Integrating SDUI with Next.js
 - Writing SDUI documents with form validation
+- Implementing compound components (Dropdown, Dialog, Tabs, etc.)
 
 ## Example Files
 
 - Storybook stories: `apps/docs/src/stories/`
 - Next.js example: `apps/nextAuthOauthLoginExample/src/app/components/`
 - Document definition: `apps/nextAuthOauthLoginExample/src/app/lib/sdui-document.ts`
+- Compound Dropdown: `packages/sdui-template-component/src/shared/ui/dropdown/`
