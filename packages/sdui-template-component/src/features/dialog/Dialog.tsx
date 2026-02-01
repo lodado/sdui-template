@@ -4,22 +4,6 @@ import * as DialogPrimitive from '@radix-ui/react-dialog'
 import React, { createContext, useContext, useMemo } from 'react'
 
 import { cn } from '../../shared/lib/cn'
-
-// =============================================================================
-// Dialog Context for providerId inheritance
-// =============================================================================
-
-interface DialogContextValue {
-  providerId: string
-}
-
-const DialogContext = createContext<DialogContextValue | null>(null)
-
-/**
- * Hook to get providerId from Dialog context
- * Used by child components when providerId is not explicitly provided in state
- */
-export const useDialogContext = () => useContext(DialogContext)
 import {
   dialogBodyVariants,
   dialogCancelButtonVariants,
@@ -47,6 +31,22 @@ import type {
   DialogTriggerProps,
   SimpleDialogProps,
 } from './types'
+
+// =============================================================================
+// Dialog Context for providerId inheritance
+// =============================================================================
+
+interface DialogContextValue {
+  providerId: string
+}
+
+const DialogContext = createContext<DialogContextValue | null>(null)
+
+/**
+ * Hook to get providerId from Dialog context
+ * Used by child components when providerId is not explicitly provided in state
+ */
+export const useDialogContext = () => useContext(DialogContext)
 
 // =============================================================================
 // Icons

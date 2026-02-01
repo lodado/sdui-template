@@ -50,6 +50,7 @@ interface DropdownContainerProps {
 export const DropdownContainer = ({ id, parentPath = [] }: DropdownContainerProps) => {
   const { childrenIds, attributes, state } = useSduiNodeSubscription({
     nodeId: id,
+    schema: dropdownRootStateSchema,
   })
   const { renderChildren } = useRenderNode({ nodeId: id, parentPath })
   const store = useSduiLayoutAction()
@@ -121,6 +122,7 @@ DropdownContainer.displayName = 'DropdownContainer'
 export const DropdownTriggerContainer = ({ id, parentPath = [] }: DropdownContainerProps) => {
   const { childrenIds, state } = useSduiNodeSubscription({
     nodeId: id,
+    schema: dropdownTriggerStateSchema,
   })
   const { renderChildren } = useRenderNode({ nodeId: id, parentPath })
   const store = useSduiLayoutAction()
@@ -133,6 +135,7 @@ export const DropdownTriggerContainer = ({ id, parentPath = [] }: DropdownContai
 
   const { state: providerState } = useSduiNodeSubscription({
     nodeId: providerId ?? '',
+    schema: dropdownRootStateSchema,
   })
 
   const providerTypedState = providerState as DropdownRootState
@@ -193,6 +196,7 @@ DropdownTriggerContainer.displayName = 'DropdownTriggerContainer'
 export const DropdownContentContainer = ({ id, parentPath = [] }: DropdownContainerProps) => {
   const { childrenIds, state } = useSduiNodeSubscription({
     nodeId: id,
+    schema: dropdownContentStateSchema,
   })
   const { renderChildren } = useRenderNode({ nodeId: id, parentPath })
   const dropdownContext = useDropdownContext()
@@ -244,6 +248,7 @@ DropdownContentContainer.displayName = 'DropdownContentContainer'
 export const DropdownItemContainer = ({ id }: DropdownContainerProps) => {
   const { state } = useSduiNodeSubscription({
     nodeId: id,
+    schema: dropdownItemStateSchema,
   })
   const store = useSduiLayoutAction()
   const dropdownContext = useDropdownContext()
@@ -258,6 +263,7 @@ export const DropdownItemContainer = ({ id }: DropdownContainerProps) => {
 
   const { state: providerState } = useSduiNodeSubscription({
     nodeId: providerId ?? '',
+    schema: dropdownRootStateSchema,
   })
 
   const providerTypedState = providerState as DropdownRootState
@@ -304,6 +310,7 @@ DropdownItemContainer.displayName = 'DropdownItemContainer'
 export const DropdownValueContainer = ({ id }: DropdownContainerProps) => {
   const { state, attributes } = useSduiNodeSubscription({
     nodeId: id,
+    schema: dropdownValueStateSchema,
   })
   const dropdownContext = useDropdownContext()
 
@@ -316,6 +323,7 @@ export const DropdownValueContainer = ({ id }: DropdownContainerProps) => {
 
   const { state: providerState } = useSduiNodeSubscription({
     nodeId: providerId ?? '',
+    schema: dropdownRootStateSchema,
   })
 
   const providerTypedState = providerState as DropdownRootState

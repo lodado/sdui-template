@@ -26,6 +26,12 @@ import {
 } from '../shared/ui/dropdown/DropdownContainer'
 import { IconContainer } from '../shared/ui/icon/IconContainer'
 import { ListContainer } from '../shared/ui/list/ListContainer'
+import {
+  PopoverCloseContainer,
+  PopoverContainer,
+  PopoverContentContainer,
+  PopoverTriggerContainer,
+} from '../shared/ui/popover/PopoverContainer'
 import { TagContainer } from '../shared/ui/tag/TagContainer'
 import { Span, Text } from '../shared/ui/text'
 import { TextFieldContainer } from '../shared/ui/textfield/TextFieldContainer'
@@ -99,6 +105,13 @@ export const sduiComponents: Record<string, ComponentFactory> = {
   Icon: (id, parentPath) => <IconContainer id={id} parentPath={parentPath} />,
 
   // List
+
+  // Popover (compound pattern with providerId)
+  Popover: (id, parentPath) => <PopoverContainer id={id} parentPath={parentPath} />,
+  PopoverTrigger: (id, parentPath) => <PopoverTriggerContainer id={id} parentPath={parentPath} />,
+  PopoverContent: (id, parentPath) => <PopoverContentContainer id={id} parentPath={parentPath} />,
+  PopoverClose: (id) => <PopoverCloseContainer id={id} />,
+
   List: (id, parentPath) => <ListContainer id={id} parentPath={parentPath} />,
 
   // Tag

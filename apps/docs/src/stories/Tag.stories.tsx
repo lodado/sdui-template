@@ -1,5 +1,5 @@
 import { type SduiLayoutDocument, SduiLayoutRenderer } from '@lodado/sdui-template'
-import { Tag, sduiComponents } from '@lodado/sdui-template-component'
+import { sduiComponents,Tag } from '@lodado/sdui-template-component'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import React from 'react'
 

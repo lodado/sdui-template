@@ -67,6 +67,7 @@ import {
 export const DialogContainer = ({ id, parentPath = [] }: DialogContainerProps) => {
   const { childrenIds, state } = useSduiNodeSubscription({
     nodeId: id,
+    schema: dialogRootStateSchema,
   })
   const { renderChildren } = useRenderNode({ nodeId: id, parentPath })
   const store = useSduiLayoutAction()
@@ -114,6 +115,7 @@ DialogContainer.displayName = 'DialogContainer'
 export const DialogTriggerContainer = ({ id, parentPath = [] }: DialogContainerProps) => {
   const { childrenIds, state } = useSduiNodeSubscription({
     nodeId: id,
+    schema: dialogTriggerStateSchema,
   })
   const { renderChildren } = useRenderNode({ nodeId: id, parentPath })
   const store = useSduiLayoutAction()
@@ -127,6 +129,7 @@ export const DialogTriggerContainer = ({ id, parentPath = [] }: DialogContainerP
   // Subscribe to provider state
   const { state: providerState } = useSduiNodeSubscription({
     nodeId: providerId ?? '',
+    schema: dialogRootStateSchema,
   })
 
   const providerTypedState = providerState as DialogRootState
@@ -179,6 +182,7 @@ DialogTriggerContainer.displayName = 'DialogTriggerContainer'
 export const DialogPortalContainer = ({ id, parentPath = [] }: DialogContainerProps) => {
   const { childrenIds, state } = useSduiNodeSubscription({
     nodeId: id,
+    schema: dialogPortalStateSchema,
   })
   const { renderChildren } = useRenderNode({ nodeId: id, parentPath })
   const dialogContext = useDialogContext()
@@ -207,6 +211,7 @@ DialogPortalContainer.displayName = 'DialogPortalContainer'
 export const DialogContentContainer = ({ id, parentPath = [] }: DialogContainerProps) => {
   const { childrenIds, state } = useSduiNodeSubscription({
     nodeId: id,
+    schema: dialogContentStateSchema,
   })
   const { renderChildren } = useRenderNode({ nodeId: id, parentPath })
   const dialogContext = useDialogContext()
@@ -235,6 +240,7 @@ DialogContentContainer.displayName = 'DialogContentContainer'
 export const DialogHeaderContainer = ({ id, parentPath = [] }: DialogContainerProps) => {
   const { childrenIds, state } = useSduiNodeSubscription({
     nodeId: id,
+    schema: dialogHeaderStateSchema,
   })
   const { renderChildren } = useRenderNode({ nodeId: id, parentPath })
   const store = useSduiLayoutAction()
@@ -277,6 +283,7 @@ DialogHeaderContainer.displayName = 'DialogHeaderContainer'
 export const DialogBodyContainer = ({ id, parentPath = [] }: DialogContainerProps) => {
   const { childrenIds, state } = useSduiNodeSubscription({
     nodeId: id,
+    schema: dialogBodyStateSchema,
   })
   const { renderChildren } = useRenderNode({ nodeId: id, parentPath })
   const dialogContext = useDialogContext()
@@ -303,6 +310,7 @@ DialogBodyContainer.displayName = 'DialogBodyContainer'
 export const DialogFooterContainer = ({ id, parentPath = [] }: DialogContainerProps) => {
   const { childrenIds, state } = useSduiNodeSubscription({
     nodeId: id,
+    schema: dialogFooterStateSchema,
   })
   const { renderChildren } = useRenderNode({ nodeId: id, parentPath })
   const store = useSduiLayoutAction()
