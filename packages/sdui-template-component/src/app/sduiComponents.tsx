@@ -16,6 +16,7 @@ import { TextFieldHelpMessageContainer } from '../shared/ui/textfield/TextFieldH
 import { TextFieldInputContainer } from '../shared/ui/textfield/TextFieldInputContainer'
 import { TextFieldLabelContainer } from '../shared/ui/textfield/TextFieldLabelContainer'
 import { TextFieldWrapperContainer } from '../shared/ui/textfield/TextFieldWrapperContainer'
+import { ToggleContainer } from '../shared/ui/toggle/ToggleContainer'
 import { TooltipContainer } from '../shared/ui/tooltip/TooltipContainer'
 
 /**
@@ -84,6 +85,9 @@ export const sduiComponents: Record<string, ComponentFactory> = {
   TitleMiddle: (id, parentPath) => <Div id={id} parentPath={parentPath} />,
   TitleRight: (id, parentPath) => <Div id={id} parentPath={parentPath} />,
   TitleLogo: (id, parentPath) => <TitleLogo id={id} parentPath={parentPath} />,
+
+  // Toggle
+  Toggle: (id) => <ToggleContainer id={id} />,
 
   // Tooltip
   Tooltip: (id, parentPath) => <TooltipContainer id={id} parentPath={parentPath} />,
