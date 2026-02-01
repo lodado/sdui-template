@@ -1,15 +1,15 @@
-# SDUI Compound Component Architecture
-
-**Extracted:** 2026-02-01
-**Context:** Implementing compound components (Dropdown, Dialog, Popover, Tabs, etc.) in Server-Driven UI systems
-
-## Problem
+---
+name: sduiArchitecture
+# prettier-ignore
+description: Implementing compound components (Dropdown, Dialog, Popover, Tabs, etc.) in Server-Driven UI systems
+---
 
 In SDUI, components are rendered from JSON documents. Each node is isolated and only knows its own `id`, `state`, and `attributes`. This creates a fundamental challenge:
 
 **How do child components (like DropdownItem) access and modify shared state (like `selectedId`) from a parent provider (like Dropdown)?**
 
 Traditional React solutions don't work:
+
 - **Props drilling**: Not possible in SDUI - nodes don't pass props to children directly
 - **React Context only**: Lost during SSR/hydration, not serializable to JSON
 - **Global state**: No scoping for nested components
@@ -64,7 +64,7 @@ export const useCompoundContext = () => useContext(CompoundContext)
 
 ```typescript
 export interface RootProps {
-  id?: string  // SDUI node ID - also serves as providerId
+  id?: string // SDUI node ID - also serves as providerId
   children?: React.ReactNode
   // Shared state props
   open?: boolean
@@ -82,11 +82,7 @@ export const Root = ({ id, children, open, onOpenChange }: RootProps) => {
 
   // Wrap with context only if id is provided
   if (contextValue) {
-    return (
-      <CompoundContext.Provider value={contextValue}>
-        {content}
-      </CompoundContext.Provider>
-    )
+    return <CompoundContext.Provider value={contextValue}>{content}</CompoundContext.Provider>
   }
 
   return content
@@ -101,14 +97,17 @@ export const RootContainer = ({ id, parentPath = [] }: ContainerProps) => {
   const { renderChildren } = useRenderNode({ nodeId: id, parentPath })
   const store = useSduiLayoutAction()
 
-  const handleOpenChange = useCallback((open: boolean) => {
-    store.updateNodeState(id, { open })
-  }, [id, store])
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      store.updateNodeState(id, { open })
+    },
+    [id, store],
+  )
 
   return (
-    <Root 
-      id={id}  // Pass id for context provider
-      open={state?.open ?? false} 
+    <Root
+      id={id} // Pass id for context provider
+      open={state?.open ?? false}
       onOpenChange={handleOpenChange}
     >
       {renderChildren(childrenIds)}
@@ -123,7 +122,7 @@ export const RootContainer = ({ id, parentPath = [] }: ContainerProps) => {
 export const ChildContainer = ({ id, parentPath = [] }: ContainerProps) => {
   const { state } = useSduiNodeSubscription({ nodeId: id })
   const store = useSduiLayoutAction()
-  const compoundContext = useCompoundContext()  // Get context
+  const compoundContext = useCompoundContext() // Get context
 
   // Use explicit providerId if specified, otherwise inherit from context
   const providerId = state?.providerId ?? compoundContext?.providerId
@@ -140,9 +139,9 @@ export const ChildContainer = ({ id, parentPath = [] }: ContainerProps) => {
   // Update provider's state
   const handleAction = useCallback(() => {
     if (providerId) {
-      store.updateNodeState(providerId, { 
-        selectedId: state?.value, 
-        open: false 
+      store.updateNodeState(providerId, {
+        selectedId: state?.value,
+        open: false,
       })
     }
   }, [providerId, state?.value, store])
@@ -162,7 +161,7 @@ export const rootStateSchema = z.object({
 
 // Child state - providerId is OPTIONAL (inherits from context)
 export const childStateSchema = z.object({
-  providerId: z.string().optional(),  // Optional!
+  providerId: z.string().optional(), // Optional!
   value: z.string(),
   label: z.string(),
   disabled: z.boolean().optional(),
@@ -223,27 +222,27 @@ export const childStateSchema = z.object({
 
 This architecture applies to any compound component pattern:
 
-| Component | Provider | Shared State | Children |
-|-----------|----------|--------------|----------|
-| **Dropdown** | Dropdown | `open`, `selectedId` | Trigger, Content, Item, Value |
-| **Dialog** | Dialog | `open` | Trigger, Portal, Content, Header, Body, Footer |
-| **Popover** | Popover | `open` | Trigger, Content, Arrow |
-| **Tabs** | Tabs | `activeTab` | List, Trigger, Content |
-| **Accordion** | Accordion | `expandedItems` | Item, Trigger, Content |
-| **Select** | Select | `open`, `value` | Trigger, Content, Item, Value |
-| **Menu** | Menu | `open` | Trigger, Content, Item, SubMenu |
-| **Tooltip** | Tooltip | `open` | Trigger, Content |
+| Component     | Provider  | Shared State         | Children                                       |
+| ------------- | --------- | -------------------- | ---------------------------------------------- |
+| **Dropdown**  | Dropdown  | `open`, `selectedId` | Trigger, Content, Item, Value                  |
+| **Dialog**    | Dialog    | `open`               | Trigger, Portal, Content, Header, Body, Footer |
+| **Popover**   | Popover   | `open`               | Trigger, Content, Arrow                        |
+| **Tabs**      | Tabs      | `activeTab`          | List, Trigger, Content                         |
+| **Accordion** | Accordion | `expandedItems`      | Item, Trigger, Content                         |
+| **Select**    | Select    | `open`, `value`      | Trigger, Content, Item, Value                  |
+| **Menu**      | Menu      | `open`               | Trigger, Content, Item, SubMenu                |
+| **Tooltip**   | Tooltip   | `open`               | Trigger, Content                               |
 
 ## Key Design Decisions
 
 ### 1. Why providerId + Context (Hybrid Approach)?
 
-| Approach | SDUI Compatible | Serializable | Nested Support | DX |
-|----------|----------------|--------------|----------------|-----|
-| React Context only | ❌ | ❌ | ⚠️ | ✅ |
-| Props drilling | ❌ | ✅ | ❌ | ❌ |
-| Global store key | ✅ | ✅ | ❌ | ⚠️ |
-| **providerId + Context** | ✅ | ✅ | ✅ | ✅ |
+| Approach                 | SDUI Compatible | Serializable | Nested Support | DX  |
+| ------------------------ | --------------- | ------------ | -------------- | --- |
+| React Context only       | ❌              | ❌           | ⚠️             | ✅  |
+| Props drilling           | ❌              | ✅           | ❌             | ❌  |
+| Global store key         | ✅              | ✅           | ❌             | ⚠️  |
+| **providerId + Context** | ✅              | ✅           | ✅             | ✅  |
 
 ### 2. Why providerId is Optional?
 
@@ -253,11 +252,11 @@ This architecture applies to any compound component pattern:
 
 ### 3. Attributes vs State Separation
 
-| Field | Location | Examples |
-|-------|----------|----------|
-| HTML-native | `attributes` | `className`, `id`, `style`, `data-*`, `aria-*` |
-| Radix UI props | `state` | `side`, `sideOffset`, `align`, `disabled` |
-| SDUI-specific | `state` | `providerId`, `value`, `label`, `open` |
+| Field          | Location     | Examples                                       |
+| -------------- | ------------ | ---------------------------------------------- |
+| HTML-native    | `attributes` | `className`, `id`, `style`, `data-*`, `aria-*` |
+| Radix UI props | `state`      | `side`, `sideOffset`, `align`, `disabled`      |
+| SDUI-specific  | `state`      | `providerId`, `value`, `label`, `open`         |
 
 ## Implementation Checklist
 

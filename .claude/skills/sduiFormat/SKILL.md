@@ -1,7 +1,8 @@
-# SDUI Template Best Practices
-
-**Extracted:** 2026-01-30
-**Context:** Server-Driven UI implementation using @lodado/sdui-template library
+---
+name: SDUIBestPractices
+# prettier-ignore
+description: Server-Driven UI implementation using @lodado/sdui-template library
+---
 
 ## Problem
 
@@ -402,7 +403,7 @@ When implementing compound components (like Dropdown, Dialog) with SDUI:
 export const DropdownItemContainer = ({ id }) => {
   const { state } = useSduiNodeSubscription({ nodeId: id })
   const store = useSduiLayoutAction()
-  const dropdownContext = useDropdownContext()  // React Context for inheritance
+  const dropdownContext = useDropdownContext() // React Context for inheritance
 
   // Use explicit providerId if specified, otherwise inherit from context
   const providerId = state?.providerId ?? dropdownContext?.providerId

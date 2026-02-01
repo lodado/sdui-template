@@ -1,7 +1,6 @@
 import { type SduiLayoutDocument, SduiLayoutRenderer } from '@lodado/sdui-template'
-import { sduiComponents,Tag } from '@lodado/sdui-template-component'
+import { sduiComponents, Tag } from '@lodado/sdui-template-component'
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import React from 'react'
 
 const meta: Meta<typeof Tag> = {
   title: 'Shared/UI/Tag',
@@ -21,20 +20,6 @@ const meta: Meta<typeof Tag> = {
       description: 'Tag color variant',
       table: {
         defaultValue: { summary: 'standard' },
-      },
-    },
-    isRemovable: {
-      control: 'boolean',
-      description: 'Whether to show remove button',
-      table: {
-        defaultValue: { summary: 'false' },
-      },
-    },
-    isLink: {
-      control: 'boolean',
-      description: 'Whether to render as link style with underline',
-      table: {
-        defaultValue: { summary: 'false' },
       },
     },
   },
@@ -64,15 +49,12 @@ The **Tag** component follows the Atlassian Design System (ADS) specifications. 
 
 ## Features
 
-- **isRemovable**: Shows a close button for removing tags
-- **isLink**: Renders with underline for link-style tags
 - **iconBefore**: Supports icon before text
+- **props spread**: All HTML span attributes supported
 
 ## Integration
 
 - ✅ **SDUI template system** integration
-- ✅ **Keyboard navigation** (Backspace/Delete to remove)
-- ✅ **Accessibility features** built-in
         `,
       },
     },
@@ -90,8 +72,6 @@ export const Playground: Story = {
   args: {
     text: 'Tag',
     color: 'standard',
-    isRemovable: false,
-    isLink: false,
   },
   parameters: {
     docs: {
@@ -105,8 +85,6 @@ Use the controls panel to experiment with different tag configurations.
 
 - **text**: Tag text content
 - **color**: 11 color variants
-- **isRemovable**: Show/hide remove button
-- **isLink**: Enable link style
         `,
       },
     },
@@ -200,75 +178,6 @@ Visual comparison of all 11 color variants.
 }
 
 // ============================================================================
-// Removable Tags
-// ============================================================================
-
-export const Removable: Story = {
-  render: () => {
-    const [tags, setTags] = React.useState(['React', 'TypeScript', 'Tailwind'])
-
-    const handleRemove = (tag: string) => {
-      setTags((prev) => prev.filter((t) => t !== tag))
-    }
-
-    return (
-      <div className="flex flex-col items-center justify-center p-4 gap-4">
-        <div className="flex flex-wrap gap-2">
-          {tags.map((tag) => (
-            <Tag key={tag} text={tag} color="blue" isRemovable onRemove={() => handleRemove(tag)} />
-          ))}
-        </div>
-        {tags.length === 0 && <p className="text-gray-500">All tags removed</p>}
-        {tags.length < 3 && (
-          <button
-            type="button"
-            className="text-sm text-blue-500 underline"
-            onClick={() => setTags(['React', 'TypeScript', 'Tailwind'])}
-          >
-            Reset tags
-          </button>
-        )}
-      </div>
-    )
-  },
-  parameters: {
-    docs: {
-      description: {
-        story: `
-## Removable Tags
-
-Tags with a close button. Click the X to remove a tag.
-        `,
-      },
-    },
-  },
-}
-
-// ============================================================================
-// Link Tags
-// ============================================================================
-
-export const LinkStyle: Story = {
-  render: () => (
-    <div className="flex items-center justify-center p-4 gap-4">
-      <Tag text="Link Tag" color="blue" isLink onClick={() => alert('Tag clicked!')} />
-      <Tag text="With href" color="purple" isLink href="https://atlassian.design" />
-    </div>
-  ),
-  parameters: {
-    docs: {
-      description: {
-        story: `
-## Link Style Tags
-
-Tags rendered with underline text, indicating clickable links.
-        `,
-      },
-    },
-  },
-}
-
-// ============================================================================
 // With Icon
 // ============================================================================
 
@@ -311,44 +220,6 @@ export const WithIcon: Story = {
 ## Tags with Icons
 
 Tags can have an icon before the text using the \`iconBefore\` prop.
-        `,
-      },
-    },
-  },
-}
-
-// ============================================================================
-// Combined Features
-// ============================================================================
-
-export const Combined: Story = {
-  render: () => (
-    <div className="flex flex-wrap items-center justify-center p-4 gap-2">
-      <Tag
-        text="Removable with Icon"
-        color="green"
-        isRemovable
-        iconBefore={
-          <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
-            <path
-              fillRule="evenodd"
-              d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
-              clipRule="evenodd"
-            />
-          </svg>
-        }
-        onRemove={() => alert('Remove clicked!')}
-      />
-      <Tag text="Link + Removable" color="purple" isLink isRemovable onRemove={() => alert('Remove clicked!')} />
-    </div>
-  ),
-  parameters: {
-    docs: {
-      description: {
-        story: `
-## Combined Features
-
-Tags can combine multiple features like icons, removable, and link style.
         `,
       },
     },

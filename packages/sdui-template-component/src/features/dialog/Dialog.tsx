@@ -85,11 +85,7 @@ const LoadingSpinner = ({ className }: { className?: string }) => (
     aria-hidden="true"
   >
     <circle className="opacity-25" cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="2" />
-    <path
-      className="opacity-75"
-      fill="currentColor"
-      d="M15 8a7 7 0 01-7 7v-2a5 5 0 005-5h2z"
-    />
+    <path className="opacity-75" fill="currentColor" d="M15 8a7 7 0 01-7 7v-2a5 5 0 005-5h2z" />
   </svg>
 )
 
@@ -140,17 +136,9 @@ DialogPortal.displayName = 'Dialog.Portal'
 /**
  * Dialog.Overlay - Background overlay (blanket)
  */
-const DialogOverlay = React.forwardRef<HTMLDivElement, DialogOverlayProps>(
-  ({ className, ...props }, ref) => {
-    return (
-      <DialogPrimitive.Overlay
-        ref={ref}
-        className={cn(dialogOverlayVariants(), className)}
-        {...props}
-      />
-    )
-  },
-)
+const DialogOverlay = React.forwardRef<HTMLDivElement, DialogOverlayProps>(({ className, ...props }, ref) => {
+  return <DialogPrimitive.Overlay ref={ref} className={cn(dialogOverlayVariants(), className)} {...props} />
+})
 DialogOverlay.displayName = 'Dialog.Overlay'
 
 /**
@@ -159,11 +147,7 @@ DialogOverlay.displayName = 'Dialog.Overlay'
 const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
   ({ size = 'small', className, children, ...props }, ref) => {
     return (
-      <DialogPrimitive.Content
-        ref={ref}
-        className={cn(dialogContentVariants({ size }), className)}
-        {...props}
-      >
+      <DialogPrimitive.Content ref={ref} className={cn(dialogContentVariants({ size }), className)} {...props}>
         {children}
       </DialogPrimitive.Content>
     )
@@ -182,15 +166,13 @@ DialogHeader.displayName = 'Dialog.Header'
 /**
  * Dialog.Title - Dialog title text
  */
-const DialogTitle = React.forwardRef<HTMLHeadingElement, DialogTitleProps>(
-  ({ className, children, ...props }, ref) => {
-    return (
-      <DialogPrimitive.Title ref={ref} className={cn(dialogTitleVariants(), className)} {...props}>
-        {children}
-      </DialogPrimitive.Title>
-    )
-  },
-)
+const DialogTitle = React.forwardRef<HTMLHeadingElement, DialogTitleProps>(({ className, children, ...props }, ref) => {
+  return (
+    <DialogPrimitive.Title ref={ref} className={cn(dialogTitleVariants(), className)} {...props}>
+      {children}
+    </DialogPrimitive.Title>
+  )
+})
 DialogTitle.displayName = 'Dialog.Title'
 
 /**
@@ -199,11 +181,7 @@ DialogTitle.displayName = 'Dialog.Title'
 const DialogDescription = React.forwardRef<HTMLParagraphElement, DialogDescriptionProps>(
   ({ className, children, ...props }, ref) => {
     return (
-      <DialogPrimitive.Description
-        ref={ref}
-        className={cn(dialogDescriptionVariants(), className)}
-        {...props}
-      >
+      <DialogPrimitive.Description ref={ref} className={cn(dialogDescriptionVariants(), className)} {...props}>
         {children}
       </DialogPrimitive.Description>
     )
@@ -366,11 +344,7 @@ export const ConfirmDialog = ({
           <DialogBody>{children}</DialogBody>
           <DialogFooter>
             <DialogClose asChild>
-              <button
-                type="button"
-                className={dialogCancelButtonVariants()}
-                onClick={handleCancel}
-              >
+              <button type="button" className={dialogCancelButtonVariants()} onClick={handleCancel}>
                 {cancelLabel}
               </button>
             </DialogClose>
