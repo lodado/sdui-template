@@ -130,6 +130,80 @@ export class LayoutStateRepository {
   }
 
   /**
+   * 특정 노드를 삭제합니다.
+   *
+   * @param nodeId - 삭제할 노드 ID
+   */
+  deleteNode(nodeId: string): void {
+    // nodes에서 노드 제거
+    const { [nodeId]: deleted, ...remainingNodes } = this._state.nodes
+    this._state.nodes = remainingNodes
+
+    // lastModified에서 타임스탬프 제거 (새 객체 생성하여 참조 변경)
+    const { [nodeId]: deletedTimestamp, ...remainingLastModified } = this._state.lastModified
+    this._state.lastModified = remainingLastModified
+  }
+
+  /**
+   * 여러 노드를 일괄 삭제합니다.
+   *
+   * @param nodeIds - 삭제할 노드 ID 배열
+   */
+  deleteNodes(nodeIds: string[]): void {
+    if (nodeIds.length === 0) return
+
+    // nodes에서 노드 제거 (새 객체 생성하여 참조 변경)
+    const remainingNodes: Record<string, SduiLayoutNode> = {}
+    const nodeIdsSet = new Set(nodeIds)
+    Object.keys(this._state.nodes).forEach((nodeId) => {
+      if (!nodeIdsSet.has(nodeId)) {
+        remainingNodes[nodeId] = this._state.nodes[nodeId]
+      }
+    })
+    this._state.nodes = remainingNodes
+
+    // lastModified에서 타임스탬프 제거 (새 객체 생성하여 참조 변경)
+    const remainingLastModified: Record<string, string> = {}
+    Object.keys(this._state.lastModified).forEach((nodeId) => {
+      if (!nodeIdsSet.has(nodeId)) {
+        remainingLastModified[nodeId] = this._state.lastModified[nodeId]
+      }
+    })
+    this._state.lastModified = remainingLastModified
+  }
+
+  /**
+   * 노드를 병합합니다. 새로운 노드는 추가하고, 기존 노드는 업데이트합니다.
+   * 삭제된 노드 ID 목록을 반환합니다.
+   *
+   * @param nodes - 병합할 노드 엔티티 맵
+   * @returns 삭제된 노드 ID 배열
+   */
+  mergeNodes(nodes: Record<string, SduiLayoutNode>): string[] {
+    const existingNodeIds = new Set(Object.keys(this._state.nodes))
+    const newNodeIds = new Set(Object.keys(nodes))
+    const deletedNodeIds = [...existingNodeIds].filter((id) => !newNodeIds.has(id))
+
+    const timestamp = new Date().toISOString()
+
+    // 기존 노드와 새 노드를 병합 (새 객체 생성하여 참조 변경)
+    // 삭제된 노드는 제외하고, 새 노드만 포함
+    const mergedNodes: Record<string, SduiLayoutNode> = {}
+    const mergedLastModified: Record<string, string> = {}
+
+    // 새 노드 추가 또는 업데이트 (모든 새 노드 맵에 있는 노드는 업데이트된 것으로 간주)
+    Object.keys(nodes).forEach((nodeId) => {
+      mergedNodes[nodeId] = nodes[nodeId]
+      mergedLastModified[nodeId] = timestamp
+    })
+
+    this._state.nodes = mergedNodes
+    this._state.lastModified = mergedLastModified
+
+    return deletedNodeIds
+  }
+
+  /**
    * 특정 노드의 상태를 업데이트합니다.
    *
    * @param nodeId - 노드 ID

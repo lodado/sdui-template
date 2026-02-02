@@ -79,4 +79,26 @@ export class SubscriptionManager {
   notifyVersion(): void {
     this._versionListeners.forEach((callback) => callback())
   }
+
+  /**
+   * 특정 노드의 구독자를 정리합니다.
+   * 삭제된 노드의 구독자 맵을 제거하여 메모리 누수를 방지합니다.
+   *
+   * @param nodeId - 정리할 노드 ID
+   */
+  cleanupNode(nodeId: string): void {
+    this._nodeListeners.delete(nodeId)
+  }
+
+  /**
+   * 여러 노드의 구독자를 일괄 정리합니다.
+   * 삭제된 노드들의 구독자 맵을 제거하여 메모리 누수를 방지합니다.
+   *
+   * @param nodeIds - 정리할 노드 ID 배열
+   */
+  cleanupNodes(nodeIds: string[]): void {
+    nodeIds.forEach((nodeId) => {
+      this._nodeListeners.delete(nodeId)
+    })
+  }
 }

@@ -27,7 +27,7 @@
  * - Errors are passed to onError callback, component continues rendering if possible
  */
 
-import React, { useMemo } from 'react'
+import React, { useMemo, useRef } from 'react'
 
 import { componentMap } from '../../components/componentMap'
 import type { ComponentFactory } from '../../components/types'
@@ -86,6 +86,7 @@ export const SduiLayoutRenderer: React.FC<SduiLayoutRendererProps> = ({
   onLayoutChange,
   onError,
 }) => {
+  const storeRef = useRef<SduiLayoutStore | null>(null)
   // Store 인스턴스 생성 및 문서 업데이트
   // components와 componentOverrides는 한 번만 설정되므로 deps에 포함하지 않음
   const store = useMemo(() => {
@@ -106,15 +107,24 @@ export const SduiLayoutRenderer: React.FC<SduiLayoutRendererProps> = ({
           ...componentOverrides?.byNodeId,
         },
       }
-      const sduiStore = new SduiLayoutStore(undefined, options)
-      sduiStore.updateLayout(document)
-      return sduiStore
+      if(!storeRef.current) {
+        storeRef.current = new SduiLayoutStore(undefined, options)
+        storeRef.current.updateLayout(document)
+      }
+      else {
+        storeRef.current.updateLayout(document)
+      }
+
+      return storeRef.current
     } catch (error) {
       if (onError) {
         onError(error instanceof Error ? error : new Error(String(error)))
       }
       // Return empty store on error
-      return new SduiLayoutStore()
+      if(storeRef.current === null) {
+        storeRef.current = new SduiLayoutStore()
+      }
+      return storeRef.current
     }
   }, [document, components, componentOverrides, onError])
 

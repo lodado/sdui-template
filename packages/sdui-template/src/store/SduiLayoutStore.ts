@@ -267,6 +267,51 @@ export class SduiLayoutStore {
   }
 
   /**
+   * 레이아웃 문서를 병합합니다.
+   * 노드를 순회하면서 새로운 노드만 추가/업데이트하고, 삭제된 노드 관련 상태는 전부 삭제합니다.
+   *
+   * @param document - 병합할 레이아웃 문서
+   */
+  mergeLayout(document: SduiLayoutDocument): void {
+    const { entities } = normalizeSduiLayout(document)
+    const newNodes = entities.nodes || {}
+
+    // 1. 삭제된 노드 ID 목록 계산
+    const deletedNodeIds = this._repository.mergeNodes(newNodes)
+
+    // 2. selectedNodeId 확인 및 초기화
+    const currentSelectedNodeId = this._repository.state.selectedNodeId
+    if (currentSelectedNodeId && deletedNodeIds.includes(currentSelectedNodeId)) {
+      this._repository.setSelectedNodeId(undefined)
+    }
+
+    // 3. 구독자 정리 (메모리 누수 방지)
+    if (deletedNodeIds.length > 0) {
+      this._subscriptionManager.cleanupNodes(deletedNodeIds)
+    }
+
+    // 4. 삭제된 노드 상태 제거 (mergeNodes에서 이미 처리되었지만, 명시적으로 정리)
+    // mergeNodes에서 이미 nodes와 lastModified가 정리되었으므로 추가 작업 불필요
+
+    // 5. 루트 ID 업데이트
+    this._repository.setRootId(document.root.id)
+
+    // 6. 변수 업데이트
+    this._repository.updateVariables(document.variables ? cloneDeep(document.variables) : {})
+
+    // 7. 편집 상태 초기화
+    this._repository.setEdited(false)
+
+    // 8. 문서 관리자에 메타데이터 및 캐시 업데이트
+    this._documentManager.setMetadata(document.metadata)
+    this._documentManager.cacheDocument(document)
+
+    // 9. version 증가 및 알림
+    this._repository.incrementVersion()
+    this._subscriptionManager.notifyVersion()
+  }
+
+  /**
    * 레이아웃 변경사항을 취소하고 원본으로 복원합니다.
    *
    * @param documentId - 복원할 문서 ID
