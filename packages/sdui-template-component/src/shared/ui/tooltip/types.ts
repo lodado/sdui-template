@@ -71,7 +71,7 @@ export interface TooltipProps {
  * @description
  * The element that triggers the tooltip when hovered or focused.
  */
-export interface TooltipTriggerProps {
+export interface TooltipTriggerProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   /** Use asChild pattern to merge props with child (default: true) */
   asChild?: boolean
   /** Trigger element */
@@ -200,6 +200,7 @@ export const tooltipStatesSchema = z.object({
   showArrow: z.boolean().optional(),
   open: z.boolean().optional(),
   defaultOpen: z.boolean().optional(),
+  alwaysOpen: z.boolean().optional(),
 })
 
 export type TooltipState = z.infer<typeof tooltipStatesSchema>

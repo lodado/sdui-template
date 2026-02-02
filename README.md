@@ -48,11 +48,11 @@ This library provides:
 ## 📦 Installation
 
 ```bash
-npm install @lodado/sdui-template
+npm install @lodado/sdui-template zod
 # or
-pnpm add @lodado/sdui-template
+pnpm add @lodado/sdui-template zod
 # or
-yarn add @lodado/sdui-template
+yarn add @lodado/sdui-template zod
 ```
 
 ## 🚀 Quick Start

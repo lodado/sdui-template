@@ -5,6 +5,7 @@ import React from 'react'
 
 import { Tooltip } from './Tooltip'
 import { type TooltipState, tooltipStatesSchema } from './types'
+import { useTooltipState } from './useTooltipState'
 
 interface TooltipContainerProps {
   id: string
@@ -48,14 +49,21 @@ export const TooltipContainer = ({ id, parentPath = [] }: TooltipContainerProps)
   const renderedChildren = renderChildren(childrenIds)
   const { content, side, sideOffset, align, alignOffset, showArrow, delayDuration, open, defaultOpen } = state
 
+  const { finalOpen, handleOpenChange, handleTouchStart } = useTooltipState({ open, defaultOpen })
+
   if (!content) {
     return <>{renderedChildren}</>
   }
 
   return (
-    <Tooltip.Root open={open} defaultOpen={defaultOpen} delayDuration={delayDuration}>
-      <Tooltip.Trigger asChild nodeId={id}>
-        <span style={{ display: 'inline-block' }}>{renderedChildren}</span>
+    <Tooltip.Root open={finalOpen} defaultOpen={defaultOpen} onOpenChange={handleOpenChange} delayDuration={delayDuration}>
+      <Tooltip.Trigger asChild nodeId={id} onTouchStart={handleTouchStart}>
+        <span
+          style={{ display: 'inline-block' }}
+
+        >
+          {renderedChildren}
+        </span>
       </Tooltip.Trigger>
       <Tooltip.Portal>
         <Tooltip.Content

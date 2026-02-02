@@ -1,5 +1,4 @@
 export {
-  SimpleTooltip,
   Tooltip,
   TooltipArrow,
   TooltipContent,

@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 
-import { SimpleTooltip as Tooltip, TooltipProvider } from '../Tooltip'
+import { Tooltip as TooltipCompound, TooltipProvider } from '../Tooltip'
 
 // Helper component to wrap tests with TooltipProvider
 const TooltipWithProvider = ({
@@ -12,6 +12,56 @@ const TooltipWithProvider = ({
   children: React.ReactNode
   providerProps?: { delayDuration?: number; skipDelayDuration?: number }
 }) => <TooltipProvider {...providerProps}>{children}</TooltipProvider>
+
+// Helper component to maintain SimpleTooltip API for tests
+interface SimpleTooltipProps {
+  content: React.ReactNode
+  side?: 'top' | 'right' | 'bottom' | 'left'
+  sideOffset?: number
+  align?: 'start' | 'center' | 'end'
+  alignOffset?: number
+  delayDuration?: number
+  showArrow?: boolean
+  open?: boolean
+  defaultOpen?: boolean
+  onOpenChange?: (open: boolean) => void
+  children: React.ReactNode
+  className?: string
+  nodeId?: string
+}
+
+const SimpleTooltip = ({
+  content,
+  side = 'top',
+  sideOffset = 4,
+  align = 'center',
+  alignOffset = 0,
+  delayDuration,
+  showArrow = false,
+  open,
+  defaultOpen = false,
+  onOpenChange,
+  children,
+  className,
+  nodeId,
+}: SimpleTooltipProps) => {
+  return (
+    <TooltipCompound.Root open={open} defaultOpen={defaultOpen} onOpenChange={onOpenChange} delayDuration={delayDuration}>
+      <TooltipCompound.Trigger asChild data-node-id={nodeId}>
+        {children}
+      </TooltipCompound.Trigger>
+      <TooltipCompound.Portal>
+        <TooltipCompound.Content side={side} sideOffset={sideOffset} align={align} alignOffset={alignOffset} className={className} data-node-id={nodeId ? `${nodeId}-content` : undefined}>
+          {content}
+          {showArrow && <TooltipCompound.Arrow />}
+        </TooltipCompound.Content>
+      </TooltipCompound.Portal>
+    </TooltipCompound.Root>
+  )
+}
+
+// Alias for test compatibility
+const Tooltip = SimpleTooltip
 
 // Helper to get the tooltip content wrapper (has data-side, data-align, className)
 const getTooltipContent = () => {
