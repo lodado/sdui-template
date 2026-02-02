@@ -40,7 +40,12 @@ export const Div = ({ id, parentPath = [], as, errorFallback, suspenseFallback, 
   const Component = as || asFromAttributes || 'div'
 
   return (
-    <ErrorBoundary fallback={errorFallback} onError={onError}>
+    <ErrorBoundary
+      fallback={errorFallback}
+      onError={onError}
+      nodeId={id}
+      parentPath={parentPath}
+    >
       <Component className={cn(className)} data-node-id={id} data-testid={`div-${id}`}>
         <Suspense fallback={suspenseFallback || null}>{renderChildren(childrenIds)}</Suspense>
       </Component>

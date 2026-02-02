@@ -11,6 +11,7 @@ const config: StorybookConfig = {
     name: '@storybook/react-vite',
     options: {},
   },
+
   // Storybook의 base 경로 설정 (GitHub Pages용)
   ...(basePath && { base: basePath }),
   async viteFinal(config) {

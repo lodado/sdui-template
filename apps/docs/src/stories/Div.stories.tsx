@@ -1,4 +1,3 @@
-import '@lodado/sdui-design-files/colors.css'
 
 import { type SduiLayoutDocument, SduiLayoutRenderer } from '@lodado/sdui-template'
 import { Div, sduiComponents } from '@lodado/sdui-template-component'
@@ -19,10 +18,13 @@ The **Div** component is a container component with built-in **Error Boundary** 
 
 ## Key Features
 
-### Error Boundary
-- ✅ Automatically catches errors from child components
-- ✅ Prevents entire app crashes
-- ✅ Customizable error fallback UI
+### Error Boundary (기본 내장)
+- ✅ **자동 에러 격리**: Div 컴포넌트는 기본적으로 ErrorBoundary로 감싸져 있어 에러가 발생해도 전체 앱이 크래시되지 않습니다
+- ✅ **에러 격리**: 한 Div의 에러가 다른 Div에 영향을 주지 않습니다
+- ✅ **Fallback UI**: 에러 발생 시 기본 에러 메시지가 표시됩니다
+
+> 💡 **에러 로깅/알림이 필요하다면?**
+> ErrorReportingProvider와 ErrorPolicy를 사용하세요. 자세한 내용은 **ErrorBoundary** 스토리북을 참고하세요.
 
 ### Suspense Support
 - ✅ Handles asynchronous component loading
