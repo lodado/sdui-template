@@ -10,7 +10,7 @@ import React from 'react'
 import type { ComponentFactory, SduiComponentProps } from '../../components/types'
 import { SduiLayoutRenderer } from '../../react-wrapper/components/SduiLayoutRenderer'
 import { useRenderNode, useSduiNodeSubscription } from '../../react-wrapper/hooks'
-import { createTestDocument } from '../utils/test-utils'
+import { createTestDocument } from '../utils/dev-utils'
 
 /**
  * 각 레벨의 컴포넌트가 parentPath를 받아서 표시하는 테스트 컴포넌트

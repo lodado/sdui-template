@@ -118,14 +118,6 @@ export function createNestedTestDocument(): SduiLayoutDocument {
 }
 
 /**
- * Render component with SduiLayoutProvider
- */
-export function renderWithProvider(ui: React.ReactElement, store?: SduiLayoutStore) {
-  const testStore = store || new SduiLayoutStore()
-  return render(<SduiLayoutProvider store={testStore}>{ui}</SduiLayoutProvider>)
-}
-
-/**
  * Render SDUI Layout with test components
  *
  * This helper function creates a store from a document and renders

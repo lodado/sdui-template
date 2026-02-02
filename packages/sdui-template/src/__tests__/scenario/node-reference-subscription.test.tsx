@@ -14,7 +14,7 @@ import type { ComponentFactory } from '../../components/types'
 import { SduiLayoutRenderer } from '../../react-wrapper/components/SduiLayoutRenderer'
 import { useSduiLayoutAction, useSduiNodeReference, useSduiNodeSubscription } from '../../react-wrapper/hooks'
 import { NodeNotFoundError } from '../../store'
-import { createTestDocument, defaultTestComponentFactory } from '../utils/test-utils'
+import { createTestDocument, defaultTestComponentFactory } from '../utils/dev-utils'
 
 // Toggle state schema
 const toggleStateSchema = z.object({

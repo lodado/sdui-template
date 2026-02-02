@@ -8,7 +8,7 @@ import { render, screen } from '@testing-library/react'
 import React from 'react'
 
 import { SduiLayoutRenderer } from '../../react-wrapper/components/SduiLayoutRenderer'
-import { createTestDocument, defaultTestComponentFactory } from '../utils/test-utils'
+import { createTestDocument, defaultTestComponentFactory } from '../utils/dev-utils'
 
 describe('Boundary Value Analysis', () => {
   describe('Node Count', () => {

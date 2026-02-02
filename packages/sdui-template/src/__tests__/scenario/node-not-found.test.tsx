@@ -9,7 +9,7 @@ import React from 'react'
 
 import { useSduiLayoutAction } from '../../react-wrapper/hooks'
 import { AttributesNotFoundError, NodeNotFoundError, RootNotFoundError } from '../../store'
-import { createTestDocument, renderWithSduiLayout } from '../utils/test-utils'
+import { createTestDocument, renderWithSduiLayout } from '../utils/dev-utils'
 
 const NodeNotFoundTest: React.FC = () => {
   const store = useSduiLayoutAction()

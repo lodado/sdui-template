@@ -13,7 +13,9 @@ const tsConfig = {
 const aliasPathObj = {}
 const abPath = __dirname
 
+// eslint-disable-next-line no-shadow
 Object.entries(tsConfig.compilerOptions.paths).forEach(([key, path]) => {
+  // eslint-disable-next-line no-useless-concat
   aliasPathObj[`${key.split('/*')[0]}/` + `(.*)$`] = `<rootDir>/${String(path[0]).substring(0, path[0].length - 2)}/$1`
 })
 
@@ -47,6 +49,10 @@ module.exports = {
   },
   // Add more setup options before each test is run
   // setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  testMatch: [
+    '**/__tests__/**/*.{test,spec}.{ts,tsx,js,jsx}',
+    '**/*.{test,spec}.{ts,tsx,js,jsx}',
+  ],
   testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/.next/'],
   testEnvironment: 'jsdom',
   transform: {

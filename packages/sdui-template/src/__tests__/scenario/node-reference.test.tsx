@@ -10,7 +10,7 @@ import React from 'react'
 import type { ComponentFactory } from '../../components/types'
 import { SduiLayoutRenderer } from '../../react-wrapper/components/SduiLayoutRenderer'
 import { useSduiLayoutAction, useSduiNodeReference, useSduiNodeSubscription } from '../../react-wrapper/hooks'
-import { createTestDocument, defaultTestComponentFactory, renderWithSduiLayout } from '../utils/test-utils'
+import { createTestDocument, defaultTestComponentFactory, renderWithSduiLayout } from '../utils/dev-utils'
 
 describe('Node Reference', () => {
   describe('as is: document with node having single reference', () => {

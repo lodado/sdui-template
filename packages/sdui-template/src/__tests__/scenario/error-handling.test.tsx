@@ -8,7 +8,7 @@ import { render, screen } from '@testing-library/react'
 import React from 'react'
 
 import { SduiLayoutRenderer } from '../../react-wrapper/components/SduiLayoutRenderer'
-import { defaultTestComponentFactory } from '../utils/test-utils'
+import { defaultTestComponentFactory } from '../utils/dev-utils'
 
 describe('Error Handling', () => {
   describe('as is: empty store', () => {

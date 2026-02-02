@@ -128,7 +128,7 @@ export const DropdownTriggerContainer = ({ id, parentPath = [] }: DropdownContai
   const store = useSduiLayoutAction()
   const dropdownContext = useDropdownContext()
 
-  const typedState = state as DropdownTriggerState
+  const typedState = state
 
   // Use providerId from state, fallback to context
   const providerId = typedState?.providerId ?? dropdownContext?.providerId

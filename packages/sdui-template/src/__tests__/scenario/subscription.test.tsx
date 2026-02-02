@@ -12,7 +12,7 @@ import { z } from 'zod'
 
 import type { ComponentFactory } from '../../components/types'
 import { useSduiLayoutAction, useSduiNodeSubscription } from '../../react-wrapper/hooks'
-import { createTestDocument, renderWithSduiLayout } from '../utils/test-utils'
+import { createTestDocument, renderWithSduiLayout } from '../utils/dev-utils'
 
 // Test component state schema
 const testComponentStateSchema = z.object({

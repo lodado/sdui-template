@@ -8,7 +8,7 @@ import { z } from 'zod'
 
 import { SduiLayoutRenderer, useRenderNode, useSduiNodeSubscription } from '../../react-wrapper'
 import { ComponentFactory } from '../../store'
-import { createTestDocument } from '../utils/test-utils'
+import { createTestDocument } from '../utils/dev-utils'
 
 // Step 4 example from README: Recursive Rendering - Container with Children
 

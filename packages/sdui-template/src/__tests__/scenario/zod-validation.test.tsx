@@ -11,7 +11,7 @@ import { z } from 'zod'
 
 import type { ComponentFactory } from '../../components/types'
 import { useSduiLayoutAction, useSduiNodeSubscription } from '../../react-wrapper/hooks'
-import { createTestDocument, defaultTestComponentFactory, renderWithSduiLayout } from '../utils/test-utils'
+import { createTestDocument, defaultTestComponentFactory, renderWithSduiLayout } from '../utils/dev-utils'
 
 // ==================== Zod Schemas ====================
 

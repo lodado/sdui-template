@@ -12,8 +12,7 @@ import {
   createNestedTestDocument,
   createTestDocument,
   defaultTestComponentFactory,
-  renderWithProvider,
-} from '../utils/test-utils'
+} from '../utils/dev-utils'
 
 describe('SduiLayoutRenderer', () => {
   describe('as is: empty store', () => {

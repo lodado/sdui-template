@@ -8,7 +8,7 @@ import { screen } from '@testing-library/react'
 import React from 'react'
 
 import { useSduiLayoutAction } from '../../react-wrapper/hooks'
-import { createTestDocument, renderWithSduiLayout } from '../utils/test-utils'
+import { createTestDocument, renderWithSduiLayout } from '../utils/dev-utils'
 
 const ResetTest: React.FC = () => {
   const store = useSduiLayoutAction()
