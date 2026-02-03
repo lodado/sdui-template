@@ -2,8 +2,8 @@
 /**
  * LayoutStateRepository
  *
- * 레이아웃 상태 데이터를 저장하고 조회하는 Repository입니다.
- * 상태 저장소의 단일 책임을 담당합니다.
+ * Repository for storing and querying layout state data.
+ * Handles the single responsibility of state storage.
  */
 
 import type { SduiLayoutNode } from '../../schema'
@@ -12,10 +12,11 @@ import type { SduiLayoutStoreState } from '../types'
 /**
  * LayoutStateRepository
  *
- * 레이아웃 상태 데이터를 저장하고 조회합니다.
+ * Stores and queries layout state data.
+ * Manages normalized node entities with parent-child relationships.
  */
 export class LayoutStateRepository {
-  /** Store 상태 (일반 변수) */
+  /** Store state (plain object) */
   private _state: SduiLayoutStoreState = {
     version: 0,
     rootId: undefined,
@@ -26,17 +27,21 @@ export class LayoutStateRepository {
     lastModified: {},
   }
 
-  // ==================== Getter ====================
+  // ==================== Getters ====================
 
   /**
-   * Store 상태를 반환합니다.
+   * Returns the current store state.
+   *
+   * @returns Current store state
    */
   get state(): SduiLayoutStoreState {
     return this._state
   }
 
   /**
-   * 노드 엔티티를 반환합니다.
+   * Returns all node entities.
+   *
+   * @returns Node entities map (nodeId → SduiLayoutNode)
    */
   get nodes(): Record<string, SduiLayoutNode> {
     return this._state.nodes
@@ -45,49 +50,49 @@ export class LayoutStateRepository {
   // ==================== Query Methods ====================
 
   /**
-   * ID로 노드를 조회합니다.
+   * Gets a node by its ID.
    *
-   * @param nodeId - 조회할 노드 ID
-   * @returns 노드 또는 undefined
+   * @param nodeId - Node ID to query
+   * @returns Node entity or undefined if not found
    */
   getNodeById(nodeId: string): SduiLayoutNode | undefined {
     return this._state.nodes[nodeId]
   }
 
   /**
-   * ID로 노드 타입을 조회합니다.
+   * Gets the node type by node ID.
    *
-   * @param nodeId - 조회할 노드 ID
-   * @returns 노드 타입 또는 undefined
+   * @param nodeId - Node ID to query
+   * @returns Node type or undefined if not found
    */
   getNodeTypeById(nodeId: string): string | undefined {
     return this._state.nodes[nodeId]?.type
   }
 
   /**
-   * ID로 자식 노드 ID 목록을 조회합니다.
+   * Gets child node IDs by parent node ID.
    *
-   * @param nodeId - 조회할 노드 ID
-   * @returns 자식 노드 ID 배열 또는 빈 배열
+   * @param nodeId - Parent node ID to query
+   * @returns Array of child node IDs, or empty array if not found
    */
   getChildrenIdsById(nodeId: string): string[] {
     return (this._state.nodes[nodeId] as any)?.childrenIds || []
   }
 
   /**
-   * 루트 노드 ID를 반환합니다.
+   * Returns the root node ID.
    *
-   * @returns 루트 노드 ID 또는 undefined
+   * @returns Root node ID or undefined if not set
    */
   getRootId(): string | undefined {
     return this._state.rootId
   }
 
   /**
-   * 노드의 마지막 수정 시간을 반환합니다.
+   * Gets the last modified timestamp for a node.
    *
-   * @param nodeId - 노드 ID
-   * @returns 마지막 수정 시간 (ISO timestamp) 또는 undefined
+   * @param nodeId - Node ID to query
+   * @returns Last modified timestamp (ISO string) or undefined if not found
    */
   getLastModified(nodeId: string): string | undefined {
     return this._state.lastModified[nodeId]
@@ -96,9 +101,9 @@ export class LayoutStateRepository {
   // ==================== Update Methods (Internal) ====================
 
   /**
-   * 초기 상태를 설정합니다.
+   * Initializes the store state.
    *
-   * @param initialState - 초기 상태
+   * @param initialState - Optional initial state to merge
    */
   initializeState(initialState?: Partial<SduiLayoutStoreState>): void {
     this._state = {
@@ -114,13 +119,14 @@ export class LayoutStateRepository {
   }
 
   /**
-   * 노드 엔티티를 업데이트합니다.
+   * Updates all node entities.
+   * Replaces the entire nodes map and updates lastModified timestamps for all nodes.
    *
-   * @param nodes - 노드 엔티티 맵
+   * @param nodes - Node entities map to set
    */
   updateNodes(nodes: Record<string, SduiLayoutNode>): void {
     this._state.nodes = nodes
-    // 모든 노드에 대한 타임스탬프 업데이트 (새 객체 생성하여 참조 변경)
+    // Update timestamps for all nodes (create new object to change reference)
     const timestamp = new Date().toISOString()
     const newLastModified: Record<string, string> = {}
     Object.keys(nodes).forEach((nodeId) => {
@@ -130,7 +136,7 @@ export class LayoutStateRepository {
   }
 
   /**
-   * Deletes a specific node.
+   * Deletes a specific node and its lastModified timestamp.
    *
    * @param nodeId - Node ID to delete
    */
@@ -146,6 +152,7 @@ export class LayoutStateRepository {
 
   /**
    * Deletes multiple nodes in batch.
+   * Removes nodes and their lastModified timestamps.
    *
    * @param nodeIds - Array of node IDs to delete
    */
@@ -173,11 +180,41 @@ export class LayoutStateRepository {
   }
 
   /**
-   * Merges nodes. Adds new nodes and updates existing ones.
-   * Returns an array of deleted node IDs.
+   * Merges nodes into the existing state.
    *
-   * @param nodes - Node entity map to merge
-   * @returns Array of deleted node IDs
+   * This method performs an incremental update of the node tree:
+   * - Adds new nodes
+   * - Updates existing nodes (preserving their state)
+   * - Tracks deleted nodes
+   * - Updates lastModified timestamps strategically
+   *
+   * **Key Mechanism: Parent-only lastModified Update**
+   *
+   * When nodes are updated, only their **parent nodes'** lastModified timestamps
+   * are updated to the current timestamp. The updated nodes themselves keep their
+   * existing lastModified values. This allows tracking when a node's children change
+   * without marking the children themselves as modified.
+   *
+   * **Process:**
+   * 1. Calculate deleted nodes (nodes that exist in state but not in the new nodes map)
+   * 2. Copy existing lastModified map to preserve timestamps for unchanged nodes
+   * 3. For each node in the new nodes map:
+   *    - If node exists: merge with existing node, preserving its state and lastModified
+   *    - If node is new: add as-is and set new timestamp
+   *    - Collect parentId of each updated/new node
+   * 4. Update lastModified timestamps only for parent nodes of updated/new nodes
+   * 5. Replace state with merged results
+   *
+   * **Example:**
+   * ```
+   * Before: root (parent: undefined) -> child1 (parent: "root")
+   * After merge: child1 is updated
+   * Result: root.lastModified = new timestamp (updated)
+   *         child1.lastModified = old timestamp (preserved)
+   * ```
+   *
+   * @param nodes - Node entity map to merge (must be normalized with parentId and childrenIds)
+   * @returns Array of deleted node IDs (nodes that were in state but not in the new map)
    */
   mergeNodes(nodes: Record<string, SduiLayoutNode>): string[] {
     const existingNodeIds = new Set(Object.keys(this._state.nodes))
@@ -189,14 +226,14 @@ export class LayoutStateRepository {
     // Merge existing and new nodes (create new object to change reference)
     const mergedNodes: Record<string, SduiLayoutNode> = {}
 
-    // 1단계: 기존 lastModified 복사 (업데이트되지 않은 노드들 유지)
+    // Step 1: Copy existing lastModified to preserve timestamps for unchanged nodes
     const { lastModified } = this._state
     const mergedLastModified: Record<string, string> = { ...lastModified }
 
-    // 2단계: 업데이트된 노드들의 parentId 수집
+    // Step 2: Collect parent IDs of all updated/new nodes
     const parentIdsToUpdate = new Set<string>()
 
-    // Add or update new nodes
+    // Add or update nodes
     Object.keys(nodes).forEach((nodeId) => {
       const existingNode = this._state.nodes[nodeId]
       const newNode = nodes[nodeId]
@@ -209,24 +246,24 @@ export class LayoutStateRepository {
           // Preserve existing state (preserve user-modified state)
           state: existingNode.state || newNode.state || {},
         }
-        // 업데이트된 노드 자체는 기존 lastModified 유지 (이미 복사됨)
-        // mergedLastModified[nodeId]는 이미 기존 값이 있으므로 그대로 유지
+        // Updated node keeps its existing lastModified (already copied in step 1)
+        // mergedLastModified[nodeId] already has the existing value, so it remains unchanged
       } else {
         // Add new nodes as-is
         mergedNodes[nodeId] = newNode
-        // 새 노드는 timestamp 설정
+        // New nodes get new timestamp
         mergedLastModified[nodeId] = timestamp
       }
 
-      // 업데이트된 노드의 parentId 수집
+      // Collect parentId of updated/new node
       if (parentId) {
         parentIdsToUpdate.add(parentId)
       }
     })
 
-    // 3단계: 부모 노드들의 lastModified만 최신화
+    // Step 3: Update lastModified timestamps only for parent nodes
     parentIdsToUpdate.forEach((parentId) => {
-      // 부모 노드가 mergedNodes에 존재하는지 확인
+      // Check if parent node exists in merged nodes or current state
       if (mergedNodes[parentId] || this._state.nodes[parentId]) {
         mergedLastModified[parentId] = timestamp
       }
@@ -239,10 +276,10 @@ export class LayoutStateRepository {
   }
 
   /**
-   * 특정 노드의 상태를 업데이트합니다.
+   * Updates the state of a specific node.
    *
-   * @param nodeId - 노드 ID
-   * @param state - 레이아웃 상태
+   * @param nodeId - Node ID to update
+   * @param state - Layout state to set
    */
   updateNodeState(nodeId: string, state: Record<string, unknown>): void {
     const node = this._state.nodes[nodeId]
@@ -251,7 +288,7 @@ export class LayoutStateRepository {
         ...node,
         state,
       }
-      // 타임스탬프 업데이트 (새 객체 생성하여 참조 변경)
+      // Update timestamp (create new object to change reference)
       this._state.lastModified = {
         ...this._state.lastModified,
         [nodeId]: new Date().toISOString(),
@@ -260,10 +297,10 @@ export class LayoutStateRepository {
   }
 
   /**
-   * 특정 노드의 속성을 업데이트합니다.
+   * Updates the attributes of a specific node.
    *
-   * @param nodeId - 노드 ID
-   * @param attributes - 레이아웃 속성
+   * @param nodeId - Node ID to update
+   * @param attributes - Layout attributes to set
    */
   updateNodeAttributes(nodeId: string, attributes: Record<string, unknown>): void {
     const node = this._state.nodes[nodeId]
@@ -272,7 +309,7 @@ export class LayoutStateRepository {
         ...node,
         attributes,
       }
-      // 타임스탬프 업데이트 (새 객체 생성하여 참조 변경)
+      // Update timestamp (create new object to change reference)
       this._state.lastModified = {
         ...this._state.lastModified,
         [nodeId]: new Date().toISOString(),
@@ -281,10 +318,10 @@ export class LayoutStateRepository {
   }
 
   /**
-   * 특정 노드의 참조를 업데이트합니다.
+   * Updates the reference of a specific node.
    *
-   * @param nodeId - 노드 ID
-   * @param reference - 참조 (단일 ID 또는 ID 배열)
+   * @param nodeId - Node ID to update
+   * @param reference - Reference (single ID, array of IDs, or undefined)
    */
   updateNodeReference(nodeId: string, reference: string | string[] | undefined): void {
     const node = this._state.nodes[nodeId]
@@ -293,7 +330,7 @@ export class LayoutStateRepository {
         ...node,
         reference,
       }
-      // 타임스탬프 업데이트 (새 객체 생성하여 참조 변경)
+      // Update timestamp (create new object to change reference)
       this._state.lastModified = {
         ...this._state.lastModified,
         [nodeId]: new Date().toISOString(),
@@ -302,18 +339,19 @@ export class LayoutStateRepository {
   }
 
   /**
-   * 루트 노드 ID를 설정합니다.
+   * Sets the root node ID.
    *
-   * @param rootId - 루트 노드 ID
+   * @param rootId - Root node ID to set
    */
   setRootId(rootId: string): void {
     this._state.rootId = rootId
   }
 
   /**
-   * 선택된 노드 ID를 설정합니다.
+   * Sets the selected node ID.
    *
-   * @param nodeId - 선택된 노드 ID
+   * @param nodeId - Selected node ID (undefined to deselect)
+   * @returns Previous selected node ID
    */
   setSelectedNodeId(nodeId?: string): string | undefined {
     const previousId = this._state.selectedNodeId
@@ -322,32 +360,34 @@ export class LayoutStateRepository {
   }
 
   /**
-   * 편집 상태를 설정합니다.
+   * Sets the edited state.
    *
-   * @param isEdited - 편집 여부
+   * @param isEdited - Whether the layout is being edited
    */
   setEdited(isEdited: boolean): void {
     this._state.isEdited = isEdited
   }
 
   /**
-   * 변수를 업데이트합니다.
+   * Updates global variables.
    *
-   * @param variables - 변수 맵
+   * @param variables - Variables map to set
    */
   updateVariables(variables: Record<string, unknown>): void {
     this._state.variables = variables
   }
 
   /**
-   * version을 증가시킵니다.
+   * Increments the version number.
+   * Used to trigger re-renders when state changes.
    */
   incrementVersion(): void {
     this._state.version += 1
   }
 
   /**
-   * 상태를 초기화합니다.
+   * Resets the state to initial values.
+   * Clears all nodes, variables, and resets flags.
    */
   reset(): void {
     this._state.nodes = {}
