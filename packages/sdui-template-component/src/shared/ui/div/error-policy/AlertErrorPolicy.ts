@@ -2,14 +2,14 @@ import type { ErrorPolicy, ErrorSituation } from './types'
 
 /**
  * Alert Error Policy
- * 에러 발생 시 브라우저 alert로 사용자에게 알림을 표시하는 Policy
+ * Policy that notifies users via a browser alert when an error occurs.
  */
 export class AlertErrorPolicy implements ErrorPolicy {
   constructor(
     private options: {
-      /** catch 단계에서만 alert 표시할지 여부 */
+      /** Whether to show alerts only during the catch phase */
       onlyOnCatch?: boolean
-      /** alert 메시지 포맷 함수 */
+      /** Alert message formatting function */
       formatMessage?: (situation: ErrorSituation) => string
     } = {}
   ) {
@@ -25,7 +25,7 @@ export class AlertErrorPolicy implements ErrorPolicy {
   }
 
   handleSituation(situation: ErrorSituation): void {
-    // onlyOnCatch가 true이고 catch 단계가 아니면 무시
+    // Ignore when onlyOnCatch is true and this is not the catch phase
     if (this.options.onlyOnCatch && situation.lifecycle.phase !== 'catch') {
       return
     }

@@ -2,7 +2,7 @@ const jestConfig = require('jest-config/jest.config.js')
 
 const customJestConfig = {
   ...jestConfig,
-  // 패키지별 설정을 여기에 추가
+  // Add per-package config here
 }
 
 module.exports = customJestConfig

@@ -13,7 +13,7 @@ import { useRenderNode, useSduiNodeSubscription } from '../../react-wrapper/hook
 import { createTestDocument } from '../utils/dev-utils'
 
 /**
- * 각 레벨의 컴포넌트가 parentPath를 받아서 표시하는 테스트 컴포넌트
+ * Test component that displays parentPath for each level.
  */
 const LevelComponent: React.FC<SduiComponentProps> = ({ nodeId, parentPath = [] }) => {
   const { childrenIds } = useSduiNodeSubscription({
@@ -39,8 +39,8 @@ const LevelComponent: React.FC<SduiComponentProps> = ({ nodeId, parentPath = [] 
 }
 
 /**
- * 레벨 컴포넌트 팩토리
- * useRenderNode hook을 사용하여 자식 노드들을 렌더링합니다.
+ * Level component factory.
+ * Renders child nodes using the useRenderNode hook.
  */
 const LevelComponentFactory: ComponentFactory = (id, parentPath) => {
   return <LevelComponent nodeId={id} parentPath={parentPath} />
@@ -50,7 +50,7 @@ describe('Parent Path Tracking', () => {
   describe('as is: document with 5 levels of nesting', () => {
     describe('when: rendering nested components', () => {
       it('to be: parentPath is correctly propagated through all 5 levels', () => {
-        // 5단계 깊이의 노드 트리 생성
+        // Create a node tree with 5 levels of depth
         const document = createTestDocument({
           root: {
             id: 'root',
@@ -97,35 +97,35 @@ describe('Parent Path Tracking', () => {
           />,
         )
 
-        // Root 레벨 확인 (parentPath가 없어야 함)
+        // Verify root level (parentPath should be empty)
         const rootElement = screen.getByTestId('level-root')
         expect(rootElement).toBeInTheDocument()
         expect(rootElement).toHaveAttribute('data-parent-path', JSON.stringify([]))
         expect(rootElement).toHaveAttribute('data-current-path', 'root')
         expect(screen.getByText('Parent Path: none')).toBeInTheDocument()
 
-        // Level 1 확인 (parentPath: ['root'])
+        // Verify level 1 (parentPath: ['root'])
         const level1Element = screen.getByTestId('level-level-1')
         expect(level1Element).toBeInTheDocument()
         expect(level1Element).toHaveAttribute('data-parent-path', JSON.stringify(['root']))
         expect(level1Element).toHaveAttribute('data-current-path', 'root > level-1')
         expect(screen.getByText('Parent Path: root')).toBeInTheDocument()
 
-        // Level 2 확인 (parentPath: ['root', 'level-1'])
+        // Verify level 2 (parentPath: ['root', 'level-1'])
         const level2Element = screen.getByTestId('level-level-2')
         expect(level2Element).toBeInTheDocument()
         expect(level2Element).toHaveAttribute('data-parent-path', JSON.stringify(['root', 'level-1']))
         expect(level2Element).toHaveAttribute('data-current-path', 'root > level-1 > level-2')
         expect(screen.getByText('Parent Path: root > level-1')).toBeInTheDocument()
 
-        // Level 3 확인 (parentPath: ['root', 'level-1', 'level-2'])
+        // Verify level 3 (parentPath: ['root', 'level-1', 'level-2'])
         const level3Element = screen.getByTestId('level-level-3')
         expect(level3Element).toBeInTheDocument()
         expect(level3Element).toHaveAttribute('data-parent-path', JSON.stringify(['root', 'level-1', 'level-2']))
         expect(level3Element).toHaveAttribute('data-current-path', 'root > level-1 > level-2 > level-3')
         expect(screen.getByText('Parent Path: root > level-1 > level-2')).toBeInTheDocument()
 
-        // Level 4 확인 (parentPath: ['root', 'level-1', 'level-2', 'level-3'])
+        // Verify level 4 (parentPath: ['root', 'level-1', 'level-2', 'level-3'])
         const level4Element = screen.getByTestId('level-level-4')
         expect(level4Element).toBeInTheDocument()
         expect(level4Element).toHaveAttribute(
@@ -135,7 +135,7 @@ describe('Parent Path Tracking', () => {
         expect(level4Element).toHaveAttribute('data-current-path', 'root > level-1 > level-2 > level-3 > level-4')
         expect(screen.getByText('Parent Path: root > level-1 > level-2 > level-3')).toBeInTheDocument()
 
-        // Level 5 확인 (parentPath: ['root', 'level-1', 'level-2', 'level-3', 'level-4'])
+        // Verify level 5 (parentPath: ['root', 'level-1', 'level-2', 'level-3', 'level-4'])
         const level5Element = screen.getByTestId('level-level-5')
         expect(level5Element).toBeInTheDocument()
         expect(level5Element).toHaveAttribute(
@@ -184,7 +184,7 @@ describe('Parent Path Tracking', () => {
           />,
         )
 
-        // 모든 형제 노드가 같은 parentPath를 받아야 함
+        // All sibling nodes should receive the same parentPath
         const sibling1 = screen.getByTestId('level-sibling-1')
         const sibling2 = screen.getByTestId('level-sibling-2')
         const sibling3 = screen.getByTestId('level-sibling-3')

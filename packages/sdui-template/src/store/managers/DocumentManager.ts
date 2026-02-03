@@ -2,7 +2,7 @@
 /**
  * DocumentManager
  *
- * 문서 캐싱, 복원, 직렬화를 관리합니다.
+ * Manages document caching, restoration, and serialization.
  */
 
 import { cloneDeep } from 'lodash-es'
@@ -14,76 +14,76 @@ import type { LayoutStateRepository } from './LayoutStateRepository'
 /**
  * DocumentManager
  *
- * 문서 캐싱, 복원, 직렬화를 관리합니다.
+ * Manages document caching, restoration, and serialization.
  */
 export class DocumentManager {
-  /** 문서 메타데이터 */
+  /** Document metadata */
   private _metadata?: SduiLayoutDocument['metadata']
 
-  /** 캐시된 문서 */
+  /** Cached documents */
   private _cached: Record<string, SduiLayoutDocument> = {}
 
-  /** 원본 문서 캐시 (편집 취소용) */
+  /** Original document cache (for undo) */
   private _originalCached: Record<string, SduiLayoutDocument> = {}
 
   /**
-   * 문서를 캐시합니다.
+   * Cache a document.
    *
-   * @param document - 캐시할 문서
+   * @param document - Document to cache
    */
   cacheDocument(document: SduiLayoutDocument): void {
     const documentId = document.metadata?.id || document.root.id
     this._cached[documentId] = document
 
-    // 원본 캐시가 없으면 저장
+    // Save the original if it does not exist
     if (!this._originalCached[documentId]) {
       this._originalCached[documentId] = cloneDeep(document)
     }
   }
 
   /**
-   * 메타데이터를 설정합니다.
+   * Set metadata.
    *
-   * @param metadata - 메타데이터
+   * @param metadata - Metadata
    */
   setMetadata(metadata?: SduiLayoutDocument['metadata']): void {
     this._metadata = metadata
   }
 
   /**
-   * 메타데이터를 반환합니다.
+   * Return metadata.
    *
-   * @returns 메타데이터 또는 undefined
+   * @returns Metadata or undefined
    */
   getMetadata(): SduiLayoutDocument['metadata'] | undefined {
     return this._metadata
   }
 
   /**
-   * 원본 문서를 반환합니다.
+   * Return the original document.
    *
-   * @param documentId - 문서 ID
-   * @returns 원본 문서 또는 undefined
+   * @param documentId - Document ID
+   * @returns Original document or undefined
    */
   getOriginalDocument(documentId: string): SduiLayoutDocument | undefined {
     return this._originalCached[documentId]
   }
 
   /**
-   * 문서 ID를 가져옵니다.
+   * Get the document ID.
    *
-   * @param rootId - 루트 노드 ID (fallback)
-   * @returns 문서 ID 또는 undefined
+   * @param rootId - Root node ID (fallback)
+   * @returns Document ID or undefined
    */
   getDocumentId(rootId?: string): string | undefined {
     return this._metadata?.id || rootId
   }
 
   /**
-   * 현재 상태를 문서로 변환합니다.
+   * Convert the current state into a document.
    *
-   * @param repository - 상태 저장소
-   * @returns 복원된 문서 또는 null
+   * @param repository - State repository
+   * @returns Restored document or null
    */
   getDocument(repository: LayoutStateRepository): SduiLayoutDocument | null {
     const rootId = repository.getRootId()
@@ -103,7 +103,7 @@ export class DocumentManager {
   }
 
   /**
-   * 캐시를 초기화합니다.
+   * Clear the cache.
    */
   clearCache(): void {
     this._cached = {}
@@ -111,7 +111,7 @@ export class DocumentManager {
   }
 
   /**
-   * 상태를 초기화합니다.
+   * Reset the state.
    */
   reset(): void {
     this._metadata = undefined

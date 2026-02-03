@@ -3,8 +3,8 @@
 /**
  * SDUI Layout Renderer
  *
- * SDUI Layout Document를 받아서 전체 UI를 렌더링하는 최상위 컴포넌트입니다.
- * Render Props Pattern: renderNode 함수를 정의하고 하위 컴포넌트에 주입합니다.
+ * Top-level component that renders the entire UI from an SDUI Layout Document.
+ * Render Props Pattern: defines the renderNode function and injects it into child components.
  *
  * @param document - SDUI Layout Document (required)
  * @param components - Custom component map (optional, merged with defaults)
@@ -40,9 +40,9 @@ import { useRenderNode } from '../hooks'
 interface SduiLayoutRendererProps {
   /** SDUI Layout Document */
   document: SduiLayoutDocument
-  /** 커스텀 컴포넌트 맵 (componentMap에 추가될 컴포넌트들) */
+  /** Custom component map (components added to componentMap) */
   components?: Record<string, ComponentFactory>
-  /** 1회용 컴포넌트 오버라이드 설정 */
+  /** One-time component override settings */
   componentOverrides?: {
     byNodeId?: Record<string, ComponentFactory>
     byNodeType?: Record<string, ComponentFactory>
@@ -54,11 +54,11 @@ interface SduiLayoutRendererProps {
 }
 
 /**
- * SduiLayoutRenderer 내부 컴포넌트
+ * SduiLayoutRenderer internal component.
  *
- * useRenderNode hook을 사용하여 renderNode 함수를 생성하고,
- * 하위 컴포넌트에 주입합니다.
- * 각 컴포넌트는 이 함수를 통해 자식을 렌더링합니다.
+ * Uses the useRenderNode hook to create the renderNode function and
+ * injects it into child components.
+ * Each component renders its children through this function.
  */
 const SduiLayoutRendererInner = ({
   id,
@@ -67,8 +67,8 @@ const SduiLayoutRendererInner = ({
   id: string
   componentMap?: Record<string, ComponentFactory>
 }) => {
-  // renderNode 함수 생성 (Render Props Pattern)
-  // root 노드는 parentPath 없이 렌더링
+  // Create the renderNode function (Render Props Pattern)
+  // Render the root node without parentPath
   const { renderNode } = useRenderNode({ nodeId: id, componentMap: customComponentMap, parentPath: [] })
 
   return renderNode(id, [])
@@ -77,7 +77,7 @@ const SduiLayoutRendererInner = ({
 /**
  * SduiLayoutRenderer
  *
- * SDUI Layout Document를 렌더링하는 최상위 컴포넌트입니다.
+ * Top-level component that renders an SDUI Layout Document.
  */
 export const SduiLayoutRenderer: React.FC<SduiLayoutRendererProps> = ({
   document,
@@ -87,11 +87,11 @@ export const SduiLayoutRenderer: React.FC<SduiLayoutRendererProps> = ({
   onError,
 }) => {
   const storeRef = useRef<SduiLayoutStore | null>(null)
-  // Store 인스턴스 생성 및 문서 업데이트
-  // components와 componentOverrides는 한 번만 설정되므로 deps에 포함하지 않음
+  // Create store instance and update the document
+  // components and componentOverrides are set once, so they are excluded from deps
   const store = useMemo(() => {
     try {
-      // 문서 유효성 검사
+      // Document validation
       if (!document || !document.root) {
         throw new Error('Invalid document: missing root')
       }
@@ -100,7 +100,7 @@ export const SduiLayoutRenderer: React.FC<SduiLayoutRendererProps> = ({
       }
 
       const options: SduiLayoutStoreOptions = {
-        // 스프레드 연산자로 합침 (components → byNodeType → byNodeId 순서, ID 우선)
+        // Merge with spread (components → byNodeType → byNodeId order, ID takes priority)
         componentOverrides: {
           ...components,
           ...componentOverrides?.byNodeType,
@@ -136,7 +136,7 @@ export const SduiLayoutRenderer: React.FC<SduiLayoutRendererProps> = ({
     }
   }, [components])
 
-  // root.id가 없으면 렌더링하지 않음 (에러는 이미 onError로 전달됨)
+  // Do not render if root.id is missing (error already passed to onError)
   const rootId = document?.root?.id
   if (!rootId) {
     return null

@@ -14,7 +14,7 @@ import type { CardProps } from './types'
  *
  * @example
  * ```tsx
- * <Card title="학습 가이드">
+ * <Card title="Learning Guide">
  *   <div>Card content</div>
  * </Card>
  * ```

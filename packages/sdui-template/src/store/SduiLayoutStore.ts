@@ -2,13 +2,13 @@
 /**
  * SDUI Layout Store
  *
- * ID 기반 구독 시스템을 사용하여 SDUI Layout 상태를 관리합니다.
- * 데이터는 일반 변수로 관리하고, 변경 시 해당 노드만 notify하여
- * 구독한 컴포넌트만 forceRender합니다.
+ * Manages SDUI Layout state using an ID-based subscription system.
+ * Data is stored as regular variables, and on change it notifies only the node
+ * so only subscribed components are forced to re-render.
  *
  * @description
- * - 성능 최적화: cloneDeep 제거, 변경된 노드만 리렌더링
- * - 구독 시스템: ID별 구독자 관리, 선택적 notify
+ * - Performance optimization: remove cloneDeep, re-render only changed nodes
+ * - Subscription system: manage per-ID subscribers, selective notify
  */
 
 import { cloneDeep } from 'lodash-es'
@@ -25,33 +25,33 @@ import type { SduiLayoutStoreOptions, SduiLayoutStoreState } from './types'
 /**
  * SduiLayoutStore
  *
- * Facade Pattern을 사용하여 SDUI Layout 상태를 관리합니다.
- * 여러 매니저 클래스를 조합하여 단일 인터페이스를 제공합니다.
+ * Uses the Facade pattern to manage SDUI Layout state.
+ * Combines multiple manager classes into a single interface.
  *
  * @description
- * - SubscriptionManager: 구독 시스템 관리
- * - LayoutStateRepository: 상태 저장소 관리
- * - DocumentManager: 문서 캐싱 및 직렬화
- * - VariablesManager: 전역 변수 관리
+ * - SubscriptionManager: manage the subscription system
+ * - LayoutStateRepository: manage the state repository
+ * - DocumentManager: document caching and serialization
+ * - VariablesManager: global variable management
  *
- * 모든 데이터는 일반 변수로 관리하고, 구독 시스템을 통해 변경을 감지합니다.
+ * All data is stored as regular variables, and changes are detected via the subscription system.
  */
 export class SduiLayoutStore {
-  // ==================== 매니저 인스턴스 ====================
+  // ==================== Manager Instances ====================
 
-  /** 구독 시스템 매니저 */
+  /** Subscription system manager */
   private _subscriptionManager = new SubscriptionManager()
 
-  /** 상태 저장소 */
+  /** State repository */
   private _repository = new LayoutStateRepository()
 
-  /** 문서 관리자 */
+  /** Document manager */
   private _documentManager = new DocumentManager()
 
-  /** 변수 관리자 */
+  /** Variables manager */
   private _variablesManager: VariablesManager
 
-  /** 컴포넌트 오버라이드 (일반 변수) - ID와 타입을 하나의 맵으로 관리 */
+  /** Component overrides (regular variables) - manage ID and type in one map */
   private _componentOverrides: Record<string, ComponentFactory> = {}
 
   constructor(initialState?: Partial<SduiLayoutStoreState>, options?: SduiLayoutStoreOptions) {
@@ -60,71 +60,71 @@ export class SduiLayoutStore {
     this._componentOverrides = options?.componentOverrides || {}
   }
 
-  // ==================== 구독 시스템 메서드 ====================
+  // ==================== Subscription System Methods ====================
 
   /**
-   * 특정 노드 ID를 구독합니다.
+   * Subscribe to a specific node ID.
    *
-   * @param nodeId - 구독할 노드 ID
-   * @param callback - 변경 시 호출될 콜백 (forceRender)
-   * @returns 구독 해제 함수
+   * @param nodeId - Node ID to subscribe to
+   * @param callback - Callback invoked on changes (forceRender)
+   * @returns Unsubscribe function
    */
   subscribeNode(nodeId: string, callback: () => void): () => void {
     return this._subscriptionManager.subscribeNode(nodeId, callback)
   }
 
   /**
-   * version을 구독합니다. (nodes, rootId, variables 변경 감지용)
+   * Subscribe to version changes. (for detecting nodes, rootId, variables changes)
    *
-   * @param callback - 변경 시 호출될 콜백 (forceRender)
-   * @returns 구독 해제 함수
+   * @param callback - Callback invoked on changes (forceRender)
+   * @returns Unsubscribe function
    */
   subscribeVersion(callback: () => void): () => void {
     return this._subscriptionManager.subscribeVersion(callback)
   }
 
-  // ==================== Getter (동기적 데이터 접근) ====================
+  // ==================== Getter (Synchronous Data Access) ====================
 
   /**
-   * Store 상태를 반환합니다.
+   * Return store state.
    */
   get state(): SduiLayoutStoreState {
     return this._repository.state
   }
 
   /**
-   * useSyncExternalStore를 위한 스냅샷을 반환합니다.
-   * lastModified 객체 참조를 직접 반환하여 효율적인 비교를 가능하게 합니다.
-   * lastModified 객체는 업데이트 시 새로 생성되므로 참조 비교만으로 변경 감지가 가능합니다.
+   * Return a snapshot for useSyncExternalStore.
+   * Return the lastModified object reference directly for efficient comparison.
+   * Since lastModified is recreated on updates, reference comparison is enough to detect changes.
    *
-   * @returns lastModified 객체 참조
+   * @returns lastModified object reference
    */
   getSnapshot(): Record<string, string> {
-    // lastModified 객체 참조를 직접 반환 (업데이트 시 새 객체가 생성되므로 참조 비교만으로 충분)
+    // Return the lastModified object reference directly (reference comparison is enough)
     return this._repository.state.lastModified
   }
 
   /**
-   * useSyncExternalStore를 위한 서버 스냅샷을 반환합니다.
-   * SSR 시 하이드레이션 안전성을 보장합니다.
+   * Return a server snapshot for useSyncExternalStore.
+   * Ensures hydration safety in SSR.
    *
-   * @returns lastModified 객체 참조 (getSnapshot과 동일)
+   * @returns lastModified object reference (same as getSnapshot)
    */
   getServerSnapshot(): Record<string, string> {
     return this.getSnapshot()
   }
 
   /**
-   * 노드 엔티티를 반환합니다.
+   * Return node entities.
    */
   get nodes() {
     return this._repository.nodes
   }
 
   /**
-   * 문서 메타데이터를 반환합니다.
+   * Return document metadata.
    *
-   * @throws {MetadataNotFoundError} 메타데이터가 없을 경우
+   * @throws {MetadataNotFoundError} When metadata is missing
    */
   get metadata(): SduiLayoutDocument['metadata'] {
     const metadata = this._documentManager.getMetadata()
@@ -135,7 +135,7 @@ export class SduiLayoutStore {
   }
 
   /**
-   * 컴포넌트 오버라이드 맵을 반환합니다.
+   * Return the component override map.
    */
   getComponentOverrides(): Record<string, ComponentFactory> {
     return this._componentOverrides
@@ -144,11 +144,11 @@ export class SduiLayoutStore {
   // ==================== Node Query Methods ====================
 
   /**
-   * ID로 노드를 조회합니다.
+   * Get a node by ID.
    *
-   * @param nodeId - 조회할 노드 ID
-   * @returns 노드
-   * @throws {NodeNotFoundError} 노드가 존재하지 않을 경우
+   * @param nodeId - Node ID to look up
+   * @returns Node
+   * @throws {NodeNotFoundError} When the node does not exist
    */
   getNodeById(nodeId: string) {
     const node = this._repository.getNodeById(nodeId)
@@ -159,11 +159,11 @@ export class SduiLayoutStore {
   }
 
   /**
-   * ID로 노드 타입을 조회합니다.
+   * Get a node type by ID.
    *
-   * @param nodeId - 조회할 노드 ID
-   * @returns 노드 타입
-   * @throws {NodeNotFoundError} 노드가 존재하지 않을 경우
+   * @param nodeId - Node ID to look up
+   * @returns Node type
+   * @throws {NodeNotFoundError} When the node does not exist
    */
   getNodeTypeById(nodeId: string): string {
     const nodeType = this._repository.getNodeTypeById(nodeId)
@@ -174,11 +174,11 @@ export class SduiLayoutStore {
   }
 
   /**
-   * ID로 자식 노드 ID 목록을 조회합니다.
+   * Get child node IDs by ID.
    *
-   * @param nodeId - 조회할 노드 ID
-   * @returns 자식 노드 ID 배열
-   * @throws {NodeNotFoundError} 노드가 존재하지 않을 경우
+   * @param nodeId - Node ID to look up
+   * @returns Array of child node IDs
+   * @throws {NodeNotFoundError} When the node does not exist
    */
   getChildrenIdsById(nodeId: string): string[] {
     const node = this._repository.getNodeById(nodeId)
@@ -189,37 +189,37 @@ export class SduiLayoutStore {
   }
 
   /**
-   * ID로 레이아웃 상태를 조회합니다.
+   * Get layout state by ID.
    *
-   * @param nodeId - 조회할 노드 ID
-   * @returns 레이아웃 상태 (없으면 빈 객체 반환)
-   * @throws {NodeNotFoundError} 노드가 존재하지 않을 경우
+   * @param nodeId - Node ID to look up
+   * @returns Layout state (returns an empty object if missing)
+   * @throws {NodeNotFoundError} When the node does not exist
    */
   getLayoutStateById(nodeId: string): Record<string, unknown> {
     const node = this.getNodeById(nodeId)
-    // state가 없으면 빈 객체 반환 (에러 대신)
+    // Return an empty object if state is missing (instead of error)
     return node.state || {}
   }
 
   /**
-   * ID로 속성을 조회합니다.
+   * Get attributes by ID.
    *
-   * @param nodeId - 조회할 노드 ID
-   * @returns 속성 (없으면 빈 객체 반환)
-   * @throws {NodeNotFoundError} 노드가 존재하지 않을 경우
+   * @param nodeId - Node ID to look up
+   * @returns Attributes (returns an empty object if missing)
+   * @throws {NodeNotFoundError} When the node does not exist
    */
   getAttributesById(nodeId: string): Record<string, unknown> {
     const node = this.getNodeById(nodeId)
-    // attributes가 없으면 빈 객체 반환 (에러 대신)
+    // Return an empty object if attributes are missing (instead of error)
     return node.attributes || {}
   }
 
   /**
-   * ID로 참조를 조회합니다.
+   * Get reference by ID.
    *
-   * @param nodeId - 조회할 노드 ID
-   * @returns 참조 (없으면 undefined 반환)
-   * @throws {NodeNotFoundError} 노드가 존재하지 않을 경우
+   * @param nodeId - Node ID to look up
+   * @returns Reference (returns undefined if missing)
+   * @throws {NodeNotFoundError} When the node does not exist
    */
   getReferenceById(nodeId: string): string | string[] | undefined {
     const node = this.getNodeById(nodeId)
@@ -227,10 +227,10 @@ export class SduiLayoutStore {
   }
 
   /**
-   * 루트 노드 ID를 반환합니다.
+   * Return the root node ID.
    *
-   * @returns 루트 노드 ID
-   * @throws {RootNotFoundError} 루트 노드 ID가 존재하지 않을 경우
+   * @returns Root node ID
+   * @throws {RootNotFoundError} When the root node ID does not exist
    */
   getRootId(): string {
     const rootId = this._repository.getRootId()
@@ -243,26 +243,26 @@ export class SduiLayoutStore {
   // ==================== Layout Update Methods ====================
 
   /**
-   * 레이아웃 문서를 업데이트하고 normalize합니다.
-   * 전체 문서가 변경되는 경우이므로 version을 증가시켜 전체 리렌더를 트리거합니다.
+   * Update and normalize the layout document.
+   * Increment version to trigger a full re-render when the entire document changes.
    *
-   * @param document - 업데이트할 레이아웃 문서
+   * @param document - Layout document to update
    */
   updateLayout(document: SduiLayoutDocument): void {
     const { entities } = normalizeSduiLayout(document)
 
-    // Repository에 상태 업데이트
+    // Update state in the repository
     this._repository.updateNodes(entities.nodes || {})
     this._repository.setRootId(document.root.id)
     this._repository.setEdited(false)
     this._repository.updateVariables(document.variables ? cloneDeep(document.variables) : {})
     this._repository.incrementVersion()
 
-    // 문서 관리자에 메타데이터 및 캐시 업데이트
+    // Update metadata and cache in the document manager
     this._documentManager.setMetadata(document.metadata)
     this._documentManager.cacheDocument(document)
 
-    // version 구독자에게 알림
+    // Notify version subscribers
     this._subscriptionManager.notifyVersion()
   }
 
@@ -312,9 +312,9 @@ export class SduiLayoutStore {
   }
 
   /**
-   * 레이아웃 변경사항을 취소하고 원본으로 복원합니다.
+   * Cancel layout changes and restore the original.
    *
-   * @param documentId - 복원할 문서 ID
+   * @param documentId - Document ID to restore
    */
   cancelEdit(documentId?: string): void {
     const rootId = this._repository.getRootId()
@@ -327,16 +327,16 @@ export class SduiLayoutStore {
     }
   }
   /**
-   * 특정 노드의 상태를 업데이트합니다.
+   * Update a specific node's state.
    *
-   * @param nodeId - 업데이트할 노드 ID
-   * @param state - 새로운 상태
-   * @throws {NodeNotFoundError} 노드가 존재하지 않을 경우
+   * @param nodeId - Node ID to update
+   * @param state - New state
+   * @throws {NodeNotFoundError} When the node does not exist
    */
   updateNodeState(nodeId: string, state: Partial<Record<string, unknown>>): void {
     const node = this.getNodeById(nodeId)
 
-    // 노드의 state를 업데이트 (state가 없으면 빈 객체로 시작)
+    // Update the node's state (start with an empty object if state is missing)
     this._repository.updateNodeState(nodeId, {
       ...(node.state || {}),
       ...state,
@@ -344,21 +344,21 @@ export class SduiLayoutStore {
 
     this._repository.setEdited(true)
 
-    // 해당 노드의 구독자만 notify
+    // Notify subscribers of the node only
     this._subscriptionManager.notifyNode(nodeId)
   }
 
   /**
-   * 특정 노드의 속성을 업데이트합니다.
+   * Update a specific node's attributes.
    *
-   * @param nodeId - 업데이트할 노드 ID
-   * @param attributes - 새로운 속성
-   * @throws {NodeNotFoundError} 노드가 존재하지 않을 경우
+   * @param nodeId - Node ID to update
+   * @param attributes - New attributes
+   * @throws {NodeNotFoundError} When the node does not exist
    */
   updateNodeAttributes(nodeId: string, attributes: Partial<Record<string, unknown>>): void {
     const node = this.getNodeById(nodeId)
 
-    // 노드의 attributes를 업데이트
+    // Update the node's attributes
     this._repository.updateNodeAttributes(nodeId, {
       ...(node.attributes || {}),
       ...attributes,
@@ -366,57 +366,57 @@ export class SduiLayoutStore {
 
     this._repository.setEdited(true)
 
-    // 해당 노드의 구독자만 notify
+    // Notify subscribers of the node only
     this._subscriptionManager.notifyNode(nodeId)
   }
 
   /**
-   * 특정 노드의 참조를 업데이트합니다.
+   * Update a specific node's reference.
    *
-   * @param nodeId - 업데이트할 노드 ID
-   * @param reference - 새로운 참조 (단일 ID 또는 ID 배열, undefined로 제거 가능)
-   * @throws {NodeNotFoundError} 노드가 존재하지 않을 경우
+   * @param nodeId - Node ID to update
+   * @param reference - New reference (single ID or array of IDs, removable with undefined)
+   * @throws {NodeNotFoundError} When the node does not exist
    */
   updateNodeReference(nodeId: string, reference: string | string[] | undefined): void {
-    // 노드 존재 확인
+    // Ensure the node exists
     this.getNodeById(nodeId)
 
-    // 노드의 reference를 업데이트
+    // Update the node's reference
     this._repository.updateNodeReference(nodeId, reference)
 
     this._repository.setEdited(true)
 
-    // 해당 노드의 구독자만 notify
+    // Notify subscribers of the node only
     this._subscriptionManager.notifyNode(nodeId)
   }
 
   // ==================== Variables Update Methods ====================
 
   /**
-   * 전역 변수를 업데이트합니다.
-   * 깊은 복사로 새 객체를 생성하여 React 리렌더를 트리거합니다.
+   * Update global variables.
+   * Create a new object via deep copy to trigger a React re-render.
    *
-   * @param variables - 새로운 전역 변수 객체
+   * @param variables - New global variables object
    */
   updateVariables(variables: Record<string, unknown>): void {
     this._variablesManager.updateVariables(variables)
   }
 
   /**
-   * 개별 전역 변수를 업데이트합니다.
-   * 깊은 복사로 새 객체를 생성하여 version을 증가시킵니다.
+   * Update an individual global variable.
+   * Increase version by creating a new object via deep copy.
    *
-   * @param key - 변수 키
-   * @param value - 변수 값
+   * @param key - Variable key
+   * @param value - Variable value
    */
   updateVariable(key: string, value: unknown): void {
     this._variablesManager.updateVariable(key, value)
   }
 
   /**
-   * 전역 변수를 삭제합니다.
+   * Delete a global variable.
    *
-   * @param key - 삭제할 변수 키
+   * @param key - Variable key to delete
    */
   deleteVariable(key: string): void {
     this._variablesManager.deleteVariable(key)
@@ -425,14 +425,14 @@ export class SduiLayoutStore {
   // ==================== Selection Methods ====================
 
   /**
-   * 선택된 노드 ID를 설정합니다.
+   * Set the selected node ID.
    *
-   * @param nodeId - 선택할 노드 ID
+   * @param nodeId - Node ID to select
    */
   setSelectedNodeId(nodeId?: string): void {
     const previousId = this._repository.setSelectedNodeId(nodeId)
 
-    // 이전 선택 노드와 새 선택 노드 모두 notify
+    // Notify both the previous and new selected nodes
     if (previousId) this._subscriptionManager.notifyNode(previousId)
     if (nodeId) this._subscriptionManager.notifyNode(nodeId)
   }
@@ -440,17 +440,17 @@ export class SduiLayoutStore {
   // ==================== Document Methods ====================
 
   /**
-   * 현재 상태를 문서로 변환합니다.
-   * 저장/내보내기 시에만 사용합니다.
+   * Convert the current state into a document.
+   * Used only for save/export.
    *
-   * @returns 복원된 문서 또는 null
+   * @returns Restored document or null
    */
   getDocument(): SduiLayoutDocument | null {
     return this._documentManager.getDocument(this._repository)
   }
 
   /**
-   * 캐시를 초기화합니다.
+   * Clear the cache.
    */
   clearCache(): void {
     this._documentManager.clearCache()
@@ -458,7 +458,7 @@ export class SduiLayoutStore {
   }
 
   /**
-   * 상태를 초기화합니다.
+   * Reset the state.
    */
   reset(): void {
     this._documentManager.reset()

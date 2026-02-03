@@ -104,7 +104,7 @@ const rollupConfigFunc = (config) =>
         }),
 
         /**
-         * modulesOnly 옵션이 있어야 turbo repo에서 타입에러나지 않고 번들링됨
+         * The modulesOnly option is required to bundle in the turbo repo without type errors.
          */
         nodeResolve({ extensions, modulesOnly: true }),
 
@@ -157,9 +157,9 @@ const rollupConfigFunc = (config) =>
           },
 
           extract: true,
-          inject: true, // CSS를 JS 파일에 인라인으로 포함
-          minimize: true, // CSS 최소화
-          sourceMap: true, // 소스맵 생성
+          inject: true, // Inline CSS into the JS file
+          minimize: true, // Minify CSS
+          sourceMap: true, // Generate source maps
         }),
 
         visualizer({ filename: "stats.html" }),

@@ -1,31 +1,31 @@
 /**
  * SDUI Layout Denormalize
  *
- * Normalized entities에서 문서를 복원합니다.
+ * Restores a document from normalized entities.
  */
 
 import type { SduiLayoutDocument, SduiLayoutNode } from '../../schema'
 import type { NormalizedSduiEntities } from './types'
 
 /**
- * Normalized entities에서 노드를 denormalize
+ * Denormalize a node from normalized entities.
  *
- * @param nodeId - 복원할 노드 ID
- * @param entities - normalize된 entities
- * @returns 복원된 노드
+ * @param nodeId - Node ID to restore
+ * @param entities - Normalized entities
+ * @returns Restored node
  */
 export function denormalizeSduiNode(nodeId: string, entities: NormalizedSduiEntities): SduiLayoutNode | null {
   const node = entities.nodes?.[nodeId]
   if (!node) return null
 
-  // children을 재귀적으로 복원
-  // children 정보는 별도로 저장되어 있지 않으므로, entities.nodes에서 찾아야 함
-  // 실제로는 노드 트리를 순회하면서 children을 찾아야 하지만,
-  // 여기서는 간단하게 처리하기 위해 노드에 childrenIds를 저장하는 방식 사용
+  // Recursively restore children
+  // Since children info is not stored separately, look it up in entities.nodes
+  // Ideally traverse the node tree to find children,
+  // but here we use childrenIds stored on nodes for simplicity
   const childrenIds: string[] = []
 
-  // entities.nodes를 순회하여 현재 노드를 parent로 가진 노드 찾기
-  // 또는 노드에 childrenIds 정보가 있다면 사용
+  // Find nodes whose parent is the current node by scanning entities.nodes
+  // Or use childrenIds if present on the node
   if ((node as any).childrenIds) {
     childrenIds.push(...(node as any).childrenIds)
   }
@@ -37,23 +37,23 @@ export function denormalizeSduiNode(nodeId: string, entities: NormalizedSduiEnti
   return {
     id: node.id,
     type: node.type,
-    // state가 없으면 빈 객체로 자동 설정
+    // Default to an empty object when state is missing
     state: node.state || {},
-    // attributes가 없으면 빈 객체로 자동 설정
+    // Default to an empty object when attributes are missing
     attributes: node.attributes || {},
-    // reference는 그대로 전달
+    // Pass reference through as-is
     ...(node.reference !== undefined && { reference: node.reference }),
     ...(children.length > 0 && { children }),
   }
 }
 
 /**
- * Normalized entities에서 전체 문서를 denormalize
+ * Denormalize a full document from normalized entities.
  *
- * @param rootId - 루트 노드 ID
- * @param entities - normalize된 entities
- * @param metadata - 문서 메타데이터 (선택적)
- * @returns 복원된 문서
+ * @param rootId - Root node ID
+ * @param entities - Normalized entities
+ * @param metadata - Document metadata (optional)
+ * @returns Restored document
  */
 export function denormalizeSduiLayout(
   rootId: string,

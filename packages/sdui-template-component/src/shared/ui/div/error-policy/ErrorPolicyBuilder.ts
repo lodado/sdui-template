@@ -4,16 +4,16 @@ import type { ErrorPolicy } from './types'
 
 /**
  * Error Policy Builder
- * 여러 Policy를 체이닝 방식으로 등록할 수 있는 Builder
+ * Builder that registers multiple policies in a chained manner.
  */
 export class ErrorPolicyBuilder {
   private policies: ErrorPolicy[] = []
   private options: CompositeErrorPolicyOptions = {}
 
   /**
-   * Policy를 추가합니다.
-   * @param policy - 추가할 Policy (null/undefined는 무시)
-   * @returns this (체이닝)
+   * Add a policy.
+   * @param policy - Policy to add (ignores null/undefined)
+   * @returns this (for chaining)
    */
   add(policy: ErrorPolicy | null | undefined): this {
     if (policy) {
@@ -23,10 +23,10 @@ export class ErrorPolicyBuilder {
   }
 
   /**
-   * 조건부로 Policy를 추가합니다.
-   * @param condition - 추가 조건
-   * @param policy - 추가할 Policy 또는 Policy 생성 함수
-   * @returns this (체이닝)
+   * Conditionally add a policy.
+   * @param condition - Condition to add
+   * @param policy - Policy to add or policy factory
+   * @returns this (for chaining)
    */
   addIf(
     condition: boolean,
@@ -41,9 +41,9 @@ export class ErrorPolicyBuilder {
   }
 
   /**
-   * 여러 Policy를 한 번에 추가합니다.
-   * @param policies - 추가할 Policy 배열
-   * @returns this (체이닝)
+   * Add multiple policies at once.
+   * @param policies - Array of policies to add
+   * @returns this (for chaining)
    */
   addMany(...policies: (ErrorPolicy | null | undefined)[]): this {
     policies.forEach(policy => this.add(policy))
@@ -51,9 +51,9 @@ export class ErrorPolicyBuilder {
   }
 
   /**
-   * Composite Policy 옵션을 설정합니다.
-   * @param options - 옵션
-   * @returns this (체이닝)
+   * Set composite policy options.
+   * @param options - Options
+   * @returns this (for chaining)
    */
   withOptions(options: CompositeErrorPolicyOptions): this {
     this.options = { ...this.options, ...options }
@@ -61,8 +61,8 @@ export class ErrorPolicyBuilder {
   }
 
   /**
-   * 등록된 Policy들을 조합하여 최종 Policy를 생성합니다.
-   * @returns 최종 Policy 또는 null (Policy가 없는 경우)
+   * Combine registered policies into the final policy.
+   * @returns Final policy or null (when no policies exist)
    */
   build(): ErrorPolicy | null {
     if (this.policies.length === 0) {
@@ -76,18 +76,18 @@ export class ErrorPolicyBuilder {
 }
 
 /**
- * Error Policy 생성 헬퍼 함수
+ * Error policy creation helper
  */
 export const createErrorPolicy = {
   /**
-   * 새로운 Builder 인스턴스를 생성합니다.
+   * Create a new builder instance.
    */
   builder: () => new ErrorPolicyBuilder(),
 
   /**
-   * 여러 Policy를 체이닝하여 하나의 Policy로 만듭니다.
-   * @param policies - 조합할 Policy 배열
-   * @returns 최종 Policy 또는 null
+   * Chain multiple policies into a single policy.
+   * @param policies - Array of policies to combine
+   * @returns Final policy or null
    */
   chain: (...policies: ErrorPolicy[]): ErrorPolicy | null => {
     const builder = new ErrorPolicyBuilder()

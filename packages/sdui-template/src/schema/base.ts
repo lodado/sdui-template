@@ -1,48 +1,48 @@
 /**
- * Server-Driven UI - 기본 스키마
+ * Server-Driven UI - Base schema
  *
- * SDUI의 기본 노드와 문서 구조를 정의합니다.
+ * Defines the base node and document structure for SDUI.
  */
 
-// ==================== 기본 SDUI 노드 ====================
+// ==================== Base SDUI Node ====================
 
 /**
- * SDUI 노드 기본 인터페이스
+ * Base interface for SDUI nodes.
  *
- * 재귀적 구조를 가지며, 각 노드는 id, type, state, children을 가집니다.
+ * Has a recursive structure where each node has id, type, state, and children.
  */
 export interface SduiNode {
-  /** 노드 고유 식별자 */
+  /** Node unique identifier */
   id: string
 
-  /** 컴포넌트 타입 */
+  /** Component type */
   type: string
 
-  /** 상태 (모든 설정값 및 UI 상태) */
+  /** State (all configuration values and UI state) */
   state?: Record<string, unknown>
 
-  /** 외형 스타일 속성 (순수 CSS 스타일만) */
+  /** Visual style attributes (pure CSS styles only) */
   attributes?: Record<string, unknown>
 
-  /** 다른 노드 참조 (단일 또는 다중 참조) */
+  /** References to other nodes (single or multiple) */
   reference?: string | string[]
 
-  /** 자식 노드 배열 (재귀 구조) */
+  /** Child node array (recursive structure) */
   children?: SduiNode[]
 }
 
-// ==================== 기본 SDUI 문서 ====================
+// ==================== Base SDUI Document ====================
 
 /**
- * SDUI 문서 기본 인터페이스
+ * Base interface for SDUI documents.
  *
- * 서버에서 내려주는 전체 UI 구조를 담는 루트 문서입니다.
+ * Root document containing the entire UI structure delivered from the server.
  */
 export interface SduiDocument {
-  /** 스키마 버전 */
+  /** Schema version */
   version: string
 
-  /** 문서 메타데이터 */
+  /** Document metadata */
   metadata?: {
     id?: string
     name?: string
@@ -52,9 +52,9 @@ export interface SduiDocument {
     author?: string
   }
 
-  /** 루트 노드 */
+  /** Root node */
   root: SduiNode
 
-  /** 전역 변수 */
+  /** Global variables */
   variables?: Record<string, unknown>
 }

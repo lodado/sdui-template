@@ -1,22 +1,21 @@
 /**
- * Server-Driven UI - Layout 전용 문서
+ * Server-Driven UI - Layout-specific document
  *
- * Layout 시스템을 위한 문서 타입 정의
+ * Document type definitions for the layout system.
  */
 
 import type { SduiDocument } from './base'
 import type { SduiLayoutNode } from './node'
 
 /**
- * Layout 전용 문서
+ * Layout-specific document.
  *
- * SduiDocument를 상속받아 root를 SduiLayoutNode로 구체화합니다.
+ * Extends SduiDocument and specializes root to SduiLayoutNode.
  */
 export interface SduiLayoutDocument extends SduiDocument {
-  /** 루트 노드 (Layout 전용 노드) */
+  /** Root node (layout-specific node) */
   root: SduiLayoutNode
 }
-
 
 
 

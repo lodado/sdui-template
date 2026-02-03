@@ -74,7 +74,7 @@ export type IconSize =
  *
  * @example
  * ```tsx
- * // asChild를 사용하여 Link에 Icon 스타일 적용
+ * // Use asChild to apply Icon styles to a Link
  * <Icon asChild size="24px">
  *   <a href="/about">
  *     <svg>...</svg>

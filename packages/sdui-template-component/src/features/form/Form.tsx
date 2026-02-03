@@ -46,8 +46,8 @@ const FormRoot = <TFieldValues extends FieldValues = FieldValues, TContext = unk
   const resolver = schema ? zodResolver<TFieldValues, TContext, TFieldValues>(schema) : undefined
 
   const methods = useForm<TFieldValues, TContext>({
-    mode: 'onSubmit', // 첫 제출 시에만 validation 실행
-    reValidateMode: 'onChange', // 제출 후에는 onChange 시 실시간 revalidate
+    mode: 'onSubmit', // Run validation only on the first submit
+    reValidateMode: 'onChange', // Revalidate on change after submission
     ...formOptions,
     resolver: resolver as never,
   })

@@ -537,11 +537,11 @@ describe('Node Reference', () => {
           const [reference, setReference] = React.useState<string | string[] | undefined>()
 
           React.useEffect(() => {
-            // 초기 reference 가져오기
+            // Get initial reference
             const initialRef = store.getReferenceById('source-node')
             setReference(initialRef)
 
-            // reference 업데이트
+            // Update reference
             store.updateNodeReference('source-node', 'target-2')
             const updatedRef = store.getReferenceById('source-node')
             setReference(updatedRef)
@@ -594,7 +594,7 @@ describe('Node Reference', () => {
           const [reference, setReference] = React.useState<string | string[] | undefined>()
 
           React.useEffect(() => {
-            // 여러 reference로 업데이트
+            // Update to multiple references
             store.updateNodeReference('source-node', ['target-1', 'target-2'])
             const updatedRef = store.getReferenceById('source-node')
             setReference(updatedRef)
@@ -647,7 +647,7 @@ describe('Node Reference', () => {
           const [reference, setReference] = React.useState<string | string[] | undefined>()
 
           React.useEffect(() => {
-            // reference 제거
+            // Remove reference
             store.updateNodeReference('source-node', undefined)
             const updatedRef = store.getReferenceById('source-node')
             setReference(updatedRef)

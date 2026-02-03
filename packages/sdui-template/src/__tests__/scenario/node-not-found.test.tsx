@@ -39,7 +39,7 @@ const NodeNotFoundTest: React.FC = () => {
       newErrors.getNodeTypeById = e instanceof Error ? e.message : String(e)
     }
 
-    // Test getLayoutStateById (노드가 없으면 NodeNotFoundError)
+    // Test getLayoutStateById (NodeNotFoundError when the node is missing)
     try {
       store.getLayoutStateById('non-existent-node')
     } catch (e) {

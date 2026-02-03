@@ -5,15 +5,14 @@ import { GridLayoutFactory } from './GridLayout'
 import { ToggleFactory } from './Toggle'
 
 /**
- * 컴포넌트 맵
+ * Component map.
  *
- * 노드 타입별로 컴포넌트 팩토리를 매핑합니다.
+ * Maps component factories by node type.
  */
 export const componentMap: Record<string, ComponentFactory> = {
   GridLayout: GridLayoutFactory,
   Toggle: ToggleFactory,
 }
-
 
 
 

@@ -3,9 +3,9 @@
 /**
  * SDUI Render Node Hook
  *
- * Render Props Pattern을 위한 renderNode 함수를 생성하는 hook입니다.
- * useSyncExternalStore를 사용하여 nodes 변경을 구독합니다.
- * 현재 노드의 정보와 currentPath를 자동으로 계산하여 반환합니다.
+ * Hook that creates the renderNode function for the Render Props Pattern.
+ * Subscribes to node changes using useSyncExternalStore.
+ * Automatically computes and returns the current node info and currentPath.
  */
 
 import React, { useCallback, useMemo } from 'react'
@@ -16,65 +16,65 @@ import { buildCurrentPath, buildCurrentPathArray } from '../../utils/parentPath'
 import { useSduiLayoutContext } from '../context'
 
 /**
- * useRenderNode hook의 파라미터 타입
+ * useRenderNode hook parameter types
  */
 export interface UseRenderNodeParams {
-  /** 현재 노드 ID */
+  /** Current node ID */
   nodeId: string
-  /** 기본 컴포넌트 맵 (선택적) */
+  /** Base component map (optional) */
   componentMap?: Record<string, ComponentFactory>
-  /** 부모 노드 ID 경로 (기본값: []) */
+  /** Parent node ID path (default: []) */
   parentPath?: ParentPath
 }
 
 /**
- * useRenderNode hook의 반환 타입
+ * useRenderNode hook return types
  */
 export interface UseRenderNodeReturn {
-  /** 자식 노드를 렌더링하는 함수 */
+  /** Function to render a child node */
   renderNode: RenderNodeFn
-  /** 자식 노드 ID 배열을 받아서 React children 배열로 변환하는 함수 */
+  /** Function to convert child node IDs into a React children array */
   renderChildren: (childrenIds: string[]) => React.ReactNode[]
-  /** 현재 노드까지의 경로 배열 (자동 계산) */
+  /** Path array to the current node (auto-calculated) */
   currentPath: ParentPath
-  /** 현재 노드까지의 경로 문자열 (자동 계산) */
+  /** Path string to the current node (auto-calculated) */
   pathString: string
-  /** 현재 노드 ID */
+  /** Current node ID */
   nodeId: string
-  /** 부모 노드 ID 경로 */
+  /** Parent node ID path */
   parentPath: ParentPath
 }
 
 /**
- * renderNode 함수를 생성하는 hook
+ * Hook that creates the renderNode function.
  *
- * useSyncExternalStore를 사용하여 nodes 변경을 구독하고,
- * 변경 시 자동으로 리렌더링됩니다.
- * 현재 노드의 정보와 currentPath를 자동으로 계산하여 반환합니다.
+ * Subscribes to node changes using useSyncExternalStore,
+ * and auto re-renders on changes.
+ * Automatically computes and returns current node info and currentPath.
  *
- * @param params - 노드 정보를 포함한 파라미터 객체
- * @param params.nodeId - 현재 노드 ID
- * @param params.componentMap - 기본 컴포넌트 맵 (선택적)
- * @param params.parentPath - 부모 노드 ID 경로 (기본값: [])
- * @returns 노드 정보와 렌더링 함수를 포함한 객체
+ * @param params - Parameter object that includes node info
+ * @param params.nodeId - Current node ID
+ * @param params.componentMap - Base component map (optional)
+ * @param params.parentPath - Parent node ID path (default: [])
+ * @returns Object containing node info and rendering functions
  */
 export const useRenderNode = ({ nodeId, componentMap, parentPath = [] }: UseRenderNodeParams): UseRenderNodeReturn => {
   const { store } = useSduiLayoutContext()
 
-  // lastModified 객체 참조가 변경되면 nodes를 다시 읽어옴
-  // useSyncExternalStore가 lastModified 객체 참조 변경을 감지하면 리렌더링됨
+  // Re-read nodes when the lastModified object reference changes
+  // useSyncExternalStore re-renders when it detects lastModified reference changes
   const { nodes } = store.state
 
-  // currentPath와 pathString을 자동으로 계산
+  // Automatically compute currentPath and pathString
   const currentPath = useMemo(() => buildCurrentPathArray(parentPath, nodeId), [parentPath, nodeId])
   const pathString = useMemo(() => buildCurrentPath(parentPath, nodeId), [parentPath, nodeId])
 
   /**
-   * 노드 렌더링 함수 (Render Props)
+   * Node rendering function (Render Props).
    *
-   * ID를 받아서 해당 노드의 타입에 맞는 컴포넌트를 렌더링합니다.
-   * 우선순위: byNodeId[id] > byNodeType[node.type] > componentMap[node.type] > defaultComponentFactory
-   * parentPath는 디버깅을 위한 부모 노드 ID 경로입니다.
+   * Renders the component that matches the node type for the given ID.
+   * Priority: byNodeId[id] > byNodeType[node.type] > componentMap[node.type] > defaultComponentFactory
+   * parentPath is the parent node ID path for debugging.
    */
   const renderNode: RenderNodeFn = useCallback(
     (id: string, parentPathForChild: ParentPath = []) => {
@@ -84,25 +84,25 @@ export const useRenderNode = ({ nodeId, componentMap, parentPath = [] }: UseRend
       const overrides = store.getComponentOverrides()
       const componentMapEntries = componentMap || {}
 
-      // 우선순위에 따라 팩토리 선택
-      // 1. ID 기반 오버라이드 (최우선)
-      // 2. 타입 기반 오버라이드 (store의 componentOverrides)
-      // 3. componentMap의 타입 기반 매핑
-      // 4. 기본 팩토리
+      // Select factory based on priority
+      // 1. ID-based override (highest priority)
+      // 2. Type-based override (store componentOverrides)
+      // 3. Type-based mapping in componentMap
+      // 4. Default factory
       const factory = overrides[id] || overrides[node.type] || componentMapEntries[node.type] || defaultComponentFactory
 
-      // factory에는 현재 노드의 parentPath를 전달
-      // 컴포넌트 내부에서 useRenderNode hook을 사용하여 자식 노드를 렌더링할 수 있습니다
+      // Pass the current node's parentPath to the factory
+      // Components can render child nodes using the useRenderNode hook
       return factory(id, parentPathForChild)
     },
     [nodes, store, componentMap],
   )
 
   /**
-   * 자식 노드 ID 배열을 받아서 React children 배열로 변환하는 함수
+   * Convert child node IDs into a React children array.
    *
-   * @param childrenIds - 자식 노드 ID 배열
-   * @returns React children 배열 (각 요소에 key가 포함됨)
+   * @param childrenIds - Array of child node IDs
+   * @returns React children array (each element includes a key)
    */
   const renderChildren = useCallback(
     (childrenIds: string[]): React.ReactNode[] => {

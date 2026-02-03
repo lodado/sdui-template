@@ -1,17 +1,17 @@
 /**
  * Server-Driven UI - Normalized Entities Types
  *
- * Normalize된 엔티티 구조 정의
+ * Normalized entity structure definitions
  */
 
 import type { SduiLayoutNode } from '../../schema'
 
 /**
- * Normalize된 엔티티 구조
+ * Normalized entity structure
  *
- * id를 키로 사용하여 조회 가능한 형태로 변환됩니다.
+ * Converted into a lookup-friendly shape using id as the key.
  */
 export interface NormalizedSduiEntities {
-  /** 노드 엔티티 (id → SduiLayoutNode, state와 attributes 포함) */
+  /** Node entities (id → SduiLayoutNode, includes state and attributes) */
   nodes?: Record<string, SduiLayoutNode>
 }

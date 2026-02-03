@@ -52,7 +52,7 @@ describe('Node Reference Subscription', () => {
       const targetNode = referencedNodesMap['target-node']
 
       React.useEffect(() => {
-        // 100ms 후에 참조된 노드의 state를 변경
+        // Update the referenced node state after 100ms
         const timer = setTimeout(() => {
           store.updateNodeState('target-node', { count: 42 })
         }, 100)
@@ -80,10 +80,10 @@ describe('Node Reference Subscription', () => {
       />,
     )
 
-    // 초기값 확인
+    // Verify initial value
     expect(screen.getByTestId('target-count-source-node')).toHaveTextContent('0')
 
-    // state 변경 후 리렌더링 확인
+    // Verify re-render after state change
     await waitFor(
       () => {
         expect(screen.getByTestId('target-count-source-node')).toHaveTextContent('42')
@@ -115,7 +115,7 @@ describe('Node Reference Subscription', () => {
       },
     })
 
-    // Toggle 컴포넌트: 클릭하면 자신의 state를 변경
+    // Toggle component: clicking updates its own state
     const ToggleComponent: React.FC<{ nodeId: string }> = ({ nodeId }) => {
       const { state } = useSduiNodeSubscription({
         nodeId,
@@ -137,7 +137,7 @@ describe('Node Reference Subscription', () => {
       )
     }
 
-    // StatusDisplay 컴포넌트: reference를 통해 toggle-node의 상태를 표시
+    // StatusDisplay component: shows toggle-node state via reference
     const StatusDisplayComponent: React.FC<{ nodeId: string }> = ({ nodeId }) => {
       const { referencedNodesMap } = useSduiNodeReference({ nodeId })
 
@@ -171,15 +171,15 @@ describe('Node Reference Subscription', () => {
       />,
     )
 
-    // 초기 상태 확인: toggle은 OFF, status-display도 OFF 표시
+    // Verify initial state: toggle is OFF, status-display shows OFF
     expect(screen.getByTestId('toggle-status-toggle-node')).toHaveTextContent('OFF')
     expect(screen.getByTestId('status-value-status-display')).toHaveTextContent('OFF')
 
-    // Toggle 버튼 클릭
+    // Click the Toggle button
     const toggleButton = screen.getByTestId('toggle-button-toggle-node')
     fireEvent.click(toggleButton)
 
-    // 상태가 ON으로 변경되었는지 확인
+    // Verify state changed to ON
     await waitFor(
       () => {
         expect(screen.getByTestId('toggle-status-toggle-node')).toHaveTextContent('ON')
@@ -188,10 +188,10 @@ describe('Node Reference Subscription', () => {
       { timeout: 500 },
     )
 
-    // 다시 클릭하여 OFF로 변경
+    // Click again to change back to OFF
     fireEvent.click(toggleButton)
 
-    // 상태가 OFF로 변경되었는지 확인
+    // Verify state changed to OFF
     await waitFor(
       () => {
         expect(screen.getByTestId('toggle-status-toggle-node')).toHaveTextContent('OFF')
@@ -216,7 +216,7 @@ describe('Node Reference Subscription', () => {
       },
     })
 
-    // React의 에러 경계를 사용하여 에러를 catch
+    // Catch errors using a React error boundary
     class TestErrorBoundary extends React.Component<{ children: React.ReactNode }, { error: Error | null }> {
       constructor(props: { children: React.ReactNode }) {
         super(props)
@@ -229,7 +229,7 @@ describe('Node Reference Subscription', () => {
       }
 
       componentDidCatch(error: Error) {
-        // 에러 로깅 등
+        // Error logging, etc.
       }
 
       render() {
@@ -244,8 +244,8 @@ describe('Node Reference Subscription', () => {
       }
     }
 
-    // useSduiNodeReference를 호출하는 컴포넌트
-    // 참조된 노드가 없으면 exists: false를 반환합니다 (에러를 throw하지 않음)
+    // Component that calls useSduiNodeReference
+    // Returns exists: false when the referenced node is missing (no error thrown)
     const ReferenceTestComponent: React.FC<{ nodeId: string }> = ({ nodeId }) => {
       const { referencedNodes, hasReference } = useSduiNodeReference({ nodeId })
       const nonExistentNode = referencedNodes.find((n) => n.id === 'non-existent-node')
@@ -272,7 +272,7 @@ describe('Node Reference Subscription', () => {
       />,
     )
 
-    // 참조는 있지만 존재하지 않는 노드는 exists: false를 반환
+    // References exist, but missing nodes return exists: false
     expect(screen.getByTestId('has-reference')).toHaveTextContent('true')
     expect(screen.getByTestId('non-existent-exists')).toHaveTextContent('false')
   })
@@ -314,12 +314,12 @@ describe('Node Reference Subscription', () => {
       const target2 = referencedNodesMap['target-2']
 
       React.useEffect(() => {
-        // 100ms 후에 첫 번째 참조된 노드의 state를 변경
+        // Update the first referenced node state after 100ms
         const timer1 = setTimeout(() => {
           store.updateNodeState('target-1', { count: 42 })
         }, 100)
 
-        // 200ms 후에 두 번째 참조된 노드의 state를 변경
+        // Update the second referenced node state after 200ms
         const timer2 = setTimeout(() => {
           store.updateNodeState('target-2', { count: 99 })
         }, 200)
@@ -352,11 +352,11 @@ describe('Node Reference Subscription', () => {
       />,
     )
 
-    // 초기값 확인
+    // Verify initial values
     expect(screen.getByTestId('target-1-count-source-node')).toHaveTextContent('0')
     expect(screen.getByTestId('target-2-count-source-node')).toHaveTextContent('10')
 
-    // 첫 번째 노드 state 변경 후 리렌더링 확인
+    // Verify re-render after the first node state change
     await waitFor(
       () => {
         expect(screen.getByTestId('target-1-count-source-node')).toHaveTextContent('42')
@@ -364,7 +364,7 @@ describe('Node Reference Subscription', () => {
       { timeout: 500 },
     )
 
-    // 두 번째 노드 state 변경 후 리렌더링 확인
+    // Verify re-render after the second node state change
     await waitFor(
       () => {
         expect(screen.getByTestId('target-2-count-source-node')).toHaveTextContent('99')
@@ -395,7 +395,7 @@ describe('Node Reference Subscription', () => {
       },
     })
 
-    // React의 에러 경계를 사용하여 에러를 catch
+    // Catch errors using a React error boundary
     class TestErrorBoundary extends React.Component<{ children: React.ReactNode }, { error: Error | null }> {
       constructor(props: { children: React.ReactNode }) {
         super(props)
@@ -408,7 +408,7 @@ describe('Node Reference Subscription', () => {
       }
 
       componentDidCatch(error: Error) {
-        // 에러 로깅 등
+        // Error logging, etc.
       }
 
       render() {
@@ -423,8 +423,8 @@ describe('Node Reference Subscription', () => {
       }
     }
 
-    // useSduiNodeReference를 호출하는 컴포넌트
-    // 여러 reference 중 존재하지 않는 노드는 exists: false를 반환합니다 (에러를 throw하지 않음)
+    // Component that calls useSduiNodeReference
+    // Missing nodes among multiple references return exists: false (no error thrown)
     const ReferenceTestComponent: React.FC<{ nodeId: string }> = ({ nodeId }) => {
       const { referencedNodes, hasReference } = useSduiNodeReference({ nodeId })
       const target1 = referencedNodes.find((n) => n.id === 'target-1')
@@ -453,7 +453,7 @@ describe('Node Reference Subscription', () => {
       />,
     )
 
-    // 참조는 있지만 존재하지 않는 노드는 exists: false를 반환
+    // References exist, but missing nodes return exists: false
     expect(screen.getByTestId('has-reference')).toHaveTextContent('true')
     expect(screen.getByTestId('target-1-exists')).toHaveTextContent('true')
     expect(screen.getByTestId('non-existent-exists')).toHaveTextContent('false')
