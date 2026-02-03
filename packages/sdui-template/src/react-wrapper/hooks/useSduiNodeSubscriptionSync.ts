@@ -126,31 +126,20 @@ export function useSduiNodeSubscriptionSync<
 
   // 스키마 검증
   let validatedState: Record<string, unknown>
-  if (schema) {
-    if (!rawState) {
-      console.error(
-        '::id',
-        nodeId,
-        '::state:',
-        store.state,
-        '::node:',
-        node,
-        '::rawState:',
-        rawState,
-        '::schema:',
-        schema,
-      )
-      throw new Error(`State not found for node "${nodeId}". Schema was provided but state is missing.`)
-    }
 
+  if (!schema) {
+    // 스키마가 없으면 rawState 사용 (없으면 빈 객체)
+    validatedState = rawState || {}
+  } else if (!node || !rawState) {
+    // 노드가 없으면 스키마 검증을 건너뛰고 빈 객체 반환
+    validatedState = {}
+  } else {
+    // 스키마 검증 수행
     const result = schema.safeParse(rawState)
     if (!result.success) {
       throw new Error(`State validation failed for node "${nodeId}": ${result.error.message}`)
     }
-
     validatedState = result.data
-  } else {
-    validatedState = rawState!
   }
 
   return {

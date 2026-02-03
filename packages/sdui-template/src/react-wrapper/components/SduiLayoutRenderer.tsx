@@ -112,7 +112,7 @@ export const SduiLayoutRenderer: React.FC<SduiLayoutRendererProps> = ({
         storeRef.current.updateLayout(document)
       }
       else {
-        storeRef.current.updateLayout(document)
+        storeRef.current.mergeLayout(document)
       }
 
       return storeRef.current
@@ -126,7 +126,7 @@ export const SduiLayoutRenderer: React.FC<SduiLayoutRendererProps> = ({
       }
       return storeRef.current
     }
-  }, [document, components, componentOverrides, onError])
+  }, [document, components, componentOverrides])
 
   // Merge component map
   const mergedComponentMap = useMemo(() => {

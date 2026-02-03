@@ -267,46 +267,46 @@ export class SduiLayoutStore {
   }
 
   /**
-   * 레이아웃 문서를 병합합니다.
-   * 노드를 순회하면서 새로운 노드만 추가/업데이트하고, 삭제된 노드 관련 상태는 전부 삭제합니다.
+   * Merges layout document.
+   * Iterates through nodes, adding/updating only new nodes and removing all states related to deleted nodes.
    *
-   * @param document - 병합할 레이아웃 문서
+   * @param document - Layout document to merge
    */
   mergeLayout(document: SduiLayoutDocument): void {
     const { entities } = normalizeSduiLayout(document)
     const newNodes = entities.nodes || {}
 
-    // 1. 삭제된 노드 ID 목록 계산
+    // 1. Calculate deleted node IDs
     const deletedNodeIds = this._repository.mergeNodes(newNodes)
 
-    // 2. selectedNodeId 확인 및 초기화
+    // 2. Check and reset selectedNodeId
     const currentSelectedNodeId = this._repository.state.selectedNodeId
     if (currentSelectedNodeId && deletedNodeIds.includes(currentSelectedNodeId)) {
       this._repository.setSelectedNodeId(undefined)
     }
 
-    // 3. 구독자 정리 (메모리 누수 방지)
+    // 3. Clean up subscribers (prevent memory leaks)
     if (deletedNodeIds.length > 0) {
       this._subscriptionManager.cleanupNodes(deletedNodeIds)
     }
 
-    // 4. 삭제된 노드 상태 제거 (mergeNodes에서 이미 처리되었지만, 명시적으로 정리)
-    // mergeNodes에서 이미 nodes와 lastModified가 정리되었으므로 추가 작업 불필요
+    // 4. Remove deleted node states (already handled in mergeNodes, but explicitly cleaned up)
+    // mergeNodes already cleaned up nodes and lastModified, so no additional work needed
 
-    // 5. 루트 ID 업데이트
+    // 5. Update root ID
     this._repository.setRootId(document.root.id)
 
-    // 6. 변수 업데이트
+    // 6. Update variables
     this._repository.updateVariables(document.variables ? cloneDeep(document.variables) : {})
 
-    // 7. 편집 상태 초기화
+    // 7. Reset edit state
     this._repository.setEdited(false)
 
-    // 8. 문서 관리자에 메타데이터 및 캐시 업데이트
+    // 8. Update metadata and cache in document manager
     this._documentManager.setMetadata(document.metadata)
     this._documentManager.cacheDocument(document)
 
-    // 9. version 증가 및 알림
+    // 9. Increment version and notify
     this._repository.incrementVersion()
     this._subscriptionManager.notifyVersion()
   }

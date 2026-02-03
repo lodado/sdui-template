@@ -81,20 +81,20 @@ export class SubscriptionManager {
   }
 
   /**
-   * 특정 노드의 구독자를 정리합니다.
-   * 삭제된 노드의 구독자 맵을 제거하여 메모리 누수를 방지합니다.
+   * Cleans up subscribers for a specific node.
+   * Removes the subscriber map for deleted nodes to prevent memory leaks.
    *
-   * @param nodeId - 정리할 노드 ID
+   * @param nodeId - Node ID to clean up
    */
   cleanupNode(nodeId: string): void {
     this._nodeListeners.delete(nodeId)
   }
 
   /**
-   * 여러 노드의 구독자를 일괄 정리합니다.
-   * 삭제된 노드들의 구독자 맵을 제거하여 메모리 누수를 방지합니다.
+   * Cleans up subscribers for multiple nodes in batch.
+   * Removes subscriber maps for deleted nodes to prevent memory leaks.
    *
-   * @param nodeIds - 정리할 노드 ID 배열
+   * @param nodeIds - Array of node IDs to clean up
    */
   cleanupNodes(nodeIds: string[]): void {
     nodeIds.forEach((nodeId) => {

@@ -130,29 +130,29 @@ export class LayoutStateRepository {
   }
 
   /**
-   * 특정 노드를 삭제합니다.
+   * Deletes a specific node.
    *
-   * @param nodeId - 삭제할 노드 ID
+   * @param nodeId - Node ID to delete
    */
   deleteNode(nodeId: string): void {
-    // nodes에서 노드 제거
+    // Remove node from nodes
     const { [nodeId]: deleted, ...remainingNodes } = this._state.nodes
     this._state.nodes = remainingNodes
 
-    // lastModified에서 타임스탬프 제거 (새 객체 생성하여 참조 변경)
+    // Remove timestamp from lastModified (create new object to change reference)
     const { [nodeId]: deletedTimestamp, ...remainingLastModified } = this._state.lastModified
     this._state.lastModified = remainingLastModified
   }
 
   /**
-   * 여러 노드를 일괄 삭제합니다.
+   * Deletes multiple nodes in batch.
    *
-   * @param nodeIds - 삭제할 노드 ID 배열
+   * @param nodeIds - Array of node IDs to delete
    */
   deleteNodes(nodeIds: string[]): void {
     if (nodeIds.length === 0) return
 
-    // nodes에서 노드 제거 (새 객체 생성하여 참조 변경)
+    // Remove nodes from nodes (create new object to change reference)
     const remainingNodes: Record<string, SduiLayoutNode> = {}
     const nodeIdsSet = new Set(nodeIds)
     Object.keys(this._state.nodes).forEach((nodeId) => {
@@ -162,7 +162,7 @@ export class LayoutStateRepository {
     })
     this._state.nodes = remainingNodes
 
-    // lastModified에서 타임스탬프 제거 (새 객체 생성하여 참조 변경)
+    // Remove timestamps from lastModified (create new object to change reference)
     const remainingLastModified: Record<string, string> = {}
     Object.keys(this._state.lastModified).forEach((nodeId) => {
       if (!nodeIdsSet.has(nodeId)) {
@@ -173,11 +173,11 @@ export class LayoutStateRepository {
   }
 
   /**
-   * 노드를 병합합니다. 새로운 노드는 추가하고, 기존 노드는 업데이트합니다.
-   * 삭제된 노드 ID 목록을 반환합니다.
+   * Merges nodes. Adds new nodes and updates existing ones.
+   * Returns an array of deleted node IDs.
    *
-   * @param nodes - 병합할 노드 엔티티 맵
-   * @returns 삭제된 노드 ID 배열
+   * @param nodes - Node entity map to merge
+   * @returns Array of deleted node IDs
    */
   mergeNodes(nodes: Record<string, SduiLayoutNode>): string[] {
     const existingNodeIds = new Set(Object.keys(this._state.nodes))
@@ -186,14 +186,27 @@ export class LayoutStateRepository {
 
     const timestamp = new Date().toISOString()
 
-    // 기존 노드와 새 노드를 병합 (새 객체 생성하여 참조 변경)
-    // 삭제된 노드는 제외하고, 새 노드만 포함
+    // Merge existing and new nodes (create new object to change reference)
+    // Exclude deleted nodes, include only new nodes
     const mergedNodes: Record<string, SduiLayoutNode> = {}
     const mergedLastModified: Record<string, string> = {}
 
-    // 새 노드 추가 또는 업데이트 (모든 새 노드 맵에 있는 노드는 업데이트된 것으로 간주)
+    // Add or update new nodes
     Object.keys(nodes).forEach((nodeId) => {
-      mergedNodes[nodeId] = nodes[nodeId]
+      const existingNode = this._state.nodes[nodeId]
+      const newNode = nodes[nodeId]
+
+      if (existingNode) {
+        // If existing node exists, preserve state and update only other properties
+        mergedNodes[nodeId] = {
+          ...newNode,
+          // Preserve existing state (preserve user-modified state)
+          state: existingNode.state || newNode.state || {},
+        }
+      } else {
+        // Add new nodes as-is
+        mergedNodes[nodeId] = newNode
+      }
       mergedLastModified[nodeId] = timestamp
     })
 

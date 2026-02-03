@@ -15,28 +15,28 @@ const meta: Meta<typeof SduiLayoutRenderer> = {
         component: `
 ## Overview
 
-이 예제는 **동적으로 document가 변경될 때** SDUI Renderer의 동작을 테스트합니다.
+This example tests the behavior of the SDUI Renderer when **documents are dynamically changed**.
 
-### 테스트 시나리오
+### Test Scenario
 
-1. **초기 상태**: 토글 3개가 표시됩니다
-2. **버튼 클릭**: "Add Toggle" 버튼을 누르면 토글이 하나씩 추가됩니다
-3. **상태 초기화 테스트**:
-   - 각 토글을 클릭하여 상태를 변경합니다 (ON/OFF)
-   - "Add Toggle" 버튼을 누르면 document가 업데이트됩니다
-   - **중요**: document가 업데이트되어도 기존 토글들의 상태가 유지되는지 확인합니다
+1. **Initial State**: 3 toggles are displayed
+2. **Button Click**: Clicking the "Add Toggle" button adds one toggle at a time
+3. **State Preservation Test**:
+   - Click each toggle to change its state (ON/OFF)
+   - Click the "Add Toggle" button to update the document
+   - **Important**: Verify that existing toggle states are preserved even when the document is updated
 
-### 개선 사항
+### Improvements
 
-- ✅ Store 인스턴스가 재생성되지 않고 유지됩니다
-- ✅ document 변경 시 \`updateLayout\`만 호출됩니다
-- ✅ 기존 구독자들이 끊어지지 않습니다
-- ✅ 컴포넌트 상태가 보존됩니다
+- ✅ Store instance is maintained and not recreated
+- ✅ Only \`updateLayout\` is called when the document changes
+- ✅ Existing subscribers are not disconnected
+- ✅ Component state is preserved
 
-### 기대 동작
+### Expected Behavior
 
-- document가 업데이트되어도 **기존 토글들의 상태(ON/OFF)가 유지**되어야 합니다
-- 새로운 토글만 추가되고, 기존 토글은 영향받지 않아야 합니다
+- **Existing toggle states (ON/OFF) should be preserved** even when the document is updated
+- Only new toggles should be added, existing toggles should not be affected
         `,
       },
     },
@@ -47,7 +47,7 @@ export default meta
 type Story = StoryObj<typeof SduiLayoutRenderer>
 
 /**
- * 동적으로 document를 생성하는 헬퍼 함수
+ * Helper function to create a document dynamically
  */
 function createDocument(toggleCount: number): SduiLayoutDocument {
   const toggles = Array.from({ length: toggleCount }, (_, index) => ({
@@ -71,10 +71,10 @@ function createDocument(toggleCount: number): SduiLayoutDocument {
 }
 
 /**
- * 동적 Document 업데이트 예제
+ * Dynamic Document Update Example
  *
- * 버튼을 누를 때마다 토글이 하나씩 추가됩니다.
- * document가 업데이트되어도 기존 토글들의 상태가 유지되는지 테스트합니다.
+ * Each time the button is clicked, one toggle is added.
+ * Tests whether existing toggle states are preserved when the document is updated.
  */
 export const DynamicToggleAddition: Story = {
   render: () => {
@@ -119,12 +119,12 @@ export const DynamicToggleAddition: Story = {
             Instructions:
           </div>
           <ol className="list-decimal list-inside text-sm text-gray-600 space-y-1 mb-4">
-            <li>각 토글을 클릭하여 ON/OFF 상태를 변경합니다</li>
-            <li>"Add Toggle" 버튼을 클릭합니다</li>
+            <li>Click each toggle to change its ON/OFF state</li>
+            <li>Click the "Add Toggle" button</li>
             <li>
-              <strong>기존 토글들의 상태가 유지되는지 확인합니다</strong>
+              <strong>Verify that existing toggle states are preserved</strong>
             </li>
-            <li>새로 추가된 토글은 OFF 상태로 시작합니다</li>
+            <li>Newly added toggles start in the OFF state</li>
           </ol>
 
           <SduiLayoutRenderer
@@ -140,9 +140,8 @@ export const DynamicToggleAddition: Story = {
         </div>
 
         <div className="text-xs text-gray-500 p-2 bg-gray-100 rounded">
-          <strong>테스트 포인트:</strong> document가 업데이트되어도 기존 토글들의 상태(ON/OFF)가
-          초기화되지 않고 유지되어야 합니다. 만약 상태가 초기화된다면, store가 재생성되고 있다는
-          의미입니다.
+          <strong>Test Point:</strong> Even when the document is updated, existing toggle states (ON/OFF) should
+          be preserved and not reset. If states are reset, it means the store is being recreated.
         </div>
       </div>
     )
@@ -151,37 +150,37 @@ export const DynamicToggleAddition: Story = {
     docs: {
       description: {
         story: `
-## 동적 Document 업데이트 테스트
+## Dynamic Document Update Test
 
-이 스토리는 **document가 동적으로 변경될 때** SDUI Renderer의 동작을 테스트합니다.
+This story tests the behavior of the SDUI Renderer when **documents are dynamically changed**.
 
-### 테스트 절차
+### Test Procedure
 
-1. 초기 상태에서 토글 3개가 표시됩니다
-2. 각 토글을 클릭하여 상태를 변경합니다 (ON/OFF)
-3. "Add Toggle" 버튼을 클릭하여 토글을 추가합니다
-4. **기존 토글들의 상태가 유지되는지 확인합니다**
+1. Initially, 3 toggles are displayed
+2. Click each toggle to change its state (ON/OFF)
+3. Click the "Add Toggle" button to add a toggle
+4. **Verify that existing toggle states are preserved**
 
-### 기대 결과
+### Expected Results
 
-- ✅ 기존 토글들의 상태(ON/OFF)가 유지됩니다
-- ✅ 새로운 토글만 추가됩니다
-- ✅ Store 인스턴스가 재생성되지 않습니다
-- ✅ 구독자 연결이 끊어지지 않습니다
+- ✅ Existing toggle states (ON/OFF) are preserved
+- ✅ Only new toggles are added
+- ✅ Store instance is not recreated
+- ✅ Subscriber connections are not broken
 
-### 개선 전 문제점
+### Previous Issues
 
-이전 구현에서는 \`document\`가 변경될 때마다:
-- ❌ Store 인스턴스가 재생성되었습니다
-- ❌ 기존 구독자들이 끊어졌습니다
-- ❌ 컴포넌트 상태가 초기화되었습니다
+In the previous implementation, whenever the \`document\` changed:
+- ❌ Store instance was recreated
+- ❌ Existing subscribers were disconnected
+- ❌ Component state was reset
 
-### 개선 후
+### After Improvement
 
-현재 구현에서는:
-- ✅ Store 인스턴스가 유지됩니다
-- ✅ \`useEffect\`로 \`document\` 변경을 감지하여 \`updateLayout\`만 호출합니다
-- ✅ 기존 상태가 보존됩니다
+In the current implementation:
+- ✅ Store instance is maintained
+- ✅ \`useEffect\` detects \`document\` changes and only calls \`updateLayout\`
+- ✅ Existing state is preserved
         `,
       },
     },
