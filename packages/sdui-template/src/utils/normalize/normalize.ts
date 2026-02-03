@@ -85,14 +85,15 @@ export function normalizeSduiNode(node: SduiLayoutNode) {
     },
   }
 
-  // nodes에 childrenIds 추가 (재귀적으로 모든 노드 순회)
-  const collectNodes = (currentNode: SduiLayoutNode) => {
-    // 현재 노드가 entities에 있으면 childrenIds 추가
+  // nodes에 childrenIds와 parentId 추가 (재귀적으로 모든 노드 순회)
+  const collectNodes = (currentNode: SduiLayoutNode, parentId?: string) => {
+    // 현재 노드가 entities에 있으면 childrenIds와 parentId 추가
     if (entities.nodes && entities.nodes[currentNode.id]) {
       entities.nodes[currentNode.id] = {
         ...entities.nodes[currentNode.id],
         childrenIds: currentNode.children?.map((child) => child.id) || [],
-      } as any
+        parentId,
+      }
     } else {
       // 노드가 entities에 없으면 추가 (이 경우는 발생하지 않아야 하지만 안전장치)
       if (entities.nodes) {
@@ -106,17 +107,18 @@ export function normalizeSduiNode(node: SduiLayoutNode) {
           // reference는 그대로 전달
           ...(currentNode.reference !== undefined && { reference: currentNode.reference }),
           childrenIds: currentNode.children?.map((child) => child.id) || [],
-        } as any
+          parentId,
+        }
       }
     }
 
-    // 자식 노드들도 재귀적으로 처리
+    // 자식 노드들도 재귀적으로 처리 (현재 노드 ID를 parentId로 전달)
     if (currentNode.children) {
-      currentNode.children.forEach(collectNodes)
+      currentNode.children.forEach((child) => collectNodes(child, currentNode.id))
     }
   }
 
-  collectNodes(node)
+  collectNodes(node, undefined) // 루트 노드는 parentId가 undefined
 
   return {
     result: normalizedData.result,

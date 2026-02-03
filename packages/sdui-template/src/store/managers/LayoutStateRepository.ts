@@ -187,14 +187,20 @@ export class LayoutStateRepository {
     const timestamp = new Date().toISOString()
 
     // Merge existing and new nodes (create new object to change reference)
-    // Exclude deleted nodes, include only new nodes
     const mergedNodes: Record<string, SduiLayoutNode> = {}
-    const mergedLastModified: Record<string, string> = {}
+
+    // 1단계: 기존 lastModified 복사 (업데이트되지 않은 노드들 유지)
+    const { lastModified } = this._state
+    const mergedLastModified: Record<string, string> = { ...lastModified }
+
+    // 2단계: 업데이트된 노드들의 parentId 수집
+    const parentIdsToUpdate = new Set<string>()
 
     // Add or update new nodes
     Object.keys(nodes).forEach((nodeId) => {
       const existingNode = this._state.nodes[nodeId]
       const newNode = nodes[nodeId]
+      const { parentId } = newNode
 
       if (existingNode) {
         // If existing node exists, preserve state and update only other properties
@@ -203,11 +209,27 @@ export class LayoutStateRepository {
           // Preserve existing state (preserve user-modified state)
           state: existingNode.state || newNode.state || {},
         }
+        // 업데이트된 노드 자체는 기존 lastModified 유지 (이미 복사됨)
+        // mergedLastModified[nodeId]는 이미 기존 값이 있으므로 그대로 유지
       } else {
         // Add new nodes as-is
         mergedNodes[nodeId] = newNode
+        // 새 노드는 timestamp 설정
+        mergedLastModified[nodeId] = timestamp
       }
-      mergedLastModified[nodeId] = timestamp
+
+      // 업데이트된 노드의 parentId 수집
+      if (parentId) {
+        parentIdsToUpdate.add(parentId)
+      }
+    })
+
+    // 3단계: 부모 노드들의 lastModified만 최신화
+    parentIdsToUpdate.forEach((parentId) => {
+      // 부모 노드가 mergedNodes에 존재하는지 확인
+      if (mergedNodes[parentId] || this._state.nodes[parentId]) {
+        mergedLastModified[parentId] = timestamp
+      }
     })
 
     this._state.nodes = mergedNodes

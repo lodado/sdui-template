@@ -20,4 +20,10 @@ export interface SduiLayoutNode extends SduiNode {
 
   /** 자식 노드 배열 (재귀 구조) */
   children?: SduiLayoutNode[]
+
+  /** 자식 노드 ID 배열 (normalize 시 추가됨, 원본 문서에는 없음) */
+  childrenIds?: string[]
+
+  /** 부모 노드 ID (normalize 시 추가됨, 루트 노드는 undefined, 원본 문서에는 없음) */
+  parentId?: string
 }
