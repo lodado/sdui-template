@@ -259,6 +259,7 @@ export class SduiLayoutStore {
     this._repository.incrementVersion()
 
     // Update metadata and cache in the document manager
+    // cacheDocument() automatically saves the original document in _originalCached
     this._documentManager.setMetadata(document.metadata)
     this._documentManager.cacheDocument(document)
 
@@ -450,19 +451,38 @@ export class SduiLayoutStore {
   }
 
   /**
-   * Clear the cache.
+   * Reset the state.
+   * Clears document cache, repository state, and notifies all subscribers.
    */
-  clearCache(): void {
-    this._documentManager.clearCache()
-    this.reset()
+  reset(): void {
+    this._documentManager.reset() // This already calls clearCache() internally
+    this._repository.reset()
+    this._subscriptionManager.notifyVersion()
   }
 
   /**
-   * Reset the state.
+   * Reset to the initial document.
+   * Restores the store to the state when the document was first loaded.
+   * Uses the original document cached in DocumentManager.
+   *
+   * @throws {Error} When initial document is not available
    */
-  reset(): void {
-    this._documentManager.reset()
-    this._repository.reset()
-    this._subscriptionManager.notifyVersion()
+  resetToInitial(): void {
+    const rootId = this._repository.getRootId()
+    if (!rootId) {
+      throw new Error('Root ID is not available. Cannot reset to initial state.')
+    }
+
+    const documentId = this._documentManager.getDocumentId(rootId)
+    if (!documentId) {
+      throw new Error('Document ID is not available. Cannot reset to initial state.')
+    }
+
+    const originalDocument = this._documentManager.getOriginalDocument(documentId)
+    if (!originalDocument) {
+      throw new Error('Initial document is not available. Cannot reset to initial state.')
+    }
+
+    this.updateLayout(originalDocument)
   }
 }
