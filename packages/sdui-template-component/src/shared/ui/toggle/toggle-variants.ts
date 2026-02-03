@@ -119,7 +119,7 @@ export const toggleIconVariants = cva(
       {
         size: 'regular',
         position: 'cross',
-        class: 'right-1',
+        class: 'right-0.75',
       },
       {
         size: 'large',
@@ -129,7 +129,7 @@ export const toggleIconVariants = cva(
       {
         size: 'large',
         position: 'cross',
-        class: 'right-1.5',
+        class: 'right-1',
       },
     ],
     defaultVariants: {
