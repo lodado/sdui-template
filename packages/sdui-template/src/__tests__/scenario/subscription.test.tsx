@@ -40,7 +40,7 @@ const SubscribedComponent: React.FC<{ nodeId: string; testPrefix?: string }> = (
 const ComponentWithUpdateButton: React.FC<{ nodeId: string }> = ({ nodeId }) => {
   const store = useSduiLayoutAction()
   const handleUpdate = () => {
-    // node-1만 업데이트
+    // Update only node-1
     store.updateNodeState('node-1', { value: 15 })
   }
 
@@ -93,12 +93,12 @@ describe('Subscription System', () => {
           },
         })
 
-        // SDUI renderer만 사용 (별도 컴포넌트 없음)
+        // Use only the SDUI renderer (no separate components)
         renderWithSduiLayout(
           document,
           {
             components: {
-              Container: defaultTestComponentFactory, // Container는 자식을 렌더링하는 기본 컴포넌트 사용
+              Container: defaultTestComponentFactory, // Use the default component to render children
               TestComponent: TestComponentFactory,
             },
           },
@@ -109,7 +109,7 @@ describe('Subscription System', () => {
         expect(screen.getByTestId('sdui-subscribed-node-2')).toBeInTheDocument()
         expect(screen.getByTestId('sdui-subscribed-node-3')).toBeInTheDocument()
 
-        // 초기 상태 확인
+        // Verify initial state
         const node1Initial = screen.getByTestId('sdui-subscribed-node-1')
         expect(node1Initial).toHaveTextContent('Value: 10')
         expect(node1Initial).toHaveTextContent('Render Count: 1')
@@ -122,7 +122,7 @@ describe('Subscription System', () => {
         expect(node3Initial).toHaveTextContent('Value: 30')
         expect(node3Initial).toHaveTextContent('Render Count: 1')
 
-        // 버튼 클릭하여 업데이트
+        // Click the button to update
         const updateButton = screen.getByTestId('update-button')
         updateButton.click()
 

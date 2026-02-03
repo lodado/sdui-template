@@ -3,7 +3,7 @@
 /**
  * SDUI Layout Context
  *
- * Context API를 사용하여 SduiLayoutStore를 제공합니다.
+ * Provides SduiLayoutStore via the Context API.
  */
 
 import React, { createContext, useContext, useMemo } from 'react'
@@ -11,10 +11,10 @@ import React, { createContext, useContext, useMemo } from 'react'
 import type { SduiLayoutStore } from '../../store'
 
 /**
- * SduiLayoutContext 타입
+ * SduiLayoutContext type
  */
 interface SduiLayoutContextValue {
-  /** Store 인스턴스 */
+  /** Store instance */
   store: SduiLayoutStore
 }
 
@@ -27,16 +27,16 @@ const SduiLayoutContext = createContext<SduiLayoutContextValue | null>(null)
  * SduiLayoutProvider Props
  */
 interface SduiLayoutProviderProps {
-  /** Store 인스턴스 */
+  /** Store instance */
   store: SduiLayoutStore
-  /** 자식 컴포넌트 */
+  /** Child components */
   children: React.ReactNode
 }
 
 /**
  * SduiLayoutProvider
  *
- * Context를 통해 SduiLayoutStore를 제공합니다.
+ * Provides SduiLayoutStore via context.
  */
 export const SduiLayoutProvider: React.FC<SduiLayoutProviderProps> = ({ store, children }) => {
   const value = useMemo(
@@ -52,8 +52,8 @@ export const SduiLayoutProvider: React.FC<SduiLayoutProviderProps> = ({ store, c
 /**
  * useSduiLayoutContext
  *
- * Context에서 store를 가져옵니다.
- * Provider 외부에서 사용 시 에러를 throw합니다.
+ * Retrieves the store from context.
+ * Throws an error when used outside the provider.
  */
 export const useSduiLayoutContext = (): SduiLayoutContextValue => {
   const context = useContext(SduiLayoutContext)
@@ -64,5 +64,4 @@ export const useSduiLayoutContext = (): SduiLayoutContextValue => {
 
   return context
 }
-
 

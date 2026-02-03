@@ -55,7 +55,7 @@ export const Title = ({ id, parentPath = [] }: TitleProps) => {
           </div>
         )}
 
-        {/* Middle section - absolute로 중앙 정렬 */}
+        {/* Middle section - centered with absolute positioning */}
         {middleChildren.length > 0 && (
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center">
             {middleChildren.map((childId) => (

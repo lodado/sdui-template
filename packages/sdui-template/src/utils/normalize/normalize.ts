@@ -2,8 +2,8 @@
 /**
  * SDUI Layout Normalize
  *
- * normalizr를 사용하여 SduiLayoutDocument를 normalize하고
- * id를 통해 조회 가능한 entities로 변환합니다.
+ * Uses normalizr to normalize SduiLayoutDocument
+ * and converts it into entities that can be looked up by id.
  */
 
 import { normalize, schema } from 'normalizr'
@@ -14,10 +14,10 @@ import type { NormalizedSduiEntities } from './types'
 // ==================== Schema Definitions ====================
 
 /**
- * SduiLayoutNode Schema (재귀)
+ * SduiLayoutNode Schema (recursive)
  *
- * children을 재귀적으로 normalize합니다.
- * state와 attributes는 노드에 포함됩니다.
+ * Recursively normalizes children.
+ * state and attributes are included in the node.
  */
 const sduiLayoutNodeSchema = new schema.Entity<Omit<SduiLayoutNode, 'children'>>(
   'nodes',
@@ -28,18 +28,18 @@ const sduiLayoutNodeSchema = new schema.Entity<Omit<SduiLayoutNode, 'children'>>
       return {
         id: value.id,
         type: value.type,
-        // state가 없으면 빈 객체로 자동 설정
+        // Default to an empty object when state is missing
         state: value.state || {},
-        // attributes가 없으면 빈 객체로 자동 설정
+        // Default to an empty object when attributes are missing
         attributes: value.attributes || {},
-        // reference는 그대로 전달
+        // Pass reference through as-is
         ...(value.reference !== undefined && { reference: value.reference }),
       }
     },
   },
 )
 
-// 재귀 구조를 위해 children 정의 (순환 참조 처리)
+// Define children for the recursive structure (handle circular references)
 sduiLayoutNodeSchema.define({
   children: [sduiLayoutNodeSchema],
 })
@@ -47,28 +47,28 @@ sduiLayoutNodeSchema.define({
 // ==================== Normalize Functions ====================
 
 /**
- * SduiLayoutNode를 normalize하여 entities로 변환
+ * Normalize a SduiLayoutNode into entities.
  *
- * @param node - normalize할 노드
- * @returns normalize된 결과 (entities와 result)
+ * @param node - Node to normalize
+ * @returns Normalized result (entities and result)
  */
 export function normalizeSduiNode(node: SduiLayoutNode) {
-  // children 배열을 normalize
+  // Normalize the children array
   const childrenArray = node.children || []
   const normalizedChildren =
     childrenArray.length > 0
       ? normalize(childrenArray, [sduiLayoutNodeSchema])
       : { result: [], entities: { nodes: {} } }
 
-  // 현재 노드를 normalize (state와 attributes 포함)
+  // Normalize the current node (includes state and attributes)
   const nodeWithoutChildren: Omit<SduiLayoutNode, 'children'> = {
     id: node.id,
     type: node.type,
-    // state가 없으면 빈 객체로 자동 설정
+    // Default to an empty object when state is missing
     state: node.state || {},
-    // attributes가 없으면 빈 객체로 자동 설정
+    // Default to an empty object when attributes are missing
     attributes: node.attributes || {},
-    // reference는 그대로 전달
+    // Pass reference through as-is
     ...(node.reference !== undefined && { reference: node.reference }),
   }
 
@@ -77,7 +77,7 @@ export function normalizeSduiNode(node: SduiLayoutNode) {
     sduiLayoutNodeSchema,
   )
 
-  // entities 병합
+  // Merge entities
   const entities: NormalizedSduiEntities = {
     nodes: {
       ...normalizedData.entities.nodes,
@@ -85,9 +85,9 @@ export function normalizeSduiNode(node: SduiLayoutNode) {
     },
   }
 
-  // nodes에 childrenIds와 parentId 추가 (재귀적으로 모든 노드 순회)
+  // Add childrenIds and parentId to nodes (recursively traverse all nodes)
   const collectNodes = (currentNode: SduiLayoutNode, parentId?: string) => {
-    // 현재 노드가 entities에 있으면 childrenIds와 parentId 추가
+    // If the current node exists in entities, add childrenIds and parentId
     if (entities.nodes && entities.nodes[currentNode.id]) {
       entities.nodes[currentNode.id] = {
         ...entities.nodes[currentNode.id],
@@ -95,16 +95,16 @@ export function normalizeSduiNode(node: SduiLayoutNode) {
         parentId,
       }
     } else {
-      // 노드가 entities에 없으면 추가 (이 경우는 발생하지 않아야 하지만 안전장치)
+      // Add node when missing from entities (should not happen, but a safeguard)
       if (entities.nodes) {
         entities.nodes[currentNode.id] = {
           id: currentNode.id,
           type: currentNode.type,
-          // state가 없으면 빈 객체로 자동 설정
+          // Default to an empty object when state is missing
           state: currentNode.state || {},
-          // attributes가 없으면 빈 객체로 자동 설정
+          // Default to an empty object when attributes are missing
           attributes: currentNode.attributes || {},
-          // reference는 그대로 전달
+          // Pass reference through as-is
           ...(currentNode.reference !== undefined && { reference: currentNode.reference }),
           childrenIds: currentNode.children?.map((child) => child.id) || [],
           parentId,
@@ -112,13 +112,13 @@ export function normalizeSduiNode(node: SduiLayoutNode) {
       }
     }
 
-    // 자식 노드들도 재귀적으로 처리 (현재 노드 ID를 parentId로 전달)
+    // Recursively process child nodes (pass current node ID as parentId)
     if (currentNode.children) {
       currentNode.children.forEach((child) => collectNodes(child, currentNode.id))
     }
   }
 
-  collectNodes(node, undefined) // 루트 노드는 parentId가 undefined
+  collectNodes(node, undefined) // Root node has parentId set to undefined
 
   return {
     result: normalizedData.result,
@@ -127,10 +127,10 @@ export function normalizeSduiNode(node: SduiLayoutNode) {
 }
 
 /**
- * SduiLayoutDocument를 normalize
+ * Normalize a SduiLayoutDocument.
  *
- * @param document - normalize할 문서
- * @returns normalize된 결과
+ * @param document - Document to normalize
+ * @returns Normalized result
  */
 export function normalizeSduiLayout(document: SduiLayoutDocument) {
   const { result, entities } = normalizeSduiNode(document.root)

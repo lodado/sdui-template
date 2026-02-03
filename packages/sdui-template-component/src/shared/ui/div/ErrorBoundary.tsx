@@ -9,9 +9,9 @@ interface ErrorBoundaryProps {
   children: ReactNode
   fallback?: ReactNode | ((error: Error, errorInfo: React.ErrorInfo) => ReactNode)
   onError?: (error: Error, errorInfo: React.ErrorInfo) => void
-  /** SDUI 노드 ID (에러 컨텍스트에 포함) */
+  /** SDUI node ID (included in error context) */
   nodeId?: string
-  /** 부모 경로 (에러 컨텍스트에 포함) */
+  /** Parent path (included in error context) */
   parentPath?: string[]
 }
 
@@ -22,7 +22,7 @@ interface ErrorBoundaryState {
 }
 
 /**
- * ErrorBoundary 내부 구현 (Context 없이)
+ * Internal ErrorBoundary implementation (without context).
  */
 class ErrorBoundaryInner extends Component<
   ErrorBoundaryProps & { reportSituation?: (situation: ErrorSituation) => void },

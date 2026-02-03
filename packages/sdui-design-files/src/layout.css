@@ -1,27 +1,27 @@
 /**
  * Layout Variables
  * 
- * Safe Area Insets: iOS Safari 등에서 노치, 홈 인디케이터가 있는 부분을 피하기 위한 CSS 환경 변수
- * - env(): 최신 브라우저에서 지원
- * - constant(): 구형 iOS Safari에서 지원 (하위 호환성)
+ * Safe Area Insets: CSS environment variables to avoid the notch or home indicator area on iOS Safari, etc.
+ * - env(): supported in modern browsers
+ * - constant(): supported in older iOS Safari (backward compatibility)
  * 
- * Header/Footer Height: 일관된 레이아웃을 위한 높이 변수
+ * Header/Footer Height: height variables for consistent layout
  */
 
 :root {
-  /* Safe Area Insets - Top (상단) */
+  /* Safe Area Insets - Top (upper) */
   --safe-area-top: constant(safe-area-inset-top, 0);
   --safe-area-top: env(safe-area-inset-top, 0);
 
-  /* Safe Area Insets - Right (우측) */
+  /* Safe Area Insets - Right */
   --safe-area-right: constant(safe-area-inset-right, 0);
   --safe-area-right: env(safe-area-inset-right, 0);
 
-  /* Safe Area Insets - Bottom (하단) */
+  /* Safe Area Insets - Bottom */
   --safe-area-bottom: constant(safe-area-inset-bottom, 0);
   --safe-area-bottom: env(safe-area-inset-bottom, 0);
 
-  /* Safe Area Insets - Left (좌측) */
+  /* Safe Area Insets - Left */
   --safe-area-left: constant(safe-area-inset-left, 0);
   --safe-area-left: env(safe-area-inset-left, 0);
 
@@ -33,8 +33,8 @@
 /**
  * Body Safe Area Padding
  * 
- * Safe area insets를 body에 padding으로 적용하여
- * 콘텐츠가 노치나 홈 인디케이터 영역을 침범하지 않도록 합니다.
+ * Apply safe area insets as body padding
+ * so content does not overlap the notch or home indicator area.
  */
 body {
   margin: 0;

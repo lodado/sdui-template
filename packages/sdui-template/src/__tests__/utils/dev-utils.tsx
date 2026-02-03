@@ -17,10 +17,10 @@ import { SduiLayoutStore } from '../../store'
 import type { SduiLayoutStoreOptions } from '../../store/types'
 
 /**
- * 테스트용 기본 노드 컴포넌트 (자식 렌더링 포함)
+ * Default node component for tests (includes child rendering).
  *
- * 노드 정보를 표시하고 자식 노드를 렌더링합니다.
- * 테스트에서 기본 컴포넌트로 사용됩니다.
+ * Displays node info and renders child nodes.
+ * Used as the default component in tests.
  */
 export const TestDefaultNodeComponent: React.FC<SduiComponentProps> = ({ nodeId: id, parentPath = [] }) => {
   const { type, childrenIds } = useSduiNodeSubscription({
@@ -46,9 +46,9 @@ export const TestDefaultNodeComponent: React.FC<SduiComponentProps> = ({ nodeId:
 }
 
 /**
- * 테스트용 기본 컴포넌트 팩토리
+ * Default component factory for tests.
  *
- * 테스트에서 기본 컴포넌트로 사용되는 팩토리입니다.
+ * Factory used as the default component in tests.
  */
 export const defaultTestComponentFactory: ComponentFactory = (id, parentPath) => (
   <TestDefaultNodeComponent nodeId={id} parentPath={parentPath} />
@@ -64,12 +64,12 @@ export function createTestDocument(overrides?: Partial<SduiLayoutDocument>): Sdu
     children: [],
   }
 
-  // overrides가 있으면 병합 (state와 attributes는 normalize에서 자동 처리되므로 명시하지 않아도 됨)
+  // Merge overrides if provided (state and attributes are auto-handled by normalize)
   const mergedRoot = overrides?.root
     ? {
         ...defaultRoot,
         ...overrides.root,
-        // state와 attributes는 normalize에서 자동으로 {}로 설정되므로 명시하지 않아도 됨
+        // state and attributes default to {} in normalize, so no need to set explicitly
       }
     : defaultRoot
 
@@ -80,7 +80,7 @@ export function createTestDocument(overrides?: Partial<SduiLayoutDocument>): Sdu
       name: 'Test Document',
     },
     ...overrides,
-    root: mergedRoot, // root는 항상 병합된 결과 사용
+    root: mergedRoot, // Always use the merged root result
   }
 }
 

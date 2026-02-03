@@ -1,7 +1,7 @@
 /**
  * Server-Driven UI - React Context
  *
- * Context API 및 Provider export
+ * Export Context API and Provider
  */
 
 export * from './SduiLayoutContext'

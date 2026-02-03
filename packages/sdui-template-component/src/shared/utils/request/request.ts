@@ -6,9 +6,9 @@ class MockController {
 }
 
 /**
- *  data fetch를 위한 request 함수
- *  data (body)는 string으로 넣을것
- *  baseUrl은 각 앱에서 주입해야 함 (서버: headers에서, 브라우저: window.location.origin)
+ * Request function for data fetching.
+ * Provide data (body) as a string.
+ * baseUrl must be injected by each app (server: from headers, browser: window.location.origin).
  */
 export const request = async <T>({
   method = 'GET',
@@ -43,7 +43,7 @@ export const request = async <T>({
     timeoutId?.unref?.()
   } else {
     /**
-     * server component에서 서버에 api 호출시 cookie 정보를 빼먹어서 명시적으로 넣어줌
+     * Server components can omit cookie info when calling server APIs, so we set it explicitly.
      */
     const cookieString = await parseServerCookie()
 
@@ -63,7 +63,7 @@ export const request = async <T>({
     headers: requestHeaders,
     ...(!isServerSide() && isSignalRequired ? { signal: controller.signal } : {}),
 
-    /** ISR 때 이상하게 동작함 */
+    /** Behaves oddly during ISR */
     cache: 'no-cache',
     ...options,
   })

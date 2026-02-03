@@ -1,29 +1,29 @@
 /**
- * Server-Driven UI - Layout 전용 노드
+ * Server-Driven UI - Layout-specific node
  *
- * Layout 시스템을 위한 노드 타입 정의
+ * Node type definitions for the layout system.
  */
 
 import type { SduiNode } from './base'
 
 /**
- * Layout 전용 노드
+ * Layout-specific node.
  *
- * SduiNode를 상속받아 state를 LayoutState로 구체화합니다.
+ * Extends SduiNode and specializes state for layout.
  */
 export interface SduiLayoutNode extends SduiNode {
-  /** 컴포넌트 타입 */
+  /** Component type */
   type: string
 
-  /** 레이아웃 상태 */
+  /** Layout state */
   state?: Record<string, unknown>
 
-  /** 자식 노드 배열 (재귀 구조) */
+  /** Child node array (recursive structure) */
   children?: SduiLayoutNode[]
 
-  /** 자식 노드 ID 배열 (normalize 시 추가됨, 원본 문서에는 없음) */
+  /** Child node ID array (added during normalization, not in the original document) */
   childrenIds?: string[]
 
-  /** 부모 노드 ID (normalize 시 추가됨, 루트 노드는 undefined, 원본 문서에는 없음) */
+  /** Parent node ID (added during normalization, root is undefined, not in the original document) */
   parentId?: string
 }

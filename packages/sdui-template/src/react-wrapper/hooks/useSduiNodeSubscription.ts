@@ -3,15 +3,15 @@
 /**
  * SDUI Node Subscription Hook
  *
- * useSyncExternalStore 기반 구독 시스템을 사용하여 특정 노드의 변경을 감지하고
- * 리렌더링을 트리거합니다. tearing 문제를 방지하기 위해 내부적으로
- * useSduiNodeSubscriptionSync를 사용합니다.
+ * Uses a useSyncExternalStore-based subscription system to detect changes
+ * for a specific node and trigger re-renders. To prevent tearing,
+ * it uses useSduiNodeSubscriptionSync internally.
  *
  * @description
- * - useSyncExternalStore를 사용하여 React 18+ concurrent rendering에서 tearing 방지
- * - nodes, variables: version 구독으로 변경 감지
- * - layoutStates/layoutAttributes: 노드별 구독으로 변경 감지
- * - 타임스탬프 기반 스냅샷 비교로 효율적인 리렌더링
+ * - Prevents tearing in React 18+ concurrent rendering with useSyncExternalStore
+ * - nodes, variables: detect changes by version subscription
+ * - layoutStates/layoutAttributes: detect changes by per-node subscription
+ * - Efficient re-rendering via timestamp-based snapshot comparison
  */
 
 import type { z, ZodSchema } from 'zod'
@@ -20,37 +20,37 @@ import type { SduiLayoutNode } from '../../schema'
 import { useSduiNodeSubscriptionSync } from './useSduiNodeSubscriptionSync'
 
 /**
- * useSduiNodeSubscription 파라미터 타입
+ * useSduiNodeSubscription parameter types
  */
 export interface UseSduiNodeSubscriptionParams<
   TSchema extends ZodSchema<Record<string, unknown>> = ZodSchema<Record<string, unknown>>,
 > {
-  /** 구독할 노드 ID */
+  /** Node ID to subscribe to */
   nodeId: string
-  /** Zod 스키마 (선택적). state를 검증하고, 실패 시 에러를 throw합니다. 성공 시 state는 스키마에서 추론된 타입으로 보장됩니다. */
+  /** Zod schema (optional). Validates state and throws on failure. On success, state is inferred from the schema. */
   schema?: TSchema
 }
 
 /**
- * 특정 노드 ID를 구독하고 변경 시 리렌더링을 트리거합니다.
+ * Subscribe to a specific node ID and trigger re-renders on changes.
  *
- * 내부적으로 useSyncExternalStore를 사용하여 tearing 문제를 방지합니다.
+ * Internally uses useSyncExternalStore to prevent tearing.
  *
- * - nodes, variables: version 구독으로 변경 감지
- * - layoutStates: 노드별 구독으로 변경 감지
+ * - nodes, variables: detect changes by version subscription
+ * - layoutStates: detect changes by per-node subscription
  *
- * @template TSchema - Zod 스키마 타입. 스키마에서 타입을 추론합니다.
- * @param params - 구독 파라미터 객체
- *   - `nodeId`: 구독할 노드 ID
- *   - `schema`: Zod 스키마 (선택적). state를 검증하고, 실패 시 에러를 throw합니다. 성공 시 state는 스키마에서 추론된 타입으로 보장됩니다.
- * @returns 노드 정보 객체
- *   - `node`: 노드 엔티티 (SduiLayoutNode | undefined)
- *   - `type`: 노드 타입 (string | undefined)
- *   - `state`: 레이아웃 상태 (스키마가 제공되면 z.infer<TSchema>, 아니면 Record<string, unknown>)
- *   - `childrenIds`: 자식 노드 ID 배열 (string[])
- *   - `attributes`: 노드 속성 (Record<string, unknown> | undefined)
- *   - `reference`: 노드 참조 (string | string[] | undefined)
- *   - `exists`: 노드 존재 여부 (boolean)
+ * @template TSchema - Zod schema type. Infers types from the schema.
+ * @param params - Subscription parameter object
+ *   - `nodeId`: Node ID to subscribe to
+ *   - `schema`: Zod schema (optional). Validates state and throws on failure. On success, state is inferred from the schema.
+ * @returns Node info object
+ *   - `node`: Node entity (SduiLayoutNode | undefined)
+ *   - `type`: Node type (string | undefined)
+ *   - `state`: Layout state (z.infer<TSchema> if schema is provided, otherwise Record<string, unknown>)
+ *   - `childrenIds`: Array of child node IDs (string[])
+ *   - `attributes`: Node attributes (Record<string, unknown> | undefined)
+ *   - `reference`: Node reference (string | string[] | undefined)
+ *   - `exists`: Whether the node exists (boolean)
  *
  * @example
  * ```tsx
@@ -73,6 +73,6 @@ export function useSduiNodeSubscription<
   reference: string | string[] | undefined
   exists: boolean
 } {
-  // useSyncExternalStore 기반 구독으로 위임
+  // Delegate to the useSyncExternalStore-based subscription
   return useSduiNodeSubscriptionSync(params)
 }

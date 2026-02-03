@@ -147,8 +147,8 @@ describe('Form - Logic Tests', () => {
         )
 
         const label = screen.getByText('이메일')
-        // getByLabelText는 label의 textContent를 기준으로 찾으므로, required indicator(*)가 포함된 경우 정확히 매칭해야 함
-        // 또는 role을 사용하여 찾을 수 있음
+        // getByLabelText matches by label textContent, so include the required indicator (*) for exact matching
+        // Alternatively, you can query by role
         const input = screen.getByRole('textbox', { name: /이메일/ })
 
         expect(label).toHaveTextContent('이메일*')

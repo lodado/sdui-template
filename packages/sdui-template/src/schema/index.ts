@@ -1,14 +1,14 @@
 /**
  * Server-Driven UI - Schema
  *
- * SDUI 스키마 타입들을 export합니다.
+ * Export SDUI schema types.
  */
 
-// 기본 스키마
+// Base schema
 export type * from './base'
 
-// 노드 스키마
+// Node schema
 export type * from './node'
 
-// 문서 스키마
+// Document schema
 export type * from './document'

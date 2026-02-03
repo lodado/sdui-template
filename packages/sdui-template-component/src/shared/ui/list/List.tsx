@@ -28,8 +28,8 @@ import type {
  *     <BookIcon />
  *   </List.Icon>
  *   <List.Content>
- *     <List.Title>기사 읽기</List.Title>
- *     <List.Description>오늘의 추천 기사를 읽고 단어를 저장하세요</List.Description>
+ *     <List.Title>Read Article</List.Title>
+ *     <List.Description>Read today’s recommended article and save new words.</List.Description>
  *   </List.Content>
  *   <List.Arrow />
  * </List>
@@ -126,8 +126,8 @@ ListIcon.displayName = 'List.Icon'
  * @example
  * ```tsx
  * <List.Content>
- *   <List.Title>기사 읽기</List.Title>
- *   <List.Description>오늘의 추천 기사를 읽고 단어를 저장하세요</List.Description>
+ *   <List.Title>Read Article</List.Title>
+ *   <List.Description>Read today’s recommended article and save new words.</List.Description>
  * </List.Content>
  * ```
  */
@@ -157,7 +157,7 @@ ListContent.displayName = 'List.Content'
  *
  * @example
  * ```tsx
- * <List.Title>기사 읽기</List.Title>
+ * <List.Title>Read Article</List.Title>
  * ```
  */
 const ListTitle = React.forwardRef<HTMLDivElement, ListTitleProps>(
@@ -186,7 +186,7 @@ ListTitle.displayName = 'List.Title'
  *
  * @example
  * ```tsx
- * <List.Description>오늘의 추천 기사를 읽고 단어를 저장하세요</List.Description>
+ * <List.Description>Read today’s recommended article and save new words.</List.Description>
  * ```
  */
 const ListDescription = React.forwardRef<HTMLDivElement, ListDescriptionProps>(

@@ -23,8 +23,8 @@ import { z } from 'zod'
  *     <BookIcon />
  *   </List.Icon>
  *   <List.Content>
- *     <List.Title>기사 읽기</List.Title>
- *     <List.Description>오늘의 추천 기사를 읽고 단어를 저장하세요</List.Description>
+ *     <List.Title>Read Article</List.Title>
+ *     <List.Description>Read today’s recommended article and save new words.</List.Description>
  *   </List.Content>
  *   <List.Arrow />
  * </List>

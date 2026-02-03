@@ -6,9 +6,9 @@ import { SduiLayoutRenderer } from '@lodado/sdui-template'
 import { componentMap } from './components/componentMap'
 
 /**
- * 예제 SDUI 문서
+ * Example SDUI document.
  *
- * 간단한 그리드 레이아웃과 토글 컴포넌트를 포함한 예제입니다.
+ * This example includes a simple grid layout and toggle components.
  */
 const exampleDocument: SduiLayoutDocument = {
   version: '1.0.0',

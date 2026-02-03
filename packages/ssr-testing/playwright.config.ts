@@ -1,9 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Playwright 설정 파일
+ * Playwright configuration file.
  *
- * Next.js 앱의 E2E 테스트를 위한 설정입니다.
+ * This is the configuration for E2E tests of the Next.js app.
  */
 export default defineConfig({
   testDir: './',
@@ -41,4 +41,3 @@ export default defineConfig({
     timeout: 120 * 1000,
   },
 });
-

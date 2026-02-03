@@ -15,8 +15,8 @@ import type { ErrorPolicy, ErrorSituation } from './types'
  */
 interface ErrorReportingContextValue {
   /**
-   * 에러 상황을 보고합니다.
-   * @param situation - 에러 상황 정보
+   * Report an error situation.
+   * @param situation - Error situation details
    */
   reportSituation: (situation: ErrorSituation) => void
 }
@@ -31,16 +31,16 @@ const ErrorReportingContext =
  * Error Reporting Provider Props
  */
 interface ErrorReportingProviderProps {
-  /** 자식 컴포넌트 */
+  /** Child components */
   children: ReactNode
-  /** 에러 처리 정책 */
+  /** Error handling policy */
   policy: ErrorPolicy | null
 }
 
 /**
  * Error Reporting Provider
  *
- * ErrorBoundary에서 발생한 에러 상황을 Policy로 전달하는 Provider입니다.
+ * Provider that passes ErrorBoundary error situations to a policy.
  *
  * @example
  * ```tsx
@@ -65,7 +65,7 @@ export const ErrorReportingProvider: React.FC<
 
       try {
         const result = policy.handleSituation(situation)
-        // Promise인 경우 처리 (에러는 무시)
+        // Handle Promise results (ignore errors)
         if (result instanceof Promise) {
           result.catch(err => {
             console.error('Error in policy handler:', err)
@@ -95,10 +95,10 @@ export const ErrorReportingProvider: React.FC<
 /**
  * useErrorReportingContext Hook
  *
- * Error Reporting Context를 가져옵니다.
- * Provider 외부에서 사용 시 null을 반환합니다.
+ * Get the Error Reporting Context.
+ * Returns null when used outside the provider.
  *
- * @returns ErrorReportingContextValue 또는 null
+ * @returns ErrorReportingContextValue or null
  */
 export const useErrorReportingContext =
   (): ErrorReportingContextValue | null => {

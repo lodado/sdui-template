@@ -2,64 +2,64 @@ import type React from 'react'
 
 /**
  * Error Context
- * 에러가 발생한 위치와 관련 메타데이터
+ * Metadata related to where an error occurred.
  */
 export interface ErrorContext {
-  /** SDUI 노드 ID */
+  /** SDUI node ID */
   nodeId?: string
-  /** 컴포넌트 이름 */
+  /** Component name */
   componentName?: string
-  /** 에러 발생 시각 */
+  /** Error timestamp */
   timestamp: number
-  /** ErrorBoundary ID (여러 Boundary가 있을 경우 구분) */
+  /** ErrorBoundary ID (used to distinguish multiple boundaries) */
   errorBoundaryId?: string
-  /** 부모 경로 (SDUI 계층 구조) */
+  /** Parent path (SDUI hierarchy) */
   parentPath?: string[]
-  /** 추가 메타데이터 */
+  /** Additional metadata */
   metadata?: Record<string, unknown>
 }
 
 /**
  * Error Situation
- * ErrorBoundary에서 Policy로 전달하는 상황 정보
+ * Situation details passed from ErrorBoundary to a policy.
  */
 export interface ErrorSituation {
-  /** 에러 객체 */
+  /** Error object */
   error: Error
-  /** React ErrorInfo (componentDidCatch에서 제공) */
+  /** React ErrorInfo (provided by componentDidCatch) */
   errorInfo?: React.ErrorInfo
 
-  /** 컨텍스트 정보 */
+  /** Context info */
   context: ErrorContext
 
-  /** 생명주기 정보 */
+  /** Lifecycle info */
   lifecycle: {
-    /** 현재 생명주기 단계 */
+    /** Current lifecycle phase */
     phase: 'mount' | 'update' | 'unmount' | 'catch' | 'recovery'
-    /** 이전 상태 */
+    /** Previous state */
     previousState?: {
       hasError: boolean
       error: Error | null
     }
-    /** 현재 상태 */
+    /** Current state */
     currentState: {
       hasError: boolean
       error: Error | null
     }
   }
 
-  /** 추가 메타데이터 */
+  /** Additional metadata */
   metadata?: Record<string, unknown>
 }
 
 /**
  * Error Policy
- * 에러 상황을 처리하는 정책 인터페이스
+ * Policy interface for handling error situations.
  */
 export interface ErrorPolicy {
   /**
-   * 에러 상황을 처리합니다.
-   * @param situation - 에러 상황 정보
+   * Handle an error situation.
+   * @param situation - Error situation details
    */
   handleSituation(situation: ErrorSituation): void | Promise<void>
 }

@@ -1,10 +1,10 @@
 'use client'
 
 /**
- * 기본 노드 컴포넌트
+ * Default node component.
  *
- * 노드 타입이 매핑되지 않았을 때 사용되는 기본 컴포넌트입니다.
- * 개발 환경에서 노드 정보를 표시합니다.
+ * Used when a node type is not mapped.
+ * Displays node information in the development environment.
  */
 
 import React from 'react'
@@ -13,10 +13,10 @@ import { useSduiNodeSubscription } from '../react-wrapper/hooks/useSduiNodeSubsc
 import type { SduiComponentProps } from './types'
 
 /**
- * 기본 노드 컴포넌트
+ * Default node component.
  *
- * 노드 타입이 매핑되지 않았을 때 사용되는 기본 컴포넌트입니다.
- * 개발 환경에서 노드 정보를 표시합니다.
+ * Used when a node type is not mapped.
+ * Displays node information in the development environment.
  */
 export const DefaultNodeComponent: React.FC<SduiComponentProps> = ({ nodeId: id, parentPath = [] }) => {
   const { type, childrenIds } = useSduiNodeSubscription({

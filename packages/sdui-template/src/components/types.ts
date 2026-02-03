@@ -1,45 +1,45 @@
 /**
  * Server-Driven UI - Component System Types
  *
- * 컴포넌트 팩토리 및 렌더링 함수 타입 정의
+ * Component factory and render function type definitions
  */
 
 import type { ReactNode } from 'react'
 
 /**
- * 부모 노드 ID 경로 타입
+ * Parent node ID path type
  *
- * 디버깅을 위한 부모 노드 ID 경로입니다.
- * 예: ['root', 'container-1', 'button-1']
+ * Parent node ID path for debugging.
+ * Example: ['root', 'container-1', 'button-1']
  */
 export type ParentPath = string[]
 
 /**
- * SDUI 컴포넌트의 공통 Props 타입
+ * Common props type for SDUI components
  *
- * 모든 SDUI 컴포넌트가 공통으로 사용하는 props입니다.
- * ComponentFactory에서 컴포넌트로 전달할 때 사용합니다.
+ * Props shared across all SDUI components.
+ * Used when ComponentFactory passes props to components.
  */
 export interface SduiComponentProps {
-  /** 노드 ID */
+  /** Node ID */
   nodeId: string
-  /** 디버깅을 위한 부모 노드 ID 경로 */
+  /** Parent node ID path for debugging */
   parentPath?: ParentPath
 }
 
 /**
- * 자식 노드 렌더링 함수 타입 (Render Props)
+ * Child node rendering function type (Render Props)
  *
- * 상위에서 주입되어 자식 노드를 렌더링할 때 사용합니다.
- * parentPath는 디버깅을 위한 부모 노드 ID 경로입니다.
+ * Injected from the parent and used to render child nodes.
+ * parentPath is the parent node ID path for debugging.
  */
 export type RenderNodeFn = (childId: string, parentPath?: ParentPath) => ReactNode
 
 /**
- * 컴포넌트 팩토리 타입
+ * Component factory type
  *
- * id, parentPath를 받아서 컴포넌트를 렌더링합니다.
- * parentPath는 디버깅을 위한 부모 노드 ID 경로입니다 (예: ['root', 'container-1']).
- * 컴포넌트 내부에서 useRenderNode hook을 사용하여 자식 노드를 렌더링할 수 있습니다.
+ * Renders a component given id and parentPath.
+ * parentPath is the parent node ID path for debugging (e.g., ['root', 'container-1']).
+ * Components can render child nodes using the useRenderNode hook.
  */
 export type ComponentFactory = (id: string, parentPath?: ParentPath) => ReactNode

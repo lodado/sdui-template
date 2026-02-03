@@ -2,28 +2,28 @@
 /**
  * SubscriptionManager
  *
- * Observer Pattern을 구현하여 구독 시스템을 관리합니다.
- * ID별 구독자와 version 구독자를 관리합니다.
+ * Manages the subscription system using the Observer pattern.
+ * Manages per-ID subscribers and version subscribers.
  */
 
 /**
  * SubscriptionManager
  *
- * 구독 시스템을 독립적으로 관리하는 클래스입니다.
+ * A class that manages the subscription system independently.
  */
 export class SubscriptionManager {
-  /** ID별 구독자 관리 (layoutStates/layoutAttributes 변경 감지용) */
+  /** Per-ID subscriber management (for detecting layoutStates/layoutAttributes changes) */
   private _nodeListeners = new Map<string, Set<() => void>>()
 
-  /** version 구독자 관리 (nodes, rootId, variables 변경 감지용) */
+  /** Version subscriber management (for detecting nodes, rootId, variables changes) */
   private _versionListeners = new Set<() => void>()
 
   /**
-   * 특정 노드 ID를 구독합니다.
+   * Subscribe to a specific node ID.
    *
-   * @param nodeId - 구독할 노드 ID
-   * @param callback - 변경 시 호출될 콜백 (forceRender)
-   * @returns 구독 해제 함수
+   * @param nodeId - Node ID to subscribe to
+   * @param callback - Callback invoked on changes (forceRender)
+   * @returns Unsubscribe function
    */
   subscribeNode(nodeId: string, callback: () => void): () => void {
     if (!this._nodeListeners.has(nodeId)) {
@@ -33,7 +33,7 @@ export class SubscriptionManager {
 
     return () => {
       this._nodeListeners.get(nodeId)?.delete(callback)
-      // 구독자가 없으면 Map에서 제거 (메모리 정리)
+      // Remove from the map when no subscribers remain (memory cleanup)
       if (this._nodeListeners.get(nodeId)?.size === 0) {
         this._nodeListeners.delete(nodeId)
       }
@@ -41,10 +41,10 @@ export class SubscriptionManager {
   }
 
   /**
-   * version을 구독합니다. (nodes, rootId, variables 변경 감지용)
+   * Subscribe to version changes. (for detecting nodes, rootId, variables changes)
    *
-   * @param callback - 변경 시 호출될 콜백 (forceRender)
-   * @returns 구독 해제 함수
+   * @param callback - Callback invoked on changes (forceRender)
+   * @returns Unsubscribe function
    */
   subscribeVersion(callback: () => void): () => void {
     this._versionListeners.add(callback)
@@ -54,27 +54,27 @@ export class SubscriptionManager {
   }
 
   /**
-   * 특정 노드의 구독자에게 변경을 알립니다.
+   * Notify subscribers of a specific node.
    *
-   * @param nodeId - 변경된 노드 ID
+   * @param nodeId - Updated node ID
    */
   notifyNode(nodeId: string): void {
     this._nodeListeners.get(nodeId)?.forEach((callback) => callback())
   }
 
   /**
-   * 여러 노드의 구독자에게 변경을 알립니다.
+   * Notify subscribers of multiple nodes.
    *
-   * @param nodeIds - 변경된 노드 ID 배열
+   * @param nodeIds - Array of updated node IDs
    */
   notifyNodes(nodeIds: string[]): void {
-    // 중복 제거 후 notify
+    // Remove duplicates before notifying
     const uniqueIds = [...new Set(nodeIds)]
     uniqueIds.forEach((nodeId) => this.notifyNode(nodeId))
   }
 
   /**
-   * version 구독자에게 변경을 알립니다.
+   * Notify version subscribers of changes.
    */
   notifyVersion(): void {
     this._versionListeners.forEach((callback) => callback())

@@ -2,7 +2,7 @@
 /**
  * VariablesManager
  *
- * 전역 변수 관리를 담당합니다.
+ * Handles global variable management.
  */
 
 import { cloneDeep } from 'lodash-es'
@@ -13,7 +13,7 @@ import type { SubscriptionManager } from './SubscriptionManager'
 /**
  * VariablesManager
  *
- * 전역 변수 관리를 담당합니다.
+ * Handles global variable management.
  */
 export class VariablesManager {
   constructor(
@@ -23,13 +23,13 @@ export class VariablesManager {
   {}
 
   /**
-   * 전역 변수를 업데이트합니다.
-   * 깊은 복사로 새 객체를 생성하여 version을 증가시킵니다.
+   * Update global variables.
+   * Increase the version by creating a new object via deep copy.
    *
-   * @param variables - 새로운 전역 변수 객체
+   * @param variables - New global variables object
    */
   updateVariables(variables: Record<string, unknown>): void {
-    // 깊은 복사로 새 객체 생성 → version 증가 → 전체 리렌더
+    // Create a new object via deep copy → increment version → full re-render
     this.repository.updateVariables(cloneDeep(variables))
     this.repository.setEdited(true)
     this.repository.incrementVersion()
@@ -37,14 +37,14 @@ export class VariablesManager {
   }
 
   /**
-   * 개별 전역 변수를 업데이트합니다.
-   * 깊은 복사로 새 객체를 생성하여 version을 증가시킵니다.
+   * Update an individual global variable.
+   * Increase the version by creating a new object via deep copy.
    *
-   * @param key - 변수 키
-   * @param value - 변수 값
+   * @param key - Variable key
+   * @param value - Variable value
    */
   updateVariable(key: string, value: unknown): void {
-    // 깊은 복사로 새 객체 생성 → version 증가 → 전체 리렌더
+    // Create a new object via deep copy → increment version → full re-render
     const current = this.repository.state.variables
     this.repository.updateVariables({
       ...cloneDeep(current),
@@ -56,9 +56,9 @@ export class VariablesManager {
   }
 
   /**
-   * 전역 변수를 삭제합니다.
+   * Delete a global variable.
    *
-   * @param key - 삭제할 변수 키
+   * @param key - Variable key to delete
    */
   deleteVariable(key: string): void {
     const newVariables = cloneDeep(this.repository.state.variables)
@@ -69,7 +69,6 @@ export class VariablesManager {
     this.subscriptionManager.notifyVersion()
   }
 }
-
 
 
 

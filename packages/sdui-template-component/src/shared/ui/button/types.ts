@@ -81,7 +81,7 @@ export type ButtonSpacing = 'default' | 'compact'
  *
  * @example
  * ```tsx
- * // asChild를 사용하여 Link에 Button 스타일 적용
+ * // Use asChild to apply Button styles to a Link
  * <Button asChild appearance="subtle">
  *   <Link href="/about">About</Link>
  * </Button>

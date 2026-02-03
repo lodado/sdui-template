@@ -62,7 +62,7 @@ describe('useSyncExternalStore Tearing Prevention', () => {
 
           React.useEffect(() => {
             // Rapid updates to simulate concurrent rendering scenario
-            // 각 업데이트 사이에 충분한 간격을 두어 React가 처리할 수 있도록 함
+            // Leave enough time between updates so React can process them
             setTimeout(() => store.updateNodeState('node-1', { value: 20 }), 10)
             setTimeout(() => store.updateNodeState('node-1', { value: 30 }), 30)
             setTimeout(() => store.updateNodeState('node-1', { value: 40 }), 50)
@@ -87,7 +87,7 @@ describe('useSyncExternalStore Tearing Prevention', () => {
           <RapidUpdateTest />,
         )
 
-        // Wait for all updates to complete (마지막 업데이트가 50ms 후이므로 충분한 시간 대기)
+        // Wait for all updates to complete (last update is after 50ms, so wait long enough)
         await waitFor(
           () => {
             const comp1 = screen.getByTestId('test1-subscribed-node-1')
@@ -139,7 +139,7 @@ describe('useSyncExternalStore Tearing Prevention', () => {
             // Update state
             store.updateNodeState('node-1', { value: 50 })
 
-            // Immediately read via state (getSnapshot은 lastModified와 version만 반환)
+            // Immediately read via state (getSnapshot only returns lastModified and version)
             const { nodes } = store.state
             const node = nodes['node-1']
             setSnapshotValue((node?.state as any)?.value)
@@ -282,7 +282,7 @@ describe('useSyncExternalStore Tearing Prevention', () => {
           const store = useSduiLayoutAction()
 
           React.useEffect(() => {
-            // 각 업데이트 사이에 충분한 간격을 두어 React가 처리할 수 있도록 함
+            // Leave enough time between updates so React can process them
             setTimeout(() => {
               store.updateNodeState('node-1', { value: 15 })
             }, 20)
@@ -349,7 +349,7 @@ describe('useSyncExternalStore Tearing Prevention', () => {
           const [snapshotState, setSnapshotState] = React.useState<number | null>(null)
 
           React.useEffect(() => {
-            // getSnapshot은 lastModified와 version만 반환하므로 state에서 직접 가져옴
+            // getSnapshot only returns lastModified and version, so read directly from state
             const { nodes } = store.state
             const node = nodes['node-1']
             setSnapshotState((node?.state as any)?.value)
@@ -390,4 +390,3 @@ describe('useSyncExternalStore Tearing Prevention', () => {
     })
   })
 })
-

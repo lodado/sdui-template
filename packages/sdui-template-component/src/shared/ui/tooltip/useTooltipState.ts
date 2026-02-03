@@ -36,7 +36,7 @@ export function useTooltipState({ open, defaultOpen }: UseTooltipStateProps) {
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!isControlled) {
-      // hover를 지원하지 않는 디바이스(모바일)에서는 hover로 닫히지 않도록 함
+      // On devices without hover (mobile), prevent closing via hover
       if (!hasHover && !open && !internalOpen) {
         return
       }

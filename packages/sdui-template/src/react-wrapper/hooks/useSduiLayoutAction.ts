@@ -3,9 +3,9 @@
 /**
  * useSduiLayoutAction
  *
- * Store 인스턴스를 반환하여 액션을 호출할 수 있게 합니다.
+ * Returns the store instance so actions can be invoked.
  *
- * @returns Store 인스턴스
+ * @returns Store instance
  *
  * @example
  * ```tsx

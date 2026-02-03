@@ -4,15 +4,15 @@ import type { ErrorPolicy, ErrorSituation } from './types'
  * Composite Error Policy Options
  */
 export interface CompositeErrorPolicyOptions {
-  /** 실행 방식: 순차 또는 병렬 */
+  /** Execution mode: sequential or parallel */
   execution?: 'sequential' | 'parallel'
-  /** 에러 발생 시 중단 여부 */
+  /** Whether to stop on error */
   stopOnError?: boolean
 }
 
 /**
  * Composite Error Policy
- * 여러 Policy를 조합하여 실행하는 Policy
+ * Policy that executes multiple policies together.
  */
 export class CompositeErrorPolicy implements ErrorPolicy {
   constructor(
@@ -55,7 +55,7 @@ export class CompositeErrorPolicy implements ErrorPolicy {
       if (this.options.stopOnError) {
         throw err
       }
-      // 한 Policy가 실패해도 다른 Policy는 계속 실행
+      // Continue executing other policies even if one fails
       // eslint-disable-next-line no-console
       console.error('Error in policy handler:', err)
     }
