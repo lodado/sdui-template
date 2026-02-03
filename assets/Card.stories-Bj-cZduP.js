@@ -1,4 +1,4 @@
-import{j as s}from"./jsx-runtime-Cn5vU2bi.js";import{C as d,S as i,s as o}from"./sduiComponents-C3NvGM3k.js";import"./iframe-C9NbDJzv.js";import"./preload-helper-ggYluGXI.js";import"./index-DqsrmGy_.js";import"./index-CUFHkYWu.js";const g={title:"Shared/UI/Card",component:d,tags:["autodocs"],parameters:{docs:{description:{component:`
+import{j as s}from"./jsx-runtime-CRYecwS8.js";import{C as d,S as i,s as o}from"./sduiComponents-Tde-u4pn.js";import"./iframe-DLPnnw6g.js";import"./preload-helper-ggYluGXI.js";import"./index-DuMxz31p.js";import"./index-Bf_5zts8.js";const g={title:"Shared/UI/Card",component:d,tags:["autodocs"],parameters:{docs:{description:{component:`
 ## Overview
 
 The **Card** component is a container component that provides a visual card with rounded corners, shadow, and background color. It's used to group related content together in a visually distinct container.
