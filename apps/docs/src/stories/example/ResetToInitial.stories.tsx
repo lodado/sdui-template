@@ -1,6 +1,6 @@
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable local-rules/no-console-log */
-import { type SduiLayoutDocument, SduiLayoutRenderer, useSduiLayoutAction } from '@lodado/sdui-template'
+import { type ComponentFactory, type SduiLayoutDocument, SduiLayoutRenderer, useSduiLayoutAction } from '@lodado/sdui-template'
 import { sduiComponents } from '@lodado/sdui-template-component'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import React, { useState } from 'react'
@@ -64,16 +64,29 @@ function createDocument(toggleCount: number): SduiLayoutDocument {
       id: 'root',
       type: 'Div',
       state: {},
-      children: toggles,
+      children: [
+        ...toggles,
+        {
+          id: 'reset-button-container',
+          type: 'Div',
+          attributes: { className: 'mt-4 flex justify-center' },
+          children: [
+            {
+              id: 'reset-button',
+              type: 'ResetButton',
+            },
+          ],
+        },
+      ],
     },
   }
 }
 
 /**
- * Reset Button Component
- * Uses useSduiLayoutAction to access the store and call resetToInitial()
+ * Reset Button Factory
+ * Creates a component that uses useSduiLayoutAction to access the store and call resetToInitial()
  */
-const ResetButton: React.FC = () => {
+const ResetButtonFactory: ComponentFactory = () => {
   const store = useSduiLayoutAction()
   const [error, setError] = useState<string | null>(null)
 
@@ -126,7 +139,7 @@ export const ResetToInitialExample: Story = {
       setDocument(createDocument(newCount))
     }
 
-    const handleResetDocument = () => {
+    const handleReset = () => {
       setToggleCount(3)
       setDocument(createDocument(3))
     }
@@ -142,13 +155,12 @@ export const ResetToInitialExample: Story = {
             Add Toggle ({toggleCount} → {toggleCount + 1})
           </button>
           <button
-            onClick={handleResetDocument}
+            onClick={handleReset}
             className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
             type="button"
           >
-            Reset Document to 3 Toggles
+            Reset to 3 Toggles
           </button>
-          <ResetButton />
           <span className="text-sm text-gray-600">
             Current: {toggleCount} toggles
           </span>
@@ -160,16 +172,19 @@ export const ResetToInitialExample: Story = {
           </div>
           <ol className="list-decimal list-inside text-sm text-gray-600 space-y-1 mb-4">
             <li>Click each toggle to change its ON/OFF state</li>
-            <li>Click "Add Toggle" to add more toggles</li>
+            <li>Click the "Add Toggle" button</li>
             <li>
-              <strong>Click "Reset to Initial" to restore the initial document state</strong>
+              <strong>Click "Reset to Initial" (rendered via SDUI) to restore the initial document state</strong>
             </li>
             <li>Verify that all toggles return to their initial state (3 toggles, all OFF)</li>
           </ol>
 
           <SduiLayoutRenderer
             document={document}
-            components={sduiComponents}
+            components={{
+              ...sduiComponents,
+              ResetButton: ResetButtonFactory,
+            }}
             onLayoutChange={(doc) => {
               console.log('Document updated:', doc)
             }}
