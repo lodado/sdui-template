@@ -13,7 +13,7 @@ import { z } from 'zod'
 import type { ComponentFactory } from '../../components/types'
 import { useSduiLayoutAction, useSduiNodeSubscription } from '../../react-wrapper/hooks'
 import type { SduiLayoutDocument } from '../../schema'
-import { createTestDocument, renderWithSduiLayout } from '../utils/dev-utils'
+import { createTestDocument, defaultTestComponentFactory, renderWithSduiLayout } from '../utils/dev-utils'
 
 // Toggle state schema
 const toggleStateSchema = z.object({
@@ -97,15 +97,9 @@ describe('Dynamic Document Merge', () => {
           }
 
           return (
-            <>
-              <button onClick={handleMerge} type="button" data-testid="merge-button">
-                Add Toggle
-              </button>
-              <ToggleComponent nodeId="toggle-1" testPrefix="test" />
-              <ToggleComponent nodeId="toggle-2" testPrefix="test" />
-              <ToggleComponent nodeId="toggle-3" testPrefix="test" />
-              {hasMerged && <ToggleComponent nodeId="toggle-4" testPrefix="test" />}
-            </>
+            <button onClick={handleMerge} type="button" data-testid="merge-button">
+              Add Toggle
+            </button>
           )
         }
 
@@ -114,33 +108,34 @@ describe('Dynamic Document Merge', () => {
           {
             components: {
               Toggle: ToggleComponentFactory,
+              Container: defaultTestComponentFactory,
             },
           },
           <MergeTest />,
         )
 
-        // Wait for initial render
+        // Wait for initial render (SDUI renders with sdui prefix)
         await waitFor(() => {
-          expect(screen.getByTestId('test-toggle-toggle-1')).toBeInTheDocument()
-          expect(screen.getByTestId('test-toggle-toggle-2')).toBeInTheDocument()
-          expect(screen.getByTestId('test-toggle-toggle-3')).toBeInTheDocument()
+          expect(screen.getByTestId('sdui-toggle-toggle-1')).toBeInTheDocument()
+          expect(screen.getByTestId('sdui-toggle-toggle-2')).toBeInTheDocument()
+          expect(screen.getByTestId('sdui-toggle-toggle-3')).toBeInTheDocument()
         })
 
         // Initially all toggles should be OFF
-        expect(screen.getByTestId('test-toggle-state-toggle-1')).toHaveTextContent('OFF')
-        expect(screen.getByTestId('test-toggle-state-toggle-2')).toHaveTextContent('OFF')
-        expect(screen.getByTestId('test-toggle-state-toggle-3')).toHaveTextContent('OFF')
+        expect(screen.getByTestId('sdui-toggle-state-toggle-1')).toHaveTextContent('OFF')
+        expect(screen.getByTestId('sdui-toggle-state-toggle-2')).toHaveTextContent('OFF')
+        expect(screen.getByTestId('sdui-toggle-state-toggle-3')).toHaveTextContent('OFF')
 
         // User clicks toggle-1 and toggle-2 to change their states
         const user = userEvent.setup()
-        await user.click(screen.getByTestId('test-toggle-toggle-1').querySelector('button')!)
-        await user.click(screen.getByTestId('test-toggle-toggle-2').querySelector('button')!)
+        await user.click(screen.getByTestId('sdui-toggle-toggle-1').querySelector('button')!)
+        await user.click(screen.getByTestId('sdui-toggle-toggle-2').querySelector('button')!)
 
         // Verify toggle-1 and toggle-2 are now ON
         await waitFor(() => {
-          expect(screen.getByTestId('test-toggle-state-toggle-1')).toHaveTextContent('ON')
-          expect(screen.getByTestId('test-toggle-state-toggle-2')).toHaveTextContent('ON')
-          expect(screen.getByTestId('test-toggle-state-toggle-3')).toHaveTextContent('OFF')
+          expect(screen.getByTestId('sdui-toggle-state-toggle-1')).toHaveTextContent('ON')
+          expect(screen.getByTestId('sdui-toggle-state-toggle-2')).toHaveTextContent('ON')
+          expect(screen.getByTestId('sdui-toggle-state-toggle-3')).toHaveTextContent('OFF')
         })
 
         // User clicks merge button to add toggle-4
@@ -148,16 +143,16 @@ describe('Dynamic Document Merge', () => {
 
         // Wait for toggle-4 to appear
         await waitFor(() => {
-          expect(screen.getByTestId('test-toggle-toggle-4')).toBeInTheDocument()
+          expect(screen.getByTestId('sdui-toggle-toggle-4')).toBeInTheDocument()
         })
 
         // After merge, existing toggle states should be preserved
-        expect(screen.getByTestId('test-toggle-state-toggle-1')).toHaveTextContent('ON')
-        expect(screen.getByTestId('test-toggle-state-toggle-2')).toHaveTextContent('ON')
-        expect(screen.getByTestId('test-toggle-state-toggle-3')).toHaveTextContent('OFF')
+        expect(screen.getByTestId('sdui-toggle-state-toggle-1')).toHaveTextContent('ON')
+        expect(screen.getByTestId('sdui-toggle-state-toggle-2')).toHaveTextContent('ON')
+        expect(screen.getByTestId('sdui-toggle-state-toggle-3')).toHaveTextContent('OFF')
 
         // New toggle should start with initial state (OFF)
-        expect(screen.getByTestId('test-toggle-state-toggle-4')).toHaveTextContent('OFF')
+        expect(screen.getByTestId('sdui-toggle-state-toggle-4')).toHaveTextContent('OFF')
       })
     })
   })
@@ -184,14 +179,9 @@ describe('Dynamic Document Merge', () => {
           }
 
           return (
-            <>
-              <button onClick={handleMerge} type="button" data-testid="merge-button">
-                Merge Layout
-              </button>
-              <ToggleComponent nodeId="toggle-1" testPrefix="test" />
-              <ToggleComponent nodeId="toggle-2" testPrefix="test" />
-              {hasMerged && <ToggleComponent nodeId="toggle-3" testPrefix="test" />}
-            </>
+            <button onClick={handleMerge} type="button" data-testid="merge-button">
+              Merge Layout
+            </button>
           )
         }
 
@@ -200,24 +190,25 @@ describe('Dynamic Document Merge', () => {
           {
             components: {
               Toggle: ToggleComponentFactory,
+              Container: defaultTestComponentFactory,
             },
           },
           <MergeTest />,
         )
 
-        // Wait for initial render
+        // Wait for initial render (SDUI renders with sdui prefix)
         await waitFor(() => {
-          expect(screen.getByTestId('test-toggle-toggle-1')).toBeInTheDocument()
+          expect(screen.getByTestId('sdui-toggle-toggle-1')).toBeInTheDocument()
         })
 
         const initialStoreInstance = storeInstance
 
         // User clicks toggle-1
         const user = userEvent.setup()
-        await user.click(screen.getByTestId('test-toggle-toggle-1').querySelector('button')!)
+        await user.click(screen.getByTestId('sdui-toggle-toggle-1').querySelector('button')!)
 
         await waitFor(() => {
-          expect(screen.getByTestId('test-toggle-state-toggle-1')).toHaveTextContent('ON')
+          expect(screen.getByTestId('sdui-toggle-state-toggle-1')).toHaveTextContent('ON')
         })
 
         // User clicks merge button to add toggle-3
@@ -225,14 +216,14 @@ describe('Dynamic Document Merge', () => {
 
         // Wait for toggle-3 to appear
         await waitFor(() => {
-          expect(screen.getByTestId('test-toggle-toggle-3')).toBeInTheDocument()
+          expect(screen.getByTestId('sdui-toggle-toggle-3')).toBeInTheDocument()
         })
 
         // Store instance should be the same (not recreated)
         expect(storeInstance).toBe(initialStoreInstance)
 
         // Toggle state should still be preserved
-        expect(screen.getByTestId('test-toggle-state-toggle-1')).toHaveTextContent('ON')
+        expect(screen.getByTestId('sdui-toggle-state-toggle-1')).toHaveTextContent('ON')
       })
     })
   })
@@ -252,14 +243,9 @@ describe('Dynamic Document Merge', () => {
           }
 
           return (
-            <>
-              <button onClick={handleMerge} type="button" data-testid="merge-button">
-                Remove Toggle
-              </button>
-              <ToggleComponent nodeId="toggle-1" testPrefix="test" />
-              <ToggleComponent nodeId="toggle-2" testPrefix="test" />
-              <ToggleComponent nodeId="toggle-3" testPrefix="test" />
-            </>
+            <button onClick={handleMerge} type="button" data-testid="merge-button">
+              Remove Toggle
+            </button>
           )
         }
 
@@ -268,25 +254,26 @@ describe('Dynamic Document Merge', () => {
           {
             components: {
               Toggle: ToggleComponentFactory,
+              Container: defaultTestComponentFactory,
             },
           },
           <MergeTest />,
         )
 
-        // Wait for initial render
+        // Wait for initial render (SDUI renders with sdui prefix)
         await waitFor(() => {
-          expect(screen.getByTestId('test-toggle-toggle-1')).toBeInTheDocument()
-          expect(screen.getByTestId('test-toggle-toggle-3')).toBeInTheDocument()
+          expect(screen.getByTestId('sdui-toggle-toggle-1')).toBeInTheDocument()
+          expect(screen.getByTestId('sdui-toggle-toggle-3')).toBeInTheDocument()
         })
 
         // User clicks toggle-1 and toggle-2
         const user = userEvent.setup()
-        await user.click(screen.getByTestId('test-toggle-toggle-1').querySelector('button')!)
-        await user.click(screen.getByTestId('test-toggle-toggle-2').querySelector('button')!)
+        await user.click(screen.getByTestId('sdui-toggle-toggle-1').querySelector('button')!)
+        await user.click(screen.getByTestId('sdui-toggle-toggle-2').querySelector('button')!)
 
         await waitFor(() => {
-          expect(screen.getByTestId('test-toggle-state-toggle-1')).toHaveTextContent('ON')
-          expect(screen.getByTestId('test-toggle-state-toggle-2')).toHaveTextContent('ON')
+          expect(screen.getByTestId('sdui-toggle-state-toggle-1')).toHaveTextContent('ON')
+          expect(screen.getByTestId('sdui-toggle-state-toggle-2')).toHaveTextContent('ON')
         })
 
         // User clicks merge button to remove toggle-3
@@ -294,12 +281,12 @@ describe('Dynamic Document Merge', () => {
 
         // Wait for toggle-3 to be removed
         await waitFor(() => {
-          expect(screen.queryByTestId('test-toggle-toggle-3')).not.toBeInTheDocument()
+          expect(screen.queryByTestId('sdui-toggle-toggle-3')).not.toBeInTheDocument()
         })
 
         // Remaining toggles should preserve their states
-        expect(screen.getByTestId('test-toggle-state-toggle-1')).toHaveTextContent('ON')
-        expect(screen.getByTestId('test-toggle-state-toggle-2')).toHaveTextContent('ON')
+        expect(screen.getByTestId('sdui-toggle-state-toggle-1')).toHaveTextContent('ON')
+        expect(screen.getByTestId('sdui-toggle-state-toggle-2')).toHaveTextContent('ON')
       })
     })
   })
@@ -355,15 +342,9 @@ describe('Dynamic Document Merge', () => {
           }
 
           return (
-            <>
-              <button onClick={handleMerge} type="button" data-testid="merge-button">
-                Replace Toggle
-              </button>
-              <ToggleComponent nodeId="toggle-1" testPrefix="test" />
-              <ToggleComponent nodeId="toggle-2" testPrefix="test" />
-              <ToggleComponent nodeId="toggle-3" testPrefix="test" />
-              {hasMerged && <ToggleComponent nodeId="toggle-4" testPrefix="test" />}
-            </>
+            <button onClick={handleMerge} type="button" data-testid="merge-button">
+              Replace Toggle
+            </button>
           )
         }
 
@@ -372,34 +353,35 @@ describe('Dynamic Document Merge', () => {
           {
             components: {
               Toggle: ToggleComponentFactory,
+              Container: defaultTestComponentFactory,
             },
           },
           <MergeTest />,
         )
 
-        // Wait for initial render
+        // Wait for initial render (SDUI renders with sdui prefix)
         await waitFor(() => {
-          expect(screen.getByTestId('test-toggle-toggle-1')).toBeInTheDocument()
-          expect(screen.getByTestId('test-toggle-toggle-2')).toBeInTheDocument()
-          expect(screen.getByTestId('test-toggle-toggle-3')).toBeInTheDocument()
+          expect(screen.getByTestId('sdui-toggle-toggle-1')).toBeInTheDocument()
+          expect(screen.getByTestId('sdui-toggle-toggle-2')).toBeInTheDocument()
+          expect(screen.getByTestId('sdui-toggle-toggle-3')).toBeInTheDocument()
         })
 
         // Initially all toggles should be OFF
-        expect(screen.getByTestId('test-toggle-state-toggle-1')).toHaveTextContent('OFF')
-        expect(screen.getByTestId('test-toggle-state-toggle-2')).toHaveTextContent('OFF')
-        expect(screen.getByTestId('test-toggle-state-toggle-3')).toHaveTextContent('OFF')
+        expect(screen.getByTestId('sdui-toggle-state-toggle-1')).toHaveTextContent('OFF')
+        expect(screen.getByTestId('sdui-toggle-state-toggle-2')).toHaveTextContent('OFF')
+        expect(screen.getByTestId('sdui-toggle-state-toggle-3')).toHaveTextContent('OFF')
 
         // User clicks toggle-1, toggle-2, and toggle-3 to change their states
         const user = userEvent.setup()
-        await user.click(screen.getByTestId('test-toggle-toggle-1').querySelector('button')!)
-        await user.click(screen.getByTestId('test-toggle-toggle-2').querySelector('button')!)
-        await user.click(screen.getByTestId('test-toggle-toggle-3').querySelector('button')!)
+        await user.click(screen.getByTestId('sdui-toggle-toggle-1').querySelector('button')!)
+        await user.click(screen.getByTestId('sdui-toggle-toggle-2').querySelector('button')!)
+        await user.click(screen.getByTestId('sdui-toggle-toggle-3').querySelector('button')!)
 
         // Verify all toggles are now ON
         await waitFor(() => {
-          expect(screen.getByTestId('test-toggle-state-toggle-1')).toHaveTextContent('ON')
-          expect(screen.getByTestId('test-toggle-state-toggle-2')).toHaveTextContent('ON')
-          expect(screen.getByTestId('test-toggle-state-toggle-3')).toHaveTextContent('ON')
+          expect(screen.getByTestId('sdui-toggle-state-toggle-1')).toHaveTextContent('ON')
+          expect(screen.getByTestId('sdui-toggle-state-toggle-2')).toHaveTextContent('ON')
+          expect(screen.getByTestId('sdui-toggle-state-toggle-3')).toHaveTextContent('ON')
         })
 
         // User clicks merge button to replace toggle-3 with toggle-4
@@ -407,16 +389,16 @@ describe('Dynamic Document Merge', () => {
 
         // Wait for toggle-3 to be removed and toggle-4 to appear
         await waitFor(() => {
-          expect(screen.queryByTestId('test-toggle-toggle-3')).not.toBeInTheDocument()
-          expect(screen.getByTestId('test-toggle-toggle-4')).toBeInTheDocument()
+          expect(screen.queryByTestId('sdui-toggle-toggle-3')).not.toBeInTheDocument()
+          expect(screen.getByTestId('sdui-toggle-toggle-4')).toBeInTheDocument()
         })
 
         // toggle-1 and toggle-2 should preserve their states (ON)
-        expect(screen.getByTestId('test-toggle-state-toggle-1')).toHaveTextContent('ON')
-        expect(screen.getByTestId('test-toggle-state-toggle-2')).toHaveTextContent('ON')
+        expect(screen.getByTestId('sdui-toggle-state-toggle-1')).toHaveTextContent('ON')
+        expect(screen.getByTestId('sdui-toggle-state-toggle-2')).toHaveTextContent('ON')
 
         // toggle-4 should start with initial state (OFF) - different ID means new component
-        expect(screen.getByTestId('test-toggle-state-toggle-4')).toHaveTextContent('OFF')
+        expect(screen.getByTestId('sdui-toggle-state-toggle-4')).toHaveTextContent('OFF')
       })
     })
   })
