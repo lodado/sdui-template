@@ -1,4 +1,4 @@
-import{j as e}from"./jsx-runtime-Bj4z8TBp.js";import{r as d}from"./iframe-BUwdTLZu.js";import{S as c,s as u}from"./sduiComponents-BsgyM-cI.js";import"./preload-helper-ggYluGXI.js";import"./index-DbP77RFo.js";import"./index-o6-pYDoB.js";const v={title:"Example/Dynamic Document Update",component:c,tags:["autodocs"],parameters:{docs:{description:{component:`
+import{j as e}from"./jsx-runtime-Cn5vU2bi.js";import{r as d}from"./iframe-C9NbDJzv.js";import{S as c,s as u}from"./sduiComponents-C3NvGM3k.js";import"./preload-helper-ggYluGXI.js";import"./index-DqsrmGy_.js";import"./index-CUFHkYWu.js";const v={title:"Example/Dynamic Document Update",component:c,tags:["autodocs"],parameters:{docs:{description:{component:`
 ## Overview
 
 This example tests the behavior of the SDUI Renderer when **documents are dynamically changed**.
