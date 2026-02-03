@@ -1,4 +1,4 @@
-import{j as e}from"./jsx-runtime-OxDEzsNG.js";import{L as t,S as u,s as v}from"./sduiComponents-BNuas2dS.js";import"./iframe-B4F6DNxk.js";import"./preload-helper-ggYluGXI.js";import"./index-B0x1wnjC.js";import"./index-CXkeGDUB.js";const b={title:"Shared/UI/List",component:t,tags:["autodocs"],parameters:{docs:{description:{component:`
+import{j as e}from"./jsx-runtime-Bj4z8TBp.js";import{L as t,S as u,s as v}from"./sduiComponents-BsgyM-cI.js";import"./iframe-BUwdTLZu.js";import"./preload-helper-ggYluGXI.js";import"./index-DbP77RFo.js";import"./index-o6-pYDoB.js";const b={title:"Shared/UI/List",component:t,tags:["autodocs"],parameters:{docs:{description:{component:`
 ## Overview
 
 The **List** component is a compound component pattern for creating interactive navigation list items. It consists of an icon, content (title and description), and an arrow indicator.
