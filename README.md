@@ -55,6 +55,16 @@ pnpm add @lodado/sdui-template zod
 yarn add @lodado/sdui-template zod
 ```
 
+This package uses the latest **zod v4** types. Install a compatible Zod version:
+
+```bash
+pnpm add zod@^4.3.6
+# or
+npm install zod@^4.3.6
+# or
+yarn add zod@^4.3.6
+```
+
 ## 🚀 Quick Start
 
 ### Step 1: Basic Rendering
@@ -458,16 +468,14 @@ import {
 // 1. Create a Container component that renders its children
 function Container({ id, parentPath = [] }: { id: string; parentPath?: string[] }) {
   const { childrenIds } = useSduiNodeSubscription({ nodeId: id })
-  const { renderNode, currentPath } = useRenderNode({ nodeId: id, parentPath })
+  const { renderChildren } = useRenderNode({ nodeId: id, parentPath })
 
   return (
     <div className="container p-4 border-2 border-gray-300 rounded-lg">
       <h3 className="mb-2">Container: {id}</h3>
       <div className="flex flex-col gap-2">
         {/* Recursively render each child */}
-        {childrenIds.map((childId) => (
-          <div key={childId}>{renderNode(childId, currentPath)}</div>
-        ))}
+        {renderChildren(childrenIds)}
       </div>
     </div>
   )
@@ -548,8 +556,8 @@ export default function Page() {
 **How Recursive Rendering Works:**
 
 1. **`useSduiNodeSubscription`**: Gets `childrenIds` array for the current node
-2. **`useRenderNode`**: Returns an object with `renderNode` function and `currentPath` (automatically calculated)
-3. **Map over children**: Loop through `childrenIds` and call `renderNode(childId, currentPath)` for each
+2. **`useRenderNode`**: Returns an object with `renderChildren`, `renderNode`, and `currentPath` (automatically calculated)
+3. **Map over children**: Pass `childrenIds` to `renderChildren(childrenIds)` for keyed child rendering
 4. **Automatic recursion**: Each child renders itself, and if it has children, it renders them too!
 
 **Result Structure:**
@@ -564,9 +572,9 @@ Container (root)
 
 **Key Points:**
 
-- ✅ `useRenderNode({ nodeId, parentPath })` returns an object with `renderNode` function and `currentPath` (automatically calculated)
+- ✅ `useRenderNode({ nodeId, parentPath })` returns `renderChildren`, `renderNode`, and `currentPath` (automatically calculated)
 - ✅ `childrenIds` tells you which nodes are children of the current node
-- ✅ Pass `currentPath` to `renderNode` to maintain parent path tracking
+- ✅ `renderChildren(childrenIds)` handles parent path tracking and keys for you
 - ✅ Each component handles its own children, creating natural recursion
 - ✅ Works with any nesting depth automatically
 
@@ -876,7 +884,8 @@ Returns an object with `renderNode` function and node information including auto
 
 ```typescript
 {
-  renderNode: RenderNodeFn // Function to render child nodes
+  renderNode: RenderNodeFn // Function to render a single child node
+  renderChildren: (childrenIds: string[]) => React.ReactNode[] // Render list with keys
   currentPath: ParentPath // Current path array (automatically calculated)
   pathString: string // Current path string (automatically calculated)
   nodeId: string // Current node ID
@@ -889,13 +898,11 @@ Returns an object with `renderNode` function and node information including auto
 ```tsx
 function Container({ id }: { id: string }) {
   const { childrenIds } = useSduiNodeSubscription({ nodeId: id })
-  const { renderNode, currentPath } = useRenderNode({ nodeId: id, parentPath: [] })
+  const { renderChildren } = useRenderNode({ nodeId: id, parentPath: [] })
 
   return (
     <div>
-      {childrenIds.map((childId) => (
-        <div key={childId}>{renderNode(childId, currentPath)}</div>
-      ))}
+      {renderChildren(childrenIds)}
     </div>
   )
 }
