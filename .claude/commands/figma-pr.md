@@ -40,7 +40,7 @@ Collect from user:
 ## Variables
 
 ```
-pr_title = "feat(<component_name>): update styles from Figma design"
+pr_title = "feat: update styles from Figma design"
 ```
 
 ## 0.1 Create Worktree
@@ -50,6 +50,7 @@ pr_title = "feat(<component_name>): update styles from Figma design"
 ```
 
 **Parse output:**
+
 - `worktreePath`: Created worktree path (e.g., `.worktrees/feat-button-update-styles`)
 - `branchName`: Created branch name (e.g., `chore/feat-button-update-styles`)
 
@@ -96,7 +97,7 @@ With parameters:
 cd <worktreePath>
 git add .
 git commit -m "$(cat <<'EOF'
-feat(<component_name>): update styles from Figma design
+feat: update styles from Figma design
 
 - Updated colors, sizes, spacing based on Figma
 - Figma URL: <figma_url>
@@ -132,6 +133,7 @@ git push -u origin <branchName>
    ```bash
    git worktree remove <worktreePath>
    ```
+
 ```
 
 ---
