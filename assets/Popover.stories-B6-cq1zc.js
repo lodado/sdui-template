@@ -1,4 +1,4 @@
-import{j as t}from"./jsx-runtime-DXp8tebo.js";import{P as h,S as n,s as o}from"./sduiComponents-BGXf9eNj.js";import"./iframe-bYlks92W.js";import"./preload-helper-ggYluGXI.js";import"./index-BW_zSv78.js";import"./index-B-D2papd.js";const w={title:"Shared/UI/Popover",component:h.Root,tags:["autodocs"],argTypes:{open:{control:"boolean",description:"Whether the popover is open (controlled)"},modal:{control:"boolean",description:"Whether to enable modal behavior"}},parameters:{docs:{description:{component:`
+import{j as t}from"./jsx-runtime-ByrhRJDZ.js";import{P as h,S as n,s as o}from"./sduiComponents-C8NB1k_1.js";import"./iframe-D99cMFfR.js";import"./preload-helper-ggYluGXI.js";import"./index-D32qjQKj.js";import"./index-BIhXojLK.js";const w={title:"Shared/UI/Popover",component:h.Root,tags:["autodocs"],argTypes:{open:{control:"boolean",description:"Whether the popover is open (controlled)"},modal:{control:"boolean",description:"Whether to enable modal behavior"}},parameters:{docs:{description:{component:`
 ## Overview
 
 The **Popover** component displays contextual content on trigger. It uses Radix UI Popover primitive for full accessibility support.

@@ -1,4 +1,4 @@
-import{j as t}from"./jsx-runtime-DXp8tebo.js";import{r as c}from"./iframe-bYlks92W.js";import{S as u,s as g,d as m}from"./sduiComponents-BGXf9eNj.js";import"./preload-helper-ggYluGXI.js";import"./index-BW_zSv78.js";import"./index-B-D2papd.js";const v={title:"Example/Reset to Initial",component:u,tags:["autodocs"],parameters:{docs:{description:{component:`
+import{j as t}from"./jsx-runtime-ByrhRJDZ.js";import{r as c}from"./iframe-D99cMFfR.js";import{S as u,s as g,d as m}from"./sduiComponents-C8NB1k_1.js";import"./preload-helper-ggYluGXI.js";import"./index-D32qjQKj.js";import"./index-BIhXojLK.js";const v={title:"Example/Reset to Initial",component:u,tags:["autodocs"],parameters:{docs:{description:{component:`
 ## Overview
 
 This example demonstrates the **reset to initial document** functionality in SDUI.
