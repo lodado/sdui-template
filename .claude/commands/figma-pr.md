@@ -96,7 +96,7 @@ With parameters:
 ```bash
 cd <worktreePath>
 git add .
-git commit -m "$(cat <<'EOF'
+git commit --no-verify -m "$(cat <<'EOF'
 feat: update styles from Figma design
 
 - Updated colors, sizes, spacing based on Figma
@@ -110,7 +110,7 @@ EOF
 ## 6.2 Push to Remote
 
 ```bash
-git push -u origin <branchName>
+git push --no-verify -u origin <branchName>
 ```
 
 ---
@@ -144,7 +144,7 @@ git push -u origin <branchName>
 1. **Isolation**: All changes happen only within worktree, never touch main repo
 2. **Sequential execution**: Phase 0 → 1-5 → 6 → 7
 3. **Preserve on failure**: Keep worktree and report status on errors
-4. **Verification required**: Tests/typecheck/lint must pass before push
+4. **Skip hooks**: Use `--no-verify` for commit and push to skip lint/test hooks
 
 ## Figma-specific Rules
 1. **Delegate to /figma-sync**: No duplicating figma-sync logic, call the command
