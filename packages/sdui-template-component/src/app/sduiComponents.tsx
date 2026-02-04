@@ -16,6 +16,11 @@ import { FormFieldContainer } from '../features/form/FormField'
 import { Title, TitleLogo } from '../features/title/components'
 import { ButtonContainer } from '../shared/ui/button/ButtonContainer'
 import { CardContainer } from '../shared/ui/card/CardContainer'
+import {
+  CheckboxCheckboxContainer,
+  CheckboxContainer,
+  CheckboxLabelContainer,
+} from '../shared/ui/checkbox'
 import { Div } from '../shared/ui/div/Div'
 import {
   DropdownContainer,
@@ -84,6 +89,11 @@ export const sduiComponents: Record<string, ComponentFactory> = {
 
   // Card
   Card: (id, parentPath) => <CardContainer id={id} parentPath={parentPath} />,
+
+  // Checkbox (compound pattern)
+  Checkbox: (id, parentPath) => <CheckboxContainer id={id} parentPath={parentPath} />,
+  CheckboxCheckbox: (id, parentPath) => <CheckboxCheckboxContainer id={id} parentPath={parentPath} />,
+  CheckboxLabel: (id, parentPath) => <CheckboxLabelContainer id={id} parentPath={parentPath} />,
 
   // Dialog
   Dialog: (id, parentPath) => <DialogContainer id={id} parentPath={parentPath} />,
