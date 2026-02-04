@@ -14,6 +14,7 @@ import {
 import { FormContainer } from '../features/form/Form'
 import { FormFieldContainer } from '../features/form/FormField'
 import { Title, TitleLogo } from '../features/title/components'
+import { BadgeContainer } from '../shared/ui/badge/BadgeContainer'
 import { ButtonContainer } from '../shared/ui/button/ButtonContainer'
 import { CardContainer } from '../shared/ui/card/CardContainer'
 import { Div } from '../shared/ui/div/Div'
@@ -113,6 +114,9 @@ export const sduiComponents: Record<string, ComponentFactory> = {
   PopoverClose: (id) => <PopoverCloseContainer id={id} />,
 
   List: (id, parentPath) => <ListContainer id={id} parentPath={parentPath} />,
+
+  // Badge
+  Badge: (id) => <BadgeContainer id={id} />,
 
   // Tag
   Tag: (id) => <TagContainer id={id} />,
