@@ -5,8 +5,19 @@ import { z } from 'zod'
  * Badge appearance variants (ADS style)
  * @description
  * - default: Default neutral appearance
+ * - primary: Primary blue appearance
+ * - primaryInverted: Primary inverted appearance (white background, brand text)
+ * - important: Important red appearance
+ * - added: Success appearance with "+" prefix
+ * - removed: Danger appearance with "-" prefix
  */
-export type BadgeAppearance = 'default'
+export type BadgeAppearance =
+  | 'default'
+  | 'primary'
+  | 'primaryInverted'
+  | 'important'
+  | 'added'
+  | 'removed'
 
 /**
  * Badge component props (ADS style)
@@ -52,5 +63,7 @@ export interface BadgeState {
  */
 export const badgeStatesSchema: z.ZodSchema<Record<string, unknown>> = z.object({
   label: z.union([z.string(), z.number()]).optional(),
-  appearance: z.enum(['default']).optional(),
+  appearance: z
+    .enum(['default', 'primary', 'primaryInverted', 'important', 'added', 'removed'])
+    .optional(),
 }) as z.ZodSchema<Record<string, unknown>>

@@ -60,11 +60,11 @@ const Home = () => (
         </p>
       </div>
       <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-800 p-6">
-        <div className="h-[400px]">
+        <div className="h-100">
           <SduiLayoutRenderer
             document={exampleDocument}
             components={componentMap}
-             
+
             onError={(error: Error) => console.error('SDUI Layout Error:', error)}
           />
         </div>

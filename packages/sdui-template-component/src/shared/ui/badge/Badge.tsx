@@ -27,20 +27,11 @@ export const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
       <div
         ref={ref}
         className={cn(badgeVariants({ appearance }), className)}
-        data-name="appearance=default"
+        data-name={`appearance=${appearance}`}
+        style={{ fontFeatureSettings: "'liga' 0, 'calt' 0" }}
         {...props}
       >
-        <p
-          className={[
-            'font-[family-name:var(--🌮-font-family/body,\'Atlassian_Sans:Regular\',sans-serif)]',
-            'leading-[var(--🌮-line-height/body-s,16px)]',
-            'not-italic relative shrink-0',
-            'text-center',
-          ].join(' ')}
-          style={{ fontFeatureSettings: "'liga' 0, 'calt' 0" }}
-        >
-          {label}
-        </p>
+        <span className="relative shrink-0">{label}</span>
       </div>
     )
   },

@@ -17,8 +17,6 @@ import type { BadgeAppearance } from './types'
  * - Border: none
  * - Font Size: 12px (Body S)
  * - Line Height: 16px
- * - Background: neutral300 (#dddee1)
- * - Text Color: neutral1000 (#292a2e)
  */
 export const badgeVariants = cva(
   // Base styles
@@ -28,13 +26,37 @@ export const badgeVariants = cva(
     'text-xs leading-4',
     'whitespace-nowrap',
     'content-stretch',
+    'font-[family-name:var(--🌮-font-family/body,\'Atlassian_Sans:Regular\',sans-serif)]',
+    'leading-[var(--🌮-line-height/body-s,16px)]',
+    'not-italic',
+    'text-center',
   ].join(' '),
   {
     variants: {
       appearance: {
         default: [
-          'bg-[var(--neutral/opaque/neutral300,#dddee1)]',
-          'text-[color:var(--neutral/opaque/neutral1000,#292a2e)]',
+          'bg-[var(--neutral-opaque-neutral300,#dddee1)]',
+          'text-[var(--neutral-opaque-neutral1000,#292a2e)]',
+        ].join(' '),
+        primary: [
+          'bg-[var(--blue-blue300,#8fb8f6)]',
+          'text-[var(--neutral-opaque-neutral1000,#292a2e)]',
+        ].join(' '),
+        primaryInverted: [
+          'bg-[var(--elevation-surface-default,#ffffff)]',
+          'text-[var(--color-text-brand,#1868db)]',
+        ].join(' '),
+        important: [
+          'bg-[var(--red-red300,#fd9891)]',
+          'text-[var(--neutral-opaque-neutral1000,#292a2e)]',
+        ].join(' '),
+        added: [
+          'bg-[var(--color-background-success-default,#efffd6)]',
+          'text-[var(--color-text-default,#292a2e)]',
+        ].join(' '),
+        removed: [
+          'bg-[var(--color-background-danger-default,#ffeceb)]',
+          'text-[var(--color-text-default,#292a2e)]',
         ].join(' '),
       } as Record<BadgeAppearance, string>,
     },
