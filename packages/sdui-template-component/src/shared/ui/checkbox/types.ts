@@ -49,11 +49,11 @@ export interface CheckboxLabelProps extends React.LabelHTMLAttributes<HTMLLabelE
  *
  * @description
  * Props for Checkbox.Checkbox component.
- * Extends Radix UI Checkbox props with additional styling options.
+ * Based on native HTML input checkbox with additional styling options.
  */
 export interface CheckboxCheckboxProps
   extends Omit<VariantProps<typeof checkboxVariants>, 'checked' | 'indeterminate'>,
-    Omit<React.ComponentPropsWithoutRef<typeof import('@radix-ui/react-checkbox').Root>, 'checked' | 'onCheckedChange'> {
+    Omit<React.InputHTMLAttributes<HTMLInputElement>, 'checked' | 'onChange' | 'type'> {
   /**
    * Whether the checkbox is checked
    * @default false

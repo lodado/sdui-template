@@ -68,6 +68,11 @@ The Checkbox component uses a compound pattern with three subcomponents:
 |-------|------------|--------|
 | Unchecked | White | Gray (#8c8f97) |
 | Checked | Blue (#0052cc) | Blue (#0052cc) |
+| Indeterminate | Blue (#0052cc) | Blue (#0052cc) |
+| Error (Unchecked) | White | Red (#e2483d) |
+| Error (Checked) | Red (#e2483d) | Red (#e2483d) |
+| Error (Indeterminate) | Red (#e2483d) | Red (#e2483d) |
+| Disabled | Light Gray (rgba(23,23,23,0.03)) | None |
 | Focus | White | Blue (#4688ec) - 2px ring |
 
 ## Integration
@@ -180,9 +185,13 @@ Checkbox in checked state with checkmark icon.
 export const Indeterminate: Story = {
   render: () => {
     return (
-      <div className="flex items-center gap-4 p-4">
+      <div className="flex flex-col gap-4 p-4">
         <Checkbox.Root>
           <Checkbox.Label>Select all</Checkbox.Label>
+          <Checkbox.Checkbox indeterminate />
+        </Checkbox.Root>
+        <Checkbox.Root error>
+          <Checkbox.Label>Select all (with error)</Checkbox.Label>
           <Checkbox.Checkbox indeterminate />
         </Checkbox.Root>
       </div>
@@ -195,6 +204,7 @@ export const Indeterminate: Story = {
 ## Indeterminate State
 
 Checkbox in indeterminate state (e.g., "Select all" when some items are selected).
+Displays a horizontal dash icon instead of a checkmark.
         `,
       },
     },
@@ -213,6 +223,10 @@ export const Disabled: Story = {
           <Checkbox.Label>Disabled checked</Checkbox.Label>
           <Checkbox.Checkbox checked />
         </Checkbox.Root>
+        <Checkbox.Root disabled>
+          <Checkbox.Label>Disabled indeterminate</Checkbox.Label>
+          <Checkbox.Checkbox indeterminate />
+        </Checkbox.Root>
       </div>
     )
   },
@@ -222,7 +236,8 @@ export const Disabled: Story = {
         story: `
 ## Disabled State
 
-Checkboxes in disabled state (both checked and unchecked).
+Checkboxes in disabled state (unchecked, checked, and indeterminate).
+Disabled checkboxes have a light gray background and no border.
         `,
       },
     },
@@ -258,10 +273,18 @@ export const Error: Story = {
   render: () => {
     const [checked, setChecked] = useState(false)
     return (
-      <div className="flex items-center gap-4 p-4">
+      <div className="flex flex-col gap-4 p-4">
         <Checkbox.Root error>
-          <Checkbox.Label>Accept terms and conditions</Checkbox.Label>
-          <Checkbox.Checkbox checked={checked} onCheckedChange={setChecked} />
+          <Checkbox.Label>Error unchecked</Checkbox.Label>
+          <Checkbox.Checkbox checked={false} />
+        </Checkbox.Root>
+        <Checkbox.Root error>
+          <Checkbox.Label>Error checked</Checkbox.Label>
+          <Checkbox.Checkbox checked />
+        </Checkbox.Root>
+        <Checkbox.Root error>
+          <Checkbox.Label>Error indeterminate</Checkbox.Label>
+          <Checkbox.Checkbox indeterminate />
         </Checkbox.Root>
       </div>
     )
@@ -272,7 +295,94 @@ export const Error: Story = {
         story: `
 ## Error State
 
-Checkbox with error styling applied to label (red text).
+Checkboxes with error styling. When in error state:
+- Unchecked: Red border, white background
+- Checked: Red background and border
+- Indeterminate: Red background and border
+- Label text is also styled in red
+        `,
+      },
+    },
+  },
+}
+
+// ============================================================================
+// All States Grid (Figma Design Reference)
+// ============================================================================
+
+export const AllStates: Story = {
+  render: () => {
+    const [checked1, setChecked1] = useState(false)
+    const [checked2, setChecked2] = useState(true)
+    const [checked3, setChecked3] = useState(false)
+    const [checked4, setChecked4] = useState(false)
+    const [checked5, setChecked5] = useState(true)
+    return (
+      <div className="flex flex-col gap-6 p-4">
+        <div>
+          <h3 className="text-sm font-semibold mb-3">Default States</h3>
+          <div className="flex flex-col gap-3">
+            <Checkbox.Root>
+              <Checkbox.Label>Unchecked</Checkbox.Label>
+              <Checkbox.Checkbox checked={checked1} onCheckedChange={setChecked1} />
+            </Checkbox.Root>
+            <Checkbox.Root>
+              <Checkbox.Label>Checked</Checkbox.Label>
+              <Checkbox.Checkbox checked={checked2} onCheckedChange={setChecked2} />
+            </Checkbox.Root>
+            <Checkbox.Root>
+              <Checkbox.Label>Indeterminate</Checkbox.Label>
+              <Checkbox.Checkbox indeterminate />
+            </Checkbox.Root>
+          </div>
+        </div>
+
+        <div>
+          <h3 className="text-sm font-semibold mb-3">Error States</h3>
+          <div className="flex flex-col gap-3">
+            <Checkbox.Root error>
+              <Checkbox.Label>Error unchecked</Checkbox.Label>
+              <Checkbox.Checkbox checked={checked3} onCheckedChange={setChecked3} />
+            </Checkbox.Root>
+            <Checkbox.Root error>
+              <Checkbox.Label>Error checked</Checkbox.Label>
+              <Checkbox.Checkbox checked={checked4} onCheckedChange={setChecked4} />
+            </Checkbox.Root>
+            <Checkbox.Root error>
+              <Checkbox.Label>Error indeterminate</Checkbox.Label>
+              <Checkbox.Checkbox indeterminate />
+            </Checkbox.Root>
+          </div>
+        </div>
+
+        <div>
+          <h3 className="text-sm font-semibold mb-3">Disabled States</h3>
+          <div className="flex flex-col gap-3">
+            <Checkbox.Root disabled>
+              <Checkbox.Label>Disabled unchecked</Checkbox.Label>
+              <Checkbox.Checkbox checked={false} />
+            </Checkbox.Root>
+            <Checkbox.Root disabled>
+              <Checkbox.Label>Disabled checked</Checkbox.Label>
+              <Checkbox.Checkbox checked />
+            </Checkbox.Root>
+            <Checkbox.Root disabled>
+              <Checkbox.Label>Disabled indeterminate</Checkbox.Label>
+              <Checkbox.Checkbox indeterminate />
+            </Checkbox.Root>
+          </div>
+        </div>
+      </div>
+    )
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: `
+## All States
+
+Comprehensive view of all checkbox states matching the Figma design specification.
+Shows default, error, and disabled states for unchecked, checked, and indeterminate variants.
         `,
       },
     },

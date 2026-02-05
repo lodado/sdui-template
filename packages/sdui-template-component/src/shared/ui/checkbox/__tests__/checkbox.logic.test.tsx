@@ -43,8 +43,9 @@ describe('Checkbox', () => {
       )
       const checkbox = screen.getByRole('checkbox')
       expect(checkbox).toBeInTheDocument()
-      // Radix Checkbox uses data-state attribute
-      expect(checkbox).toHaveAttribute('data-state', 'unchecked')
+      // Checkbox should be unchecked by default
+      expect(checkbox).not.toBeChecked()
+      expect(checkbox).toHaveAttribute('aria-checked', 'false')
     })
 
     it('renders with checked=true', () => {
@@ -55,7 +56,8 @@ describe('Checkbox', () => {
         </Checkbox.Root>,
       )
       const checkbox = screen.getByRole('checkbox')
-      expect(checkbox).toHaveAttribute('data-state', 'checked')
+      expect(checkbox).toBeChecked()
+      expect(checkbox).toHaveAttribute('aria-checked', 'true')
     })
 
     it('renders with defaultChecked (uncontrolled)', () => {
@@ -66,7 +68,8 @@ describe('Checkbox', () => {
         </Checkbox.Root>,
       )
       const checkbox = screen.getByRole('checkbox')
-      expect(checkbox).toHaveAttribute('data-state', 'checked')
+      expect(checkbox).toBeChecked()
+      expect(checkbox).toHaveAttribute('aria-checked', 'true')
     })
 
     it('renders with 14px size (Figma spec)', () => {
@@ -91,8 +94,7 @@ describe('Checkbox', () => {
       )
       const checkbox = screen.getByRole('checkbox')
       expect(checkbox).toBeDisabled()
-      // Radix uses data-disabled attribute
-      expect(checkbox).toHaveAttribute('data-disabled', '')
+      expect(checkbox).toHaveAttribute('aria-disabled', 'true')
     })
 
     it('handles disabled state from Checkbox prop', () => {
@@ -166,13 +168,16 @@ describe('Checkbox', () => {
       )
       const checkbox = screen.getByRole('checkbox')
 
-      expect(checkbox).toHaveAttribute('data-state', 'unchecked')
+      expect(checkbox).not.toBeChecked()
+      expect(checkbox).toHaveAttribute('aria-checked', 'false')
 
       fireEvent.click(checkbox)
-      expect(checkbox).toHaveAttribute('data-state', 'checked')
+      expect(checkbox).toBeChecked()
+      expect(checkbox).toHaveAttribute('aria-checked', 'true')
 
       fireEvent.click(checkbox)
-      expect(checkbox).toHaveAttribute('data-state', 'unchecked')
+      expect(checkbox).not.toBeChecked()
+      expect(checkbox).toHaveAttribute('aria-checked', 'false')
     })
 
     it('does not toggle when disabled', () => {

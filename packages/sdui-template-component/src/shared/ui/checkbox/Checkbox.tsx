@@ -1,8 +1,9 @@
 'use client'
 
-import * as CheckboxPrimitive from '@radix-ui/react-checkbox'
-import React, { useId, useMemo } from 'react'
+import React, { useId, useMemo, useRef } from 'react'
 
+import { useCheckboxHandlers } from '../../hooks/useCheckboxHandlers'
+import { useCombinedRef } from '../../hooks/useCombinedRef'
 import { cn } from '../../lib/cn'
 import { checkboxIndicatorVariants, checkboxVariants } from './checkbox-variants'
 import { CheckboxContext, useCheckboxContext } from './CheckboxContext'
@@ -43,7 +44,12 @@ const CheckboxRoot = React.forwardRef<HTMLDivElement, CheckboxRootProps>(
 
     return (
       <CheckboxContext.Provider value={contextValue}>
-        <div ref={ref} className={cn('w-full h-full', className)} data-node-id={nodeId} data-event-id={eventId}>
+        <div
+          ref={ref}
+          className={cn('flex items-center gap-[var(--space-100)]', className)}
+          data-node-id={nodeId}
+          data-event-id={eventId}
+        >
           {children}
         </div>
       </CheckboxContext.Provider>
@@ -54,7 +60,7 @@ const CheckboxRoot = React.forwardRef<HTMLDivElement, CheckboxRootProps>(
 CheckboxRoot.displayName = 'Checkbox.Root'
 
 /**
- * Check icon for checkbox checked/indeterminate state
+ * Check icon for checkbox checked state
  */
 const CheckIcon = ({ className }: { className?: string }) => (
   <svg
@@ -77,24 +83,58 @@ const CheckIcon = ({ className }: { className?: string }) => (
 CheckIcon.displayName = 'CheckIcon'
 
 /**
+ * Indeterminate icon (horizontal dash) for checkbox indeterminate state
+ */
+const IndeterminateIcon = ({ className }: { className?: string }) => (
+  <svg
+    className={className}
+    viewBox="0 0 12 12"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+  >
+    <path
+      d="M2.5 6H9.5"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+)
+
+IndeterminateIcon.displayName = 'IndeterminateIcon'
+
+/**
  * Checkbox Indicator Icon
  *
  * @description
- * Checkmark icon displayed when checkbox is checked or indeterminate.
+ * Checkmark icon displayed when checkbox is checked.
+ * Horizontal dash icon displayed when checkbox is indeterminate.
  */
-const CheckboxIndicator = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => {
-    return (
-      <CheckboxPrimitive.Indicator
-        ref={ref}
-        className={cn(checkboxIndicatorVariants(), className)}
-        {...props}
-      >
+const CheckboxIndicator = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & { indeterminate?: boolean; checked?: boolean }
+>(({ className, indeterminate = false, checked = false, ...props }, ref) => {
+  // Only show indicator when checked or indeterminate
+  if (!checked && !indeterminate) {
+    return null
+  }
+
+  return (
+    <div
+      ref={ref}
+      className={cn('absolute inset-0 flex items-center justify-center text-white pointer-events-none', className)}
+      {...props}
+    >
+      {indeterminate ? (
+        <IndeterminateIcon className="w-3 h-3" />
+      ) : (
         <CheckIcon className="w-3 h-3" />
-      </CheckboxPrimitive.Indicator>
-    )
-  },
-)
+      )}
+    </div>
+  )
+})
 
 CheckboxIndicator.displayName = 'Checkbox.Indicator'
 
@@ -102,7 +142,7 @@ CheckboxIndicator.displayName = 'Checkbox.Indicator'
  * Checkbox Checkbox Component
  *
  * @description
- * Checkbox component built on Radix UI Checkbox.
+ * Native HTML checkbox implementation with full control.
  * Supports checked, unchecked, indeterminate, and disabled states.
  * Automatically connects to Label via Context.
  *
@@ -111,10 +151,7 @@ CheckboxIndicator.displayName = 'Checkbox.Indicator'
  * <Checkbox.Checkbox checked={isChecked} onCheckedChange={setIsChecked} />
  * ```
  */
-const CheckboxCheckbox = React.forwardRef<
-  React.ElementRef<typeof CheckboxPrimitive.Root>,
-  CheckboxCheckboxProps
->(
+const CheckboxCheckbox = React.forwardRef<HTMLInputElement, CheckboxCheckboxProps>(
   (
     {
       checked,
@@ -133,31 +170,69 @@ const CheckboxCheckbox = React.forwardRef<
   ) => {
     const context = React.useContext(CheckboxContext)
     const isDisabled = disabled ?? context?.disabled ?? false
+    const isError = context?.error ?? false
+    const inputRef = useRef<HTMLInputElement>(null)
+
+    // Combine external ref with internal ref
+    const combinedRef = useCombinedRef(ref, inputRef)
 
     // Use provided id or context checkboxId
     const finalCheckboxId = id ?? context?.checkboxId
 
-    // Radix Checkbox doesn't support indeterminate directly
-    // We set checked to false when indeterminate and use data-indeterminate attribute
-    const checkedState = indeterminate ? false : checked
+    // Determine if controlled or uncontrolled
+    const isControlled = checked !== undefined
+    const isChecked = checked ?? false
+
+    // For uncontrolled mode, track internal checked state
+    const [internalChecked, setInternalChecked] = React.useState(defaultChecked ?? false)
+    const actualChecked = isControlled ? isChecked : internalChecked
+
+    // Controlled mode handlers
+    const { handleChange: handleControlledChange, handleKeyDown: handleControlledKeyDown } =
+      useCheckboxHandlers({
+        checked: isChecked,
+        disabled: isDisabled,
+        onCheckedChange,
+      })
+
+    // Uncontrolled mode handlers
+    const { handleChange: handleUncontrolledChangeBase, handleKeyDown: handleUncontrolledKeyDown } =
+      useCheckboxHandlers({
+        checked: internalChecked,
+        disabled: isDisabled,
+        onCheckedChange: (newChecked) => {
+          setInternalChecked(newChecked)
+          onCheckedChange?.(newChecked)
+        },
+      })
+
+    // Combine handlers based on mode
+    const handleChange = isControlled ? handleControlledChange : handleUncontrolledChangeBase
+    const handleKeyDown = isControlled ? handleControlledKeyDown : handleUncontrolledKeyDown
 
     return (
-      <CheckboxPrimitive.Root
-        ref={ref}
-        id={finalCheckboxId}
-        name={name}
-        checked={checkedState}
-        defaultChecked={defaultChecked}
-        disabled={isDisabled}
-        onCheckedChange={onCheckedChange}
-        className={cn(checkboxVariants(), 'size-[14px]', className)}
-        data-node-id={nodeId}
-        data-event-id={eventId}
-        data-indeterminate={indeterminate ? '' : undefined}
-        {...props}
-      >
-        <CheckboxIndicator />
-      </CheckboxPrimitive.Root>
+      <div className="relative inline-flex">
+        <input
+          ref={combinedRef}
+          type="checkbox"
+          id={finalCheckboxId}
+          name={name}
+          {...(isControlled ? { checked: isChecked } : { defaultChecked })}
+          disabled={isDisabled}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          className={cn(checkboxVariants({ error: isError }), className)}
+          data-node-id={nodeId}
+          data-event-id={eventId}
+          data-indeterminate={indeterminate ? '' : undefined}
+          data-error={isError ? '' : undefined}
+          aria-checked={indeterminate ? 'mixed' : actualChecked}
+          aria-disabled={isDisabled}
+          {...props}
+        />
+        {/* Show indicator when checked or indeterminate */}
+        <CheckboxIndicator indeterminate={indeterminate} checked={actualChecked} />
+      </div>
     )
   },
 )
