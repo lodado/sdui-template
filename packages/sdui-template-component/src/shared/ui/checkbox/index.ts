@@ -1,5 +1,5 @@
 // Compound components
-export type { CheckboxCheckboxProps, CheckboxLabelProps,CheckboxRootProps } from './Checkbox'
+export type { CheckboxCheckboxProps, CheckboxLabelProps, CheckboxRootProps } from './Checkbox'
 export { Checkbox } from './Checkbox'
 
 // Context
@@ -35,5 +35,5 @@ export {
 } from './types'
 
 // Variants
-export type { CheckboxIndicatorVariants,CheckboxVariants } from './checkbox-variants'
-export { checkboxIndicatorVariants,checkboxVariants } from './checkbox-variants'
+export type { CheckboxIndicatorVariants, CheckboxVariants } from './checkbox-variants'
+export { checkboxIndicatorVariants, checkboxVariants } from './checkbox-variants'

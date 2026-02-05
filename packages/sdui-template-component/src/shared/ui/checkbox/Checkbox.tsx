@@ -230,4 +230,4 @@ export const Checkbox = {
   Indicator: CheckboxIndicator,
 }
 
-export type { CheckboxCheckboxProps, CheckboxLabelProps,CheckboxRootProps }
+export type { CheckboxCheckboxProps, CheckboxLabelProps, CheckboxRootProps }
