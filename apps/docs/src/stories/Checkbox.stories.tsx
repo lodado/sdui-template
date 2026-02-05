@@ -1,7 +1,7 @@
 import { type SduiLayoutDocument, SduiLayoutRenderer } from '@lodado/sdui-template'
 import { Checkbox, sduiComponents } from '@lodado/sdui-template-component'
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import React, { useState } from 'react'
+import React from 'react'
 
 const meta: Meta<typeof Checkbox.Root> = {
   title: 'Shared/UI/Checkbox',
@@ -101,12 +101,38 @@ export const Playground: Story = {
     error: false,
   },
   render: (args) => {
-    const [checked, setChecked] = useState(false)
+    const document: SduiLayoutDocument = {
+      version: '1.0.0',
+      root: {
+        id: 'checkbox-root',
+        type: 'Checkbox',
+        state: {
+          disabled: args.disabled,
+          required: args.required,
+          error: args.error,
+        },
+        children: [
+          {
+            id: 'checkbox-label',
+            type: 'CheckboxLabel',
+            state: {
+              text: 'Accept terms and conditions',
+            },
+          },
+          {
+            id: 'checkbox-input',
+            type: 'CheckboxCheckbox',
+            state: {
+              checked: false,
+            },
+          },
+        ],
+      },
+    }
     return (
-      <Checkbox.Root {...args}>
-        <Checkbox.Label>Accept terms and conditions</Checkbox.Label>
-        <Checkbox.Checkbox checked={checked} onCheckedChange={setChecked} />
-      </Checkbox.Root>
+      <div className="p-4">
+        <SduiLayoutRenderer document={document} components={sduiComponents} />
+      </div>
     )
   },
   parameters: {
@@ -134,15 +160,38 @@ Use the controls panel to experiment with different checkbox configurations.
 
 export const Default: Story = {
   render: () => {
-    const [checked, setChecked] = useState(false)
-    return (
-      <div className="flex items-center gap-4 p-4">
-        <Checkbox.Root>
-          <Checkbox.Label>Accept terms</Checkbox.Label>
-          <Checkbox.Checkbox checked={checked} onCheckedChange={setChecked} />
-        </Checkbox.Root>
-      </div>
-    )
+    const document: SduiLayoutDocument = {
+      version: '1.0.0',
+      root: {
+        id: 'root',
+        type: 'Div',
+        attributes: { className: 'flex items-center gap-4 p-4' },
+        children: [
+          {
+            id: 'checkbox-root',
+            type: 'Checkbox',
+            state: {},
+            children: [
+              {
+                id: 'checkbox-label',
+                type: 'CheckboxLabel',
+                state: {
+                  text: 'Accept terms',
+                },
+              },
+              {
+                id: 'checkbox-input',
+                type: 'CheckboxCheckbox',
+                state: {
+                  checked: false,
+                },
+              },
+            ],
+          },
+        ],
+      },
+    }
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -159,15 +208,38 @@ Basic checkbox in unchecked state. Click to toggle.
 
 export const Checked: Story = {
   render: () => {
-    const [checked, setChecked] = useState(true)
-    return (
-      <div className="flex items-center gap-4 p-4">
-        <Checkbox.Root>
-          <Checkbox.Label>Accept terms</Checkbox.Label>
-          <Checkbox.Checkbox checked={checked} onCheckedChange={setChecked} />
-        </Checkbox.Root>
-      </div>
-    )
+    const document: SduiLayoutDocument = {
+      version: '1.0.0',
+      root: {
+        id: 'root',
+        type: 'Div',
+        attributes: { className: 'flex items-center gap-4 p-4' },
+        children: [
+          {
+            id: 'checkbox-root',
+            type: 'Checkbox',
+            state: {},
+            children: [
+              {
+                id: 'checkbox-label',
+                type: 'CheckboxLabel',
+                state: {
+                  text: 'Accept terms',
+                },
+              },
+              {
+                id: 'checkbox-input',
+                type: 'CheckboxCheckbox',
+                state: {
+                  checked: true,
+                },
+              },
+            ],
+          },
+        ],
+      },
+    }
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -184,18 +256,61 @@ Checkbox in checked state with checkmark icon.
 
 export const Indeterminate: Story = {
   render: () => {
-    return (
-      <div className="flex flex-col gap-4 p-4">
-        <Checkbox.Root>
-          <Checkbox.Label>Select all</Checkbox.Label>
-          <Checkbox.Checkbox indeterminate />
-        </Checkbox.Root>
-        <Checkbox.Root error>
-          <Checkbox.Label>Select all (with error)</Checkbox.Label>
-          <Checkbox.Checkbox indeterminate />
-        </Checkbox.Root>
-      </div>
-    )
+    const document: SduiLayoutDocument = {
+      version: '1.0.0',
+      root: {
+        id: 'root',
+        type: 'Div',
+        attributes: { className: 'flex flex-col gap-4 p-4' },
+        children: [
+          {
+            id: 'checkbox-1',
+            type: 'Checkbox',
+            state: {},
+            children: [
+              {
+                id: 'label-1',
+                type: 'CheckboxLabel',
+                state: {
+                  text: 'Select all',
+                },
+              },
+              {
+                id: 'input-1',
+                type: 'CheckboxCheckbox',
+                state: {
+                  indeterminate: true,
+                },
+              },
+            ],
+          },
+          {
+            id: 'checkbox-2',
+            type: 'Checkbox',
+            state: {
+              error: true,
+            },
+            children: [
+              {
+                id: 'label-2',
+                type: 'CheckboxLabel',
+                state: {
+                  text: 'Select all (with error)',
+                },
+              },
+              {
+                id: 'input-2',
+                type: 'CheckboxCheckbox',
+                state: {
+                  indeterminate: true,
+                },
+              },
+            ],
+          },
+        ],
+      },
+    }
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -213,22 +328,86 @@ Displays a horizontal dash icon instead of a checkmark.
 
 export const Disabled: Story = {
   render: () => {
-    return (
-      <div className="flex flex-col gap-4 p-4">
-        <Checkbox.Root disabled>
-          <Checkbox.Label>Disabled unchecked</Checkbox.Label>
-          <Checkbox.Checkbox checked={false} />
-        </Checkbox.Root>
-        <Checkbox.Root disabled>
-          <Checkbox.Label>Disabled checked</Checkbox.Label>
-          <Checkbox.Checkbox checked />
-        </Checkbox.Root>
-        <Checkbox.Root disabled>
-          <Checkbox.Label>Disabled indeterminate</Checkbox.Label>
-          <Checkbox.Checkbox indeterminate />
-        </Checkbox.Root>
-      </div>
-    )
+    const document: SduiLayoutDocument = {
+      version: '1.0.0',
+      root: {
+        id: 'root',
+        type: 'Div',
+        attributes: { className: 'flex flex-col gap-4 p-4' },
+        children: [
+          {
+            id: 'checkbox-1',
+            type: 'Checkbox',
+            state: {
+              disabled: true,
+            },
+            children: [
+              {
+                id: 'label-1',
+                type: 'CheckboxLabel',
+                state: {
+                  text: 'Disabled unchecked',
+                },
+              },
+              {
+                id: 'input-1',
+                type: 'CheckboxCheckbox',
+                state: {
+                  checked: false,
+                },
+              },
+            ],
+          },
+          {
+            id: 'checkbox-2',
+            type: 'Checkbox',
+            state: {
+              disabled: true,
+            },
+            children: [
+              {
+                id: 'label-2',
+                type: 'CheckboxLabel',
+                state: {
+                  text: 'Disabled checked',
+                },
+              },
+              {
+                id: 'input-2',
+                type: 'CheckboxCheckbox',
+                state: {
+                  checked: true,
+                },
+              },
+            ],
+          },
+          {
+            id: 'checkbox-3',
+            type: 'Checkbox',
+            state: {
+              disabled: true,
+            },
+            children: [
+              {
+                id: 'label-3',
+                type: 'CheckboxLabel',
+                state: {
+                  text: 'Disabled indeterminate',
+                },
+              },
+              {
+                id: 'input-3',
+                type: 'CheckboxCheckbox',
+                state: {
+                  indeterminate: true,
+                },
+              },
+            ],
+          },
+        ],
+      },
+    }
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -246,15 +425,40 @@ Disabled checkboxes have a light gray background and no border.
 
 export const Required: Story = {
   render: () => {
-    const [checked, setChecked] = useState(false)
-    return (
-      <div className="flex items-center gap-4 p-4">
-        <Checkbox.Root required>
-          <Checkbox.Label>Accept terms and conditions</Checkbox.Label>
-          <Checkbox.Checkbox checked={checked} onCheckedChange={setChecked} />
-        </Checkbox.Root>
-      </div>
-    )
+    const document: SduiLayoutDocument = {
+      version: '1.0.0',
+      root: {
+        id: 'root',
+        type: 'Div',
+        attributes: { className: 'flex items-center gap-4 p-4' },
+        children: [
+          {
+            id: 'checkbox-root',
+            type: 'Checkbox',
+            state: {
+              required: true,
+            },
+            children: [
+              {
+                id: 'checkbox-label',
+                type: 'CheckboxLabel',
+                state: {
+                  text: 'Accept terms and conditions',
+                },
+              },
+              {
+                id: 'checkbox-input',
+                type: 'CheckboxCheckbox',
+                state: {
+                  checked: false,
+                },
+              },
+            ],
+          },
+        ],
+      },
+    }
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -271,23 +475,86 @@ Checkbox with required indicator (asterisk) displayed next to label.
 
 export const Error: Story = {
   render: () => {
-    const [checked, setChecked] = useState(false)
-    return (
-      <div className="flex flex-col gap-4 p-4">
-        <Checkbox.Root error>
-          <Checkbox.Label>Error unchecked</Checkbox.Label>
-          <Checkbox.Checkbox checked={false} />
-        </Checkbox.Root>
-        <Checkbox.Root error>
-          <Checkbox.Label>Error checked</Checkbox.Label>
-          <Checkbox.Checkbox checked />
-        </Checkbox.Root>
-        <Checkbox.Root error>
-          <Checkbox.Label>Error indeterminate</Checkbox.Label>
-          <Checkbox.Checkbox indeterminate />
-        </Checkbox.Root>
-      </div>
-    )
+    const document: SduiLayoutDocument = {
+      version: '1.0.0',
+      root: {
+        id: 'root',
+        type: 'Div',
+        attributes: { className: 'flex flex-col gap-4 p-4' },
+        children: [
+          {
+            id: 'checkbox-1',
+            type: 'Checkbox',
+            state: {
+              error: true,
+            },
+            children: [
+              {
+                id: 'label-1',
+                type: 'CheckboxLabel',
+                state: {
+                  text: 'Error unchecked',
+                },
+              },
+              {
+                id: 'input-1',
+                type: 'CheckboxCheckbox',
+                state: {
+                  checked: false,
+                },
+              },
+            ],
+          },
+          {
+            id: 'checkbox-2',
+            type: 'Checkbox',
+            state: {
+              error: true,
+            },
+            children: [
+              {
+                id: 'label-2',
+                type: 'CheckboxLabel',
+                state: {
+                  text: 'Error checked',
+                },
+              },
+              {
+                id: 'input-2',
+                type: 'CheckboxCheckbox',
+                state: {
+                  checked: true,
+                },
+              },
+            ],
+          },
+          {
+            id: 'checkbox-3',
+            type: 'Checkbox',
+            state: {
+              error: true,
+            },
+            children: [
+              {
+                id: 'label-3',
+                type: 'CheckboxLabel',
+                state: {
+                  text: 'Error indeterminate',
+                },
+              },
+              {
+                id: 'input-3',
+                type: 'CheckboxCheckbox',
+                state: {
+                  indeterminate: true,
+                },
+              },
+            ],
+          },
+        ],
+      },
+    }
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -312,68 +579,227 @@ Checkboxes with error styling. When in error state:
 
 export const AllStates: Story = {
   render: () => {
-    const [checked1, setChecked1] = useState(false)
-    const [checked2, setChecked2] = useState(true)
-    const [checked3, setChecked3] = useState(false)
-    const [checked4, setChecked4] = useState(false)
-    const [checked5, setChecked5] = useState(true)
-    return (
-      <div className="flex flex-col gap-6 p-4">
-        <div>
-          <h3 className="text-sm font-semibold mb-3">Default States</h3>
-          <div className="flex flex-col gap-3">
-            <Checkbox.Root>
-              <Checkbox.Label>Unchecked</Checkbox.Label>
-              <Checkbox.Checkbox checked={checked1} onCheckedChange={setChecked1} />
-            </Checkbox.Root>
-            <Checkbox.Root>
-              <Checkbox.Label>Checked</Checkbox.Label>
-              <Checkbox.Checkbox checked={checked2} onCheckedChange={setChecked2} />
-            </Checkbox.Root>
-            <Checkbox.Root>
-              <Checkbox.Label>Indeterminate</Checkbox.Label>
-              <Checkbox.Checkbox indeterminate />
-            </Checkbox.Root>
-          </div>
-        </div>
-
-        <div>
-          <h3 className="text-sm font-semibold mb-3">Error States</h3>
-          <div className="flex flex-col gap-3">
-            <Checkbox.Root error>
-              <Checkbox.Label>Error unchecked</Checkbox.Label>
-              <Checkbox.Checkbox checked={checked3} onCheckedChange={setChecked3} />
-            </Checkbox.Root>
-            <Checkbox.Root error>
-              <Checkbox.Label>Error checked</Checkbox.Label>
-              <Checkbox.Checkbox checked={checked4} onCheckedChange={setChecked4} />
-            </Checkbox.Root>
-            <Checkbox.Root error>
-              <Checkbox.Label>Error indeterminate</Checkbox.Label>
-              <Checkbox.Checkbox indeterminate />
-            </Checkbox.Root>
-          </div>
-        </div>
-
-        <div>
-          <h3 className="text-sm font-semibold mb-3">Disabled States</h3>
-          <div className="flex flex-col gap-3">
-            <Checkbox.Root disabled>
-              <Checkbox.Label>Disabled unchecked</Checkbox.Label>
-              <Checkbox.Checkbox checked={false} />
-            </Checkbox.Root>
-            <Checkbox.Root disabled>
-              <Checkbox.Label>Disabled checked</Checkbox.Label>
-              <Checkbox.Checkbox checked />
-            </Checkbox.Root>
-            <Checkbox.Root disabled>
-              <Checkbox.Label>Disabled indeterminate</Checkbox.Label>
-              <Checkbox.Checkbox indeterminate />
-            </Checkbox.Root>
-          </div>
-        </div>
-      </div>
-    )
+    const document: SduiLayoutDocument = {
+      version: '1.0.0',
+      root: {
+        id: 'root',
+        type: 'Div',
+        attributes: { className: 'flex flex-col gap-6 p-4' },
+        children: [
+          {
+            id: 'section-default',
+            type: 'Div',
+            children: [
+              {
+                id: 'title-default',
+                type: 'Span',
+                state: { text: 'Default States' },
+                attributes: { className: 'text-sm font-semibold mb-3 block' },
+              },
+              {
+                id: 'default-group',
+                type: 'Div',
+                attributes: { className: 'flex flex-col gap-3' },
+                children: [
+                  {
+                    id: 'checkbox-default-1',
+                    type: 'Checkbox',
+                    state: {},
+                    children: [
+                      {
+                        id: 'label-default-1',
+                        type: 'CheckboxLabel',
+                        state: { text: 'Unchecked' },
+                      },
+                      {
+                        id: 'input-default-1',
+                        type: 'CheckboxCheckbox',
+                        state: { checked: false },
+                      },
+                    ],
+                  },
+                  {
+                    id: 'checkbox-default-2',
+                    type: 'Checkbox',
+                    state: {},
+                    children: [
+                      {
+                        id: 'label-default-2',
+                        type: 'CheckboxLabel',
+                        state: { text: 'Checked' },
+                      },
+                      {
+                        id: 'input-default-2',
+                        type: 'CheckboxCheckbox',
+                        state: { checked: true },
+                      },
+                    ],
+                  },
+                  {
+                    id: 'checkbox-default-3',
+                    type: 'Checkbox',
+                    state: {},
+                    children: [
+                      {
+                        id: 'label-default-3',
+                        type: 'CheckboxLabel',
+                        state: { text: 'Indeterminate' },
+                      },
+                      {
+                        id: 'input-default-3',
+                        type: 'CheckboxCheckbox',
+                        state: { indeterminate: true },
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'section-error',
+            type: 'Div',
+            children: [
+              {
+                id: 'title-error',
+                type: 'Span',
+                state: { text: 'Error States' },
+                attributes: { className: 'text-sm font-semibold mb-3 block' },
+              },
+              {
+                id: 'error-group',
+                type: 'Div',
+                attributes: { className: 'flex flex-col gap-3' },
+                children: [
+                  {
+                    id: 'checkbox-error-1',
+                    type: 'Checkbox',
+                    state: { error: true },
+                    children: [
+                      {
+                        id: 'label-error-1',
+                        type: 'CheckboxLabel',
+                        state: { text: 'Error unchecked' },
+                      },
+                      {
+                        id: 'input-error-1',
+                        type: 'CheckboxCheckbox',
+                        state: { checked: false },
+                      },
+                    ],
+                  },
+                  {
+                    id: 'checkbox-error-2',
+                    type: 'Checkbox',
+                    state: { error: true },
+                    children: [
+                      {
+                        id: 'label-error-2',
+                        type: 'CheckboxLabel',
+                        state: { text: 'Error checked' },
+                      },
+                      {
+                        id: 'input-error-2',
+                        type: 'CheckboxCheckbox',
+                        state: { checked: false },
+                      },
+                    ],
+                  },
+                  {
+                    id: 'checkbox-error-3',
+                    type: 'Checkbox',
+                    state: { error: true },
+                    children: [
+                      {
+                        id: 'label-error-3',
+                        type: 'CheckboxLabel',
+                        state: { text: 'Error indeterminate' },
+                      },
+                      {
+                        id: 'input-error-3',
+                        type: 'CheckboxCheckbox',
+                        state: { indeterminate: true },
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'section-disabled',
+            type: 'Div',
+            children: [
+              {
+                id: 'title-disabled',
+                type: 'Span',
+                state: { text: 'Disabled States' },
+                attributes: { className: 'text-sm font-semibold mb-3 block' },
+              },
+              {
+                id: 'disabled-group',
+                type: 'Div',
+                attributes: { className: 'flex flex-col gap-3' },
+                children: [
+                  {
+                    id: 'checkbox-disabled-1',
+                    type: 'Checkbox',
+                    state: { disabled: true },
+                    children: [
+                      {
+                        id: 'label-disabled-1',
+                        type: 'CheckboxLabel',
+                        state: { text: 'Disabled unchecked' },
+                      },
+                      {
+                        id: 'input-disabled-1',
+                        type: 'CheckboxCheckbox',
+                        state: { checked: false },
+                      },
+                    ],
+                  },
+                  {
+                    id: 'checkbox-disabled-2',
+                    type: 'Checkbox',
+                    state: { disabled: true },
+                    children: [
+                      {
+                        id: 'label-disabled-2',
+                        type: 'CheckboxLabel',
+                        state: { text: 'Disabled checked' },
+                      },
+                      {
+                        id: 'input-disabled-2',
+                        type: 'CheckboxCheckbox',
+                        state: { checked: true },
+                      },
+                    ],
+                  },
+                  {
+                    id: 'checkbox-disabled-3',
+                    type: 'Checkbox',
+                    state: { disabled: true },
+                    children: [
+                      {
+                        id: 'label-disabled-3',
+                        type: 'CheckboxLabel',
+                        state: { text: 'Disabled indeterminate' },
+                      },
+                      {
+                        id: 'input-disabled-3',
+                        type: 'CheckboxCheckbox',
+                        state: { indeterminate: true },
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    }
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {
@@ -395,25 +821,68 @@ Shows default, error, and disabled states for unchecked, checked, and indetermin
 
 export const CompoundPattern: Story = {
   render: () => {
-    const [checked1, setChecked1] = useState(false)
-    const [checked2, setChecked2] = useState(false)
-    const [checked3, setChecked3] = useState(false)
-    return (
-      <div className="flex flex-col gap-4 p-4">
-        <Checkbox.Root>
-          <Checkbox.Label>Option 1</Checkbox.Label>
-          <Checkbox.Checkbox checked={checked1} onCheckedChange={setChecked1} />
-        </Checkbox.Root>
-        <Checkbox.Root>
-          <Checkbox.Label>Option 2</Checkbox.Label>
-          <Checkbox.Checkbox checked={checked2} onCheckedChange={setChecked2} />
-        </Checkbox.Root>
-        <Checkbox.Root>
-          <Checkbox.Label>Option 3</Checkbox.Label>
-          <Checkbox.Checkbox checked={checked3} onCheckedChange={setChecked3} />
-        </Checkbox.Root>
-      </div>
-    )
+    const document: SduiLayoutDocument = {
+      version: '1.0.0',
+      root: {
+        id: 'root',
+        type: 'Div',
+        attributes: { className: 'flex flex-col gap-4 p-4' },
+        children: [
+          {
+            id: 'checkbox-1',
+            type: 'Checkbox',
+            state: {},
+            children: [
+              {
+                id: 'label-1',
+                type: 'CheckboxLabel',
+                state: { text: 'Option 1' },
+              },
+              {
+                id: 'input-1',
+                type: 'CheckboxCheckbox',
+                state: { checked: false },
+              },
+            ],
+          },
+          {
+            id: 'checkbox-2',
+            type: 'Checkbox',
+            state: {},
+            children: [
+              {
+                id: 'label-2',
+                type: 'CheckboxLabel',
+                state: { text: 'Option 2' },
+              },
+              {
+                id: 'input-2',
+                type: 'CheckboxCheckbox',
+                state: { checked: false },
+              },
+            ],
+          },
+          {
+            id: 'checkbox-3',
+            type: 'Checkbox',
+            state: {},
+            children: [
+              {
+                id: 'label-3',
+                type: 'CheckboxLabel',
+                state: { text: 'Option 3' },
+              },
+              {
+                id: 'input-3',
+                type: 'CheckboxCheckbox',
+                state: { checked: false },
+              },
+            ],
+          },
+        ],
+      },
+    }
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
   },
   parameters: {
     docs: {

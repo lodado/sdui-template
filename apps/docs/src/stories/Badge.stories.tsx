@@ -87,6 +87,27 @@ export const Playground: Story = {
     label: 25,
     appearance: 'default',
   },
+  render: (args) => {
+    const document: SduiLayoutDocument = {
+      version: '1.0.0',
+      root: {
+        id: 'root',
+        type: 'Div',
+        attributes: { className: 'flex items-center justify-center p-4' },
+        children: [
+          {
+            id: 'badge-playground',
+            type: 'Badge',
+            state: {
+              label: args.label,
+              appearance: args.appearance,
+            },
+          },
+        ],
+      },
+    }
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
+  },
   parameters: {
     docs: {
       description: {
@@ -110,45 +131,94 @@ Use the controls panel to experiment with different badge configurations.
 // ============================================================================
 
 export const NumericLabels: Story = {
-  render: () => (
-    <div className="flex flex-col gap-6 p-6">
-      <div className="flex flex-col gap-3">
-        <div className="text-sm font-semibold text-gray-700">Default Appearance</div>
-        <div className="flex items-center gap-3 flex-wrap">
-          <Badge label={0} appearance="default" />
-          <Badge label={1} appearance="default" />
-          <Badge label={5} appearance="default" />
-          <Badge label={25} appearance="default" />
-          <Badge label={99} appearance="default" />
-          <Badge label={999} appearance="default" />
-        </div>
-      </div>
-      <div className="flex flex-col gap-3">
-        <div className="text-sm font-semibold text-gray-700">All Variants</div>
-        <div className="flex items-center gap-3 flex-wrap">
-          <Badge label={0} appearance="default" />
-          <Badge label={0} appearance="primary" />
-          <Badge label={0} appearance="important" />
-          <Badge label={0} appearance="added" />
-          <Badge label={0} appearance="removed" />
-        </div>
-        <div className="flex items-center gap-3 flex-wrap">
-          <Badge label={25} appearance="default" />
-          <Badge label={25} appearance="primary" />
-          <Badge label={25} appearance="important" />
-          <Badge label={25} appearance="added" />
-          <Badge label={25} appearance="removed" />
-        </div>
-        <div className="flex items-center gap-3 flex-wrap">
-          <Badge label={99} appearance="default" />
-          <Badge label={99} appearance="primary" />
-          <Badge label={99} appearance="important" />
-          <Badge label={99} appearance="added" />
-          <Badge label={99} appearance="removed" />
-        </div>
-      </div>
-    </div>
-  ),
+  render: () => {
+    const document: SduiLayoutDocument = {
+      version: '1.0.0',
+      root: {
+        id: 'root',
+        type: 'Div',
+        attributes: { className: 'flex flex-col gap-6 p-6' },
+        children: [
+          {
+            id: 'section-default',
+            type: 'Div',
+            attributes: { className: 'flex flex-col gap-3' },
+            children: [
+              {
+                id: 'title-default',
+                type: 'Span',
+                state: { text: 'Default Appearance' },
+                attributes: { className: 'text-sm font-semibold text-gray-700' },
+              },
+              {
+                id: 'badges-default',
+                type: 'Div',
+                attributes: { className: 'flex items-center gap-3 flex-wrap' },
+                children: [
+                  { id: 'badge-0', type: 'Badge', state: { label: 0, appearance: 'default' } },
+                  { id: 'badge-1', type: 'Badge', state: { label: 1, appearance: 'default' } },
+                  { id: 'badge-5', type: 'Badge', state: { label: 5, appearance: 'default' } },
+                  { id: 'badge-25', type: 'Badge', state: { label: 25, appearance: 'default' } },
+                  { id: 'badge-99', type: 'Badge', state: { label: 99, appearance: 'default' } },
+                  { id: 'badge-999', type: 'Badge', state: { label: 999, appearance: 'default' } },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'section-variants',
+            type: 'Div',
+            attributes: { className: 'flex flex-col gap-3' },
+            children: [
+              {
+                id: 'title-variants',
+                type: 'Span',
+                state: { text: 'All Variants' },
+                attributes: { className: 'text-sm font-semibold text-gray-700' },
+              },
+              {
+                id: 'row-0',
+                type: 'Div',
+                attributes: { className: 'flex items-center gap-3 flex-wrap' },
+                children: [
+                  { id: 'badge-0-default', type: 'Badge', state: { label: 0, appearance: 'default' } },
+                  { id: 'badge-0-primary', type: 'Badge', state: { label: 0, appearance: 'primary' } },
+                  { id: 'badge-0-important', type: 'Badge', state: { label: 0, appearance: 'important' } },
+                  { id: 'badge-0-added', type: 'Badge', state: { label: 0, appearance: 'added' } },
+                  { id: 'badge-0-removed', type: 'Badge', state: { label: 0, appearance: 'removed' } },
+                ],
+              },
+              {
+                id: 'row-25',
+                type: 'Div',
+                attributes: { className: 'flex items-center gap-3 flex-wrap' },
+                children: [
+                  { id: 'badge-25-default', type: 'Badge', state: { label: 25, appearance: 'default' } },
+                  { id: 'badge-25-primary', type: 'Badge', state: { label: 25, appearance: 'primary' } },
+                  { id: 'badge-25-important', type: 'Badge', state: { label: 25, appearance: 'important' } },
+                  { id: 'badge-25-added', type: 'Badge', state: { label: 25, appearance: 'added' } },
+                  { id: 'badge-25-removed', type: 'Badge', state: { label: 25, appearance: 'removed' } },
+                ],
+              },
+              {
+                id: 'row-99',
+                type: 'Div',
+                attributes: { className: 'flex items-center gap-3 flex-wrap' },
+                children: [
+                  { id: 'badge-99-default', type: 'Badge', state: { label: 99, appearance: 'default' } },
+                  { id: 'badge-99-primary', type: 'Badge', state: { label: 99, appearance: 'primary' } },
+                  { id: 'badge-99-important', type: 'Badge', state: { label: 99, appearance: 'important' } },
+                  { id: 'badge-99-added', type: 'Badge', state: { label: 99, appearance: 'added' } },
+                  { id: 'badge-99-removed', type: 'Badge', state: { label: 99, appearance: 'removed' } },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    }
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
+  },
   parameters: {
     docs: {
       description: {
@@ -167,41 +237,95 @@ Badges can display numeric values from 0 to any number across all appearance var
 // ============================================================================
 
 export const StringLabels: Story = {
-  render: () => (
-    <div className="flex flex-col gap-6 p-6">
-      <div className="flex flex-col gap-3">
-        <div className="text-sm font-semibold text-gray-700">Common String Labels</div>
-        <div className="flex items-center gap-3 flex-wrap">
-          <Badge label="99+" appearance="default" />
-          <Badge label="New" appearance="primary" />
-          <Badge label="!" appearance="important" />
-          <Badge label="Hot" appearance="added" />
-          <Badge label="Del" appearance="removed" />
-        </div>
-      </div>
-      <div className="flex flex-col gap-3">
-        <div className="text-sm font-semibold text-gray-700">All Variants with Same Label</div>
-        <div className="flex items-center gap-3 flex-wrap">
-          <Badge label="New" appearance="default" />
-          <Badge label="New" appearance="primary" />
-          <Badge label="New" appearance="primaryInverted" />
-          <Badge label="New" appearance="important" />
-          <Badge label="New" appearance="added" />
-          <Badge label="New" appearance="removed" />
-        </div>
-      </div>
-      <div className="flex flex-col gap-3">
-        <div className="text-sm font-semibold text-gray-700">Special Characters</div>
-        <div className="flex items-center gap-3 flex-wrap">
-          <Badge label="!" appearance="default" />
-          <Badge label="?" appearance="primary" />
-          <Badge label="*" appearance="important" />
-          <Badge label="+" appearance="added" />
-          <Badge label="-" appearance="removed" />
-        </div>
-      </div>
-    </div>
-  ),
+  render: () => {
+    const document: SduiLayoutDocument = {
+      version: '1.0.0',
+      root: {
+        id: 'root',
+        type: 'Div',
+        attributes: { className: 'flex flex-col gap-6 p-6' },
+        children: [
+          {
+            id: 'section-common',
+            type: 'Div',
+            attributes: { className: 'flex flex-col gap-3' },
+            children: [
+              {
+                id: 'title-common',
+                type: 'Span',
+                state: { text: 'Common String Labels' },
+                attributes: { className: 'text-sm font-semibold text-gray-700' },
+              },
+              {
+                id: 'badges-common',
+                type: 'Div',
+                attributes: { className: 'flex items-center gap-3 flex-wrap' },
+                children: [
+                  { id: 'badge-99plus', type: 'Badge', state: { label: '99+', appearance: 'default' } },
+                  { id: 'badge-new', type: 'Badge', state: { label: 'New', appearance: 'primary' } },
+                  { id: 'badge-excl', type: 'Badge', state: { label: '!', appearance: 'important' } },
+                  { id: 'badge-hot', type: 'Badge', state: { label: 'Hot', appearance: 'added' } },
+                  { id: 'badge-del', type: 'Badge', state: { label: 'Del', appearance: 'removed' } },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'section-all-variants',
+            type: 'Div',
+            attributes: { className: 'flex flex-col gap-3' },
+            children: [
+              {
+                id: 'title-all-variants',
+                type: 'Span',
+                state: { text: 'All Variants with Same Label' },
+                attributes: { className: 'text-sm font-semibold text-gray-700' },
+              },
+              {
+                id: 'badges-all-variants',
+                type: 'Div',
+                attributes: { className: 'flex items-center gap-3 flex-wrap' },
+                children: [
+                  { id: 'badge-new-default', type: 'Badge', state: { label: 'New', appearance: 'default' } },
+                  { id: 'badge-new-primary', type: 'Badge', state: { label: 'New', appearance: 'primary' } },
+                  { id: 'badge-new-primaryInverted', type: 'Badge', state: { label: 'New', appearance: 'primaryInverted' } },
+                  { id: 'badge-new-important', type: 'Badge', state: { label: 'New', appearance: 'important' } },
+                  { id: 'badge-new-added', type: 'Badge', state: { label: 'New', appearance: 'added' } },
+                  { id: 'badge-new-removed', type: 'Badge', state: { label: 'New', appearance: 'removed' } },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'section-special',
+            type: 'Div',
+            attributes: { className: 'flex flex-col gap-3' },
+            children: [
+              {
+                id: 'title-special',
+                type: 'Span',
+                state: { text: 'Special Characters' },
+                attributes: { className: 'text-sm font-semibold text-gray-700' },
+              },
+              {
+                id: 'badges-special',
+                type: 'Div',
+                attributes: { className: 'flex items-center gap-3 flex-wrap' },
+                children: [
+                  { id: 'badge-excl-default', type: 'Badge', state: { label: '!', appearance: 'default' } },
+                  { id: 'badge-quest-primary', type: 'Badge', state: { label: '?', appearance: 'primary' } },
+                  { id: 'badge-star-important', type: 'Badge', state: { label: '*', appearance: 'important' } },
+                  { id: 'badge-plus-added', type: 'Badge', state: { label: '+', appearance: 'added' } },
+                  { id: 'badge-minus-removed', type: 'Badge', state: { label: '-', appearance: 'removed' } },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    }
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
+  },
   parameters: {
     docs: {
       description: {
@@ -220,69 +344,274 @@ Badges can also display string values for special cases like "99+", custom label
 // ============================================================================
 
 export const NotificationCounts: Story = {
-  render: () => (
-    <div className="flex flex-col gap-8 p-6">
-      <div className="flex flex-col gap-4">
-        <div className="text-sm font-semibold text-gray-700">Menu Items with Badges</div>
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-            <span className="font-medium">Messages</span>
-            <Badge label={3} appearance="default" />
-          </div>
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-            <span className="font-medium">Notifications</span>
-            <Badge label={12} appearance="primary" />
-          </div>
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-            <span className="font-medium">Tasks</span>
-            <Badge label={99} appearance="important" />
-          </div>
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-            <span className="font-medium">Alerts</span>
-            <Badge label="99+" appearance="important" />
-          </div>
-        </div>
-      </div>
-      <div className="flex flex-col gap-4">
-        <div className="text-sm font-semibold text-gray-700">Status Indicators</div>
-        <div className="flex flex-wrap gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-sm">Active Users:</span>
-            <Badge label={42} appearance="added" />
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm">Pending:</span>
-            <Badge label={7} appearance="important" />
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm">Completed:</span>
-            <Badge label={128} appearance="primary" />
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm">Removed:</span>
-            <Badge label={5} appearance="removed" />
-          </div>
-        </div>
-      </div>
-      <div className="flex flex-col gap-4">
-        <div className="text-sm font-semibold text-gray-700">Button Badges</div>
-        <div className="flex flex-wrap gap-3">
-          <button className="px-4 py-2 bg-blue-600 text-white rounded flex items-center gap-2">
-            Inbox
-            <Badge label={5} appearance="primaryInverted" />
-          </button>
-          <button className="px-4 py-2 bg-gray-200 text-gray-800 rounded flex items-center gap-2">
-            Updates
-            <Badge label={12} appearance="default" />
-          </button>
-          <button className="px-4 py-2 bg-red-100 text-red-800 rounded flex items-center gap-2">
-            Issues
-            <Badge label={3} appearance="important" />
-          </button>
-        </div>
-      </div>
-    </div>
-  ),
+  render: () => {
+    const document: SduiLayoutDocument = {
+      version: '1.0.0',
+      root: {
+        id: 'root',
+        type: 'Div',
+        attributes: { className: 'flex flex-col gap-8 p-6' },
+        children: [
+          {
+            id: 'section-menu',
+            type: 'Div',
+            attributes: { className: 'flex flex-col gap-4' },
+            children: [
+              {
+                id: 'title-menu',
+                type: 'Span',
+                state: { text: 'Menu Items with Badges' },
+                attributes: { className: 'text-sm font-semibold text-gray-700' },
+              },
+              {
+                id: 'menu-items',
+                type: 'Div',
+                attributes: { className: 'flex flex-col gap-3' },
+                children: [
+                  {
+                    id: 'menu-1',
+                    type: 'Div',
+                    attributes: { className: 'flex items-center justify-between p-3 bg-gray-50 rounded' },
+                    children: [
+                      {
+                        id: 'menu-1-text',
+                        type: 'Span',
+                        state: { text: 'Messages' },
+                        attributes: { className: 'font-medium' },
+                      },
+                      {
+                        id: 'menu-1-badge',
+                        type: 'Badge',
+                        state: { label: 3, appearance: 'default' },
+                      },
+                    ],
+                  },
+                  {
+                    id: 'menu-2',
+                    type: 'Div',
+                    attributes: { className: 'flex items-center justify-between p-3 bg-gray-50 rounded' },
+                    children: [
+                      {
+                        id: 'menu-2-text',
+                        type: 'Span',
+                        state: { text: 'Notifications' },
+                        attributes: { className: 'font-medium' },
+                      },
+                      {
+                        id: 'menu-2-badge',
+                        type: 'Badge',
+                        state: { label: 12, appearance: 'primary' },
+                      },
+                    ],
+                  },
+                  {
+                    id: 'menu-3',
+                    type: 'Div',
+                    attributes: { className: 'flex items-center justify-between p-3 bg-gray-50 rounded' },
+                    children: [
+                      {
+                        id: 'menu-3-text',
+                        type: 'Span',
+                        state: { text: 'Tasks' },
+                        attributes: { className: 'font-medium' },
+                      },
+                      {
+                        id: 'menu-3-badge',
+                        type: 'Badge',
+                        state: { label: 99, appearance: 'important' },
+                      },
+                    ],
+                  },
+                  {
+                    id: 'menu-4',
+                    type: 'Div',
+                    attributes: { className: 'flex items-center justify-between p-3 bg-gray-50 rounded' },
+                    children: [
+                      {
+                        id: 'menu-4-text',
+                        type: 'Span',
+                        state: { text: 'Alerts' },
+                        attributes: { className: 'font-medium' },
+                      },
+                      {
+                        id: 'menu-4-badge',
+                        type: 'Badge',
+                        state: { label: '99+', appearance: 'important' },
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'section-status',
+            type: 'Div',
+            attributes: { className: 'flex flex-col gap-4' },
+            children: [
+              {
+                id: 'title-status',
+                type: 'Span',
+                state: { text: 'Status Indicators' },
+                attributes: { className: 'text-sm font-semibold text-gray-700' },
+              },
+              {
+                id: 'status-items',
+                type: 'Div',
+                attributes: { className: 'flex flex-wrap gap-3' },
+                children: [
+                  {
+                    id: 'status-1',
+                    type: 'Div',
+                    attributes: { className: 'flex items-center gap-2' },
+                    children: [
+                      {
+                        id: 'status-1-text',
+                        type: 'Span',
+                        state: { text: 'Active Users:' },
+                        attributes: { className: 'text-sm' },
+                      },
+                      {
+                        id: 'status-1-badge',
+                        type: 'Badge',
+                        state: { label: 42, appearance: 'added' },
+                      },
+                    ],
+                  },
+                  {
+                    id: 'status-2',
+                    type: 'Div',
+                    attributes: { className: 'flex items-center gap-2' },
+                    children: [
+                      {
+                        id: 'status-2-text',
+                        type: 'Span',
+                        state: { text: 'Pending:' },
+                        attributes: { className: 'text-sm' },
+                      },
+                      {
+                        id: 'status-2-badge',
+                        type: 'Badge',
+                        state: { label: 7, appearance: 'important' },
+                      },
+                    ],
+                  },
+                  {
+                    id: 'status-3',
+                    type: 'Div',
+                    attributes: { className: 'flex items-center gap-2' },
+                    children: [
+                      {
+                        id: 'status-3-text',
+                        type: 'Span',
+                        state: { text: 'Completed:' },
+                        attributes: { className: 'text-sm' },
+                      },
+                      {
+                        id: 'status-3-badge',
+                        type: 'Badge',
+                        state: { label: 128, appearance: 'primary' },
+                      },
+                    ],
+                  },
+                  {
+                    id: 'status-4',
+                    type: 'Div',
+                    attributes: { className: 'flex items-center gap-2' },
+                    children: [
+                      {
+                        id: 'status-4-text',
+                        type: 'Span',
+                        state: { text: 'Removed:' },
+                        attributes: { className: 'text-sm' },
+                      },
+                      {
+                        id: 'status-4-badge',
+                        type: 'Badge',
+                        state: { label: 5, appearance: 'removed' },
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'section-buttons',
+            type: 'Div',
+            attributes: { className: 'flex flex-col gap-4' },
+            children: [
+              {
+                id: 'title-buttons',
+                type: 'Span',
+                state: { text: 'Button Badges' },
+                attributes: { className: 'text-sm font-semibold text-gray-700' },
+              },
+              {
+                id: 'button-items',
+                type: 'Div',
+                attributes: { className: 'flex flex-wrap gap-3' },
+                children: [
+                  {
+                    id: 'button-1',
+                    type: 'Div',
+                    attributes: { className: 'px-4 py-2 bg-blue-600 text-white rounded flex items-center gap-2' },
+                    children: [
+                      {
+                        id: 'button-1-text',
+                        type: 'Span',
+                        state: { text: 'Inbox' },
+                      },
+                      {
+                        id: 'button-1-badge',
+                        type: 'Badge',
+                        state: { label: 5, appearance: 'primaryInverted' },
+                      },
+                    ],
+                  },
+                  {
+                    id: 'button-2',
+                    type: 'Div',
+                    attributes: { className: 'px-4 py-2 bg-gray-200 text-gray-800 rounded flex items-center gap-2' },
+                    children: [
+                      {
+                        id: 'button-2-text',
+                        type: 'Span',
+                        state: { text: 'Updates' },
+                      },
+                      {
+                        id: 'button-2-badge',
+                        type: 'Badge',
+                        state: { label: 12, appearance: 'default' },
+                      },
+                    ],
+                  },
+                  {
+                    id: 'button-3',
+                    type: 'Div',
+                    attributes: { className: 'px-4 py-2 bg-red-100 text-red-800 rounded flex items-center gap-2' },
+                    children: [
+                      {
+                        id: 'button-3-text',
+                        type: 'Span',
+                        state: { text: 'Issues' },
+                      },
+                      {
+                        id: 'button-3-badge',
+                        type: 'Badge',
+                        state: { label: 3, appearance: 'important' },
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    }
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
+  },
   parameters: {
     docs: {
       description: {
@@ -366,18 +695,54 @@ Badges rendered via SDUI document structure.
 // ============================================================================
 
 export const WithCustomStyling: Story = {
-  render: () => (
-    <div className="flex flex-col items-center justify-center p-4 gap-4">
-      <div className="flex items-center gap-2">
-        <span>Default</span>
-        <Badge label={25} />
-      </div>
-      <div className="flex items-center gap-2">
-        <span>Custom Class</span>
-        <Badge label={25} className="opacity-75" />
-      </div>
-    </div>
-  ),
+  render: () => {
+    const document: SduiLayoutDocument = {
+      version: '1.0.0',
+      root: {
+        id: 'root',
+        type: 'Div',
+        attributes: { className: 'flex flex-col items-center justify-center p-4 gap-4' },
+        children: [
+          {
+            id: 'row-1',
+            type: 'Div',
+            attributes: { className: 'flex items-center gap-2' },
+            children: [
+              {
+                id: 'text-1',
+                type: 'Span',
+                state: { text: 'Default' },
+              },
+              {
+                id: 'badge-1',
+                type: 'Badge',
+                state: { label: 25 },
+              },
+            ],
+          },
+          {
+            id: 'row-2',
+            type: 'Div',
+            attributes: { className: 'flex items-center gap-2' },
+            children: [
+              {
+                id: 'text-2',
+                type: 'Span',
+                state: { text: 'Custom Class' },
+              },
+              {
+                id: 'badge-2',
+                type: 'Badge',
+                state: { label: 25 },
+                attributes: { className: 'opacity-75' },
+              },
+            ],
+          },
+        ],
+      },
+    }
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
+  },
   parameters: {
     docs: {
       description: {
@@ -396,72 +761,176 @@ Badges support custom className for additional styling.
 // ============================================================================
 
 export const AppearanceVariants: Story = {
-  render: () => (
-    <div className="flex flex-col gap-8 p-6">
-      <div className="grid grid-cols-2 gap-6">
-        <div className="flex flex-col gap-3">
-          <div className="text-sm font-mono text-gray-600 font-semibold">appearance=default</div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <Badge label={0} appearance="default" />
-            <Badge label={5} appearance="default" />
-            <Badge label={25} appearance="default" />
-            <Badge label={99} appearance="default" />
-            <Badge label="99+" appearance="default" />
-          </div>
-        </div>
-        <div className="flex flex-col gap-3">
-          <div className="text-sm font-mono text-gray-600 font-semibold">appearance=primary</div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <Badge label={0} appearance="primary" />
-            <Badge label={5} appearance="primary" />
-            <Badge label={25} appearance="primary" />
-            <Badge label={99} appearance="primary" />
-            <Badge label="New" appearance="primary" />
-          </div>
-        </div>
-        <div className="flex flex-col gap-3">
-          <div className="text-sm font-mono text-gray-600 font-semibold">appearance=primaryInverted</div>
-          <div className="flex items-center gap-3 flex-wrap bg-gray-100 p-3 rounded">
-            <Badge label={0} appearance="primaryInverted" />
-            <Badge label={5} appearance="primaryInverted" />
-            <Badge label={25} appearance="primaryInverted" />
-            <Badge label={99} appearance="primaryInverted" />
-            <Badge label="!" appearance="primaryInverted" />
-          </div>
-        </div>
-        <div className="flex flex-col gap-3">
-          <div className="text-sm font-mono text-gray-600 font-semibold">appearance=important</div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <Badge label={1} appearance="important" />
-            <Badge label={5} appearance="important" />
-            <Badge label={25} appearance="important" />
-            <Badge label={99} appearance="important" />
-            <Badge label="!" appearance="important" />
-          </div>
-        </div>
-        <div className="flex flex-col gap-3">
-          <div className="text-sm font-mono text-gray-600 font-semibold">appearance=added</div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <Badge label={1} appearance="added" />
-            <Badge label={5} appearance="added" />
-            <Badge label={25} appearance="added" />
-            <Badge label={99} appearance="added" />
-            <Badge label="New" appearance="added" />
-          </div>
-        </div>
-        <div className="flex flex-col gap-3">
-          <div className="text-sm font-mono text-gray-600 font-semibold">appearance=removed</div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <Badge label={1} appearance="removed" />
-            <Badge label={5} appearance="removed" />
-            <Badge label={25} appearance="removed" />
-            <Badge label={99} appearance="removed" />
-            <Badge label="Del" appearance="removed" />
-          </div>
-        </div>
-      </div>
-    </div>
-  ),
+  render: () => {
+    const document: SduiLayoutDocument = {
+      version: '1.0.0',
+      root: {
+        id: 'root',
+        type: 'Div',
+        attributes: { className: 'flex flex-col gap-8 p-6' },
+        children: [
+          {
+            id: 'grid',
+            type: 'Div',
+            attributes: { className: 'grid grid-cols-2 gap-6' },
+            children: [
+              {
+                id: 'col-default',
+                type: 'Div',
+                attributes: { className: 'flex flex-col gap-3' },
+                children: [
+                  {
+                    id: 'title-default',
+                    type: 'Span',
+                    state: { text: 'appearance=default' },
+                    attributes: { className: 'text-sm font-mono text-gray-600 font-semibold' },
+                  },
+                  {
+                    id: 'badges-default',
+                    type: 'Div',
+                    attributes: { className: 'flex items-center gap-3 flex-wrap' },
+                    children: [
+                      { id: 'badge-default-0', type: 'Badge', state: { label: 0, appearance: 'default' } },
+                      { id: 'badge-default-5', type: 'Badge', state: { label: 5, appearance: 'default' } },
+                      { id: 'badge-default-25', type: 'Badge', state: { label: 25, appearance: 'default' } },
+                      { id: 'badge-default-99', type: 'Badge', state: { label: 99, appearance: 'default' } },
+                      { id: 'badge-default-99plus', type: 'Badge', state: { label: '99+', appearance: 'default' } },
+                    ],
+                  },
+                ],
+              },
+              {
+                id: 'col-primary',
+                type: 'Div',
+                attributes: { className: 'flex flex-col gap-3' },
+                children: [
+                  {
+                    id: 'title-primary',
+                    type: 'Span',
+                    state: { text: 'appearance=primary' },
+                    attributes: { className: 'text-sm font-mono text-gray-600 font-semibold' },
+                  },
+                  {
+                    id: 'badges-primary',
+                    type: 'Div',
+                    attributes: { className: 'flex items-center gap-3 flex-wrap' },
+                    children: [
+                      { id: 'badge-primary-0', type: 'Badge', state: { label: 0, appearance: 'primary' } },
+                      { id: 'badge-primary-5', type: 'Badge', state: { label: 5, appearance: 'primary' } },
+                      { id: 'badge-primary-25', type: 'Badge', state: { label: 25, appearance: 'primary' } },
+                      { id: 'badge-primary-99', type: 'Badge', state: { label: 99, appearance: 'primary' } },
+                      { id: 'badge-primary-new', type: 'Badge', state: { label: 'New', appearance: 'primary' } },
+                    ],
+                  },
+                ],
+              },
+              {
+                id: 'col-primaryInverted',
+                type: 'Div',
+                attributes: { className: 'flex flex-col gap-3' },
+                children: [
+                  {
+                    id: 'title-primaryInverted',
+                    type: 'Span',
+                    state: { text: 'appearance=primaryInverted' },
+                    attributes: { className: 'text-sm font-mono text-gray-600 font-semibold' },
+                  },
+                  {
+                    id: 'badges-primaryInverted',
+                    type: 'Div',
+                    attributes: { className: 'flex items-center gap-3 flex-wrap bg-gray-100 p-3 rounded' },
+                    children: [
+                      { id: 'badge-primaryInverted-0', type: 'Badge', state: { label: 0, appearance: 'primaryInverted' } },
+                      { id: 'badge-primaryInverted-5', type: 'Badge', state: { label: 5, appearance: 'primaryInverted' } },
+                      { id: 'badge-primaryInverted-25', type: 'Badge', state: { label: 25, appearance: 'primaryInverted' } },
+                      { id: 'badge-primaryInverted-99', type: 'Badge', state: { label: 99, appearance: 'primaryInverted' } },
+                      { id: 'badge-primaryInverted-excl', type: 'Badge', state: { label: '!', appearance: 'primaryInverted' } },
+                    ],
+                  },
+                ],
+              },
+              {
+                id: 'col-important',
+                type: 'Div',
+                attributes: { className: 'flex flex-col gap-3' },
+                children: [
+                  {
+                    id: 'title-important',
+                    type: 'Span',
+                    state: { text: 'appearance=important' },
+                    attributes: { className: 'text-sm font-mono text-gray-600 font-semibold' },
+                  },
+                  {
+                    id: 'badges-important',
+                    type: 'Div',
+                    attributes: { className: 'flex items-center gap-3 flex-wrap' },
+                    children: [
+                      { id: 'badge-important-1', type: 'Badge', state: { label: 1, appearance: 'important' } },
+                      { id: 'badge-important-5', type: 'Badge', state: { label: 5, appearance: 'important' } },
+                      { id: 'badge-important-25', type: 'Badge', state: { label: 25, appearance: 'important' } },
+                      { id: 'badge-important-99', type: 'Badge', state: { label: 99, appearance: 'important' } },
+                      { id: 'badge-important-excl', type: 'Badge', state: { label: '!', appearance: 'important' } },
+                    ],
+                  },
+                ],
+              },
+              {
+                id: 'col-added',
+                type: 'Div',
+                attributes: { className: 'flex flex-col gap-3' },
+                children: [
+                  {
+                    id: 'title-added',
+                    type: 'Span',
+                    state: { text: 'appearance=added' },
+                    attributes: { className: 'text-sm font-mono text-gray-600 font-semibold' },
+                  },
+                  {
+                    id: 'badges-added',
+                    type: 'Div',
+                    attributes: { className: 'flex items-center gap-3 flex-wrap' },
+                    children: [
+                      { id: 'badge-added-1', type: 'Badge', state: { label: 1, appearance: 'added' } },
+                      { id: 'badge-added-5', type: 'Badge', state: { label: 5, appearance: 'added' } },
+                      { id: 'badge-added-25', type: 'Badge', state: { label: 25, appearance: 'added' } },
+                      { id: 'badge-added-99', type: 'Badge', state: { label: 99, appearance: 'added' } },
+                      { id: 'badge-added-new', type: 'Badge', state: { label: 'New', appearance: 'added' } },
+                    ],
+                  },
+                ],
+              },
+              {
+                id: 'col-removed',
+                type: 'Div',
+                attributes: { className: 'flex flex-col gap-3' },
+                children: [
+                  {
+                    id: 'title-removed',
+                    type: 'Span',
+                    state: { text: 'appearance=removed' },
+                    attributes: { className: 'text-sm font-mono text-gray-600 font-semibold' },
+                  },
+                  {
+                    id: 'badges-removed',
+                    type: 'Div',
+                    attributes: { className: 'flex items-center gap-3 flex-wrap' },
+                    children: [
+                      { id: 'badge-removed-1', type: 'Badge', state: { label: 1, appearance: 'removed' } },
+                      { id: 'badge-removed-5', type: 'Badge', state: { label: 5, appearance: 'removed' } },
+                      { id: 'badge-removed-25', type: 'Badge', state: { label: 25, appearance: 'removed' } },
+                      { id: 'badge-removed-99', type: 'Badge', state: { label: 99, appearance: 'removed' } },
+                      { id: 'badge-removed-del', type: 'Badge', state: { label: 'Del', appearance: 'removed' } },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    }
+    return <SduiLayoutRenderer document={document} components={sduiComponents} />
+  },
   parameters: {
     docs: {
       description: {
