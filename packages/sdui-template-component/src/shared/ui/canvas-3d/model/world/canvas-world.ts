@@ -20,11 +20,23 @@ export function createCanvasWorld(displayCanvas: HTMLCanvasElement, config: Canv
   const displayCtx = canvas.getContext('2d')
   if (!displayCtx) return () => {}
 
+  const syncCanvasSize = () => {
+    const w = Math.max(1, canvas.clientWidth || config.width)
+    const h = Math.max(1, canvas.clientHeight || config.height)
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w
+      canvas.height = h
+    }
+    return { w: canvas.width, h: canvas.height }
+  }
+
+  syncCanvasSize()
+
   const offscreenCanvas = new OffscreenCanvas(canvas.width, canvas.height)
   const backCtx = offscreenCanvas.getContext('2d')
   if (!backCtx) return () => {}
 
-  const viewport = createViewport(config.width, config.height, config.scale)
+  const viewport = createViewport(canvas.width, canvas.height, config.scale)
   const contextRef: { current: RenderContext } = {
     current: { ctx: backCtx as unknown as CanvasRenderingContext2D, viewport },
   }
@@ -38,17 +50,15 @@ export function createCanvasWorld(displayCanvas: HTMLCanvasElement, config: Canv
     const dt = (now - lastTime) / 1000
     lastTime = now
     renderSystem(dt)
+    displayCtx.clearRect(0, 0, canvas.width, canvas.height)
     displayCtx.drawImage(offscreenCanvas, 0, 0)
     rafId = requestAnimationFrame(loop)
   }
   rafId = requestAnimationFrame(loop)
 
   const resize = () => {
-    const w = canvas.clientWidth
-    const h = canvas.clientHeight
-    if (canvas.width !== w || canvas.height !== h) {
-      canvas.width = w
-      canvas.height = h
+    const { w, h } = syncCanvasSize()
+    if (offscreenCanvas.width !== w || offscreenCanvas.height !== h) {
       offscreenCanvas.width = w
       offscreenCanvas.height = h
       const v = contextRef.current.viewport
@@ -56,7 +66,6 @@ export function createCanvasWorld(displayCanvas: HTMLCanvasElement, config: Canv
     }
   }
 
-  resize()
   const observer = new ResizeObserver(resize)
   observer.observe(canvas)
 
