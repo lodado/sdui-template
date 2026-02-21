@@ -1,5 +1,6 @@
 export * from './badge'
 export * from './button'
+export * from './canvas-3d'
 export * from './card'
 export * from './checkbox'
 export * from './div'

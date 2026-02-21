@@ -22,13 +22,7 @@ export const TagContainer = ({ id, parentPath = [] }: TagContainerProps) => {
   // Tag uses the 'text' prop from state or attributes
   const text = tagState?.text ?? tagAttributes?.text ?? ''
 
-  return (
-    <Tag
-      text={text}
-      color={tagState?.color}
-      className={tagAttributes?.className}
-    />
-  )
+  return <Tag text={text} color={tagState?.color} className={tagAttributes?.className} />
 }
 
 TagContainer.displayName = 'TagContainer'
