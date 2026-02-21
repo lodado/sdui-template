@@ -4,8 +4,9 @@ import { useEffect, useRef } from 'react'
 
 import type { Collection, RenderStrategy } from './model/collection'
 import { createViewport } from './model/math/orthographic'
-import { defaultRenderers } from './model/systems/default-renderers'
 import { createRenderSystem, type RenderContext } from './model/systems/render-system'
+
+const EMPTY_STRATEGY: RenderStrategy = {}
 
 export interface Canvas3DProps {
   width?: number
@@ -16,7 +17,7 @@ export interface Canvas3DProps {
   collections?: Collection[]
   /** When provided (e.g. SDUI), collections are read from this getter every frame. Overrides collections prop. */
   getCollections?: () => Collection[]
-  /** Type → how to render. Omit to use default (e.g. cube). */
+  /** Type → how to render. Must be injected from outside (e.g. component factory or app). No built-in default. */
   renderStrategy?: RenderStrategy
 }
 
@@ -32,10 +33,10 @@ export const Canvas3D = ({
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const contextRef = useRef<RenderContext | null>(null)
   const collectionsRef = useRef<Collection[]>(collections)
-  const strategyRef = useRef<RenderStrategy>(renderStrategy ?? defaultRenderers)
+  const strategyRef = useRef<RenderStrategy>(renderStrategy ?? EMPTY_STRATEGY)
   const getCollectionsRef = useRef<() => Collection[]>(() => collectionsRef.current)
   collectionsRef.current = collections
-  strategyRef.current = renderStrategy ?? defaultRenderers
+  strategyRef.current = renderStrategy ?? EMPTY_STRATEGY
   getCollectionsRef.current = getCollections ?? (() => collectionsRef.current)
 
   useEffect(() => {

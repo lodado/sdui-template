@@ -11,8 +11,9 @@ export type {
   RenderStrategy,
   Vec3,
 } from './model/collection'
+export type { Euler3, Transform3 } from './model/ecs/component'
+export { fromTransform3, transformPoint } from './model/math/matrix3d'
 export type { OrthoViewport } from './model/math/orthographic'
 export { createViewport, project } from './model/math/orthographic'
-export { defaultRenderers, drawCubeWireframe, drawHexagonWireframe } from './model/systems/default-renderers'
 export type { RenderContext } from './model/systems/render-system'
 export { createRenderSystem } from './model/systems/render-system'

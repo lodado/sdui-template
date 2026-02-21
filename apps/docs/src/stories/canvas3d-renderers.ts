@@ -1,10 +1,52 @@
-import type { ItemRenderer, RenderStrategy } from '../collection'
-import type { Euler3, Transform3, Vec3 } from '../ecs/component'
-import { fromTransform3, transformPoint } from '../math/matrix3d'
-import { type OrthoViewport, project } from '../math/orthographic'
+/**
+ * Canvas3D render strategy for Storybook: cube and hexagon wireframes.
+ * Implemented in docs app; inject via components override. The component
+ * package does not ship any default renderers.
+ */
+import type {
+  Euler3,
+  ItemRenderer,
+  RenderStrategy,
+  Transform3,
+  Vec3,
+} from '@lodado/sdui-template-component'
+import {
+  fromTransform3,
+  project,
+  transformPoint,
+} from '@lodado/sdui-template-component'
 
 function isVec3(p: Vec3 | { x: number; y: number }): p is Vec3 {
   return 'z' in p && typeof (p as Vec3).z === 'number'
+}
+
+const DEFAULT_EULER: Euler3 = { x: 0, y: 0, z: 0 }
+const DEFAULT_STROKE = '#1a1a1a'
+
+function isEuler3(u: unknown): u is Euler3 {
+  return (
+    typeof u === 'object' &&
+    u !== null &&
+    'x' in u &&
+    'y' in u &&
+    'z' in u &&
+    typeof (u as Record<string, unknown>).x === 'number' &&
+    typeof (u as Record<string, unknown>).y === 'number' &&
+    typeof (u as Record<string, unknown>).z === 'number'
+  )
+}
+
+function readScale(info: Record<string, unknown> | undefined): number {
+  const s = info?.scale
+  return typeof s === 'number' ? s : 1
+}
+
+function readStroke(info: Record<string, unknown> | undefined): string {
+  const color = info?.color
+  const stroke = info?.stroke
+  if (typeof color === 'string') return color
+  if (typeof stroke === 'string') return stroke
+  return DEFAULT_STROKE
 }
 
 const CUBE_VERTICES: Vec3[] = [
@@ -25,9 +67,9 @@ export const drawCubeWireframe: ItemRenderer = (context) => {
   if (kind !== '3d') return
   const pos = item.position
   if (!isVec3(pos)) return
-  const scale = (item.info?.scale as number) ?? 1
-  const rotation = (item.info?.rotation as Euler3) ?? { x: 0, y: 0, z: 0 }
-  const stroke = (item.info?.color as string) ?? (item.info?.stroke as string) ?? '#1a1a1a'
+  const scale = readScale(item.info)
+  const rotation = isEuler3(item.info?.rotation) ? item.info.rotation : DEFAULT_EULER
+  const stroke = readStroke(item.info)
 
   const transform: Transform3 = {
     position: { x: pos.x, y: pos.y, z: pos.z },
@@ -51,7 +93,6 @@ export const drawCubeWireframe: ItemRenderer = (context) => {
   ctx.stroke()
 }
 
-/** 3D hexagonal prism: bottom hexagon (0–5) z=-0.5, top hexagon (6–11) z=0.5, radius 0.5. */
 const HEXAGON_PRISM_VERTICES: Vec3[] = (() => {
   const r = 0.5
   const out: Vec3[] = []
@@ -65,7 +106,6 @@ const HEXAGON_PRISM_VERTICES: Vec3[] = (() => {
   return out
 })()
 
-/** Bottom ring, top ring, 6 vertical edges. */
 const HEXAGON_PRISM_LINE_INDICES = [
   0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 0,
   6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 6,
@@ -77,9 +117,9 @@ export const drawHexagonWireframe: ItemRenderer = (context) => {
   if (kind !== '3d') return
   const pos = item.position
   if (!isVec3(pos)) return
-  const scale = (item.info?.scale as number) ?? 1
-  const rotation = (item.info?.rotation as Euler3) ?? { x: 0, y: 0, z: 0 }
-  const stroke = (item.info?.color as string) ?? (item.info?.stroke as string) ?? '#1a1a1a'
+  const scale = readScale(item.info)
+  const rotation = isEuler3(item.info?.rotation) ? item.info.rotation : DEFAULT_EULER
+  const stroke = readStroke(item.info)
 
   const transform: Transform3 = {
     position: { x: pos.x, y: pos.y, z: pos.z },
@@ -103,7 +143,8 @@ export const drawHexagonWireframe: ItemRenderer = (context) => {
   ctx.stroke()
 }
 
-export const defaultRenderers: RenderStrategy = {
+/** Storybook default render strategy: cube + hexagon. Injected in Canvas3D stories. */
+export const storybookCanvas3DRenderStrategy: RenderStrategy = {
   cube: drawCubeWireframe,
   hexagon: drawHexagonWireframe,
 }

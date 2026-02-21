@@ -32,8 +32,15 @@ export { SduiLayoutRenderer } from './react-wrapper/components/SduiLayoutRendere
 export { SduiLayoutProvider } from './react-wrapper/context/SduiLayoutContext'
 
 // React Hooks
-export { useRenderNode, useSduiLayoutAction, useSduiNodeReference, useSduiNodeSubscription } from './react-wrapper/hooks'
+export {
+  getNodeSubscriptionData,
+  useRenderNode,
+  useSduiLayoutAction,
+  useSduiNodeReference,
+  useSduiNodeSubscription,
+} from './react-wrapper/hooks'
 export type { UseSduiNodeSubscriptionParams } from './react-wrapper/hooks/useSduiNodeSubscription'
+export type { GetNodeSubscriptionDataReturn } from './react-wrapper/hooks/useSduiNodeSubscriptionSync'
 
 // Store
 export { SduiLayoutStore } from './store/SduiLayoutStore'

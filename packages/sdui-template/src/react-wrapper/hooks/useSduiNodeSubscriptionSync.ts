@@ -4,7 +4,7 @@
  * SDUI Node Subscription Sync Hook
  *
  * Subscription system that prevents tearing using useSyncExternalStore.
- * Provides efficient re-rendering via timestamp-based snapshot comparison.
+ * Composes subscription-only hook + getNodeSubscriptionData (read + schema validate).
  *
  * @description
  * - Prevents tearing in React 18+ concurrent rendering with useSyncExternalStore
@@ -32,36 +32,9 @@ export interface UseSduiNodeSubscriptionSyncParams<
   schema?: TSchema
 }
 
-/**
- * Subscribe to a specific node ID and trigger re-renders on changes.
- * Prevents tearing by using useSyncExternalStore.
- *
- * @template TSchema - Zod schema type. Infers types from the schema.
- * @param params - Subscription parameter object
- *   - `nodeId`: Node ID to subscribe to
- *   - `schema`: Zod schema (optional). Validates state and throws on failure. On success, state is inferred from the schema.
- * @returns Node info object
- *   - `node`: Node entity (SduiLayoutNode | undefined)
- *   - `type`: Node type (string | undefined)
- *   - `state`: Layout state (z.infer<TSchema> if schema is provided, otherwise Record<string, unknown>)
- *   - `childrenIds`: Array of child node IDs (string[])
- *   - `attributes`: Node attributes (Record<string, unknown> | undefined)
- *   - `reference`: Node reference (string | string[] | undefined)
- *   - `exists`: Whether the node exists (boolean)
- *
- * @example
- * ```tsx
- * const { node, state } = useSduiNodeSubscriptionSync({
- *   nodeId: 'node-1',
- *   schema: baseLayoutStateSchema, // optional
- * });
- * ```
- */
-export function useSduiNodeSubscriptionSync<
+export interface GetNodeSubscriptionDataReturn<
   TSchema extends ZodSchema<Record<string, unknown>> = ZodSchema<Record<string, unknown>>,
->(
-  params: UseSduiNodeSubscriptionSyncParams<TSchema>,
-): {
+> {
   node: SduiLayoutNode | undefined
   type: string | undefined
   state: TSchema extends ZodSchema<any> ? z.infer<TSchema> : Record<string, unknown>
@@ -69,72 +42,33 @@ export function useSduiNodeSubscriptionSync<
   attributes: Record<string, unknown> | undefined
   reference: string | string[] | undefined
   exists: boolean
-} {
-  const { nodeId, schema } = params
-  const store = useSduiLayoutAction()
+}
 
-  // Subscribe and select snapshots using useSyncExternalStore
-  // Efficiently detect changes by comparing only the node's lastModified value
-  const lastModifiedCacheRef = React.useRef<string | null>(null)
-  const serverSnapshotCacheRef = React.useRef<string | null>(null)
-
-  const lastModifiedValue = useSyncExternalStore<string>(
-    // subscribe function: subscribe to both node and version changes
-    (onStoreChange) => {
-      // Per-node subscription (detect layoutStates/layoutAttributes changes)
-      const unsubscribeNode = store.subscribeNode(nodeId, onStoreChange)
-      // Version subscription (detect nodes, rootId, variables changes)
-      const unsubscribeVersion = store.subscribeVersion(onStoreChange)
-
-      // Return a function that unsubscribes from both
-      return () => {
-        unsubscribeNode()
-        unsubscribeVersion()
-      }
-    },
-    // getSnapshot: return only the node's lastModified value (for comparison)
-    () => {
-      const lastModifiedSnapshot = store.getSnapshot()
-      const value = lastModifiedSnapshot[nodeId] || 'none'
-
-      // If the value matches, return the same string reference (caching)
-      if (lastModifiedCacheRef.current === value) {
-        return lastModifiedCacheRef.current
-      }
-
-      lastModifiedCacheRef.current = value
-      return value
-    },
-    // getServerSnapshot: return a snapshot for SSR (cache to prevent infinite loops)
-    () => {
-      // Compute the server snapshot once and cache it to keep a stable reference
-      if (serverSnapshotCacheRef.current === null) {
-        const lastModifiedSnapshot = store.getServerSnapshot()
-        serverSnapshotCacheRef.current = lastModifiedSnapshot[nodeId] || 'none'
-      }
-      return serverSnapshotCacheRef.current
-    },
-  )
-
-  // When the lastModified reference changes, re-render; read directly from store.state here
+/**
+ * Read node data from store and optionally validate state with schema.
+ * No subscription — use when re-render on store change is not needed (e.g. read every frame).
+ */
+export function getNodeSubscriptionData<
+  TSchema extends ZodSchema<Record<string, unknown>> = ZodSchema<Record<string, unknown>>,
+>(
+  store: SduiLayoutStore,
+  nodeId: string,
+  schema?: TSchema,
+): GetNodeSubscriptionDataReturn<TSchema> {
   const { nodes } = store.state
   const node = nodes[nodeId]
-  const childrenIds = (node as any)?.childrenIds || []
+  const childrenIds = node?.childrenIds ?? []
   const rawState = node?.state
   const attributes = node?.attributes
   const reference = node?.reference
 
-  // Schema validation
   let validatedState: Record<string, unknown>
 
   if (!schema) {
-    // If no schema, use rawState (or an empty object if missing)
-    validatedState = rawState || {}
-  } else if (!node || !rawState) {
-    // If the node is missing, skip validation and return an empty object
+    validatedState = rawState ?? {}
+  } else if (!node || rawState === undefined) {
     validatedState = {}
   } else {
-    // Perform schema validation
     const result = schema.safeParse(rawState)
     if (!result.success) {
       throw new Error(`State validation failed for node "${nodeId}": ${result.error.message}`)
@@ -145,10 +79,69 @@ export function useSduiNodeSubscriptionSync<
   return {
     node,
     type: node?.type,
-    state: validatedState as TSchema extends ZodSchema<any> ? z.infer<TSchema> : Record<string, unknown>,
+    state: validatedState as GetNodeSubscriptionDataReturn<TSchema>['state'],
     childrenIds,
     attributes,
     reference,
     exists: !!node,
   }
+}
+
+const NONE = 'none'
+
+/**
+ * Subscription-only: triggers re-render when node or version changes.
+ * Returns lastModified snapshot value; does not read node data.
+ */
+function useSduiNodeSubscriptionSnapshot(store: SduiLayoutStore, nodeId: string): string {
+  const lastModifiedCacheRef = React.useRef<string | null>(null)
+  const serverSnapshotCacheRef = React.useRef<string | null>(null)
+
+  return useSyncExternalStore<string>(
+    (onStoreChange) => {
+      const unsubscribeNode = store.subscribeNode(nodeId, onStoreChange)
+      const unsubscribeVersion = store.subscribeVersion(onStoreChange)
+      return () => {
+        unsubscribeNode()
+        unsubscribeVersion()
+      }
+    },
+    () => {
+      const value = store.getSnapshot()[nodeId] ?? NONE
+      if (lastModifiedCacheRef.current === value) {
+        return lastModifiedCacheRef.current
+      }
+      lastModifiedCacheRef.current = value
+      return value
+    },
+    () => {
+      if (serverSnapshotCacheRef.current === null) {
+        serverSnapshotCacheRef.current = store.getServerSnapshot()[nodeId] ?? NONE
+      }
+      return serverSnapshotCacheRef.current
+    },
+  )
+}
+
+/**
+ * Subscribe to a specific node ID and trigger re-renders on changes.
+ * Prevents tearing by using useSyncExternalStore.
+ *
+ * @template TSchema - Zod schema type. Infers types from the schema.
+ * @param params - Subscription parameter object
+ *   - `nodeId`: Node ID to subscribe to
+ *   - `schema`: Zod schema (optional). Validates state and throws on failure. On success, state is inferred from the schema.
+ * @returns Node info object
+ */
+export function useSduiNodeSubscriptionSync<
+  TSchema extends ZodSchema<Record<string, unknown>> = ZodSchema<Record<string, unknown>>,
+>(
+  params: UseSduiNodeSubscriptionSyncParams<TSchema>,
+): GetNodeSubscriptionDataReturn<TSchema> {
+  const { nodeId, schema } = params
+  const store = useSduiLayoutAction()
+
+  useSduiNodeSubscriptionSnapshot(store, nodeId)
+
+  return getNodeSubscriptionData(store, nodeId, schema)
 }

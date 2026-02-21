@@ -16,6 +16,7 @@ import { FormFieldContainer } from '../features/form/FormField'
 import { Title, TitleLogo } from '../features/title/components'
 import { BadgeContainer } from '../shared/ui/badge/BadgeContainer'
 import { ButtonContainer } from '../shared/ui/button/ButtonContainer'
+import type { RenderStrategy } from '../shared/ui/canvas-3d'
 import { Canvas3DContainer } from '../shared/ui/canvas-3d'
 import { CardContainer } from '../shared/ui/card/CardContainer'
 import {
@@ -79,8 +80,26 @@ import { TooltipContainer } from '../shared/ui/tooltip/TooltipContainer'
  * registerSchemas(schemas)
  * <SduiLayoutRenderer document={document} components={sduiComponents} />
  * ```
+ *
+ * To inject Canvas3D render strategy (no default in package), use createSduiComponents:
+ * @example
+ * ```tsx
+ * import { createSduiComponents } from '@lodado/sdui-template-component'
+ * import { myRenderStrategy } from './my-canvas3d-renderers'
+ *
+ * const components = createSduiComponents({ canvas3DRenderStrategy: myRenderStrategy })
+ * <SduiLayoutRenderer document={document} components={components} />
+ * ```
  */
-export const sduiComponents: Record<string, ComponentFactory> = {
+export interface SduiComponentsOptions {
+  /** Render strategy for Canvas3D (type → draw). Injected by app; no default inside Canvas3D. */
+  canvas3DRenderStrategy?: RenderStrategy
+}
+
+export function createSduiComponents(options: SduiComponentsOptions = {}): Record<string, ComponentFactory> {
+  const { canvas3DRenderStrategy } = options
+
+  return {
   // Base components
   Div: (id, parentPath) => <Div id={id} parentPath={parentPath} />,
   Text: (id) => <Text id={id} />,
@@ -129,8 +148,14 @@ export const sduiComponents: Record<string, ComponentFactory> = {
   // Badge
   Badge: (id) => <BadgeContainer id={id} />,
 
-  // Canvas3D (SDUI: collections from child nodes, no subscription)
-  Canvas3D: (id, parentPath) => <Canvas3DContainer id={id} parentPath={parentPath ?? []} />,
+  // Canvas3D (SDUI: collections from child nodes; renderStrategy injected via createSduiComponents options)
+  Canvas3D: (id, parentPath) => (
+    <Canvas3DContainer
+      id={id}
+      parentPath={parentPath ?? []}
+      renderStrategy={canvas3DRenderStrategy}
+    />
+  ),
   Canvas3DCollection: () => null,
   Canvas3DItem: () => null,
 
@@ -160,4 +185,8 @@ export const sduiComponents: Record<string, ComponentFactory> = {
 
   // Tooltip
   Tooltip: (id, parentPath) => <TooltipContainer id={id} parentPath={parentPath} />,
+  }
 }
+
+/** Default component map. Canvas3D has no built-in render strategy; use createSduiComponents({ canvas3DRenderStrategy }) to inject one. */
+export const sduiComponents = createSduiComponents()

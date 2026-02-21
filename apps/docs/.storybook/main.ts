@@ -1,7 +1,7 @@
 import type { StorybookConfig } from '@storybook/react-vite'
 
-// GitHub Pages 배포를 위한 base 경로 설정
-// 환경 변수 PUBLIC_URL이 있으면 사용, 없으면 빈 문자열 (로컬 개발용)
+// Base path for GitHub Pages deployment
+// Use PUBLIC_URL if set, otherwise empty string (for local dev)
 const basePath = process.env.PUBLIC_URL || ''
 
 const config: StorybookConfig = {
@@ -12,10 +12,10 @@ const config: StorybookConfig = {
     options: {},
   },
 
-  // Storybook의 base 경로 설정 (GitHub Pages용)
+  // Set Storybook base path (for GitHub Pages)
   ...(basePath && { base: basePath }),
   async viteFinal(config) {
-    // Vite의 base 경로도 동일하게 설정
+    // Set Vite base path to the same value
     if (basePath) {
       config.base = basePath
     }
