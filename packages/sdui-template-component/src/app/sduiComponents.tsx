@@ -16,6 +16,7 @@ import { FormFieldContainer } from '../features/form/FormField'
 import { Title, TitleLogo } from '../features/title/components'
 import { BadgeContainer } from '../shared/ui/badge/BadgeContainer'
 import { ButtonContainer } from '../shared/ui/button/ButtonContainer'
+import { Canvas3DContainer } from '../shared/ui/canvas-3d'
 import { CardContainer } from '../shared/ui/card/CardContainer'
 import {
   CheckboxCheckboxContainer,
@@ -127,6 +128,11 @@ export const sduiComponents: Record<string, ComponentFactory> = {
 
   // Badge
   Badge: (id) => <BadgeContainer id={id} />,
+
+  // Canvas3D (SDUI: collections from child nodes, no subscription)
+  Canvas3D: (id, parentPath) => <Canvas3DContainer id={id} parentPath={parentPath ?? []} />,
+  Canvas3DCollection: () => null,
+  Canvas3DItem: () => null,
 
   // Tag
   Tag: (id) => <TagContainer id={id} />,

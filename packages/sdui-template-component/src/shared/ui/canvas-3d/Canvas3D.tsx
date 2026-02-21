@@ -4,7 +4,8 @@ import { useEffect, useRef } from 'react'
 
 import type { Collection, RenderStrategy } from './model/collection'
 import { createViewport } from './model/math/orthographic'
-import { createRenderSystem, defaultRenderers, type RenderContext } from './model/systems/render-system'
+import { defaultRenderers } from './model/systems/default-renderers'
+import { createRenderSystem, type RenderContext } from './model/systems/render-system'
 
 export interface Canvas3DProps {
   width?: number
@@ -13,6 +14,8 @@ export interface Canvas3DProps {
   className?: string
   /** Collections: type + position + info per item. */
   collections?: Collection[]
+  /** When provided (e.g. SDUI), collections are read from this getter every frame. Overrides collections prop. */
+  getCollections?: () => Collection[]
   /** Type → how to render. Omit to use default (e.g. cube). */
   renderStrategy?: RenderStrategy
 }
@@ -23,14 +26,17 @@ export const Canvas3D = ({
   scale = 80,
   className,
   collections = [],
+  getCollections,
   renderStrategy,
 }: Canvas3DProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const contextRef = useRef<RenderContext | null>(null)
   const collectionsRef = useRef<Collection[]>(collections)
   const strategyRef = useRef<RenderStrategy>(renderStrategy ?? defaultRenderers)
+  const getCollectionsRef = useRef<() => Collection[]>(() => collectionsRef.current)
   collectionsRef.current = collections
   strategyRef.current = renderStrategy ?? defaultRenderers
+  getCollectionsRef.current = getCollections ?? (() => collectionsRef.current)
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -44,7 +50,7 @@ export const Canvas3D = ({
 
     const renderSystem = createRenderSystem(
       () => contextRef.current,
-      () => collectionsRef.current,
+      () => getCollectionsRef.current(),
       () => strategyRef.current,
     )
 
@@ -75,7 +81,14 @@ export const Canvas3D = ({
         canvas.width = w
         canvas.height = h
         if (contextRef.current) {
-          contextRef.current.viewport = createViewport(w, h, contextRef.current.viewport.scale)
+          const v = contextRef.current.viewport
+          contextRef.current.viewport = createViewport(
+            w,
+            h,
+            v.scale,
+            v.viewRotationX,
+            v.viewRotationY,
+          )
         }
       }
     }

@@ -1,4 +1,5 @@
 export { Canvas3D, type Canvas3DProps } from './Canvas3D'
+export { Canvas3DContainer } from './Canvas3DContainer'
 export type {
   Collection,
   Collection2D,
@@ -12,5 +13,6 @@ export type {
 } from './model/collection'
 export type { OrthoViewport } from './model/math/orthographic'
 export { createViewport, project } from './model/math/orthographic'
+export { defaultRenderers, drawCubeWireframe, drawHexagonWireframe } from './model/systems/default-renderers'
 export type { RenderContext } from './model/systems/render-system'
-export { createRenderSystem, defaultRenderers, drawCubeWireframe } from './model/systems/render-system'
+export { createRenderSystem } from './model/systems/render-system'
