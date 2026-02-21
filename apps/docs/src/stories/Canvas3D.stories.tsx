@@ -99,7 +99,7 @@ To **animate** (e.g. rotate): update the item's state with \`updateNodeState(ite
 
 ### The problem
 
-We have 3D coordinates \\((x, y, z)\\) (e.g. a corner of a cube). The screen has only 2D pixels \\((s_x, s_y)\\). We need a **projection** that maps 3D → 2D in a consistent way.
+We have 3D coordinates (e.g. a corner of a cube). The screen has only 2D pixels. We need a **projection** that maps 3D to 2D in a consistent way.
 
 ### Two common projections
 
@@ -108,28 +108,11 @@ We have 3D coordinates \\((x, y, z)\\) (e.g. a corner of a cube). The screen has
 | **Perspective** | Far things look smaller (like a photo). | Realistic games, CAD. |
 | **Orthographic** | No shrinking with distance: 1 unit in the world = fixed pixels. | Diagrams, technical views, this component. |
 
-Canvas3D uses **orthographic** so that moving an object in \\(z\\) doesn’t change its on-screen size—only its position and draw order.
+Canvas3D uses **orthographic** so that moving an object in depth doesn’t change its on-screen size—only its position and draw order.
 
 ### Why "view rotation"?
 
-If we map world \\(x \\to s_x\\) and \\(y \\to s_y\\) directly, we’re looking straight down the **Z axis**. A cube centered at the origin would look like a single square (only the front face). To see **three faces** (top, front, side), we first **tilt** the scene: we rotate the world around X and Y by small angles (\`viewRotationX\`, \`viewRotationY\`). That “view rotation” gives us a **view space** \\((x', y', z')\\); then we project \\((x', y')\\) to the screen and use \\(z'\\) only for depth ordering.
-
-\`\`\`
-  World space (x,y,z)     View rotation (tilt)      View space (x',y',z')
-  ┌──────────────┐        R = Ry · Rx               ┌──────────────┐
-  │   Y          │   ─────────────────────────►    │   y'         │
-  │   │    Z     │   (default ~0.35, 0.75 rad)     │   │   z'     │
-  │   │   /      │                                 │   │   /      │
-  │   └──┴─X     │   Cube now shows 3 faces        │   └──┴─x'    │
-  └──────────────┘                                 └──────────────┘
-         │                                                    │
-         │                                                    ▼
-         │                                          Orthographic project
-         │                                          (x',y') → (sx,sy)
-         │                                          z' kept for depth
-         └──────────────────────────────────────────────────────────────►
-                          Screen (sx, sy) — pixels
-\`\`\`
+If we map world X and Y directly, we’re looking straight down the **Z axis**. A cube centered at the origin would look like a single square (only the front face). To see **three faces** (top, front, side), we first **tilt** the scene: we rotate the world around X and Y by small angles (viewRotationX, viewRotationY). That “view rotation” gives us a view space; we then project the tilted X and Y to the screen and use the tilted depth only for depth ordering (who is in front).
 
 ---
 
@@ -137,84 +120,40 @@ If we map world \\(x \\to s_x\\) and \\(y \\to s_y\\) directly, we’re looking 
 
 A single vertex (e.g. one corner of a cube) goes through four stages:
 
-\`\`\`
-  ① Local space          ② World space           ③ View space            ④ Screen
-  (model coords)         (scene coords)           (after view tilt)       (pixels)
-
-  Cube corner             Same point after        Same point after        (sx, sy)
-  e.g. (0.5, 0.5, 0.5)    position/rotation/      view rotation           for drawing
-  (in model units)        scale of the item       (x', y', z')            z' for order
-         │                         │                       │
-         │  World matrix M          │  View rotation        │  Orthographic
-         │  M = T·Rz·Ry·Rx·S        │  R = Ry·Rx            │  sx = centerX + x'·scale
-         └─────────────────────────┼───────────────────────┼  sy = centerY - y'·scale
-                                   ▼                       ▼  (Y flipped for screen)
-                              (x, y, z)                (x', y', z')
-\`\`\`
-
-- **Local**: Vertices are defined in the shape’s own space (e.g. cube \\(\\pm 0.5\\)).
-- **World**: \\(M\\) (world matrix) moves the shape to the scene (position, rotation, scale).
+- **Local**: Vertices are defined in the shape’s own space (e.g. cube corners in model units).
+- **World**: A world matrix moves the shape to the scene (position, rotation, scale).
 - **View**: View rotation turns the whole scene so we see multiple faces.
-- **Screen**: \\((x', y')\\) → \\((s_x, s_y)\\) with a fixed scale; \\(z'\\) is only used for depth order.
+- **Screen**: View X and Y map to pixels with a fixed scale; view depth is only used for draw order.
 
 ---
 
 ## The World Matrix (Per-Item Transform)
 
-Each item has \`position\`, \`rotation\` (Euler angles in radians), and \`scale\`. These are combined into one **4×4 matrix** \\(M\\) so we can transform every vertex in one go.
-
-**Order matters.** We want: “scale the shape, then rotate it, then move it.” In matrix form (right-to-left application):
-
-\\( M = T \\cdot (R_z \\cdot R_y \\cdot R_x) \\cdot S \\)
-
-| Symbol | Meaning | From |
-|--------|---------|------|
-| \\(S\\) | Scale | \`info.scale\` (or 1) |
-| \\(R_x, R_y, R_z\\) | Rotate around X, Y, Z | \`info.rotation.x, y, z\` (radians) |
-| \\(T\\) | Translate | \`position.x, y, z\` |
-
-**Simple 2D analogy:** To draw a square at \\((5, 10)\\) rotated by 90°: first scale/define the square, then rotate it, then move its center to \\((5, 10)\\). 3D is the same idea with one more axis and one more rotation.
-
-\`\`\`
-  Local vertex v  ──►  M·v  ──►  world (x,y,z)  ──►  view rotation  ──►  (x',y',z')
-                                                                              │
-                                                                              ├── (x',y') → (sx,sy)  draw
-                                                                              └── z'       → depth   order
-\`\`\`
+Each item has position, rotation (Euler angles in radians), and scale. These are combined into one transform so we can move every vertex in one go. **Order matters**: apply scale first, then rotation (X, then Y, then Z), then translation.
 
 ---
 
-## Orthographic Projection (The Exact Formulas)
+## Scale, Rotation, and Translation (Theory)
 
-**Viewport** stores: \`width\`, \`height\`, \`scale\` (pixels per world unit), \`centerX = width/2\`, \`centerY = height/2\`, and optional \`viewRotationX\`, \`viewRotationY\` (radians).
+**Scale (S)** — From info.scale or per-axis (sx, sy, sz). Each axis multiplies the local coordinate by that factor.
 
-1. **View rotation** (world → view):
-   - \\( R = R_y(\\texttt{viewRotationY}) \\cdot R_x(\\texttt{viewRotationX}) \\)
-   - \\( (x', y', z')^T = R \\cdot (x, y, z)^T \\)
-   - If both angles are 0, \\((x', y', z') = (x, y, z)\\).
+**Rotation (R)** — From info.rotation (x, y, z in radians). Rotations are applied around X, then Y, then Z. Each axis rotation leaves that axis unchanged and rotates the other two (e.g. Z rotation keeps z and rotates x and y in the XY plane using cos and sin of the angle).
 
-2. **Orthographic map to screen** (view → pixels):
-   - \\( s_x = \\texttt{centerX} + x' \\cdot \\texttt{scale} \\)
-   - \\( s_y = \\texttt{centerY} - y' \\cdot \\texttt{scale} \\)
-     (minus so that +y is up in world, down on screen.)
-   - \\(z'\\) is **not** used for \\(s_x, s_y\\); it is used only for **depth ordering** (who is in front).
+**Translation (T)** — From position (tx, ty, tz). We add these to the rotated-and-scaled coordinates to get the final world position.
 
-So: **world → view rotation → use \\((x', y')\\) for drawing and \\(z'\\) for order.**
+To get a pixel: take the world position, apply view rotation to get view-space coordinates, then map view X and Y to screen using the viewport scale and center. View depth is only used for depth ordering. Screen Y is flipped so that "up" in the world is up on screen.
+
+---
+
+## Orthographic Projection
+
+Viewport stores width, height, scale (pixels per world unit), centerX (width/2), centerY (height/2), and optional viewRotationX, viewRotationY (radians). View rotation tilts the world (first around X, then around Y) so we see three faces of a cube. Orthographic projection then maps the tilted X and Y to pixel coordinates using the scale and center; the tilted depth is not used for pixel position, only for depth order (who is in front).
 
 ---
 
 ## Depth Ordering
 
-For collections with \`kind: '3d'\`, we draw **farther objects first** so that closer ones appear on top. Each item is assigned a single depth value (e.g. the \\(z\\) of its position, or 0 if only \\(x, y\\) are given). Items are sorted by this value (ascending: small z first), then drawn in that order.
-
-\`\`\`
-  Collection (kind: '3d')
-    Item A  z=2   ──►  draw 3rd (front)
-    Item B  z=0   ──►  draw 1st (back)
-    Item C  z=1   ──►  draw 2nd (middle)
-\`\`\`
-
-More advanced engines sometimes sort by per-vertex depth; here we use one z per item for simplicity.
+For collections with kind "3d", we draw farther objects first so that closer ones appear on top. Each item is assigned a single depth value (e.g. from its position, or 0 if only x and y are given). Items are sorted by this value (ascending: small depth first), then drawn in that order. More advanced engines sometimes sort by per-vertex depth; here we use one depth per item for simplicity.
 
 ---
 
@@ -222,12 +161,12 @@ More advanced engines sometimes sort by per-vertex depth; here we use one z per 
 
 | Step | What happens |
 |------|----------------------|
-| **Loop** | \`requestAnimationFrame\` → \`renderSystem(dt)\` every frame. |
-| **Data** | \`getCollections()\` builds \`Collection[]\` from SDUI store (Canvas3D children). |
-| **Draw** | Clear canvas; for each collection: sort by z → for each item call \`strategy[item.type](ctx, viewport, item, kind, dt)\`. |
-| **Per item** | World matrix \\(M = T \\cdot R_z R_y R_x \\cdot S\\) from position/rotation/scale. |
-| **Per vertex** | Local → \\(M\\cdot v\\) → world → view rotation \\((x',y',z')\\) → orthographic \\((s_x, s_y)\\); use \\(z'\\) for depth. |
-| **Strategy** | No default in the package; inject \`renderStrategy\` (e.g. from Storybook or \`createSduiComponents({ canvas3DRenderStrategy })\`). |
+| **Loop** | requestAnimationFrame runs renderSystem(dt) every frame. |
+| **Data** | getCollections() builds Collection[] from SDUI store (Canvas3D children). |
+| **Draw** | Clear canvas; for each collection sort by depth, then for each item call strategy[item.type](ctx, viewport, item, kind, dt). |
+| **Per item** | World transform from position, rotation, scale (scale then rotate X/Y/Z then translate). |
+| **Per vertex** | Local to world (via that transform), then view rotation, then orthographic to pixels; depth used for draw order. |
+| **Strategy** | No default in the package; inject renderStrategy (e.g. from Storybook or createSduiComponents). |
         `,
       },
     },

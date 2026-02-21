@@ -3,8 +3,7 @@
 import { useEffect, useRef } from 'react'
 
 import type { Collection, RenderStrategy } from './model/collection'
-import { createViewport } from './model/math/orthographic'
-import { createRenderSystem, type RenderContext } from './model/systems/render-system'
+import { createCanvasWorld } from './model/world'
 
 const EMPTY_STRATEGY: RenderStrategy = {}
 
@@ -31,7 +30,6 @@ export const Canvas3D = ({
   renderStrategy,
 }: Canvas3DProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const contextRef = useRef<RenderContext | null>(null)
   const collectionsRef = useRef<Collection[]>(collections)
   const strategyRef = useRef<RenderStrategy>(renderStrategy ?? EMPTY_STRATEGY)
   const getCollectionsRef = useRef<() => Collection[]>(() => collectionsRef.current)
@@ -43,62 +41,15 @@ export const Canvas3D = ({
     const canvas = canvasRef.current
     if (!canvas) return () => {}
 
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return () => {}
-
-    const viewport = createViewport(width, height, scale)
-    contextRef.current = { ctx, viewport }
-
-    const renderSystem = createRenderSystem(
-      () => contextRef.current,
-      () => getCollectionsRef.current(),
-      () => strategyRef.current,
-    )
-
-    let rafId: number
-    let lastTime = performance.now()
-
-    const loop = (now: number) => {
-      const dt = (now - lastTime) / 1000
-      lastTime = now
-      renderSystem(dt)
-      rafId = requestAnimationFrame(loop)
-    }
-    rafId = requestAnimationFrame(loop)
-
-    return () => {
-      cancelAnimationFrame(rafId)
-    }
+    const stop = createCanvasWorld(canvas, {
+      width,
+      height,
+      scale,
+      getCollections: () => getCollectionsRef.current(),
+      getRenderStrategy: () => strategyRef.current,
+    })
+    return stop
   }, [width, height, scale])
-
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas || !contextRef.current) return () => {}
-
-    const resize = () => {
-      const w = canvas.clientWidth
-      const h = canvas.clientHeight
-      if (canvas.width !== w || canvas.height !== h) {
-        canvas.width = w
-        canvas.height = h
-        if (contextRef.current) {
-          const v = contextRef.current.viewport
-          contextRef.current.viewport = createViewport(
-            w,
-            h,
-            v.scale,
-            v.viewRotationX,
-            v.viewRotationY,
-          )
-        }
-      }
-    }
-
-    resize()
-    const observer = new ResizeObserver(resize)
-    observer.observe(canvas)
-    return () => observer.disconnect()
-  }, [])
 
   return (
     <canvas
