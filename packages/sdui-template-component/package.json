@@ -1,6 +1,6 @@
 {
   "name": "@lodado/sdui-template-component",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "SDUI Component Library - Radix UI-based components for Server-Driven UI",
   "author": "lodado",
   "license": "MIT",

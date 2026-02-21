@@ -1,6 +1,6 @@
 {
   "name": "@lodado/sdui-design-files",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Design system files for SDUI template - CSS variables, colors, and design tokens extracted from Figma",
   "sideEffects": [
     "./src/colors.css",
