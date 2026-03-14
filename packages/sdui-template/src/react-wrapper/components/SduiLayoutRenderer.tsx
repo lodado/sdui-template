@@ -35,7 +35,7 @@ import type { SduiLayoutDocument } from '../../schema'
 import { SduiLayoutStore } from '../../store'
 import type { SduiLayoutStoreOptions } from '../../store/types'
 import { SduiLayoutProvider } from '../context'
-import { useRenderNode } from '../hooks'
+import { SduiLayoutRendererInner } from './SduiLayoutRendererInner'
 
 interface SduiLayoutRendererProps {
   /** SDUI Layout Document */
@@ -51,27 +51,6 @@ interface SduiLayoutRendererProps {
   onLayoutChange?: (document: SduiLayoutDocument) => void
   /** Error callback */
   onError?: (error: Error) => void
-}
-
-/**
- * SduiLayoutRenderer internal component.
- *
- * Uses the useRenderNode hook to create the renderNode function and
- * injects it into child components.
- * Each component renders its children through this function.
- */
-const SduiLayoutRendererInner = ({
-  id,
-  componentMap: customComponentMap,
-}: {
-  id: string
-  componentMap?: Record<string, ComponentFactory>
-}) => {
-  // Create the renderNode function (Render Props Pattern)
-  // Render the root node without parentPath
-  const { renderNode } = useRenderNode({ nodeId: id, componentMap: customComponentMap, parentPath: [] })
-
-  return renderNode(id, [])
 }
 
 /**
@@ -148,6 +127,3 @@ export const SduiLayoutRenderer: React.FC<SduiLayoutRendererProps> = ({
     </SduiLayoutProvider>
   )
 }
-
-// Export SduiLayoutRendererInner for testing purposes
-export { SduiLayoutRendererInner }

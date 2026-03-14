@@ -4,7 +4,7 @@
  * React components exports
  */
 
-export * from "./SduiLayoutRenderer";
-
+export { SduiLayoutRenderer } from './SduiLayoutRenderer'
+export { SduiLayoutRendererInner } from './SduiLayoutRendererInner'
 
 

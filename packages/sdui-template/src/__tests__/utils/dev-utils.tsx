@@ -8,7 +8,7 @@ import { render, RenderResult } from '@testing-library/react'
 import React from 'react'
 
 import type { ComponentFactory, SduiComponentProps } from '../../components/types'
-import { SduiLayoutRendererInner } from '../../react-wrapper/components/SduiLayoutRenderer'
+import { SduiLayoutRendererInner } from '../../react-wrapper/components/SduiLayoutRendererInner'
 import { SduiLayoutProvider } from '../../react-wrapper/context'
 import { useRenderNode } from '../../react-wrapper/hooks/useRenderNode'
 import { useSduiNodeSubscription } from '../../react-wrapper/hooks/useSduiNodeSubscription'
