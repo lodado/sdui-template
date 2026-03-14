@@ -1,5 +1,11 @@
 # @lodado/sdui-template
 
+## 1.0.3
+
+### Patch Changes
+
+- f37c102: Fix ESM build: split SduiLayoutRendererInner into separate file so SduiLayoutRenderer is the only export from SduiLayoutRenderer.mjs, fixing "Export SduiLayoutRenderer doesn't exist" in consumer bundlers.
+
 ## 1.0.2
 
 ### Patch Changes

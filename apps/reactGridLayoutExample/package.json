@@ -1,6 +1,6 @@
 {
   "name": "react-grid-layout-example",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": true,
   "scripts": {
     "dev:internal": "next dev",
