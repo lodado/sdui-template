@@ -2,7 +2,10 @@
   "name": "@lodado/sdui-template",
   "description": "SDUI (Server-Driven UI) template library for React. A flexible and powerful template system for building server-driven user interfaces with dynamic layouts and components.",
   "version": "1.0.1",
-  "sideEffects": false,
+  "sideEffects": [
+    "**/SduiLayoutRenderer*",
+    "**/SduiLayoutContext*"
+  ],
   "license": "MIT",
   "author": "lodado",
   "main": "./src/index.ts",
