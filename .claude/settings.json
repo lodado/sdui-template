@@ -1,33 +1,37 @@
 {
-  "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "enabledPlugins": {
-    "everything-claude-code@everything-claude-code": true
-  },
-  "enableAllProjectMcpServers": true,
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node ./.claude/hooks/post-tool-use.js"
-          }
-        ],
-        "description": "Observe + track edited files"
-      }
+  "permissions": {
+    "allow": [
+      "Write(**)",
+      "Edit(**)",
+      "Bash(**)",
+      "mcp__figma__get_design_context",
+      "mcp__figma__get_screenshot",
+      "mcp__figma__get_metadata"
     ],
-    "Stop": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node ./.claude/hooks/stop.js"
-          }
-        ],
-        "description": "Format and typecheck edited files"
-      }
+    "deny": [
+      "Bash(*DELETE*)",
+      "Bash(*DROP*)",
+      "Bash(*TRUNCATE*)",
+      "Bash(*delete*)",
+      "Bash(*drop*)",
+      "Bash(*truncate*)",
+      "Bash(rm -rf:*)",
+      "Bash(sudo:*)",
+      "Read(./.env)",
+      "Read(./.env.*)"
     ]
+  },
+  "enabledPlugins": {
+    "figma@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "hookify@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "github@claude-plugins-official": true,
+    "everything-claude-code@everything-claude-code": true,
+    "playwright@claude-plugins-official": true,
+    "claude-mem@thedotmack": true,
+    "superpowers@claude-plugins-official": true
   }
 }
