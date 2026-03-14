@@ -1,0 +1,77 @@
+# Instincts Export — sdui-template
+# Generated: 2026-03-14
+# Source: sdui-template repo (git history + skill analysis)
+# Count: 6 instincts
+
+version: "2.0"
+exported_by: "everything-claude-code:instinct-export"
+export_date: "2026-03-14T07:15:00Z"
+
+instincts:
+  - id: sdui-component-workflow
+    trigger: "when adding a new component to sdui-template-component"
+    action: |
+      Always create all 9 files together:
+      - {Name}.tsx (UI layer, no SDUI dependency)
+      - {Name}Container.tsx (SDUI container, useSduiNodeSubscription)
+      - types.ts (Zod schema + TS types)
+      - {name}-variants.ts (class-variance-authority)
+      - index.ts (named exports)
+      - __tests__/{name}.logic.test.tsx
+      - __tests__/{name}.sdui.test.tsx
+      And register in sduiComponents.tsx + shared/ui/index.ts
+    confidence: 0.95
+    domain: sdui
+    observations: 13
+
+  - id: sdui-state-vs-attributes
+    trigger: "when writing an SDUI document node"
+    action: |
+      state → Radix UI props, component logic, SDUI-specific values (providerId, open, side, sideOffset, appearance, label)
+      attributes → HTML-native only (className, data-*, aria-*, style)
+      NEVER put Radix props in attributes. NEVER put className in state.
+    confidence: 0.95
+    domain: sdui
+    observations: 22
+
+  - id: sdui-zod-schema-required
+    trigger: "when using useSduiNodeSubscription"
+    action: |
+      Always pass schema parameter and cast:
+        const { state } = useSduiNodeSubscription<typeof mySchema>({ nodeId, schema: mySchema })
+        const typed = state as z.infer<typeof mySchema>
+      Never use (state as any) or omit schema.
+    confidence: 0.95
+    domain: sdui
+    observations: 8
+
+  - id: sdui-providerId-inheritance
+    trigger: "when implementing compound components (Dropdown, Dialog, Popover, Tooltip) in SDUI"
+    action: |
+      providerId is optional in child nodes — inherits from nearest parent via React Context.
+      Container pattern: const providerId = state?.providerId ?? context?.providerId
+      Only specify explicit providerId when nesting multiple same-type compounds.
+    confidence: 0.9
+    domain: sdui
+    observations: 6
+
+  - id: sdui-commit-convention
+    trigger: "when writing a commit message in sdui-template"
+    action: |
+      Use conventional commits with component scope:
+        feat(badge): add Badge component from Figma
+        refactor(dropdown): simplify provider pattern
+      Frequency order: feat > chore > refactor > test = fix = docs
+    confidence: 0.9
+    domain: git
+    observations: 54
+
+  - id: sdui-test-separation
+    trigger: "when writing tests for an SDUI component"
+    action: |
+      Always create two separate test files:
+        {name}.logic.test.tsx  → pure UI unit tests (render, props, appearance)
+        {name}.sdui.test.tsx   → SDUI integration (SduiLayoutRenderer + document JSON)
+    confidence: 0.85
+    domain: testing
+    observations: 5
