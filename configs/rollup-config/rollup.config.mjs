@@ -85,7 +85,7 @@ const rollupConfigFunc = (config) =>
 
         entryFileNames,
         ...(isESMFormat
-          ? { preserveModulesRoot: `.`, preserveModules: isESMFormat }
+          ? { preserveModulesRoot: `src`, preserveModules: isESMFormat }
           : {}),
       },
 

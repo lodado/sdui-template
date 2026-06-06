@@ -1,5 +1,13 @@
 # ssr-testing
 
+## 0.1.4
+
+### Patch Changes
+
+- Updated dependencies
+  - @lodado/sdui-template@1.0.4
+  - @lodado/sdui-template-component@1.0.4
+
 ## 0.1.3
 
 ### Patch Changes

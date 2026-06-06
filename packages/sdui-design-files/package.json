@@ -1,6 +1,6 @@
 {
   "name": "@lodado/sdui-design-files",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Design system files for SDUI template - CSS variables, colors, and design tokens extracted from Figma",
   "sideEffects": [
     "./src/colors.css",
@@ -87,21 +87,21 @@
       "./tokens": {
         "import": {
           "default": "./dist/es/client/generated/tokens.mjs",
-          "types": "./dist/types/generated/tokens.d.ts"
+          "types": "./dist/types/src/generated/tokens.d.ts"
         },
         "require": {
-          "default": "./dist/cjs/client/generated/tokens.cjs",
-          "types": "./dist/types/generated/tokens.d.ts"
+          "default": "./dist/cjs/generated/tokens.cjs",
+          "types": "./dist/types/src/generated/tokens.d.ts"
         }
       },
       "./theme": {
         "import": {
           "default": "./dist/es/client/generated/theme.css.mjs",
-          "types": "./dist/types/generated/theme.css.d.ts"
+          "types": "./dist/types/src/generated/theme.css.d.ts"
         },
         "require": {
-          "default": "./dist/cjs/client/generated/theme.css.cjs",
-          "types": "./dist/types/generated/theme.css.d.ts"
+          "default": "./dist/cjs/generated/theme.css.cjs",
+          "types": "./dist/types/src/generated/theme.css.d.ts"
         }
       },
       "./index.css": "./src/index.css",

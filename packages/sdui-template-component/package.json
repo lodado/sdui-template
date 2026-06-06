@@ -1,13 +1,13 @@
 {
   "name": "@lodado/sdui-template-component",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "SDUI Component Library - Radix UI-based components for Server-Driven UI",
   "author": "lodado",
   "license": "MIT",
   "packageManager": "pnpm@9.0.6",
-  "main": "./dist/cjs/client/index.cjs",
-  "module": "./dist/es/client/index.mjs",
-  "types": "./dist/types/index.d.ts",
+  "main": "./src/index.tsx",
+  "module": "./src/index.tsx",
+  "types": "./src/index.tsx",
   "source": "./src/index.tsx",
   "exports": {
     ".": {
