@@ -1,8 +1,11 @@
 # @lodado/sdui-template
 
-> ⚠️ **For personal use - Feel free to use as you like**
+ 
+**Server-Driven UI Template Library for React** — A flexible and powerful template system for building server-driven user interfaces with dynamic layouts and components.
 
-**Server-Driven UI Template Library for React** - A flexible and powerful template system for building server-driven user interfaces with dynamic layouts and components.
+## 💡 Origin
+
+For roughly **2–3 years**, we ran an early **SDUI (draft)** in production — a Grafana-like dashboard where each user can drag-and-drop widgets, arrange layouts, and save their own view. **@lodado/sdui-template** is the open-source version of what we learned there.
 
 ## 📖 What is This?
 
@@ -900,11 +903,7 @@ function Container({ id }: { id: string }) {
   const { childrenIds } = useSduiNodeSubscription({ nodeId: id })
   const { renderChildren } = useRenderNode({ nodeId: id, parentPath: [] })
 
-  return (
-    <div>
-      {renderChildren(childrenIds)}
-    </div>
-  )
+  return <div>{renderChildren(childrenIds)}</div>
 }
 ```
 
@@ -1002,48 +1001,6 @@ export default function Page() {
   return <SduiLayoutRenderer document={document} />
 }
 ```
-
-## 🚀 Worktree-Based Development
-
-This repository uses a **git worktree** workflow for isolated PR development:
-
-> "1 Task = 1 Worktree = 1 PR"
-
-### Quick Start
-
-```bash
-# Create a new worktree for your feature
-./.claude/scripts/pr-task.sh "feat: add billing table"
-
-# Navigate to the worktree
-cd .worktrees/feat-add-billing-table
-
-# Make changes, then commit and push
-git add .
-git commit -m "feat: add billing table"
-git push -u origin chore/feat-add-billing-table
-
-# Create PR
-gh pr create --title "feat: add billing table"
-
-# After merge, clean up
-cd ../..
-git worktree remove .worktrees/feat-add-billing-table
-```
-
-### Why Worktrees?
-
-- **Isolation**: Each feature is completely isolated
-- **Parallel work**: Work on multiple features simultaneously
-- **Clean main**: Never develop directly on main branch
-- **Easy cleanup**: Remove worktree after PR merge
-
-### Agent Workflow
-
-See `agents/` directory for orchestrator and implementer agent specifications:
-
-- `agents/pr-orchestrator.md` - Manages PR lifecycle
-- `agents/pr-implementer.md` - Handles code implementation
 
 ## 📝 License
 
