@@ -1,5 +1,12 @@
 # @lodado/sdui-template-component
 
+## 1.0.5
+
+### Patch Changes
+
+- Updated dependencies
+  - @lodado/sdui-template@1.0.5
+
 ## 1.0.4
 
 ### Patch Changes

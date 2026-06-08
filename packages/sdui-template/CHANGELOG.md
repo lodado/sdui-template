@@ -1,5 +1,11 @@
 # @lodado/sdui-template
 
+## 1.0.5
+
+### Patch Changes
+
+- Fix the published ESM package entry by preserving denormalization utility exports during Rollup builds.
+
 ## 1.0.4
 
 ### Patch Changes
