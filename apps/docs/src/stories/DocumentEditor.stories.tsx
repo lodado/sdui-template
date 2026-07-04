@@ -221,8 +221,20 @@ const allBlocksContent: SduiDocumentContent = {
       createDocumentBlock({
         id: 'all-heading',
         type: 'document.heading',
-        state: { text: 'document.heading — title block, attributes.level 1–3' },
+        state: { text: 'document.heading — h1, attributes.level 1–4' },
         attributes: { level: 1 },
+      }),
+      createDocumentBlock({
+        id: 'all-heading-2',
+        type: 'document.heading',
+        state: { text: 'document.heading — h2' },
+        attributes: { level: 2 },
+      }),
+      createDocumentBlock({
+        id: 'all-heading-3',
+        type: 'document.heading',
+        state: { text: 'document.heading — h3' },
+        attributes: { level: 3 },
       }),
       createDocumentBlock({
         id: 'all-paragraph',
@@ -246,36 +258,61 @@ const allBlocksContent: SduiDocumentContent = {
       createDocumentBlock({
         id: 'all-checklist',
         type: 'document.checklist',
-        state: { text: 'document.checklist — todo item, attributes.checked boolean' },
+        state: { text: 'document.checklist — click the box to toggle (emits block.update)' },
         attributes: { checked: false },
       }),
       createDocumentBlock({
-        id: 'all-callout',
-        type: 'document.callout',
-        state: { text: 'document.callout — highlighted note block' },
+        id: 'all-checklist-done',
+        type: 'document.checklist',
+        state: { text: 'document.checklist — checked state dims the text' },
+        attributes: { checked: true },
       }),
       createDocumentBlock({
-        id: 'all-divider',
+        id: 'all-callout-info',
+        type: 'document.callout',
+        state: { text: 'document.callout — info (default variant)' },
+        attributes: { style: 'info' },
+      }),
+      createDocumentBlock({
+        id: 'all-callout-warning',
+        type: 'document.callout',
+        state: { text: 'document.callout — warning' },
+        attributes: { style: 'warning' },
+      }),
+      createDocumentBlock({
+        id: 'all-callout-tip',
+        type: 'document.callout',
+        state: { text: 'document.callout — tip' },
+        attributes: { style: 'tip' },
+      }),
+      createDocumentBlock({
+        id: 'all-callout-success',
+        type: 'document.callout',
+        state: { text: 'document.callout — success' },
+        attributes: { style: 'success' },
+      }),
+      createDocumentBlock({ id: 'all-divider', type: 'document.divider' }),
+      createDocumentBlock({
+        id: 'all-page-break',
         type: 'document.divider',
-        state: { text: 'document.divider — non-text: never mounts ProseMirror, focus skips it' },
+        attributes: { markup: '***' },
       }),
       createDocumentBlock({
         id: 'all-image',
         type: 'document.image',
-        state: { text: 'document.image — non-text media block (src via attributes)' },
-        attributes: { src: 'https://example.com/image.png', alt: 'example' },
+        state: { text: 'document.image — caption comes from state.text' },
+        attributes: { src: 'https://picsum.photos/seed/sdui/640/280', alt: 'random landscape', width: 640 },
       }),
       createDocumentBlock({
         id: 'all-file',
         type: 'document.file',
-        state: { text: 'document.file — non-text attachment block' },
-        attributes: { url: 'https://example.com/file.pdf', name: 'file.pdf' },
+        attributes: { url: 'https://example.com/file.pdf', name: 'quarterly-report.pdf', size: 48211 },
       }),
       createDocumentBlock({
         id: 'all-link',
         type: 'document.link',
-        state: { text: 'document.link — non-text bookmark block' },
-        attributes: { url: 'https://example.com' },
+        state: { text: 'document.link — bookmark card (a.embed)' },
+        attributes: { url: 'https://www.getoutline.com' },
       }),
       createDocumentBlock({
         id: 'all-nested-parent',
@@ -299,21 +336,22 @@ export const AllBlocks: Story = {
     docs: {
       description: {
         story:
-          'Every block type in the schema, one of each:\n\n' +
-          '| Type | Role | Editable inline? |\n' +
-          '|------|------|------------------|\n' +
+          'Every block type rendered with its semantic tag + CSS ported from the Outline editor ' +
+          '(tags from `shared/editor/nodes/*` toDOM, values from `Styles.ts`/`theme.ts`):\n\n' +
+          '| Type | Rendered as | Editable inline? |\n' +
+          '|------|-------------|------------------|\n' +
           '| `document.root` | invisible tree root (never rendered) | — |\n' +
-          '| `document.heading` | section title, `attributes.level` 1–3 (markdown `#`/`##`/`###` shortcut) | ✅ |\n' +
-          '| `document.paragraph` | default text block | ✅ |\n' +
-          '| `document.checklist` | todo item, `attributes.checked` (markdown `[] ` shortcut) | ✅ |\n' +
-          '| `document.callout` | highlighted note (markdown `> ` shortcut) | ✅ |\n' +
-          '| `document.divider` | horizontal rule | ❌ non-text |\n' +
-          '| `document.image` | media block, `attributes.src/alt` | ❌ non-text |\n' +
-          '| `document.file` | attachment, `attributes.url/name` | ❌ non-text |\n' +
-          '| `document.link` | bookmark, `attributes.url` | ❌ non-text |\n\n' +
-          'The paragraph shows all inline marks (`bold`, `italic`, `code`, `link`) plus `hard_break`. ' +
-          'Type-specific chrome (real `<hr>`, image rendering, checkbox UI) is renderer backlog — ' +
-          'today every block renders its inline content through `InlineContentView`.',
+          '| `document.heading` | `<h1..h4 class="heading-content">` via `attributes.level` (markdown `#`…) | ✅ |\n' +
+          '| `document.paragraph` | `<p dir="auto">` | ✅ |\n' +
+          '| `document.checklist` | checkbox item — box toggles `attributes.checked` via `block.update` | ✅ |\n' +
+          '| `document.callout` | `.notice-block` info/warning/tip/success (markdown `> `) | ✅ |\n' +
+          '| `document.divider` | `<hr>`; `attributes.markup="***"` → dashed page-break | ❌ non-text |\n' +
+          '| `document.image` | `<div class="image"><img>` + caption from `state.text` | ❌ non-text |\n' +
+          '| `document.file` | `<a class="attachment">` download card | ❌ non-text |\n' +
+          '| `document.link` | `<a class="embed">` bookmark | ❌ non-text |\n\n' +
+          'The paragraph shows all inline marks (`bold`, `italic`, `code.inline`, `link`) plus `hard_break`. ' +
+          'Light/dark tokens switch with the `data-theme` attribute. ' +
+          'Focused and static states share the same wrapper tag, so entering/leaving edit mode causes no layout shift.',
       },
     },
   },

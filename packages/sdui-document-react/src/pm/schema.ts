@@ -33,7 +33,8 @@ export const focusedBlockSchema = new Schema({
     },
     code: {
       parseDOM: [{ tag: 'code' }],
-      toDOM: () => ['code', 0],
+      // class matches the static InlineContentView / Outline marks/Code.ts
+      toDOM: () => ['code', { class: 'inline' }, 0],
     },
     link: {
       attrs: { href: {} },
@@ -44,7 +45,7 @@ export const focusedBlockSchema = new Schema({
           getAttrs: (dom) => ({ href: (dom as HTMLElement).getAttribute('href') }),
         },
       ],
-      toDOM: (mark) => ['a', { href: String(mark.attrs.href) }, 0],
+      toDOM: (mark) => ['a', { href: String(mark.attrs.href), rel: 'noopener noreferrer nofollow' }, 0],
     },
   },
 })

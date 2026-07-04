@@ -25,8 +25,10 @@ describe('FocusedBlockEditor', () => {
         const props = createProps()
         render(<FocusedBlockEditor {...props} />)
 
+        // PM mounts on the host itself (mount option) — no extra wrapper div,
+        // so the editor stays valid inside <p>/<h1> chrome tags
         const host = screen.getByTestId('focused-block-editor')
-        expect(host.querySelectorAll('[contenteditable="true"]')).toHaveLength(1)
+        expect(host).toHaveAttribute('contenteditable', 'true')
         expect(host.textContent).toContain('Hello')
       })
     })

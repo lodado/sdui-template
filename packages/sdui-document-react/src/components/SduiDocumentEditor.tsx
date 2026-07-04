@@ -21,6 +21,7 @@ import React, { useRef, useState } from 'react'
 
 import { useDocumentPatches } from '../blocks/code/useDocumentPatches'
 import { useNestedBlockDragDrop } from '../blocks/code/useNestedBlockDragDrop'
+import { BlockChrome } from './BlockChrome'
 import type { FocusedBlockCommit } from './FocusedBlockEditor'
 import { FocusedBlockEditor } from './FocusedBlockEditor'
 import { InlineContentView } from './InlineContentView'
@@ -295,15 +296,21 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     refocus(neighbor.id, direction === 'up' ? 'end' : 'start')
   }
 
+  const handleToggleChecked = (blockId: string, checked: boolean) => {
+    applyPatches([{ type: 'block.update', blockId: createBlockId(blockId), attributes: { checked } }])
+  }
+
   const renderStaticBlock = (block: SduiDocumentBlock): React.ReactNode => {
     const view = <InlineContentView content={blockInlineContent(block)} />
 
-    if (readOnly || !isTextBlock(block)) {
-      return <div>{view}</div>
+    // span keeps the chrome wrapper (<p>/<h1>…) valid — div may not nest there
+    if (readOnly) {
+      return <span className="sdui-doc-static">{view}</span>
     }
 
     return (
-      <div
+      <span
+        className="sdui-doc-static"
         role="textbox"
         tabIndex={0}
         onClick={() => refocus(block.id, 'start')}
@@ -314,7 +321,7 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
         }}
       >
         {view}
-      </div>
+      </span>
     )
   }
 
@@ -373,23 +380,26 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
         onHandleClick={handleHandleClick}
         nested={block.children?.map((child) => renderBlock(child, depth + 1))}
       >
-        {isFocused ? (
-          <FocusedBlockEditor
-            key={focus.session}
-            content={blockInlineContent(block)}
-            autoFocus={focus.caret}
-            onCommit={handleCommit(block.id)}
-            onSplit={handleSplit(block.id)}
-            onMergeBackward={handleMergeBackward(block.id)}
-            onIndent={handleIndent(block.id)}
-            onOutdent={handleOutdent(block.id)}
-            onNavigate={handleNavigate(block.id)}
-            onTurnInto={(type, attrs) => onTurnInto?.(block.id, type, attrs)}
-            onEscape={handleEscapeFromEditor(block.id)}
-          />
-        ) : (
-          renderStaticBlock(block)
-        )}
+        <BlockChrome block={block} onToggleChecked={readOnly ? undefined : handleToggleChecked}>
+          {isTextBlock(block) &&
+            (isFocused ? (
+              <FocusedBlockEditor
+                key={focus.session}
+                content={blockInlineContent(block)}
+                autoFocus={focus.caret}
+                onCommit={handleCommit(block.id)}
+                onSplit={handleSplit(block.id)}
+                onMergeBackward={handleMergeBackward(block.id)}
+                onIndent={handleIndent(block.id)}
+                onOutdent={handleOutdent(block.id)}
+                onNavigate={handleNavigate(block.id)}
+                onTurnInto={(type, attrs) => onTurnInto?.(block.id, type, attrs)}
+                onEscape={handleEscapeFromEditor(block.id)}
+              />
+            ) : (
+              renderStaticBlock(block)
+            ))}
+        </BlockChrome>
       </BlockRow>
     )
   }
