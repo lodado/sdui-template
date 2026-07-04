@@ -3,6 +3,7 @@ export * from './blocks';
 export * from './collaboration';
 export * from './content';
 export * from './contracts';
+export * from './drag';
 export * from './permissions';
 export * from './repositories';
 export * from './schema';
