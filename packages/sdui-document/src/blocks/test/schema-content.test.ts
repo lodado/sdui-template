@@ -5,7 +5,7 @@ import {
   type SduiDocument,
   type SduiDocumentContent,
   walkDocumentBlocks,
-} from '../index';
+} from '../../index';
 
 describe('SDUI document schema and content helpers', () => {
   const content: SduiDocumentContent = {

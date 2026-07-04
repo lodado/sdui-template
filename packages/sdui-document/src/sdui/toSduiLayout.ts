@@ -1,5 +1,5 @@
-import { blockText } from '../blocks/blockGuards'
-import type { SduiDocumentBlock, SduiDocumentContent } from '../schema'
+import { blockText } from '../blocks/code/blockGuards'
+import type { SduiDocumentBlock, SduiDocumentContent } from '../blocks/schema'
 import { type BlockMapperTheme, outlineTheme } from './theme'
 
 export type SduiLayoutLikeNode = {

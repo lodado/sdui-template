@@ -5,7 +5,7 @@ import {
   flattenDocumentBlocks,
   isBlockDragDisabled,
   type SduiDocumentContent,
-} from '../index';
+} from '../../index';
 
 function createContent(): SduiDocumentContent {
   return {

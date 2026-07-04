@@ -4,7 +4,7 @@ import {
   parseSduiDocumentContent,
   parseSduiDocumentPatch,
   parseSduiDocumentPatches,
-} from '../index'
+} from '../../index'
 
 describe('parseSduiDocument', () => {
   const validDocument = {

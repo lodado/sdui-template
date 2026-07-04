@@ -5,7 +5,7 @@ import {
   extendBlockSelection,
   type SduiDocumentContent,
   toggleBlockSelection,
-} from '../index'
+} from '../../index'
 
 /**
  * Fixture tree (flattened order):

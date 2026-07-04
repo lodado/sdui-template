@@ -8,7 +8,7 @@ import {
   type SduiDocument,
   type SduiDocumentContent,
   type SduiDocumentPatch,
-} from '../index'
+} from '../../index'
 
 /**
  * Fixture tree:

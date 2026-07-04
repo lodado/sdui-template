@@ -1,4 +1,4 @@
-import type { SduiCollectionId, SduiDocument, SduiDocumentEvent, SduiDocumentId } from '../schema'
+import type { SduiCollectionId, SduiDocument, SduiDocumentEvent, SduiDocumentId } from '../blocks/schema'
 import { DocumentNotFoundError, InvalidDocumentDestinationError } from './errors'
 
 export type DocumentTreeResult = {

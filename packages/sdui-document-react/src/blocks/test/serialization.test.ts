@@ -1,6 +1,6 @@
 import type { SduiInlineContent } from '@lodado/sdui-document'
 
-import { inlineContentToPmDoc, pmDocToInlineContent } from '../pm/serialization'
+import { inlineContentToPmDoc, pmDocToInlineContent } from '../../pm/serialization'
 
 function roundTrip(content: SduiInlineContent): SduiInlineContent {
   return pmDocToInlineContent(inlineContentToPmDoc(content))

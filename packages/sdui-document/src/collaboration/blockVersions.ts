@@ -1,4 +1,4 @@
-import type { SduiDocumentPatch } from '../schema'
+import type { SduiDocumentPatch } from '../blocks/schema'
 
 /** Block id → last acknowledged version. Absent entries mean version 0. */
 export type BlockVersionMap = Record<string, number>

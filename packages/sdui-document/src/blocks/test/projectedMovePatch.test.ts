@@ -1,4 +1,4 @@
-import { createDocumentBlock, createProjectedBlockMovePatch, type SduiDocumentContent } from '../index'
+import { createDocumentBlock, createProjectedBlockMovePatch, type SduiDocumentContent } from '../../index'
 
 const INDENT_WIDTH = 24
 
