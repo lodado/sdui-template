@@ -1,7 +1,7 @@
 import { findBlockById } from '../blocks'
-import type { SduiDocumentContent } from '../schema'
+import type { SduiDocumentContent, SduiDocumentPatch } from '../schema'
 import type { FlattenedDocumentBlock, NestedBlockDropPosition } from './dragHelpers'
-import { flattenDocumentBlocks } from './dragHelpers'
+import { createNestedBlockMovePatch, flattenDocumentBlocks } from './dragHelpers'
 
 export type ProjectNestedBlockDropInput = {
   content: SduiDocumentContent
@@ -109,4 +109,27 @@ export function projectNestedBlockDrop(input: ProjectNestedBlockDropInput): Proj
   }
 
   return { overId: ancestor.id, position: 'after', depth: projectedDepth }
+}
+
+/**
+ * One-shot DnD drop handler: projects the pointer onto a drop slot and maps
+ * it straight to a block.move patch.
+ *
+ * @returns the move patch, or null when the drop target is invalid
+ *          (root / dragged subtree / unknown ids)
+ */
+export function createProjectedBlockMovePatch(
+  input: ProjectNestedBlockDropInput,
+): Extract<SduiDocumentPatch, { type: 'block.move' }> | null {
+  const projected = projectNestedBlockDrop(input)
+  if (!projected) {
+    return null
+  }
+
+  return createNestedBlockMovePatch({
+    content: input.content,
+    activeId: input.activeId,
+    overId: projected.overId,
+    position: projected.position,
+  })
 }

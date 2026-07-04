@@ -22,6 +22,8 @@ export type FocusedBlockCallbacks = {
   onNavigate(direction: 'up' | 'down', offset: number): void
   /** Markdown input rule matched — block layer should change the block type. */
   onTurnInto(type: string, attrs?: Record<string, unknown>): void
+  /** Escape — exit inline editing into block selection mode. */
+  onEscape(): void
 }
 
 function isAtVerticalBoundary(state: EditorState, view: EditorView | undefined, direction: 'up' | 'down'): boolean {
@@ -57,6 +59,10 @@ export function buildFocusedBlockKeymap(callbacks: FocusedBlockCallbacks): Plugi
     },
     'Shift-Tab': () => {
       callbacks.onOutdent()
+      return true
+    },
+    Escape: () => {
+      callbacks.onEscape()
       return true
     },
     ArrowUp: (state, _dispatch, view) => {

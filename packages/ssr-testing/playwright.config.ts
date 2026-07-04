@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test'
 
 /**
  * Playwright configuration file.
@@ -14,7 +14,8 @@ export default defineConfig({
   reporter: 'html',
 
   use: {
-    baseURL: 'http://localhost:3000',
+    // 3100: avoids dev servers/ssh tunnels commonly holding :3000
+    baseURL: 'http://localhost:3100',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
@@ -35,9 +36,9 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'pnpm run dev-test',
-    url: 'http://localhost:3000',
+    command: 'pnpm run dev-test --port 3100',
+    url: 'http://localhost:3100',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
   },
-});
+})

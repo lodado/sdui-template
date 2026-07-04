@@ -11,10 +11,11 @@ function createCallbacks(): jest.Mocked<FocusedBlockCallbacks> {
     onOutdent: jest.fn(),
     onNavigate: jest.fn(),
     onTurnInto: jest.fn(),
+    onEscape: jest.fn(),
   }
 }
 
-type KeyName = 'Enter' | 'Backspace' | 'Tab' | 'Shift-Tab' | 'ArrowUp' | 'ArrowDown'
+type KeyName = 'Enter' | 'Backspace' | 'Tab' | 'Shift-Tab' | 'ArrowUp' | 'ArrowDown' | 'Escape'
 
 /**
  * Runs a bound keymap command at the given caret offset without an EditorView
@@ -139,6 +140,15 @@ describe('focused block keymap delegation', () => {
 
         expect(pressKey(callbacks, 'Hello', 5, 'ArrowDown')).toBe(true)
         expect(callbacks.onNavigate).toHaveBeenCalledWith('down', 5)
+      })
+    })
+
+    describe('when Escape is pressed anywhere (EP: exit editing)', () => {
+      it('to be: onEscape called and key consumed', () => {
+        const callbacks = createCallbacks()
+
+        expect(pressKey(callbacks, 'Hello', 2, 'Escape')).toBe(true)
+        expect(callbacks.onEscape).toHaveBeenCalledTimes(1)
       })
     })
   })

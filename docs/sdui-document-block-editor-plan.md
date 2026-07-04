@@ -1429,11 +1429,12 @@ pnpm storybook
 
 - [x] inline content model + split/merge patch + inverse patch (Phase 16)
 - [x] FocusedBlockEditor — PM inline 엔진, `@lodado/sdui-document-react` 패키지 (Phase 17)
-  - [ ] 한글 IME 실브라우저 E2E (jsdom 불가 — Playwright 필요)
+  - [x] 한글 IME 실브라우저 E2E — `ssr-testing/app/document-editor/` (Chromium CDP `Input.imeSetComposition`, 조합 입력/분할 보존 검증)
 - [x] Phase 18 headless — depth projection(`projectNestedBlockDrop`) + block selection 모델
 - [x] 에디터 표면 조립 — `SduiDocumentEditor` (click-to-focus, split/merge/indent/outdent/navigate 배선) + Storybook `DocumentEditor.stories.tsx`
-  - [ ] dnd-kit 실배선 (drop indicator, auto-scroll, collapsed subtree)
-  - [ ] block selection UI 배선 (Esc/handle 진입, 다중 delete/move)
+  - [x] dnd-kit 실배선 — `createProjectedBlockMovePatch` + DndContext/useDraggable/useDroppable, drop indicator, PointerSensor distance 제약
+  - [x] block selection UI 배선 — Escape 진입(keymap 위임), handle 클릭/Shift-범위, Backspace 다중 삭제
+  - [ ] auto-scroll, collapsed subtree 처리 (collapse 기능 자체가 미구현이라 보류)
 - [x] realtime R1 헬퍼(`detectVersionConflicts`/`bumpBlockVersions`) + R2 presence 헬퍼 (Phase 19)
   - [ ] savePatches 어댑터/서버 연동 및 conflict UI
 
