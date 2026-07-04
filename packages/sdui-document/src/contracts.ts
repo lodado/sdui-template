@@ -1,0 +1,1 @@
+export const SDUI_DOCUMENT_CONTRACT_VERSION = '1.0';

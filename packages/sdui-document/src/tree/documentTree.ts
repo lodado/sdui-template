@@ -48,10 +48,14 @@ export function getDocumentDescendantIds(
 ): SduiDocumentId[] {
   requireDocument(documents, documentId);
 
-  return childDocuments(documents, documentId).flatMap((child) => [
-    child.id,
-    ...getDocumentDescendantIds(documents, child.id),
-  ]);
+  return childDocuments(documents, documentId).reduce<SduiDocumentId[]>(
+    (descendantIds, child) => [
+      ...descendantIds,
+      child.id,
+      ...getDocumentDescendantIds(documents, child.id),
+    ],
+    []
+  );
 }
 
 function createEvent(type: SduiDocumentEvent['type'], documentId: SduiDocumentId): SduiDocumentEvent {
