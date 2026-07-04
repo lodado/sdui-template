@@ -13,6 +13,7 @@
   "dependencies": {
     "@lodado/sdui-design-files": "workspace:*",
     "@lodado/sdui-document": "workspace:*",
+    "@lodado/sdui-document-react": "workspace:*",
     "@lodado/sdui-template": "workspace:*",
     "@lodado/sdui-template-component": "workspace:*",
     "react": "^18.3.1",

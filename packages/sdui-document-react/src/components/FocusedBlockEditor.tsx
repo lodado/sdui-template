@@ -16,7 +16,8 @@ export type FocusedBlockEditorProps = FocusedBlockCallbacks & {
   content: SduiInlineContent
   /** Caret placement on mount: start / end / explicit offset. */
   autoFocus?: 'start' | 'end' | number
-  /** Called on blur and unmount with the committed inline state (channel 2 of 3). */
+  /** Called on blur, unmount, and before boundary delegation (channel 2 of 3). */
+  // eslint-disable-next-line react/no-unused-prop-types -- consumed via latestProps ref
   onCommit(result: FocusedBlockCommit): void
   className?: string
 }
@@ -40,12 +41,17 @@ function resolveCaretOffset(autoFocus: FocusedBlockEditorProps['autoFocus'], doc
  * Policies:
  * - mounts once per focus session; `content` changes after mount are ignored
  *   (the editor is the source of truth until commit)
- * - commit fires on blur and unmount, but never mid-composition (IME safety);
- *   an unmount during composition still commits as a last resort
+ * - commit fires on blur and unmount, but never mid-composition (IME safety)
+ * - structural delegations (split/merge/navigate) commit FIRST so typed text
+ *   is never lost, then RETIRE this editor — its content authority is gone,
+ *   so later blur/unmount commits are suppressed (they would be stale)
+ * - indent/outdent commit first but do not retire (content is unaffected)
  * - block-boundary keys are delegated via FocusedBlockCallbacks (channel 3)
  */
 export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
-  const { content, autoFocus, onCommit, className } = props
+  // onCommit is intentionally not destructured: it is only reached through
+  // latestProps so late prop swaps still land (react/no-unused-prop-types).
+  const { content, autoFocus, className } = props
   const containerRef = useRef<HTMLDivElement>(null)
   const latestProps = useRef(props)
   latestProps.current = props
@@ -56,12 +62,43 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
       return undefined
     }
 
+    const viewRef: { current: EditorView | undefined } = { current: undefined }
+    const retired = { current: false }
+
+    const commitNow = () => {
+      if (retired.current || !viewRef.current || viewRef.current.composing) {
+        return
+      }
+
+      latestProps.current.onCommit(editorStateToInline(viewRef.current.state))
+    }
+
     const callbacks: FocusedBlockCallbacks = {
-      onSplit: (offset) => latestProps.current.onSplit(offset),
-      onMergeBackward: () => latestProps.current.onMergeBackward(),
-      onIndent: () => latestProps.current.onIndent(),
-      onOutdent: () => latestProps.current.onOutdent(),
-      onNavigate: (direction, offset) => latestProps.current.onNavigate(direction, offset),
+      onSplit: (offset) => {
+        commitNow()
+        retired.current = true
+        latestProps.current.onSplit(offset)
+      },
+      onMergeBackward: () => {
+        commitNow()
+        retired.current = true
+        latestProps.current.onMergeBackward()
+      },
+      onIndent: () => {
+        commitNow()
+        latestProps.current.onIndent()
+      },
+      onOutdent: () => {
+        commitNow()
+        latestProps.current.onOutdent()
+      },
+      onNavigate: (direction, offset) => {
+        commitNow()
+        retired.current = true
+        latestProps.current.onNavigate(direction, offset)
+      },
+      // No commit here: the input-rule transaction (prefix deletion) has not
+      // been dispatched yet, so committing now would persist the raw "# ".
       onTurnInto: (type, attrs) => latestProps.current.onTurnInto(type, attrs),
     }
 
@@ -77,22 +114,24 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
         view.updateState(view.state.apply(transaction))
       },
       handleDOMEvents: {
-        blur: (blurredView) => {
-          if (!blurredView.composing) {
-            latestProps.current.onCommit(editorStateToInline(blurredView.state))
-          }
+        blur: () => {
+          commitNow()
 
           return false
         },
       },
     })
+    viewRef.current = view
 
     view.focus()
 
     return () => {
-      const commit = editorStateToInline(view.state)
+      const finalCommit = retired.current ? undefined : editorStateToInline(view.state)
+      viewRef.current = undefined
       view.destroy()
-      latestProps.current.onCommit(commit)
+      if (finalCommit) {
+        latestProps.current.onCommit(finalCommit)
+      }
     }
     // Mount-once per focus session: content/autoFocus are init-only inputs.
     // eslint-disable-next-line react-hooks/exhaustive-deps

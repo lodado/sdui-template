@@ -1,1 +1,2 @@
-export * from './dragHelpers';
+export * from './dragHelpers'
+export * from './dropProjection'

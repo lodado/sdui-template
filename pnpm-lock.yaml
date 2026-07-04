@@ -47,6 +47,9 @@ importers:
       '@lodado/sdui-document':
         specifier: workspace:*
         version: link:../../packages/sdui-document
+      '@lodado/sdui-document-react':
+        specifier: workspace:*
+        version: link:../../packages/sdui-document-react
       '@lodado/sdui-template':
         specifier: workspace:*
         version: link:../../packages/sdui-template
