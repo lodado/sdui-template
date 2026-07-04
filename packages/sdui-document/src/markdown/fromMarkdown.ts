@@ -5,6 +5,7 @@ import type { SduiDocumentBlock, SduiDocumentContent } from '../blocks/schema'
 import { createBlockId, type SduiDocumentBlockId } from '../blocks/schema/ids'
 import type { SduiInlineContent } from '../blocks/schema/inline'
 import { parseSduiDocumentContent } from '../blocks/schema/validate'
+import { migrateToFractionalPositions } from '../ordering/migrate'
 import { inlineContentToPlainText } from '../content/inlineContent'
 import { inlineTokensToContent } from './inline'
 import type { MarkdownImportOptions, MarkdownUnsupportedPolicy } from './types'
@@ -187,12 +188,14 @@ export function markdownToSduiDocumentContent(
 
   const children = mapTokens(lexer(markdown), ctx)
 
-  return parseSduiDocumentContent({
-    schemaVersion: '1.0',
-    root: {
-      id: ctx.blockId('root'),
-      type: 'document.root',
-      children: children.length > 0 ? children : undefined,
-    },
-  })
+  return migrateToFractionalPositions(
+    parseSduiDocumentContent({
+      schemaVersion: '1.0',
+      root: {
+        id: ctx.blockId('root'),
+        type: 'document.root',
+        children: children.length > 0 ? children : undefined,
+      },
+    }),
+  )
 }

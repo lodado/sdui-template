@@ -79,7 +79,13 @@ describe('detectVersionConflicts', () => {
       it('to be: delete/move/split/merge report conflicts on their target block', () => {
         const patches: SduiDocumentPatch[] = [
           { type: 'block.delete', blockId: blockId('para-1'), expectedVersion: 99 },
-          { type: 'block.move', blockId: blockId('para-1'), parentId: blockId('root'), index: 0, expectedVersion: 99 },
+          {
+            type: 'block.move',
+            blockId: blockId('para-1'),
+            parentId: blockId('root'),
+            after: null,
+            expectedVersion: 99,
+          },
           {
             type: 'block.split',
             blockId: blockId('para-1'),
@@ -127,7 +133,7 @@ describe('bumpBlockVersions', () => {
           {
             type: 'block.insert',
             parentId: blockId('root'),
-            index: 0,
+            after: null,
             block: createDocumentBlock({ id: 'new-1', type: 'document.paragraph' }),
           },
         ])

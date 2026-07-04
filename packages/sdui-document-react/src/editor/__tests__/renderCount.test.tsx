@@ -1,5 +1,10 @@
-import type { SduiDocumentContent } from '@lodado/sdui-document'
-import { createDocumentBlock } from '@lodado/sdui-document'
+import {
+  createBlockId,
+  createDocumentBlock,
+  ensureFractionalContent,
+  findBlockById,
+  type SduiDocumentContent,
+} from '@lodado/sdui-document'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
@@ -35,7 +40,7 @@ import { SduiDocumentEditor } from '../SduiDocumentEditor'
  * └── p3 "Third"
  */
 function createContent(): SduiDocumentContent {
-  return {
+  return ensureFractionalContent({
     schemaVersion: '1.0',
     root: createDocumentBlock({
       id: 'root',
@@ -46,7 +51,7 @@ function createContent(): SduiDocumentContent {
         createDocumentBlock({ id: 'p3', type: 'document.paragraph', state: { text: 'Third' } }),
       ],
     }),
-  }
+  })
 }
 
 function snapshotCounts(): Record<string, number> {

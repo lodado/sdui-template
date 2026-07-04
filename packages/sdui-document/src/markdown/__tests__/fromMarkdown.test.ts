@@ -20,7 +20,7 @@ describe('markdownToSduiDocumentContent', () => {
   test('wraps blocks in a document.root and validates against the document schema', () => {
     const content = convert('hello')
 
-    expect(content.schemaVersion).toBe('1.0')
+    expect(content.schemaVersion).toBe('1.1')
     expect(content.root.type).toBe('document.root')
     expect(childBlocks(content)).toHaveLength(1)
   })

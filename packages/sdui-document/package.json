@@ -28,6 +28,7 @@
     "manual-release": "pnpm run build && pnpm publish --no-git-checks"
   },
   "dependencies": {
+    "fractional-indexing": "^4.0.0",
     "marked": "^15.0.12",
     "zod": "^4.3.6"
   },

@@ -17,6 +17,9 @@ import type {
   SduiInlineContent,
 } from '@lodado/sdui-document'
 import {
+  anchorAfterBlock,
+  anchorAppendToParent,
+  anchorBeforeBlock,
   clearBlockSelection,
   createBlockId,
   createBlockSelection,
@@ -410,7 +413,12 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
       const base = createDefaultBlock(item.type, newId, attributes)
       const block = extraState ? { ...base, state: { ...base.state, ...extraState } } : base
       latest.current.applyPatches([
-        { type: 'block.insert', parentId: createBlockId(location.parentId), index: location.index + 1, block },
+        {
+          type: 'block.insert',
+          parentId: createBlockId(location.parentId),
+          ...anchorAfterBlock(docRef.current, location.parentId, blockId),
+          block,
+        },
       ])
 
       return newId
@@ -503,7 +511,7 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
             type: 'block.move',
             blockId: createBlockId(blockId),
             parentId: createBlockId(previousSibling.id),
-            index: newParent?.children?.length ?? 0,
+            ...anchorAppendToParent(docRef.current, previousSibling.id),
           },
         ])
         refocus(blockId, 'start')
@@ -524,7 +532,7 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
             type: 'block.move',
             blockId: createBlockId(blockId),
             parentId: createBlockId(parentItem.parentId),
-            index: parentItem.index + 1,
+            ...anchorAfterBlock(docRef.current, parentItem.parentId, parentItem.id),
           },
         ])
         refocus(blockId, 'start')
@@ -584,12 +592,21 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
           return
         }
 
+        const neighbor = flattenDocumentBlocks(docRef.current).find(
+          (candidate) => candidate.parentId === item.parentId && candidate.index === targetIndex,
+        )
+        if (!neighbor) {
+          return
+        }
+
         latest.current.applyPatches([
           {
             type: 'block.move',
             blockId: createBlockId(blockId),
             parentId: createBlockId(item.parentId),
-            index: targetIndex,
+            ...(direction === 'up'
+              ? anchorBeforeBlock(docRef.current, item.parentId, neighbor.id)
+              : anchorAfterBlock(docRef.current, item.parentId, neighbor.id)),
           },
         ])
       },
@@ -697,7 +714,7 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
           {
             type: 'block.insert',
             parentId: createBlockId(location.parentId),
-            index: location.index + 1,
+            ...anchorAfterBlock(docRef.current, location.parentId, blockId),
             block: createDefaultBlock('document.paragraph', newId),
           },
         ])
@@ -875,7 +892,12 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
 
         return [
           ...accumulated,
-          { type: 'block.insert', parentId: createBlockId(item.parentId), index: item.index + 1, block: clone },
+          {
+            type: 'block.insert',
+            parentId: createBlockId(item.parentId),
+            ...anchorAfterBlock(docRef.current, item.parentId, id),
+            block: clone,
+          },
         ]
       }, [])
 

@@ -68,10 +68,10 @@ describe('parseSduiDocumentPatch', () => {
       parseSduiDocumentPatch({
         type: 'block.insert',
         parentId: 'p',
-        index: 0,
+        after: null,
         block: { id: 'b', type: 'document.paragraph' },
       }),
-    ).toMatchObject({ type: 'block.insert' })
+    ).toMatchObject({ type: 'block.insert', after: null })
 
     expect(parseSduiDocumentPatch({ type: 'block.update', blockId: 'b', state: { text: 'hi' } })).toMatchObject({
       type: 'block.update',
@@ -81,8 +81,9 @@ describe('parseSduiDocumentPatch', () => {
       type: 'block.delete',
     })
 
-    expect(parseSduiDocumentPatch({ type: 'block.move', blockId: 'b', parentId: 'p', index: 1 })).toMatchObject({
+    expect(parseSduiDocumentPatch({ type: 'block.move', blockId: 'b', parentId: 'p', after: 'prev' })).toMatchObject({
       type: 'block.move',
+      after: 'prev',
     })
 
     expect(parseSduiDocumentPatch({ type: 'document.setTitle', title: 'New' })).toMatchObject({
@@ -95,12 +96,12 @@ describe('parseSduiDocumentPatch', () => {
     expect(() => parseSduiDocumentPatch({ type: 'block.unknown' })).toThrow()
   })
 
-  it('rejects block.insert with negative index', () => {
+  it('rejects block.insert with empty parentId', () => {
     expect(() =>
       parseSduiDocumentPatch({
         type: 'block.insert',
-        parentId: 'p',
-        index: -1,
+        parentId: '',
+        after: null,
         block: { id: 'b', type: 'document.paragraph' },
       }),
     ).toThrow()

@@ -39,7 +39,7 @@ describe('createProjectedBlockMovePatch', () => {
             offsetX: 0,
             indentWidth: INDENT_WIDTH,
           }),
-        ).toEqual({ type: 'block.move', blockId: 'c', parentId: 'root', index: 2 })
+        ).toEqual({ type: 'block.move', blockId: 'c', parentId: 'root', after: 'b' })
       })
     })
   })
@@ -55,7 +55,7 @@ describe('createProjectedBlockMovePatch', () => {
             offsetX: INDENT_WIDTH,
             indentWidth: INDENT_WIDTH,
           }),
-        ).toEqual({ type: 'block.move', blockId: 'c', parentId: 'b', index: 0 })
+        ).toEqual({ type: 'block.move', blockId: 'c', parentId: 'b', after: null })
       })
     })
   })
@@ -72,7 +72,7 @@ describe('createProjectedBlockMovePatch', () => {
             indentWidth: INDENT_WIDTH,
             overRatio: 0.5,
           }),
-        ).toEqual({ type: 'block.move', blockId: 'c', parentId: 'a', index: 0 })
+        ).toEqual({ type: 'block.move', blockId: 'c', parentId: 'a', after: null })
       })
     })
 
@@ -87,7 +87,7 @@ describe('createProjectedBlockMovePatch', () => {
             indentWidth: INDENT_WIDTH,
             overRatio: 0.1,
           }),
-        ).toEqual({ type: 'block.move', blockId: 'c', parentId: 'root', index: 1 })
+        ).toEqual({ type: 'block.move', blockId: 'c', parentId: 'root', before: 'b' })
       })
     })
   })

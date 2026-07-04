@@ -1,4 +1,4 @@
-import { createDocumentBlock, fromSduiLayoutDocument, type SduiDocumentContent,toSduiLayoutDocument } from '../index'
+import { createDocumentBlock, fromSduiLayoutDocument, type SduiDocumentContent, toSduiLayoutDocument } from '../index'
 
 const content: SduiDocumentContent = {
   schemaVersion: '1.0',
@@ -56,7 +56,7 @@ function roundTrip(c: SduiDocumentContent): SduiDocumentContent {
 describe('fromSduiLayoutDocument round-trip', () => {
   it('preserves schemaVersion and root id/type', () => {
     const result = roundTrip(content)
-    expect(result.schemaVersion).toBe('1.0')
+    expect(result.schemaVersion).toBe('1.1')
     expect(result.root.id).toBe('root')
     expect(result.root.type).toBe('document.root')
     expect(result.root.children).toHaveLength(11)

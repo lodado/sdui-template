@@ -28,10 +28,17 @@ const blockTypeSchema = z.union([
   z.string(),
 ])
 
+const blockOriginSchema = z.object({
+  clientId: z.string().min(1),
+  opId: z.string().min(1),
+})
+
 const blockSchema: z.ZodTypeAny = z.lazy(() =>
   z.object({
     id: z.string().min(1),
     type: blockTypeSchema,
+    position: z.string().optional(),
+    origin: blockOriginSchema.optional(),
     state: z.record(z.string(), z.unknown()).optional(),
     attributes: z.record(z.string(), z.unknown()).optional(),
     children: z.array(blockSchema).optional(),
@@ -39,7 +46,7 @@ const blockSchema: z.ZodTypeAny = z.lazy(() =>
 )
 
 const contentSchema = z.object({
-  schemaVersion: z.literal('1.0'),
+  schemaVersion: z.union([z.literal('1.0'), z.literal('1.1')]),
   root: blockSchema,
 })
 
@@ -67,32 +74,68 @@ const documentSchema = z.object({
   createdBy: z.string().optional(),
 })
 
+const patchBaseFields = {
+  expectedVersion: z.number().int().nonnegative().optional(),
+  origin: blockOriginSchema.optional(),
+}
+
+const placementAnchorFields = {
+  after: z.string().min(1).nullable().optional(),
+  before: z.string().min(1).nullable().optional(),
+  fallbackAfter: z.array(z.string().min(1)).optional(),
+}
+
 const patchSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('block.insert'),
     parentId: z.string().min(1),
-    index: z.number().int().min(0),
     block: blockSchema,
+    ...patchBaseFields,
+    ...placementAnchorFields,
   }),
   z.object({
     type: z.literal('block.update'),
     blockId: z.string().min(1),
     state: z.record(z.string(), z.unknown()).optional(),
     attributes: z.record(z.string(), z.unknown()).optional(),
+    ...patchBaseFields,
   }),
   z.object({
     type: z.literal('block.delete'),
     blockId: z.string().min(1),
+    ...patchBaseFields,
   }),
   z.object({
     type: z.literal('block.move'),
     blockId: z.string().min(1),
     parentId: z.string().min(1),
-    index: z.number().int().min(0),
+    ...patchBaseFields,
+    ...placementAnchorFields,
+  }),
+  z.object({
+    type: z.literal('block.split'),
+    blockId: z.string().min(1),
+    offset: z.number().int().min(0),
+    newBlockId: z.string().min(1),
+    ...patchBaseFields,
+  }),
+  z.object({
+    type: z.literal('block.merge'),
+    blockId: z.string().min(1),
+    intoBlockId: z.string().min(1),
+    ...patchBaseFields,
+  }),
+  z.object({
+    type: z.literal('block.setType'),
+    blockId: z.string().min(1),
+    blockType: blockTypeSchema,
+    attributes: z.record(z.string(), z.unknown()).optional(),
+    ...patchBaseFields,
   }),
   z.object({
     type: z.literal('document.setTitle'),
     title: z.string(),
+    ...patchBaseFields,
   }),
 ])
 

@@ -110,19 +110,19 @@ packages/sdui-document/src/
 
 ### Layer responsibilities
 
-| Layer | Responsibility | Should not do |
-| --- | --- | --- |
-| `schema` | Define stable public document contracts | Runtime persistence or rendering |
-| `content` | Read semantic content from block trees | Mutate content |
-| `blocks` | Apply block patches to document content | Talk to APIs or React |
-| `tree` | Move/archive/restore document nodes | Edit block content |
-| `permissions` | Decide actor/action access | Trust client-only checks |
-| `autosave` | Track local/save/offline state | Perform timers or network calls |
-| `repositories` | Describe persistence API shape | Provide a concrete DB implementation |
-| `storage` | Describe attachment upload/download shape | Bind to S3/GCS/local disk |
-| `search` | Describe indexing/search shape | Pick a search engine |
-| `collaboration` | Describe future collaboration connection shape | Implement Yjs/Hocuspocus |
-| `sdui` | Convert semantic blocks to SDUI layout nodes | Own document semantics |
+| Layer           | Responsibility                                 | Should not do                        |
+| --------------- | ---------------------------------------------- | ------------------------------------ |
+| `schema`        | Define stable public document contracts        | Runtime persistence or rendering     |
+| `content`       | Read semantic content from block trees         | Mutate content                       |
+| `blocks`        | Apply block patches to document content        | Talk to APIs or React                |
+| `tree`          | Move/archive/restore document nodes            | Edit block content                   |
+| `permissions`   | Decide actor/action access                     | Trust client-only checks             |
+| `autosave`      | Track local/save/offline state                 | Perform timers or network calls      |
+| `repositories`  | Describe persistence API shape                 | Provide a concrete DB implementation |
+| `storage`       | Describe attachment upload/download shape      | Bind to S3/GCS/local disk            |
+| `search`        | Describe indexing/search shape                 | Pick a search engine                 |
+| `collaboration` | Describe future collaboration connection shape | Implement Yjs/Hocuspocus             |
+| `sdui`          | Convert semantic blocks to SDUI layout nodes   | Own document semantics               |
 
 ---
 
@@ -149,13 +149,9 @@ pnpm install
 ## Quick start: render a document with SDUI
 
 ```tsx
-import { SduiLayoutRenderer } from '@lodado/sdui-template';
-import { sduiComponents } from '@lodado/sdui-template-component';
-import {
-  createDocumentBlock,
-  toSduiLayoutDocument,
-  type SduiDocumentContent,
-} from '@lodado/sdui-document';
+import { SduiLayoutRenderer } from '@lodado/sdui-template'
+import { sduiComponents } from '@lodado/sdui-template-component'
+import { createDocumentBlock, toSduiLayoutDocument, type SduiDocumentContent } from '@lodado/sdui-document'
 
 const content: SduiDocumentContent = {
   schemaVersion: '1.0',
@@ -175,15 +171,15 @@ const content: SduiDocumentContent = {
       }),
     ],
   }),
-};
+}
 
 const layoutDocument = toSduiLayoutDocument(content, {
   documentId: 'doc-1',
   title: 'Project notes',
-});
+})
 
 export function DocumentPreview() {
-  return <SduiLayoutRenderer document={layoutDocument} components={sduiComponents} />;
+  return <SduiLayoutRenderer document={layoutDocument} components={sduiComponents} />
 }
 ```
 
@@ -196,7 +192,7 @@ export function DocumentPreview() {
 Use `createDocumentBlock` to create a defensive block copy:
 
 ```ts
-import { createDocumentBlock, type SduiDocumentContent } from '@lodado/sdui-document';
+import { createDocumentBlock, type SduiDocumentContent } from '@lodado/sdui-document'
 
 const content: SduiDocumentContent = {
   schemaVersion: '1.0',
@@ -222,7 +218,7 @@ const content: SduiDocumentContent = {
       }),
     ],
   }),
-};
+}
 ```
 
 Supported core block types:
@@ -237,7 +233,7 @@ type SduiDocumentBlockType =
   | 'document.callout'
   | 'document.image'
   | 'document.file'
-  | 'document.link';
+  | 'document.link'
 ```
 
 Unknown custom block types are allowed structurally, but only known types have first-class adapter behavior today.
@@ -249,18 +245,18 @@ Unknown custom block types are allowed structurally, but only known types have f
 Use patches to represent local edits.
 
 ```ts
-import { applyDocumentPatch, createDocumentBlock } from '@lodado/sdui-document';
+import { applyDocumentPatch, createDocumentBlock } from '@lodado/sdui-document'
 
 const nextContent = applyDocumentPatch(content, {
   type: 'block.insert',
   parentId: 'root',
-  index: 1,
+  before: 'existing-block-id',
   block: createDocumentBlock({
     id: 'new-paragraph',
     type: 'document.paragraph',
     state: { text: 'A newly inserted block.' },
   }),
-});
+})
 ```
 
 Update a block:
@@ -270,7 +266,7 @@ const updated = applyDocumentPatch(nextContent, {
   type: 'block.update',
   blockId: 'new-paragraph',
   state: { text: 'Updated text' },
-});
+})
 ```
 
 Move a block:
@@ -280,8 +276,8 @@ const moved = applyDocumentPatch(updated, {
   type: 'block.move',
   blockId: 'new-paragraph',
   parentId: 'root',
-  index: 0,
-});
+  after: null,
+})
 ```
 
 Delete a block:
@@ -290,10 +286,24 @@ Delete a block:
 const deleted = applyDocumentPatch(moved, {
   type: 'block.delete',
   blockId: 'new-paragraph',
-});
+})
 ```
 
 The patch engine is intentionally immutable: it returns a new content object and does not mutate the original content.
+
+### Block ordering contract (schema 1.1)
+
+Sibling order is stored on each block as a fractional `position` string. Patch intent uses neighbor anchors instead of numeric indices:
+
+| Anchor                  | Meaning                                          |
+| ----------------------- | ------------------------------------------------ |
+| `after: null`           | Prepend as first child                           |
+| `before: null` (alone)  | Append as last child                             |
+| `after: 'block-id'`     | Insert/move immediately after that sibling       |
+| `before: 'block-id'`    | Insert/move immediately before that sibling      |
+| `fallbackAfter: ['id']` | Offline replay fallback when `after` was deleted |
+
+`children` arrays are always kept sorted by `(position, origin.clientId, origin.opId)` on write. Schema `1.0` documents are lazily migrated to `1.1` the first time a patch is applied.
 
 Patch errors:
 
@@ -309,14 +319,14 @@ Patch errors:
 Document tree operations manage relationships between documents, not blocks inside a document.
 
 ```ts
-import { moveDocument } from '@lodado/sdui-document';
+import { moveDocument } from '@lodado/sdui-document'
 
 const result = moveDocument({
   documents,
   documentId: 'doc-a',
   targetParentDocumentId: 'doc-b',
   targetIndex: 0,
-});
+})
 ```
 
 Move a subtree to another collection:
@@ -326,7 +336,7 @@ const result = moveDocument({
   documents,
   documentId: 'doc-a',
   targetCollectionId: 'collection-2',
-});
+})
 ```
 
 When a document moves across collections, descendants move to that collection too.
@@ -334,9 +344,9 @@ When a document moves across collections, descendants move to that collection to
 Lifecycle helpers:
 
 ```ts
-archiveDocumentSubtree({ documents, documentId: 'doc-a' });
-restoreDocumentSubtree({ documents, documentId: 'doc-a' });
-getDocumentDescendantIds(documents, 'doc-a');
+archiveDocumentSubtree({ documents, documentId: 'doc-a' })
+restoreDocumentSubtree({ documents, documentId: 'doc-a' })
+getDocumentDescendantIds(documents, 'doc-a')
 ```
 
 Tree errors:
@@ -351,35 +361,35 @@ Tree errors:
 Permissions are pure decisions based on actor role and action.
 
 ```ts
-import { canPerformDocumentAction, getDocumentAccessMode } from '@lodado/sdui-document';
+import { canPerformDocumentAction, getDocumentAccessMode } from '@lodado/sdui-document'
 
 const actor = {
   id: 'viewer-1',
   workspaceRole: 'member',
   collectionRole: 'viewer',
-} as const;
+} as const
 
-const read = canPerformDocumentAction({ actor, action: 'read' });
-const update = canPerformDocumentAction({ actor, action: 'update' });
-const mode = getDocumentAccessMode({ actor });
+const read = canPerformDocumentAction({ actor, action: 'read' })
+const update = canPerformDocumentAction({ actor, action: 'update' })
+const mode = getDocumentAccessMode({ actor })
 ```
 
 Possible access modes:
 
 ```ts
-type SduiDocumentAccessMode = 'none' | 'readOnly' | 'editable';
+type SduiDocumentAccessMode = 'none' | 'readOnly' | 'editable'
 ```
 
 Current default role behavior:
 
-| Actor role | Read | Update | Notes |
-| --- | --- | --- | --- |
-| workspace admin | yes | yes | privileged actor |
-| collection manager | yes | yes | can share |
-| collection editor | yes | yes | can edit and comment |
-| collection viewer | yes | no | read-only |
-| document editor | yes | yes | can override collection viewer |
-| guest with no role | no | no | denied |
+| Actor role         | Read | Update | Notes                          |
+| ------------------ | ---- | ------ | ------------------------------ |
+| workspace admin    | yes  | yes    | privileged actor               |
+| collection manager | yes  | yes    | can share                      |
+| collection editor  | yes  | yes    | can edit and comment           |
+| collection viewer  | yes  | no     | read-only                      |
+| document editor    | yes  | yes    | can override collection viewer |
+| guest with no role | no   | no     | denied                         |
 
 Client-side permission checks are for UX gating only. Server/repository adapters should re-check permissions before writes.
 
@@ -390,21 +400,21 @@ Client-side permission checks are for UX gating only. Server/repository adapters
 Autosave is a pure reducer. It does not own timers, debounce, fetch, or persistence.
 
 ```ts
-import { createInitialAutosaveState, reduceAutosaveState } from '@lodado/sdui-document';
+import { createInitialAutosaveState, reduceAutosaveState } from '@lodado/sdui-document'
 
-let state = createInitialAutosaveState();
+let state = createInitialAutosaveState()
 
 state = reduceAutosaveState(state, {
   type: 'local.change',
   patchCount: 1,
-});
+})
 
-state = reduceAutosaveState(state, { type: 'save.request' });
+state = reduceAutosaveState(state, { type: 'save.request' })
 
 state = reduceAutosaveState(state, {
   type: 'save.success',
   acknowledgedVersion: state.localVersion,
-});
+})
 ```
 
 Important semantics:
@@ -418,7 +428,7 @@ Important semantics:
 Statuses:
 
 ```ts
-type AutosaveStatus = 'idle' | 'dirty' | 'saving' | 'saved' | 'failed' | 'offline';
+type AutosaveStatus = 'idle' | 'dirty' | 'saving' | 'saved' | 'failed' | 'offline'
 ```
 
 ---
@@ -428,27 +438,27 @@ type AutosaveStatus = 'idle' | 'dirty' | 'saving' | 'saved' | 'failed' | 'offlin
 Extract plain text:
 
 ```ts
-import { extractPlainText } from '@lodado/sdui-document';
+import { extractPlainText } from '@lodado/sdui-document'
 
-const text = extractPlainText(content);
+const text = extractPlainText(content)
 ```
 
 Extract document links:
 
 ```ts
-import { extractDocumentLinks } from '@lodado/sdui-document';
+import { extractDocumentLinks } from '@lodado/sdui-document'
 
-const links = extractDocumentLinks(content);
+const links = extractDocumentLinks(content)
 ```
 
 Walk all blocks depth-first:
 
 ```ts
-import { walkDocumentBlocks } from '@lodado/sdui-document';
+import { walkDocumentBlocks } from '@lodado/sdui-document'
 
 walkDocumentBlocks(content, (block) => {
   // inspect block
-});
+})
 ```
 
 These helpers are useful for search indexing, backlink extraction, previews, and diagnostics.
@@ -463,9 +473,9 @@ The package exports interfaces for future integration points. They intentionally
 
 ```ts
 interface SduiDocumentRepository {
-  getDocument(id): Promise<SduiDocument | undefined>;
-  savePatches(input): Promise<SaveDocumentPatchesResult>;
-  moveDocument(input): Promise<MoveDocumentResult>;
+  getDocument(id): Promise<SduiDocument | undefined>
+  savePatches(input): Promise<SaveDocumentPatchesResult>
+  moveDocument(input): Promise<MoveDocumentResult>
 }
 ```
 
@@ -473,8 +483,8 @@ interface SduiDocumentRepository {
 
 ```ts
 interface SduiDocumentAttachmentStorage {
-  createUpload(input): Promise<CreateUploadResult>;
-  createDownloadUrl(input): Promise<CreateDownloadUrlResult>;
+  createUpload(input): Promise<CreateUploadResult>
+  createDownloadUrl(input): Promise<CreateDownloadUrlResult>
 }
 ```
 
@@ -482,9 +492,9 @@ interface SduiDocumentAttachmentStorage {
 
 ```ts
 interface SduiDocumentSearchIndexer {
-  indexDocument(input): Promise<void>;
-  removeDocument(input): Promise<void>;
-  search(input): Promise<SearchDocumentsResult>;
+  indexDocument(input): Promise<void>
+  removeDocument(input): Promise<void>
+  search(input): Promise<SearchDocumentsResult>
 }
 ```
 
@@ -492,7 +502,7 @@ interface SduiDocumentSearchIndexer {
 
 ```ts
 interface SduiDocumentCollaborationAdapter {
-  connect(input): Promise<CollaborationSession>;
+  connect(input): Promise<CollaborationSession>
 }
 ```
 

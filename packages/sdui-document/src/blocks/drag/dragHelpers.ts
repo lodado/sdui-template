@@ -2,6 +2,7 @@ import { findBlockById } from '../code'
 import { BlockNotFoundError, InvalidBlockMoveError } from '../code/errors'
 import type { SduiDocumentBlock, SduiDocumentContent, SduiDocumentPatch } from '../schema'
 import { createBlockId } from '../schema/ids'
+import { sortBlocksByPosition } from '../../ordering'
 
 export type FlattenedDocumentBlock = {
   id: string
@@ -25,26 +26,19 @@ export type IsBlockDragDisabledInput = {
   dragDropEnabled?: boolean
 }
 
-function flattenBlock(
-  block: SduiDocumentBlock,
-  parentId: string | undefined,
-  depth: number,
-  index: number,
-): FlattenedDocumentBlock[] {
-  const current = { id: block.id, parentId, depth, index }
-  const children = (block.children ?? []).reduce<FlattenedDocumentBlock[]>(
-    (flattenedChildren, child, childIndex) => [
-      ...flattenedChildren,
-      ...flattenBlock(child, block.id, depth + 1, childIndex),
-    ],
-    [],
-  )
+function flattenBlock(block: SduiDocumentBlock, parentId: string | undefined, depth: number): FlattenedDocumentBlock[] {
+  const sortedChildren = sortBlocksByPosition(block.children ?? [])
+  const childEntries = sortedChildren.flatMap((child, childIndex) => {
+    const nested = flattenBlock(child, block.id, depth + 1)
 
-  return [current, ...children]
+    return nested.map((entry) => (entry.id === child.id ? { ...entry, index: childIndex } : entry))
+  })
+
+  return [{ id: block.id, parentId, depth, index: 0 }, ...childEntries]
 }
 
 export function flattenDocumentBlocks(content: SduiDocumentContent): FlattenedDocumentBlock[] {
-  return flattenBlock(content.root, undefined, 0, 0)
+  return flattenBlock(content.root, undefined, 0)
 }
 
 export function isBlockDragDisabled(input: IsBlockDragDisabledInput): boolean {
@@ -74,13 +68,11 @@ export function createNestedBlockMovePatch(
   }
 
   if (position === 'inside') {
-    // First-child slot: the drop indicator paints its line immediately below
-    // the over row, so the block must land there — not after existing children.
     return {
       type: 'block.move',
       blockId: createBlockId(activeId),
       parentId: createBlockId(overId),
-      index: 0,
+      after: null,
     }
   }
 
@@ -88,14 +80,10 @@ export function createNestedBlockMovePatch(
     throw new InvalidBlockMoveError('Cannot drop beside the root block')
   }
 
-  const sameParent = active.parentId === over.parentId
-  const sourceWasBeforeTarget = sameParent && active.index < over.index
-  const baseIndex = position === 'before' ? over.index : over.index + 1
-
   return {
     type: 'block.move',
     blockId: createBlockId(activeId),
     parentId: createBlockId(over.parentId),
-    index: sourceWasBeforeTarget ? baseIndex - 1 : baseIndex,
+    ...(position === 'before' ? { before: createBlockId(overId) } : { after: createBlockId(overId) }),
   }
 }

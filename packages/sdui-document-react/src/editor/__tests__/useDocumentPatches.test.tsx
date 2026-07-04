@@ -2,6 +2,7 @@ import { createBlockId, createDocumentBlock, findBlockById, type SduiDocumentCon
 import { fireEvent, render, screen } from '@testing-library/react'
 
 import { useDocumentPatches } from '../hooks/useDocumentPatches'
+import { stripPatchOrigins } from './patchTestUtils'
 
 function createContent(): SduiDocumentContent {
   return {
@@ -30,9 +31,7 @@ const Probe = ({ onContentChange }: ProbeProps) => {
       </button>
       <button
         type="button"
-        onClick={() =>
-          applyPatches([{ type: 'block.update', blockId: createBlockId('p1'), state: { text: 'After' } }])
-        }
+        onClick={() => applyPatches([{ type: 'block.update', blockId: createBlockId('p1'), state: { text: 'After' } }])}
       >
         update
       </button>
@@ -51,7 +50,7 @@ describe('useDocumentPatches', () => {
     fireEvent.click(screen.getByText('update'))
     expect(screen.getByText('After')).toBeInTheDocument()
     expect(onContentChange).toHaveBeenCalledTimes(1)
-    expect(onContentChange.mock.calls[0][1]).toEqual([
+    expect(stripPatchOrigins(onContentChange.mock.calls[0][1])).toEqual([
       { type: 'block.update', blockId: createBlockId('p1'), state: { text: 'After' } },
     ])
   })

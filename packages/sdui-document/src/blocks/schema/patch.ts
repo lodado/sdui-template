@@ -1,4 +1,4 @@
-import type { SduiDocumentBlock } from './block'
+import type { BlockOrigin, SduiDocumentBlock } from './block'
 import type { SduiDocumentBlockId } from './ids'
 
 /**
@@ -8,19 +8,31 @@ import type { SduiDocumentBlockId } from './ids'
  * - `expectedVersion` is the block-level version the client observed when
  *   producing the patch. The patch engine ignores it; realtime R1 (Phase 19)
  *   validates it server-side to detect concurrent edits on the same block.
+ * - `origin` identifies the client + operation for deterministic tie-break
+ *   when two patches produce the same fractional position key.
  */
 type SduiDocumentPatchBase = {
   expectedVersion?: number
+  origin?: BlockOrigin
+}
+
+/** Anchor-based sibling placement (replaces integer index). */
+export type BlockPlacementAnchor = {
+  /** Insert/move after this block id; `null` = front of parent. */
+  after?: string | null
+  /** Insert/move before this block id; `null` = end of parent. */
+  before?: string | null
+  /** When `after` was deleted, try these block ids in order. */
+  fallbackAfter?: string[]
 }
 
 export type SduiDocumentPatch = SduiDocumentPatchBase &
   (
-    | {
+    | ({
         type: 'block.insert'
         parentId: SduiDocumentBlockId
-        index: number
         block: SduiDocumentBlock
-      }
+      } & BlockPlacementAnchor)
     | {
         type: 'block.update'
         blockId: SduiDocumentBlockId
@@ -31,12 +43,11 @@ export type SduiDocumentPatch = SduiDocumentPatchBase &
         type: 'block.delete'
         blockId: SduiDocumentBlockId
       }
-    | {
+    | ({
         type: 'block.move'
         blockId: SduiDocumentBlockId
         parentId: SduiDocumentBlockId
-        index: number
-      }
+      } & BlockPlacementAnchor)
     | {
         /**
          * Splits a text-bearing block at an inline offset.

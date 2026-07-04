@@ -5,6 +5,14 @@ import {
   splitInlineContent,
   textToInlineContent,
 } from '../../content/inlineContent'
+import {
+  ensureFractionalContent,
+  generatePositionBetween,
+  generatePositions,
+  resolvePositionBounds,
+  siblingAnchorsForBlock,
+  sortBlocksByPosition,
+} from '../../ordering'
 import type {
   SduiDocument,
   SduiDocumentBlock,
@@ -12,6 +20,8 @@ import type {
   SduiDocumentPatch,
   SduiInlineContent,
 } from '../schema'
+import type { BlockOrigin } from '../schema/block'
+import type { BlockPlacementAnchor } from '../schema/patch'
 import { createDocumentBlock } from '../schema'
 import {
   BlockNotFoundError,
@@ -23,18 +33,6 @@ import {
   ParentBlockNotFoundError,
   RootBlockCannotBeDeletedError,
 } from './errors'
-
-function clampIndex(index: number, length: number): number {
-  if (index < 0) {
-    return 0
-  }
-
-  if (index > length) {
-    return length
-  }
-
-  return index
-}
 
 function collectBlockIds(block: SduiDocumentBlock, ids: Set<string>): void {
   ids.add(block.id)
@@ -189,7 +187,13 @@ function stripUndefinedKeys(record: Record<string, unknown>): Record<string, unk
   return entries.reduce<Record<string, unknown>>((result, [key, value]) => ({ ...result, [key]: value }), {})
 }
 
-function insertBlock(content: SduiDocumentContent, parentId: string, index: number, block: SduiDocumentBlock): void {
+function insertBlockAtAnchor(
+  content: SduiDocumentContent,
+  parentId: string,
+  block: SduiDocumentBlock,
+  anchor: BlockPlacementAnchor,
+  origin?: BlockOrigin,
+): void {
   const parent = findBlockById(content, parentId)
   if (!parent) {
     throw new ParentBlockNotFoundError(parentId)
@@ -206,9 +210,17 @@ function insertBlock(content: SduiDocumentContent, parentId: string, index: numb
     throw new DuplicateBlockIdError(duplicate)
   }
 
-  const children = [...(parent.children ?? [])]
-  children.splice(clampIndex(index, children.length), 0, createDocumentBlock(block))
-  parent.children = children
+  const bounds = resolvePositionBounds(parent, anchor)
+  const position = generatePositionBetween(bounds.afterKey, bounds.beforeKey)
+  const resolvedOrigin = origin ?? block.origin
+
+  const inserted = createDocumentBlock({
+    ...block,
+    position,
+    ...(resolvedOrigin ? { origin: resolvedOrigin } : {}),
+  })
+
+  parent.children = sortBlocksByPosition([...(parent.children ?? []), inserted])
 }
 
 function updateBlock(
@@ -243,10 +255,16 @@ function deleteBlock(content: SduiDocumentContent, blockId: string): void {
     throw new BlockNotFoundError(blockId)
   }
 
-  found.parent.children = found.parent.children?.filter((child) => child.id !== blockId)
+  found.parent.children = sortBlocksByPosition(found.parent.children?.filter((child) => child.id !== blockId) ?? [])
 }
 
-function moveBlock(content: SduiDocumentContent, blockId: string, parentId: string, index: number): void {
+function moveBlockAtAnchor(
+  content: SduiDocumentContent,
+  blockId: string,
+  parentId: string,
+  anchor: BlockPlacementAnchor,
+  origin?: BlockOrigin,
+): void {
   if (blockId === content.root.id || blockId === parentId) {
     throw new InvalidBlockMoveError('Cannot move a block below itself')
   }
@@ -265,8 +283,9 @@ function moveBlock(content: SduiDocumentContent, blockId: string, parentId: stri
     throw new BlockNotFoundError(blockId)
   }
 
-  found.parent.children = found.parent.children?.filter((child) => child.id !== blockId)
-  insertBlock(content, parentId, index, movingBlock)
+  found.parent.children = sortBlocksByPosition(found.parent.children?.filter((child) => child.id !== blockId) ?? [])
+
+  insertBlockAtAnchor(content, parentId, movingBlock, anchor, origin ?? movingBlock.origin)
 }
 
 function splitBlock(content: SduiDocumentContent, blockId: string, offset: number, newBlockId: string): void {
@@ -294,7 +313,7 @@ function splitBlock(content: SduiDocumentContent, blockId: string, offset: numbe
     ...(inline.mode === 'empty' ? {} : { state: toInlineStatePatch(inline.mode, right) }),
   }
 
-  insertBlock(content, found.parent.id, found.index + 1, newBlock)
+  insertBlockAtAnchor(content, found.parent.id, newBlock, { after: blockId })
 
   if (inline.mode !== 'empty') {
     block.state = { ...(block.state ?? {}), ...toInlineStatePatch(inline.mode, left) }
@@ -338,12 +357,25 @@ function mergeBlock(content: SduiDocumentContent, blockId: string, intoBlockId: 
     throw new BlockNotFoundError(blockId)
   }
 
-  const siblings = found.parent.children ?? []
-  found.parent.children = [
-    ...siblings.slice(0, found.index),
-    ...(block.children ?? []),
-    ...siblings.slice(found.index + 1),
-  ]
+  const siblings = sortBlocksByPosition(found.parent.children ?? [])
+  const mergeIndex = siblings.findIndex((child) => child.id === blockId)
+  const prevSibling = mergeIndex > 0 ? siblings[mergeIndex - 1] : undefined
+  const nextSibling = mergeIndex < siblings.length - 1 ? siblings[mergeIndex + 1] : undefined
+  const promotedChildren = sortBlocksByPosition(block.children ?? [])
+  const positions = generatePositions(
+    prevSibling?.position ?? null,
+    nextSibling?.position ?? null,
+    promotedChildren.length,
+  )
+  const repositioned = promotedChildren.map((child, index) => ({
+    ...child,
+    position: positions[index],
+  }))
+  found.parent.children = sortBlocksByPosition([
+    ...siblings.slice(0, mergeIndex),
+    ...repositioned,
+    ...siblings.slice(mergeIndex + 1),
+  ])
 }
 
 function setBlockType(
@@ -373,11 +405,18 @@ function setBlockType(
 }
 
 export function applyDocumentPatch(content: SduiDocumentContent, patch: SduiDocumentPatch): SduiDocumentContent {
-  const next = cloneTouchedPaths(content, touchedBlockIds(patch))
+  const migrated = ensureFractionalContent(content)
+  const next = cloneTouchedPaths(migrated, touchedBlockIds(patch))
 
   switch (patch.type) {
     case 'block.insert':
-      insertBlock(next, patch.parentId, patch.index, patch.block)
+      insertBlockAtAnchor(
+        next,
+        patch.parentId,
+        patch.block,
+        { after: patch.after, before: patch.before, fallbackAfter: patch.fallbackAfter },
+        patch.origin,
+      )
       return next
     case 'block.update':
       updateBlock(next, patch.blockId, patch.state, patch.attributes)
@@ -386,7 +425,13 @@ export function applyDocumentPatch(content: SduiDocumentContent, patch: SduiDocu
       deleteBlock(next, patch.blockId)
       return next
     case 'block.move':
-      moveBlock(next, patch.blockId, patch.parentId, patch.index)
+      moveBlockAtAnchor(
+        next,
+        patch.blockId,
+        patch.parentId,
+        { after: patch.after, before: patch.before, fallbackAfter: patch.fallbackAfter },
+        patch.origin,
+      )
       return next
     case 'block.split':
       splitBlock(next, patch.blockId, patch.offset, patch.newBlockId)
@@ -438,11 +483,13 @@ function computeInverse(content: SduiDocumentContent, patch: SduiDocumentPatch):
         throw new BlockNotFoundError(patch.blockId)
       }
 
+      const { after } = siblingAnchorsForBlock(found.parent, patch.blockId)
+
       return [
         {
           type: 'block.insert',
           parentId: found.parent.id,
-          index: found.index,
+          after,
           block: createDocumentBlock(block),
         },
       ]
@@ -470,12 +517,15 @@ function computeInverse(content: SduiDocumentContent, patch: SduiDocumentPatch):
         throw new BlockNotFoundError(patch.blockId)
       }
 
+      const { after, before } = siblingAnchorsForBlock(found.parent, patch.blockId)
+
       return [
         {
           type: 'block.move',
           blockId: patch.blockId,
           parentId: found.parent.id,
-          index: found.index,
+          after,
+          before,
         },
       ]
     }
@@ -508,7 +558,7 @@ function computeInverse(content: SduiDocumentContent, patch: SduiDocumentPatch):
         {
           type: 'block.insert',
           parentId: found.parent.id,
-          index: found.index,
+          after: siblingAnchorsForBlock(found.parent, patch.blockId).after,
           block: createDocumentBlock(block),
         },
       ]
@@ -551,9 +601,10 @@ export function applyDocumentPatchWithInverse(
   content: SduiDocumentContent,
   patch: SduiDocumentPatch,
 ): ApplyDocumentPatchResult {
-  const inverse = computeInverse(content, patch)
+  const migrated = ensureFractionalContent(content)
+  const inverse = computeInverse(migrated, patch)
 
-  return { content: applyDocumentPatch(content, patch), inverse }
+  return { content: applyDocumentPatch(migrated, patch), inverse }
 }
 
 export function applyDocumentPatchesWithInverse(

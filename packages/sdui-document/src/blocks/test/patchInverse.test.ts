@@ -4,6 +4,7 @@ import {
   applyDocumentPatchWithInverse,
   applyPatchToDocumentWithInverse,
   createDocumentBlock,
+  ensureFractionalContent,
   findBlockById,
   type SduiDocument,
   type SduiDocumentContent,
@@ -46,7 +47,7 @@ function createContent(): SduiDocumentContent {
 }
 
 function expectRoundTrip(patch: SduiDocumentPatch): void {
-  const original = createContent()
+  const original = ensureFractionalContent(createContent())
   const { content: next, inverse } = applyDocumentPatchWithInverse(original, patch)
   const restored = applyDocumentPatches(next, inverse)
 
@@ -60,7 +61,7 @@ describe('applyDocumentPatchWithInverse', () => {
         expectRoundTrip({
           type: 'block.insert',
           parentId: 'root',
-          index: 1,
+          before: 'para-2',
           block: createDocumentBlock({ id: 'new-1', type: 'document.paragraph', state: { text: 'New' } }),
         })
       })
@@ -97,13 +98,13 @@ describe('applyDocumentPatchWithInverse', () => {
   describe('as is: block.move applied', () => {
     describe('when moving across parents', () => {
       it('to be: inverse moves the block back to the original position', () => {
-        expectRoundTrip({ type: 'block.move', blockId: 'para-1', parentId: 'group-1', index: 1 })
+        expectRoundTrip({ type: 'block.move', blockId: 'para-1', parentId: 'group-1', after: 'nested-1' })
       })
     })
 
     describe('when reordering within the same parent (BVA: first index -> last index)', () => {
       it('to be: inverse restores the original order', () => {
-        expectRoundTrip({ type: 'block.move', blockId: 'para-1', parentId: 'root', index: 2 })
+        expectRoundTrip({ type: 'block.move', blockId: 'para-1', parentId: 'root', before: null })
       })
     })
   })
@@ -129,10 +130,10 @@ describe('applyDocumentPatchesWithInverse', () => {
   describe('as is: a sequence of dependent patches', () => {
     describe('when the combined inverse is applied', () => {
       it('to be: content restored to the original', () => {
-        const original = createContent()
+        const original = ensureFractionalContent(createContent())
         const patches: SduiDocumentPatch[] = [
           { type: 'block.split', blockId: 'para-2', offset: 3, newBlockId: 'para-2b' },
-          { type: 'block.move', blockId: 'para-2b', parentId: 'group-1', index: 0 },
+          { type: 'block.move', blockId: 'para-2b', parentId: 'group-1', after: null },
           { type: 'block.update', blockId: 'para-1', state: { text: 'Edited' } },
         ]
 
@@ -183,7 +184,7 @@ describe('applyPatchToDocumentWithInverse', () => {
         expect(findBlockById(next.content, 'para-1')?.state?.text).toBe('Changed')
 
         const restored = inverse.reduce((doc, patch) => applyPatchToDocumentWithInverse(doc, patch).document, next)
-        expect(restored.content).toEqual(baseDocument.content)
+        expect(restored.content).toEqual(ensureFractionalContent(baseDocument.content))
       })
     })
   })
@@ -202,7 +203,7 @@ describe('expectedVersion field', () => {
         })
 
         expect(findBlockById(next, 'para-1')?.state?.text).toBe('Versioned edit')
-        expect(applyDocumentPatches(next, inverse)).toEqual(original)
+        expect(applyDocumentPatches(next, inverse)).toEqual(ensureFractionalContent(original))
       })
     })
   })

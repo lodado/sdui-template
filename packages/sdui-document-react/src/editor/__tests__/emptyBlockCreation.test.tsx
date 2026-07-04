@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event'
 import React from 'react'
 
 import { SduiDocumentEditor } from '../SduiDocumentEditor'
+import { stripPatchOrigins } from './patchTestUtils'
 
 function createContent(children?: Parameters<typeof createDocumentBlock>[0][]): SduiDocumentContent {
   return {
@@ -113,12 +114,12 @@ describe('empty block creation (Outline trailing-block scenario)', () => {
         expect(blockIds(container)).toEqual(['divider-1', 'gen-1'])
         expect(onContentChange).toHaveBeenCalledTimes(1)
         const patches = onContentChange.mock.calls[0][1]
-        expect(patches).toEqual([
+        expect(stripPatchOrigins(patches)).toEqual([
           { type: 'block.delete', blockId: 'p1' },
           {
             type: 'block.insert',
             parentId: 'root',
-            index: 1,
+            after: 'divider-1',
             block: { id: 'gen-1', type: 'document.paragraph' },
           },
         ])
@@ -181,7 +182,7 @@ describe('empty block creation (Outline trailing-block scenario)', () => {
         await user.keyboard('{Enter}')
 
         const patches = onContentChange.mock.calls[0][1]
-        expect(patches).toEqual([
+        expect(stripPatchOrigins(patches)).toEqual([
           { type: 'block.split', blockId: 'h1', offset: 0, newBlockId: 'gen-1' },
           { type: 'block.setType', blockId: 'gen-1', blockType: 'document.paragraph' },
         ])

@@ -3,8 +3,10 @@ import type { SduiCollectionId, SduiDocumentId, SduiWorkspaceId } from './ids'
 
 export type SduiDocumentState = 'draft' | 'published' | 'archived' | 'deleted'
 
+export type SduiDocumentSchemaVersion = '1.0' | '1.1'
+
 export type SduiDocumentContent = {
-  schemaVersion: '1.0'
+  schemaVersion: SduiDocumentSchemaVersion
   root: SduiDocumentBlock
 }
 
