@@ -1,5 +1,7 @@
 import { Schema } from 'prosemirror-model'
 
+import { MARK_DEFINITIONS } from '../../marks'
+
 /**
  * Inline-only ProseMirror schema for the focused-block editor.
  *
@@ -8,6 +10,8 @@ import { Schema } from 'prosemirror-model'
  *   knows about block structure; block semantics live in @lodado/sdui-document
  * - node/mark names match SduiInlineNode/SduiInlineMark 1:1 (no mapping layer)
  * - offsets are interchangeable with sdui inline offsets (hard_break = 1)
+ * - mark specs come from the mark registry (src/marks/<name>/) — registry
+ *   order is the schema mark order
  */
 export const focusedBlockSchema = new Schema({
   nodes: {
@@ -22,30 +26,5 @@ export const focusedBlockSchema = new Schema({
       toDOM: () => ['br'],
     },
   },
-  marks: {
-    bold: {
-      parseDOM: [{ tag: 'strong' }, { tag: 'b' }],
-      toDOM: () => ['strong', 0],
-    },
-    italic: {
-      parseDOM: [{ tag: 'em' }, { tag: 'i' }],
-      toDOM: () => ['em', 0],
-    },
-    code: {
-      parseDOM: [{ tag: 'code' }],
-      // class matches the static InlineContentView / Outline marks/Code.ts
-      toDOM: () => ['code', { class: 'inline' }, 0],
-    },
-    link: {
-      attrs: { href: {} },
-      inclusive: false,
-      parseDOM: [
-        {
-          tag: 'a[href]',
-          getAttrs: (dom) => ({ href: (dom as HTMLElement).getAttribute('href') }),
-        },
-      ],
-      toDOM: (mark) => ['a', { href: String(mark.attrs.href), rel: 'noopener noreferrer nofollow' }, 0],
-    },
-  },
+  marks: Object.fromEntries(MARK_DEFINITIONS.map((definition) => [definition.name, definition.spec])),
 })

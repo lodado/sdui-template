@@ -396,6 +396,17 @@
 
 /* ---------------------------------------------------------- inline marks */
 
+/* Outline Styles.ts mark rule — background comes inline from data-color (40%) */
+[data-sdui-document-editor] mark {
+  border-radius: 1px;
+  padding: 2px 0;
+  color: var(--sdui-doc-text);
+}
+
+[data-sdui-document-editor] mark a {
+  color: var(--sdui-doc-text);
+}
+
 [data-sdui-document-editor] code.inline {
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;

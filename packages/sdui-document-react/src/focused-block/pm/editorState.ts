@@ -1,15 +1,26 @@
 import type { SduiInlineContent } from '@lodado/sdui-document'
 import { inlineContentToPlainText } from '@lodado/sdui-document'
-import { baseKeymap, toggleMark } from 'prosemirror-commands'
+import { baseKeymap } from 'prosemirror-commands'
 import { history, redo, undo } from 'prosemirror-history'
 import { keymap } from 'prosemirror-keymap'
+import type { Command } from 'prosemirror-state'
 import { EditorState } from 'prosemirror-state'
 
-import { buildBlockTypeInputRules } from './inputRules'
+import { MARK_DEFINITIONS } from '../../marks'
+import { buildBlockTypeInputRules, buildMarkInputRules } from './inputRules'
 import type { FocusedBlockCallbacks } from './keymapDelegation'
 import { buildFocusedBlockKeymap } from './keymapDelegation'
 import { focusedBlockSchema } from './schema'
 import { inlineContentToPmDoc, pmDocToInlineContent } from './serialization'
+
+/** Mark shortcuts aggregated from the mark registry (Outline bindings). */
+function buildMarkKeymap(): Record<string, Command> {
+  return MARK_DEFINITIONS.reduce<Record<string, Command>>(
+    (keys, definition) =>
+      definition.keys ? { ...keys, ...definition.keys(focusedBlockSchema.marks[definition.name]) } : keys,
+    {},
+  )
+}
 
 /**
  * Creates the editor state for one focused block.
@@ -28,14 +39,13 @@ export function createFocusedBlockEditorState(
     plugins: [
       buildFocusedBlockKeymap(callbacks),
       buildBlockTypeInputRules(callbacks),
+      buildMarkInputRules(),
       history(),
       keymap({
         'Mod-z': undo,
         'Mod-y': redo,
         'Mod-Shift-z': redo,
-        'Mod-b': toggleMark(focusedBlockSchema.marks.bold),
-        'Mod-i': toggleMark(focusedBlockSchema.marks.italic),
-        'Mod-e': toggleMark(focusedBlockSchema.marks.code),
+        ...buildMarkKeymap(),
       }),
       keymap(baseKeymap),
     ],

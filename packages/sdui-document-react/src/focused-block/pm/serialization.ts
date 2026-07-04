@@ -1,22 +1,17 @@
 import type { SduiInlineContent, SduiInlineMark, SduiInlineNode } from '@lodado/sdui-document'
 import type { Mark, Node as PmNode } from 'prosemirror-model'
 
+import { markDefinitionByName } from '../../marks'
 import { focusedBlockSchema } from './schema'
 
 function toPmMark(mark: SduiInlineMark): Mark {
-  if (mark.type === 'link') {
-    return focusedBlockSchema.marks.link.create({ href: mark.attrs.href })
-  }
+  const definition = markDefinitionByName[mark.type]
 
-  return focusedBlockSchema.marks[mark.type].create()
+  return focusedBlockSchema.marks[mark.type].create(definition.toPmAttrs?.(mark))
 }
 
 function toSduiMark(mark: Mark): SduiInlineMark {
-  if (mark.type.name === 'link') {
-    return { type: 'link', attrs: { href: String(mark.attrs.href) } }
-  }
-
-  return { type: mark.type.name as 'bold' | 'italic' | 'code' }
+  return markDefinitionByName[mark.type.name].toSduiMark(mark)
 }
 
 /**

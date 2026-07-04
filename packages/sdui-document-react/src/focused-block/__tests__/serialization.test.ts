@@ -36,6 +36,27 @@ describe('inline content <-> ProseMirror doc serialization', () => {
       })
     })
 
+    describe('when round-tripped with strikethrough + underline', () => {
+      it('to be: marks preserved per node', () => {
+        const content: SduiInlineContent = [
+          { type: 'text', text: 'a', marks: [{ type: 'strikethrough' }] },
+          { type: 'text', text: 'b', marks: [{ type: 'underline' }] },
+        ]
+
+        expect(roundTrip(content)).toEqual(content)
+      })
+    })
+
+    describe('when round-tripped with a highlight mark (EP: attrs-bearing mark)', () => {
+      it('to be: color attr preserved', () => {
+        const content: SduiInlineContent = [
+          { type: 'text', text: 'hi', marks: [{ type: 'highlight', attrs: { color: '#FDEA9B' } }] },
+        ]
+
+        expect(roundTrip(content)).toEqual(content)
+      })
+    })
+
     describe('when round-tripped with a link mark', () => {
       it('to be: href attr preserved', () => {
         const content: SduiInlineContent = [
