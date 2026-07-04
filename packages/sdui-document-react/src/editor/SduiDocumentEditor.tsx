@@ -116,7 +116,8 @@ const BlockRow = ({
 
   return (
     <div ref={setDropRef} data-block-id={block.id} data-depth={depth} data-selected={isSelected || undefined}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 4 }}>
+      {/* center: the drag handle sits at the vertical middle of the block row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
         {!readOnly && (
           <button
             type="button"
