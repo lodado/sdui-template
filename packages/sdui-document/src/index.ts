@@ -6,6 +6,7 @@ export * from './contracts';
 export * from './permissions';
 export * from './repositories';
 export * from './schema';
+export * from './sdui';
 export * from './search';
 export * from './storage';
 export * from './tree';
