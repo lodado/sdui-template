@@ -508,6 +508,12 @@
   background: var(--sdui-doc-accent);
 }
 
+/* insertion caret painted while dragging inline text across blocks */
+[data-sdui-document-editor] [data-drop-caret] {
+  background: var(--sdui-doc-accent);
+  border-radius: 1px;
+}
+
 /* -------------------------------------------------------- selection toolbar
    Portaled to <body> so rules are class-scoped, not editor-scoped.
    Values from Outline FloatingToolbar/ToolbarMenu/ToolbarButton/theme.ts. */

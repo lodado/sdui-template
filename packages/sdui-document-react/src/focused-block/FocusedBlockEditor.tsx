@@ -243,7 +243,7 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
 
   return (
     <>
-      <span ref={containerRef} className={className} data-testid="focused-block-editor" />
+      <span ref={containerRef} className={className} data-inline-root data-testid="focused-block-editor" />
       {snapshot && !isSelectingText ? (
         <SelectionToolbar
           snapshot={snapshot}

@@ -150,12 +150,12 @@ function cloneTouchedPaths(content: SduiDocumentContent, blockIds: string[]): Sd
  * - `text` mode: `state.text` plain string only, no `state.content` is introduced by the engine
  * - `empty` mode: block carries no inline text (offset 0 is the only valid split point)
  */
-type BlockInlineState = {
+export type BlockInlineState = {
   mode: 'content' | 'text' | 'empty'
   content: SduiInlineContent
 }
 
-function getBlockInline(block: SduiDocumentBlock): BlockInlineState {
+export function getBlockInline(block: SduiDocumentBlock): BlockInlineState {
   const stateContent = block.state?.content
   if (Array.isArray(stateContent)) {
     return { mode: 'content', content: stateContent as SduiInlineContent }
@@ -169,7 +169,10 @@ function getBlockInline(block: SduiDocumentBlock): BlockInlineState {
   return { mode: 'empty', content: [] }
 }
 
-function toInlineStatePatch(mode: BlockInlineState['mode'], content: SduiInlineContent): Record<string, unknown> {
+export function toInlineStatePatch(
+  mode: BlockInlineState['mode'],
+  content: SduiInlineContent,
+): Record<string, unknown> {
   if (mode === 'content') {
     return { content, text: inlineContentToPlainText(content) }
   }

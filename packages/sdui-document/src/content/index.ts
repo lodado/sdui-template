@@ -1,5 +1,6 @@
 export * from './errors'
 export * from './inlineContent'
+export * from './inlineRange'
 export * from './links'
 export * from './plainText'
 export * from './walkBlocks'
