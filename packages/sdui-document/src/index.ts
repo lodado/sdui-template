@@ -1,4 +1,5 @@
 export * from './autosave'
+export { createDefaultBlock } from './block-types/createDefaultBlock'
 export * from './blocks/code'
 export * from './blocks/drag'
 export * from './blocks/schema'
