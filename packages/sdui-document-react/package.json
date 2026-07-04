@@ -1,7 +1,7 @@
 {
   "name": "@lodado/sdui-document-react",
   "description": "Hybrid notion-like editor bindings: focused-block ProseMirror inline editor + React renderers for @lodado/sdui-document.",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "license": "MIT",
   "author": "lodado",
   "sideEffects": [
@@ -11,6 +11,14 @@
   "module": "./src/index.ts",
   "source": "./src/index.ts",
   "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "require": "./src/index.ts",
+      "types": "./src/index.ts"
+    },
+    "./package.json": "./package.json"
+  },
   "files": [
     "dist/**",
     "README.md"
@@ -20,7 +28,8 @@
     "clean": "rm -rf .turbo dist .cache",
     "lint": "eslint \"src/**/*.ts*\"",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "jest"
+    "test": "jest",
+    "manual-release": "pnpm run build && pnpm publish --no-git-checks"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",
@@ -57,6 +66,22 @@
     "typescript": "^5.4.5"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "exports": {
+      ".": {
+        "import": {
+          "default": "./dist/es/client/index.mjs",
+          "types": "./dist/types/index.d.ts"
+        },
+        "require": {
+          "default": "./dist/cjs/client/index.cjs",
+          "types": "./dist/types/index.d.ts"
+        }
+      }
+    },
+    "main": "./dist/cjs/client/index.cjs",
+    "module": "./dist/es/client/index.mjs",
+    "source": "./src/index.ts",
+    "types": "./dist/types/index.d.ts"
   }
 }

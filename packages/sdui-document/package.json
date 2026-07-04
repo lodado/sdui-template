@@ -1,13 +1,21 @@
 {
   "name": "@lodado/sdui-document",
   "description": "Headless SDUI block document domain package.",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "license": "MIT",
   "author": "lodado",
   "main": "./src/index.ts",
   "module": "./src/index.ts",
   "source": "./src/index.ts",
   "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "require": "./src/index.ts",
+      "types": "./src/index.ts"
+    },
+    "./package.json": "./package.json"
+  },
   "files": [
     "dist/**",
     "README.md"
@@ -16,7 +24,8 @@
     "build": "rollup -c && tsc --emitDeclarationOnly --declarationMap false --declaration --declarationDir dist/types",
     "clean": "rm -rf .turbo dist .cache",
     "lint": "eslint \"src/**/*.ts*\"",
-    "test": "jest"
+    "test": "jest",
+    "manual-release": "pnpm run build && pnpm publish --no-git-checks"
   },
   "dependencies": {
     "marked": "^15.0.12",
@@ -33,6 +42,22 @@
     "typescript": "^5.4.5"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "exports": {
+      ".": {
+        "import": {
+          "default": "./dist/es/client/index.mjs",
+          "types": "./dist/types/index.d.ts"
+        },
+        "require": {
+          "default": "./dist/cjs/client/index.cjs",
+          "types": "./dist/types/index.d.ts"
+        }
+      }
+    },
+    "main": "./dist/cjs/client/index.cjs",
+    "module": "./dist/es/client/index.mjs",
+    "source": "./src/index.ts",
+    "types": "./dist/types/index.d.ts"
   }
 }
