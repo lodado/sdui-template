@@ -10,21 +10,11 @@
  * - a `hard_break` occupies exactly 1 offset unit (PM leaf-node convention)
  */
 
-export type SduiInlineMark =
-  | { type: 'bold' }
-  | { type: 'italic' }
-  | { type: 'strikethrough' }
-  | { type: 'underline' }
-  | { type: 'code' }
-  | { type: 'link'; attrs: { href: string } }
-  | { type: 'highlight'; attrs: { color: string } }
+import type { SduiInlineMark } from '../../marks'
 
-/** Highlight colors must be 6-digit hex — the only attrs format renderers accept. */
-export const HIGHLIGHT_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/
-
-export function isValidHighlightColor(color: string): boolean {
-  return HIGHLIGHT_COLOR_PATTERN.test(color)
-}
+// Mark definitions moved to src/marks/<name>/ — re-exported here to keep the public API stable.
+export type { SduiInlineMark } from '../../marks'
+export { HIGHLIGHT_COLOR_PATTERN, isValidHighlightColor } from '../../marks'
 
 export type SduiInlineTextNode = {
   type: 'text'

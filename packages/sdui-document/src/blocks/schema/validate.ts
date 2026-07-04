@@ -1,21 +1,8 @@
 import { z } from 'zod'
 
 import type { SduiDocument, SduiDocumentBlock, SduiDocumentContent, SduiDocumentPatch } from './index'
+import { inlineMarkSchema } from '../../marks'
 import type { SduiInlineContent } from './inline'
-import { HIGHLIGHT_COLOR_PATTERN } from './inline'
-
-const inlineMarkSchema = z.union([
-  z.object({ type: z.literal('bold') }),
-  z.object({ type: z.literal('italic') }),
-  z.object({ type: z.literal('strikethrough') }),
-  z.object({ type: z.literal('underline') }),
-  z.object({ type: z.literal('code') }),
-  z.object({ type: z.literal('link'), attrs: z.object({ href: z.string() }) }),
-  z.object({
-    type: z.literal('highlight'),
-    attrs: z.object({ color: z.string().regex(HIGHLIGHT_COLOR_PATTERN, 'highlight color must be #RRGGBB') }),
-  }),
-])
 
 const inlineNodeSchema = z.union([
   z.object({

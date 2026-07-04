@@ -1,18 +1,7 @@
-import type { SduiInlineContent, SduiInlineMark, SduiInlineNode, SduiInlineTextNode } from '../blocks/schema/inline'
+import type { SduiInlineContent, SduiInlineNode, SduiInlineTextNode } from '../blocks/schema/inline'
 import { isInlineTextNode } from '../blocks/schema/inline'
+import { cloneMark, marksEqual } from '../marks'
 import { InvalidInlineOffsetError } from './errors'
-
-function cloneMark(mark: SduiInlineMark): SduiInlineMark {
-  if (mark.type === 'link') {
-    return { type: 'link', attrs: { ...mark.attrs } }
-  }
-
-  if (mark.type === 'highlight') {
-    return { type: 'highlight', attrs: { ...mark.attrs } }
-  }
-
-  return { ...mark }
-}
 
 function cloneNode(node: SduiInlineNode): SduiInlineNode {
   if (isInlineTextNode(node)) {
@@ -30,29 +19,6 @@ function cloneNode(node: SduiInlineNode): SduiInlineNode {
 function nodeLength(node: SduiInlineNode): number {
   // hard_break occupies exactly 1 offset unit (PM leaf-node convention)
   return isInlineTextNode(node) ? node.text.length : 1
-}
-
-function marksEqual(a: SduiInlineMark[] = [], b: SduiInlineMark[] = []): boolean {
-  if (a.length !== b.length) {
-    return false
-  }
-
-  return a.every((mark, markIndex) => {
-    const other = b[markIndex]
-    if (mark.type !== other.type) {
-      return false
-    }
-
-    if (mark.type === 'link' && other.type === 'link') {
-      return mark.attrs.href === other.attrs.href
-    }
-
-    if (mark.type === 'highlight' && other.type === 'highlight') {
-      return mark.attrs.color === other.attrs.color
-    }
-
-    return true
-  })
 }
 
 function normalizeInlineContent(nodes: SduiInlineNode[]): SduiInlineContent {
