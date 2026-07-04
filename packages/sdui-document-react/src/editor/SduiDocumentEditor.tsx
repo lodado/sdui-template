@@ -20,10 +20,12 @@ import {
   clearBlockSelection,
   createBlockId,
   createBlockSelection,
+  createTrailingBlockPatch,
   extendBlockSelection,
   findBlockById,
   flattenDocumentBlocks,
   getInlineContentLength,
+  isEmptyDocument,
   textToInlineContent,
 } from '@lodado/sdui-document'
 import React, { useContext, useMemo, useRef } from 'react'
@@ -295,7 +297,7 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     className,
   } = props
 
-  const { doc, docRef, applyPatches } = useDocumentPatches({ content, onContentChange })
+  const { doc, docRef, applyPatches } = useDocumentPatches({ content, onContentChange, generateBlockId, readOnly })
   const containerRef = useRef<HTMLDivElement>(null)
   const indicatorRef = useRef<HTMLDivElement>(null)
   const inlineCaretRef = useRef<HTMLDivElement>(null)
@@ -370,9 +372,19 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
 
       split: (blockId, offset) => {
         const newBlockId = latest.current.generateBlockId()
-        latest.current.applyPatches([
+        const source = findBlockById(docRef.current, blockId)
+        const patches: SduiDocumentPatch[] = [
           { type: 'block.split', blockId: createBlockId(blockId), offset, newBlockId: createBlockId(newBlockId) },
-        ])
+        ]
+
+        // Notion split policy: Enter never continues a heading — the
+        // continuation block becomes body text (setType with no attributes
+        // also clears the inherited heading level).
+        if (source?.type === 'document.heading') {
+          patches.push({ type: 'block.setType', blockId: createBlockId(newBlockId), blockType: 'document.paragraph' })
+        }
+
+        latest.current.applyPatches(patches)
         refocus(newBlockId, 'start')
       },
 
@@ -649,6 +661,28 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     }
   }
 
+  // Outline ClickablePadding: clicking the space below the document only
+  // FOCUSES the trailing block — the trailing-block invariant (applied at
+  // mount and after every patch batch) guarantees one exists, so the click
+  // "feels" like it created a new line without ever inserting on click.
+  const handlePaddingClick = () => {
+    const children = docRef.current.root.children ?? []
+    const last = children[children.length - 1]
+    if (last && isTextBlock(last)) {
+      runtime.handlers.focusBlock(last.id, 'end')
+
+      return
+    }
+
+    // Defensive: only reachable when the invariant was bypassed (e.g. a
+    // readOnly -> editable toggle) — restore it, then focus the new block.
+    const trailing = createTrailingBlockPatch(docRef.current, generateBlockId)
+    if (trailing && trailing.type === 'block.insert') {
+      applyPatches([trailing])
+      runtime.handlers.focusBlock(trailing.block.id, 'end')
+    }
+  }
+
   const sensors = useSensors(useSensor(PointerSensor, POINTER_SENSOR_OPTIONS))
 
   return (
@@ -666,6 +700,7 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
           ref={containerRef}
           className={className}
           data-sdui-document-editor
+          data-doc-empty={isEmptyDocument(doc) || undefined}
           role="tree"
           tabIndex={-1}
           onKeyDown={handleSelectionKeyDown}
@@ -674,6 +709,12 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
           {doc.root.children?.map((child) => (
             <BlockNode key={child.id} block={child} depth={1} readOnly={readOnly} />
           ))}
+          {!readOnly && (
+            // Outline ClickablePadding: a text-cursor strip below the last
+            // block; keyboard users reach the same spot via ArrowDown.
+            // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
+            <div data-editor-clickable-padding onClick={handlePaddingClick} />
+          )}
           {/* single drop indicator, painted via DOM during drags (no re-render) */}
           <div
             ref={indicatorRef}
