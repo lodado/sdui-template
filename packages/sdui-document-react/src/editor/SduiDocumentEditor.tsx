@@ -156,7 +156,12 @@ const BlockNode = React.memo(({ block, depth, readOnly }: BlockNodeProps) => {
   const isSelected = useEditorUISelector(store, (state) => state.selection.selectedIds.includes(block.id))
   const focus = useEditorUISelector(store, (state) => (state.focus?.blockId === block.id ? state.focus : null))
   const { setNodeRef: setDropRef } = useDroppable({ id: block.id, disabled: readOnly })
-  const { setNodeRef: setDragRef, listeners, attributes } = useDraggable({ id: block.id, disabled: readOnly })
+  const {
+    setNodeRef: setDragRef,
+    listeners,
+    attributes,
+    isDragging,
+  } = useDraggable({ id: block.id, disabled: readOnly })
 
   const isFocused = !readOnly && focus !== null && isTextBlock(block)
 
@@ -192,6 +197,7 @@ const BlockNode = React.memo(({ block, depth, readOnly }: BlockNodeProps) => {
             type="button"
             ref={setDragRef}
             data-drag-handle
+            data-dragging={isDragging || undefined}
             aria-label={`Drag block ${block.id}`}
             style={{ cursor: 'grab', border: 'none', background: 'transparent', padding: '2px 4px' }}
             onClick={(event) => handlers.handleClick(block.id, event.shiftKey)}

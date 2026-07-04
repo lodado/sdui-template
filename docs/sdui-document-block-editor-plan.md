@@ -1836,6 +1836,167 @@ sibling으로)". 원인 2가지:
 
 ---
 
+## Phase 24. 키보드 단축키 전면 이식 — Outline parity + Notion식 block selection
+
+Outline 소스(`shared/editor/marks/*`, `shared/editor/nodes/*`,
+`app/editor/extensions/Keys.ts`) 전수 조사 결과 기반. 목표: 인라인 편집은
+Outline 단축키 체계 그대로, block 구조 조작은 Notion식 block selection 모드로
+이원화. 모든 키는 "어느 층이 처리하나"를 먼저 결정한다.
+
+### 24.0 층별 라우팅 원칙 (경계 규칙 0.2의 키보드 확장)
+
+| 층                                  | 처리 대상                    | 예시                                                                                                    |
+| ----------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------- |
+| PM 내부 (focused block)             | 텍스트/마크만 건드리는 키    | `Mod-b/i/e/d/u`, mark input rule, `Mod-z/y`, `Shift-Enter` hard break                                   |
+| keymap 위임 (PM → block layer 콜백) | block 구조를 바꾸는 키       | Enter split, `Ctrl-Shift-N` turn-into, `Mod-]`/`Mod-[`, `Mod-Alt-Arrow` move, `Mod-Enter` 컨텍스트 액션 |
+| React block layer (selection 모드)  | focused block 없는 상태의 키 | 방향키 selection 이동, Enter 편집 진입, `Mod-d` duplicate, `Mod-a` 확장                                 |
+
+원칙: PM은 block 구조를 절대 직접 변경하지 않음 — 구조 키는 전부
+`FocusedBlockCallbacks` 확장으로 위임하고 patch는 block layer가 발행.
+
+### 24.1 현재 구현 vs Outline 갭
+
+이미 있음: mark 단축키 6종(`Mod-b/i/e/d/u`, `Mod-Shift-h`), undo/redo,
+Enter/Backspace@0/Tab/Shift-Tab/Escape/Arrow 경계 위임, block input rule
+(`#`/`##`/`###`/`[]`/`>`), mark input rule(`~`/`__`/`==`).
+
+갭 (Outline 기준):
+
+1. **Mark**: code 대체 바인딩 `Mod-Shift-c`, mark input rule `**bold**`,
+   `*italic*`/`_italic_`, `` `code` `` 없음 (bold/italic/code 3종 input rule 누락).
+2. **Block type 단축키**: `Ctrl-Shift-0~9` 전무. Outline 매핑 —
+   0 paragraph / 1~3 heading / 7 checklist / 8 bullet / 9 ordered /
+   `Ctrl-Shift-c` code fence.
+3. **Input rule**: `- `/`* ` bullet, `1. ` ordered, `#### `~, ` ``` ` code
+   fence, `---` divider, `+++` toggle, `|--` table — 대부분 **block type 미구현**
+   (bullet/ordered/code/toggle/table 블록이 아직 없음). divider는 블록 존재.
+4. **구조 키**: `Mod-]`/`Mod-[` indent alias, `Alt-ArrowUp/Down`(list item
+   이동), `Mod-Alt-ArrowUp/Down`(block 이동), `Shift-Enter` hard break 없음.
+5. **`Mod-Enter` 컨텍스트 액션**: checklist 토글 / link 열기 / (미래) toggle
+   접기 — 현재 없음.
+6. **Block selection 모드**: Backspace/Delete/Escape만 있음. 방향키 이동,
+   Enter 편집 진입, `Mod-d` duplicate, `Mod-a` 단계 확장 없음.
+7. **트리거 메뉴**: `/` slash(Phase 11), `@` mention, `:` emoji — 별도 phase.
+8. Outline `Mod-s` save / `Mod-Enter` save-and-exit — autosave 구조라 불필요.
+   `Mod-Alt-m` comment — comment 시스템 없음, 보류.
+
+### 24.2 서브 페이즈
+
+**24-A. 키 registry 설계 (colocation 확장)** — marks/ 패턴을 block-types/로
+복제: 각 block type 모듈이 `shortcut?: string`(turn-into 키),
+`inputRules?: TurnIntoRule[]`, `actions?: { 'Mod-Enter'?: BlockAction }`을
+선언. `inputRules.ts`의 하드코딩 `TURN_INTO_RULES`와 keymap을 registry 집계로
+교체. 테스트: registry 집계 단위 테스트(중복 키 감지 포함).
+
+**24-B. Mark parity** — bold/italic/code에 `inputRule` 추가
+(Outline 정규식 이식: `/(?:\*\*)([^*]+)(?:\*\*)$/` 등), code에
+`Mod-Shift-c` 추가 바인딩. markModules.test 확장.
+
+**24-C. Turn-into 단축키** — `Ctrl-Shift-0/1/2/3/7` (paragraph/h1/h2/h3/
+checklist)를 위임 keymap에 추가 → `onTurnInto(type, attrs)` 재사용.
+callout은 Outline `Ctrl->` 대신 미배정(quote 블록 생기면 재검토).
+existing 콜백 재사용이라 patch 경로 변경 없음. 8/9는 bullet/ordered 블록
+구현 시 예약.
+
+**24-D. 구조 키 확장** — `FocusedBlockCallbacks`에
+`onMoveBlock(direction: 'up' | 'down')` 추가. 바인딩: `Mod-Alt-ArrowUp/Down`
+(Outline Keys.ts와 동일), `Mod-]`/`Mod-[`를 Tab/Shift-Tab alias로.
+block layer는 `block.move` patch 발행 (sibling index ±1, 경계 클램프).
+`Shift-Enter` → PM 내부 hard break (schema에 hardBreak 노드 추가 +
+serialization 왕복). nestedDragScenario/projectedMovePatch 테스트에 keyboard
+move 케이스 추가.
+
+**24-E. `Mod-Enter` 컨텍스트 액션** — 위임 keymap에서 현재 block type의
+registry `actions['Mod-Enter']` 조회 → 있으면
+`onBlockAction(action)` 콜백. checklist: checked 토글 patch. link mark 위
+커서: URL 열기(window.open, XSS 정책 — http/https만).
+
+**24-F. Block selection 모드 키 (Notion식)** — `SduiDocumentEditor`
+`handleSelectionKeyDown` 확장: `ArrowUp/Down` 평탄화 순서로 selection 이동,
+`Enter` → focused 편집 진입(끝 offset), `Mod-d` → duplicate patch
+(subtree 복제 + 새 id), `Mod-a` → 전체 block 선택. Escape 체인:
+인라인 편집 → block selection → selection 해제 (Notion 동일).
+주의: `Mod-d`는 인라인 편집 중 strikethrough와 모드로 분리되어 충돌 없음.
+
+**24-G. E2E + 도움말** — Playwright: turn-into 단축키, 방향키 selection
+이동, Mod-Enter checklist 토글, `**bold**` autoformat 왕복. 선택:
+`?` 단축키 도움말 다이얼로그(Outline KeyboardShortcuts.tsx 이식)는 후속.
+
+### 24.3 리스크
+
+| 리스크                                                         | 대응                                                           |
+| -------------------------------------------------------------- | -------------------------------------------------------------- |
+| `Ctrl-Shift-N` 브라우저/OS 충돌 (Ctrl-Shift-9 등 일부 OS 점유) | Outline과 동일 바인딩 유지, E2E는 chromium 기준 검증           |
+| hardBreak 노드 추가로 serialization 왕복 깨짐                  | Phase 16 왕복 테스트에 hardBreak 케이스 선행 추가 (RED 먼저)   |
+| registry 키 중복 (mark vs block vs 위임)                       | 집계 시 중복 감지 assert + 단위 테스트                         |
+| `Mod-Enter` link 열기 XSS                                      | scheme whitelist (`http:`/`https:`) — CLAUDE.md 보안 규칙 준수 |
+
+---
+
+## Phase 25. 인라인 텍스트 드래그 이동 — PM 내부 + 블록 간 (cross-block)
+
+요구: PM에서 텍스트를 선택해 드래그로 이동. 같은 블록 안뿐 아니라
+**다른 블록으로도** 이동 가능해야 함.
+
+배경: Outline은 단일 PM 문서라 브라우저 HTML5 drag + PM 내장 처리
+(`view.dragging` slice, `handleDrop`, move 시 소스 삭제)로 공짜로 얻는다.
+우리는 focused block 하나만 PM이고 나머지는 static React — **PM 밖으로
+나가는 드래그를 블록 층이 받아주는 브리지**가 핵심.
+
+블록 핸들 DnD(dnd-kit, pointer 이벤트)와 텍스트 드래그(native HTML5 DnD)는
+이벤트 시스템이 달라 충돌하지 않는다.
+
+### 서브 페이즈
+
+**25-A. Intra-block 드래그 확인 + drop cursor** — focused block 내부는 PM
+내장 동작. `prosemirror-dropcursor` 플러그인 추가로 드랍 캐럿 표시.
+마크/IME 보존 E2E.
+
+**25-B. DOM ↔ inline offset 매핑 유틸 (headless)** — static view DOM의
+좌표 → inline content offset. `caretPositionFromPoint`(Safari는
+`caretRangeFromPoint` 폴백) → Range → text node walk로 offset 누적
+(`hard_break` = 1, Phase 16 offset 규약 동일). DOM 접근은 얇은 어댑터로
+분리, offset 산술은 순수 함수 + 단위 테스트.
+
+**25-C. 드래그 소스 (PM → 밖)** — PM `handleDOMEvents.dragstart`: 선택
+slice를 `application/x-sdui-inline+json`(marks 포함, `pmDocToInlineContent`
+부분 직렬화) + `text/plain` 폴백으로 dataTransfer에 적재. intra-block은
+`view.dragging` 경로 그대로. `dragend`에서 외부 드랍 성공(모듈 스코프 drag
+session 토큰으로 판정) && `dropEffect === 'move'`면 소스 range 삭제 tr →
+기존 commit 경로(`block.update`).
+
+**25-D. 드랍 타겟 (static 블록)** — text block static view에
+`onDragOver`(preventDefault + dropEffect) / `onDrop`. non-text 블록은
+거부(cursor not-allowed). drop: 25-B로 offset → 타겟 content splice 삽입
+(marks 보존) → `block.update`. **소스 삭제 + 타겟 삽입 patch 2개는 한
+batch로 적용** — undo가 한 단위여야 함 (patch 배열 적용은 이미 지원,
+batch 경계만 명시). dragover 중 caret rect 기반 세로선 인디케이터
+(`dropIndicatorOverlay` 패턴 재사용, caret 변형).
+
+**25-E. 정책/엣지** —
+
+- Alt(Option) 드래그 = copy (`dropEffect: 'copy'` → 소스 유지) — 브라우저 관례.
+- 외부 앱발 `text/plain` 드랍 → 마크 없는 텍스트로 삽입. HTML은 파싱하지
+  않음(XSS 차단). JSON MIME은 zod 스키마 검증 후에만 수용.
+- focused block 자기 자신 위 드랍 = PM 내부 경로 (커스텀 핸들러 개입 금지).
+- readOnly: dragstart 차단. IME 조합 중 dragstart 무시.
+
+**25-F. 테스트** — unit: offset 매핑 / splice 삽입 / batch undo 한 단위.
+E2E(chromium): 선택 → 다른 블록 드랍 → 텍스트+마크 이동 확인, Alt-copy,
+non-text 블록 거부. Playwright HTML5 DnD는 `dispatchEvent` +
+DataTransfer 생성 방식 필요 (mouse API로는 native DnD 발화 안 됨).
+
+### 리스크
+
+| 리스크                                               | 대응                                                          |
+| ---------------------------------------------------- | ------------------------------------------------------------- |
+| `caretPositionFromPoint` 브라우저 편차               | Safari `caretRangeFromPoint` 폴백, 어댑터 한 곳에 격리        |
+| 소스/타겟 patch가 개별 undo되면 데이터 유실처럼 보임 | batch 적용 + undo 단위 unit test 선행 (RED 먼저)              |
+| Playwright에서 native DnD 시뮬레이션 불안정          | dispatchEvent 기반 헬퍼 고정, dataTransfer 수동 구성          |
+| dnd-kit 핸들 드래그와 동시 발화                      | 핸들은 pointer, 텍스트는 HTML5 — activator를 핸들로 한정 유지 |
+
+---
+
 ## 7. 테스트 전략
 
 ### 7.1 Unit tests
