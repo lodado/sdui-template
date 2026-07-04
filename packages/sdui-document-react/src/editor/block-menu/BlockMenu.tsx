@@ -63,6 +63,10 @@ export const BlockMenu = ({ anchor, items, activeIndex, view, onSelect, onSubmit
             }
           }}
           onCloseAutoFocus={(event) => event.preventDefault()}
+          // Radix's DismissableLayer preventDefaults Escape at the document
+          // capture phase, so PM never sees it — close the menu here. This
+          // also keeps Escape from exiting the block while the menu is open.
+          onEscapeKeyDown={() => onClose()}
         >
           {view === 'menu' ? (
             <div role="listbox" aria-label="Insert block" className="sdui-doc-block-menu-list">

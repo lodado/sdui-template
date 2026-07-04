@@ -144,6 +144,7 @@ type EditorHandlers = {
   blockAction(blockId: string): void
   blockMenuSelect(blockId: string, item: BlockMenuItem, extraAttributes?: Record<string, unknown>): void
   blockMenuFilePicked(file: File): void
+  insertBlockBelow(blockId: string): void
 }
 
 type EditorRuntime = {
@@ -230,6 +231,14 @@ const BlockNode = React.memo(({ block, depth, readOnly }: BlockNodeProps) => {
         {!readOnly && (
           <button
             type="button"
+            data-plus-handle
+            aria-label={`Add block below ${block.id}`}
+            onClick={() => handlers.insertBlockBelow(block.id)}
+          />
+        )}
+        {!readOnly && (
+          <button
+            type="button"
             ref={setDragRef}
             data-drag-handle
             data-dragging={isDragging || undefined}
@@ -250,6 +259,7 @@ const BlockNode = React.memo(({ block, depth, readOnly }: BlockNodeProps) => {
                   key={focus.session}
                   content={blockInlineContent(block)}
                   autoFocus={focus.caret}
+                  autoOpenBlockMenu={focus.openBlockMenu === true}
                   onCommit={(commit) => handlers.commit(block.id, commit)}
                   onSplit={(offset) => handlers.split(block.id, offset)}
                   onMergeBackward={() => handlers.mergeBackward(block.id)}
@@ -672,6 +682,30 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
             ])
           },
         )
+      },
+
+      insertBlockBelow: (blockId) => {
+        const flattened = flattenDocumentBlocks(docRef.current)
+        const location = flattened.find((candidate) => candidate.id === blockId)
+        if (!location?.parentId) {
+          return
+        }
+
+        const newId = latest.current.generateBlockId()
+        latest.current.applyPatches([
+          {
+            type: 'block.insert',
+            parentId: createBlockId(location.parentId),
+            index: location.index + 1,
+            block: createDefaultBlock('document.paragraph', newId),
+          },
+        ])
+
+        const previous = store.get().focus
+        store.set({
+          selection: clearBlockSelection(),
+          focus: { blockId: newId, caret: 'start', session: (previous?.session ?? 0) + 1, openBlockMenu: true },
+        })
       },
     }
 
