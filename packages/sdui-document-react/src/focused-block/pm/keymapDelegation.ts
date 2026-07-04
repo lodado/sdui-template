@@ -1,6 +1,10 @@
 import { keymap } from 'prosemirror-keymap'
-import type { EditorState, Plugin } from 'prosemirror-state'
+import type { Command, EditorState, Plugin } from 'prosemirror-state'
 import type { EditorView } from 'prosemirror-view'
+
+import { turnIntoShortcutEntries } from '../../block-types/turnInto'
+import { safeHref } from '../../inline/safeHref'
+import { focusedBlockSchema } from './schema'
 
 /**
  * Boundary events the focused-block editor delegates to the block layer.
@@ -14,16 +18,20 @@ export type FocusedBlockCallbacks = {
   onSplit(offset: number): void
   /** Backspace at offset 0 — block layer should issue a block.merge patch. */
   onMergeBackward(): void
-  /** Tab — block layer should indent (block.move under previous sibling). */
+  /** Tab / Mod-] — block layer should indent (block.move under previous sibling). */
   onIndent(): void
-  /** Shift-Tab — block layer should outdent (block.move to grandparent). */
+  /** Shift-Tab / Mod-[ — block layer should outdent (block.move to grandparent). */
   onOutdent(): void
   /** Arrow key at the first/last visual line — move focus to a neighbor block. */
   onNavigate(direction: 'up' | 'down', offset: number): void
-  /** Markdown input rule matched — block layer should change the block type. */
+  /** Markdown input rule or turn-into shortcut — change the block type. */
   onTurnInto(type: string, attrs?: Record<string, unknown>): void
   /** Escape — exit inline editing into block selection mode. */
   onEscape(): void
+  /** Mod-Alt-Arrow — swap the block with its previous/next sibling. */
+  onMoveBlock(direction: 'up' | 'down'): void
+  /** Mod-Enter — type-specific action (checklist toggle, …) resolved by the block layer. */
+  onBlockAction(): void
 }
 
 function isAtVerticalBoundary(state: EditorState, view: EditorView | undefined, direction: 'up' | 'down'): boolean {
@@ -35,12 +43,45 @@ function isAtVerticalBoundary(state: EditorState, view: EditorView | undefined, 
   return direction === 'up' ? state.selection.from === 0 : state.selection.to === state.doc.content.size
 }
 
+/** href of a link mark at the selection head, if any (scheme-whitelisted). */
+function linkHrefAtSelection(state: EditorState): string | null {
+  const linkType = focusedBlockSchema.marks.link
+  const mark = state.selection.$head
+    .marks()
+    .concat(state.storedMarks ?? [])
+    .find((candidate) => candidate.type === linkType)
+  const href = typeof mark?.attrs.href === 'string' ? mark.attrs.href : undefined
+
+  return href ? safeHref(href) ?? null : null
+}
+
+/** Turn-into shortcut bindings aggregated from the block-type registry. */
+function buildTurnIntoBindings(callbacks: FocusedBlockCallbacks): Record<string, Command> {
+  return turnIntoShortcutEntries().reduce<Record<string, Command>>(
+    (bindings, entry) => ({
+      ...bindings,
+      [entry.key]: () => {
+        callbacks.onTurnInto(entry.type, entry.attrs)
+        return true
+      },
+    }),
+    {},
+  )
+}
+
 /**
  * Keymap plugin that intercepts block-boundary keys and delegates them.
  * Everything else (text input, IME, in-block deletion, marks) stays in PM.
+ *
+ * Outline parity notes (app/editor/extensions/Keys.ts, nodes/*):
+ * - Mod-]/Mod-[ mirror Tab/Shift-Tab (ListItem/Blockquote indent bindings)
+ * - Mod-Alt-ArrowUp/Down move the block among its siblings
+ * - Mod-Enter runs the block's contextual action; on a link mark it opens
+ *   the link instead (Link.tsx behavior, http/https only via safeHref)
  */
 export function buildFocusedBlockKeymap(callbacks: FocusedBlockCallbacks): Plugin {
   return keymap({
+    ...buildTurnIntoBindings(callbacks),
     Enter: (state) => {
       callbacks.onSplit(state.selection.from)
       return true
@@ -61,6 +102,34 @@ export function buildFocusedBlockKeymap(callbacks: FocusedBlockCallbacks): Plugi
       callbacks.onOutdent()
       return true
     },
+    'Mod-]': () => {
+      callbacks.onIndent()
+      return true
+    },
+    'Mod-[': () => {
+      callbacks.onOutdent()
+      return true
+    },
+    'Mod-Alt-ArrowUp': () => {
+      callbacks.onMoveBlock('up')
+      return true
+    },
+    'Mod-Alt-ArrowDown': () => {
+      callbacks.onMoveBlock('down')
+      return true
+    },
+    'Mod-Enter': (state) => {
+      const href = linkHrefAtSelection(state)
+      if (href) {
+        if (typeof window !== 'undefined') {
+          window.open(href, '_blank', 'noopener,noreferrer')
+        }
+        return true
+      }
+
+      callbacks.onBlockAction()
+      return true
+    },
     Escape: () => {
       callbacks.onEscape()
       return true
@@ -75,7 +144,7 @@ export function buildFocusedBlockKeymap(callbacks: FocusedBlockCallbacks): Plugi
     },
     ArrowDown: (state, _dispatch, view) => {
       if (state.selection.empty && isAtVerticalBoundary(state, view, 'down')) {
-        callbacks.onNavigate('down', state.selection.from)
+        callbacks.onNavigate('down', state.selection.to)
         return true
       }
 

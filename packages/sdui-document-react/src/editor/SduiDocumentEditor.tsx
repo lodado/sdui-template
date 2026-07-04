@@ -79,6 +79,15 @@ function defaultGenerateBlockId(): string {
   return `block-${Math.random().toString(36).slice(2, 10)}`
 }
 
+/** Deep-clones a subtree with fresh ids — Mod-D duplicate (Notion behavior). */
+function cloneBlockWithNewIds(block: SduiDocumentBlock, generateId: () => string): SduiDocumentBlock {
+  return {
+    ...block,
+    id: createBlockId(generateId()),
+    ...(block.children ? { children: block.children.map((child) => cloneBlockWithNewIds(child, generateId)) } : {}),
+  }
+}
+
 function isTextBlock(block: SduiDocumentBlock): boolean {
   return !NON_TEXT_BLOCK_TYPES.has(block.type)
 }
@@ -121,6 +130,8 @@ type EditorHandlers = {
   navigate(blockId: string, direction: 'up' | 'down'): void
   escape(blockId: string): void
   turnInto(blockId: string, type: string, attrs?: Record<string, unknown>): void
+  moveBlock(blockId: string, direction: 'up' | 'down'): void
+  blockAction(blockId: string): void
 }
 
 type EditorRuntime = {
@@ -224,6 +235,8 @@ const BlockNode = React.memo(({ block, depth, readOnly }: BlockNodeProps) => {
                   onOutdent={() => handlers.outdent(block.id)}
                   onNavigate={(direction) => handlers.navigate(block.id, direction)}
                   onTurnInto={(type, attrs) => handlers.turnInto(block.id, type, attrs)}
+                  onMoveBlock={(direction) => handlers.moveBlock(block.id, direction)}
+                  onBlockAction={() => handlers.blockAction(block.id)}
                   onEscape={() => handlers.escape(block.id)}
                 />
               ) : (
@@ -431,7 +444,63 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
       },
 
       turnInto: (blockId, type, attrs) => {
-        latest.current.onTurnInto?.(blockId, type, attrs)
+        // consumer override wins (legacy contract); default is a block.setType patch
+        if (latest.current.onTurnInto) {
+          latest.current.onTurnInto(blockId, type, attrs)
+
+          return
+        }
+
+        latest.current.applyPatches([
+          {
+            type: 'block.setType',
+            blockId: createBlockId(blockId),
+            blockType: type,
+            ...(attrs ? { attributes: attrs } : {}),
+          },
+        ])
+
+        // turning into a non-text type ends the inline session — select the block
+        if (NON_TEXT_BLOCK_TYPES.has(type)) {
+          selectBlocks(createBlockSelection(blockId))
+        }
+      },
+
+      moveBlock: (blockId, direction) => {
+        const flattened = flattenDocumentBlocks(docRef.current)
+        const item = flattened.find((candidate) => candidate.id === blockId)
+        if (!item?.parentId) {
+          return
+        }
+
+        const parent = findBlockById(docRef.current, item.parentId)
+        const siblingCount = parent?.children?.length ?? 0
+        const targetIndex = item.index + (direction === 'up' ? -1 : 1)
+        if (targetIndex < 0 || targetIndex >= siblingCount) {
+          return
+        }
+
+        latest.current.applyPatches([
+          {
+            type: 'block.move',
+            blockId: createBlockId(blockId),
+            parentId: createBlockId(item.parentId),
+            index: targetIndex,
+          },
+        ])
+      },
+
+      blockAction: (blockId) => {
+        const block = findBlockById(docRef.current, blockId)
+        if (block?.type === 'document.checklist') {
+          latest.current.applyPatches([
+            {
+              type: 'block.update',
+              blockId: createBlockId(blockId),
+              attributes: { checked: block.attributes?.checked !== true },
+            },
+          ])
+        }
       },
     }
 
@@ -463,10 +532,90 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
       return
     }
 
+    const isMod = event.metaKey || event.ctrlKey
+    const orderedIds = () =>
+      flattenDocumentBlocks(docRef.current)
+        .map((item) => item.id)
+        .filter((id) => id !== docRef.current.root.id)
+
     if (event.key === 'Backspace' || event.key === 'Delete') {
       event.preventDefault()
       applyPatches(selection.selectedIds.map((id) => ({ type: 'block.delete', blockId: createBlockId(id) })))
       store.set({ selection: clearBlockSelection() })
+
+      return
+    }
+
+    // Notion block-selection keys: arrows walk the flattened order, Enter
+    // re-enters inline editing, Mod-A selects everything, Mod-D duplicates.
+    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      event.preventDefault()
+      const ids = orderedIds()
+      const currentId = selection.anchorId ?? selection.selectedIds[selection.selectedIds.length - 1]
+      const index = ids.indexOf(currentId)
+      const nextId = ids[event.key === 'ArrowUp' ? index - 1 : index + 1]
+      if (nextId) {
+        store.set({ selection: createBlockSelection(nextId), focus: null })
+      }
+
+      return
+    }
+
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      const targetId = selection.anchorId ?? selection.selectedIds[0]
+      const target = findBlockById(docRef.current, targetId)
+      if (target && isTextBlock(target)) {
+        const previous = store.get().focus
+        store.set({
+          selection: clearBlockSelection(),
+          focus: { blockId: targetId, caret: 'end', session: (previous?.session ?? 0) + 1 },
+        })
+      }
+
+      return
+    }
+
+    if (isMod && (event.key === 'a' || event.key === 'A')) {
+      event.preventDefault()
+      const ids = orderedIds()
+      store.set({
+        selection: { anchorId: selection.anchorId ?? ids[0], selectedIds: ids },
+        focus: null,
+      })
+
+      return
+    }
+
+    if (isMod && (event.key === 'd' || event.key === 'D')) {
+      event.preventDefault()
+      const flattened = flattenDocumentBlocks(docRef.current)
+      const duplicatedIds: string[] = []
+      const patches = selection.selectedIds.reduce<SduiDocumentPatch[]>((accumulated, id) => {
+        const item = flattened.find((candidate) => candidate.id === id)
+        const source = findBlockById(docRef.current, id)
+        if (!item?.parentId || !source) {
+          return accumulated
+        }
+
+        const clone = cloneBlockWithNewIds(source, generateBlockId)
+        duplicatedIds.push(clone.id)
+
+        return [
+          ...accumulated,
+          { type: 'block.insert', parentId: createBlockId(item.parentId), index: item.index + 1, block: clone },
+        ]
+      }, [])
+
+      if (patches.length > 0) {
+        applyPatches(patches)
+        store.set({
+          selection: { anchorId: duplicatedIds[0], selectedIds: duplicatedIds },
+          focus: null,
+        })
+      }
+
+      return
     }
 
     if (event.key === 'Escape') {

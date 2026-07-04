@@ -173,6 +173,14 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
       // No commit here: the input-rule transaction (prefix deletion) has not
       // been dispatched yet, so committing now would persist the raw "# ".
       onTurnInto: (type, attrs) => latestProps.current.onTurnInto(type, attrs),
+      onMoveBlock: (direction) => {
+        commitNow()
+        latestProps.current.onMoveBlock(direction)
+      },
+      onBlockAction: () => {
+        commitNow()
+        latestProps.current.onBlockAction()
+      },
       onEscape: () => {
         commitNow()
         retired.current = true

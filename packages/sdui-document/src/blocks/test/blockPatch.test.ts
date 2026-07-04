@@ -6,6 +6,7 @@ import {
   DuplicateBlockIdError,
   findBlockById,
   InvalidBlockMoveError,
+  InvalidBlockTypeChangeError,
   ParentBlockNotFoundError,
   RootBlockCannotBeDeletedError,
   type SduiDocument,
@@ -202,5 +203,84 @@ describe('applyPatchToDocument', () => {
     expect(next.title).toBe('Original title')
     expect(findBlockById(next.content, 'paragraph-1')?.state?.text).toBe('Updated via document patch')
     expect(findBlockById(baseDocument.content, 'paragraph-1')?.state?.text).toBe('First')
+  })
+})
+
+describe('block.setType (turn-into)', () => {
+  it('changes the block type and replaces attributes wholesale', () => {
+    const next = applyDocumentPatch(createContent(), {
+      type: 'block.setType',
+      blockId: 'paragraph-1',
+      blockType: 'document.heading',
+      attributes: { level: 2 },
+    })
+
+    const block = findBlockById(next, 'paragraph-1')
+    expect(block?.type).toBe('document.heading')
+    expect(block?.attributes).toEqual({ level: 2 })
+    expect(block?.state?.text).toBe('First')
+  })
+
+  it('drops stale attributes when the new type provides none', () => {
+    const heading = applyDocumentPatch(createContent(), {
+      type: 'block.setType',
+      blockId: 'paragraph-1',
+      blockType: 'document.heading',
+      attributes: { level: 3 },
+    })
+
+    const next = applyDocumentPatch(heading, {
+      type: 'block.setType',
+      blockId: 'paragraph-1',
+      blockType: 'document.checklist',
+    })
+
+    const block = findBlockById(next, 'paragraph-1')
+    expect(block?.type).toBe('document.checklist')
+    expect(block?.attributes).toBeUndefined()
+  })
+
+  it('keeps children through a type change', () => {
+    const next = applyDocumentPatch(createContent(), {
+      type: 'block.setType',
+      blockId: 'callout-1',
+      blockType: 'document.paragraph',
+    })
+
+    const block = findBlockById(next, 'callout-1')
+    expect(block?.type).toBe('document.paragraph')
+    expect(block?.children?.map((child) => child.id)).toEqual(['paragraph-2'])
+  })
+
+  it('does not mutate the original content (immutability)', () => {
+    const original = createContent()
+    applyDocumentPatch(original, {
+      type: 'block.setType',
+      blockId: 'paragraph-1',
+      blockType: 'document.heading',
+      attributes: { level: 1 },
+    })
+
+    expect(findBlockById(original, 'paragraph-1')?.type).toBe('document.paragraph')
+  })
+
+  it('throws BlockNotFoundError for an unknown block', () => {
+    expect(() =>
+      applyDocumentPatch(createContent(), {
+        type: 'block.setType',
+        blockId: 'missing',
+        blockType: 'document.heading',
+      }),
+    ).toThrow(BlockNotFoundError)
+  })
+
+  it('rejects changing the root block type', () => {
+    expect(() =>
+      applyDocumentPatch(createContent(), {
+        type: 'block.setType',
+        blockId: 'root',
+        blockType: 'document.paragraph',
+      }),
+    ).toThrow(InvalidBlockTypeChangeError)
   })
 })

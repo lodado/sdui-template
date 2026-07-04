@@ -81,6 +81,94 @@ test.describe('Document editor (hybrid ProseMirror)', () => {
   })
 })
 
+test.describe('Keyboard shortcuts (Phase 24 — Outline parity)', () => {
+  // PM "Mod-" resolves to Meta on macOS browsers, Ctrl elsewhere.
+  const MOD = process.platform === 'darwin' ? 'Meta' : 'Control'
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/document-editor')
+    await expect(page.locator('[data-block-id="p1"]')).toBeVisible({ timeout: 15000 })
+  })
+
+  test('Ctrl-Shift-1로 paragraph가 h1으로 turn-into 된다', async ({ page }) => {
+    await focusBlock(page, 'First')
+    await page.keyboard.press('Control+Shift+Digit1')
+
+    await expect(page.locator('[data-block-id="p1"] h1')).toHaveCount(1)
+
+    // Ctrl-Shift-0 turns it back into a paragraph
+    await page.keyboard.press('Control+Shift+Digit0')
+    await expect(page.locator('[data-block-id="p1"] h1')).toHaveCount(0)
+    await expect(page.locator('[data-block-id="p1"] p')).toHaveCount(1)
+  })
+
+  test('**bold** 입력 시 bold mark가 적용되고 커밋 후 정적 뷰에 남는다', async ({ page }) => {
+    await focusBlock(page, 'First')
+    await page.keyboard.press('End')
+    await page.keyboard.type(' **bold**')
+
+    await expect(page.locator(`${EDITABLE} strong`)).toHaveText('bold')
+
+    await page.locator(EDITOR).getByText('Second').click()
+    await expect(page.locator('[data-block-id="p1"] strong')).toHaveText('bold')
+  })
+
+  test('"[] " 입력으로 checklist가 되고 Mod-Enter로 토글된다', async ({ page }) => {
+    await focusBlock(page, 'Third')
+    await page.keyboard.press('Home')
+    await page.keyboard.type('[] ')
+
+    const checkbox = page.locator('[data-block-id="p3"] .checkbox')
+    await expect(checkbox).toHaveAttribute('aria-checked', 'false')
+
+    await page.keyboard.press(`${MOD}+Enter`)
+    await expect(checkbox).toHaveAttribute('aria-checked', 'true')
+  })
+
+  test('Mod-Alt-ArrowDown으로 블록이 아래 sibling과 자리를 바꾼다', async ({ page }) => {
+    await focusBlock(page, 'First')
+    await page.keyboard.press(`${MOD}+Alt+ArrowDown`)
+
+    const rows = page.locator('[data-sdui-document-editor] > [data-block-id]')
+    await expect(rows.nth(0)).toHaveAttribute('data-block-id', 'p2')
+    await expect(rows.nth(1)).toHaveAttribute('data-block-id', 'p1')
+  })
+
+  test('Shift-Enter로 hard break가 들어간다', async ({ page }) => {
+    await focusBlock(page, 'First')
+    await page.keyboard.press('End')
+    await page.keyboard.press('Shift+Enter')
+
+    await expect(page.locator(`${EDITABLE} br`)).toHaveCount(1)
+  })
+
+  test('selection 모드: 방향키로 이동, Enter로 편집 재진입', async ({ page }) => {
+    await focusBlock(page, 'First')
+    await page.keyboard.press('Escape')
+    await expect(page.locator('[data-block-id="p1"]')).toHaveAttribute('data-selected', 'true')
+
+    await page.keyboard.press('ArrowDown')
+    await expect(page.locator('[data-block-id="p2"]')).toHaveAttribute('data-selected', 'true')
+    await expect(page.locator('[data-block-id="p1"]')).not.toHaveAttribute('data-selected', 'true')
+
+    await page.keyboard.press('Enter')
+    await expect(page.locator(EDITABLE)).toHaveCount(1)
+    await expect(page.locator('[data-block-id="p2"] [contenteditable="true"]')).toHaveCount(1)
+  })
+
+  test('selection 모드: Mod-D로 블록이 복제된다', async ({ page }) => {
+    await focusBlock(page, 'First')
+    await page.keyboard.press('Escape')
+
+    await page.keyboard.press(`${MOD}+KeyD`)
+
+    const rows = page.locator('[data-sdui-document-editor] > [data-block-id]')
+    await expect(rows).toHaveCount(4)
+    await expect(rows.nth(1)).toContainText('First')
+    await expect(rows.nth(1)).not.toHaveAttribute('data-block-id', 'p1')
+  })
+})
+
 test.describe('Selection formatting toolbar', () => {
   const TOOLBAR = '.sdui-doc-toolbar'
 

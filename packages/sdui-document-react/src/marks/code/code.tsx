@@ -1,9 +1,10 @@
 import { toggleMark } from 'prosemirror-commands'
 import React from 'react'
 
+import { markInputRule } from '../markInputRule'
 import type { SduiMarkDefinition } from '../types'
 
-/** Outline marks/Code.ts — <code class="inline">, Mod-e. */
+/** Outline marks/Code.ts — <code class="inline">, Mod-e / Mod-Shift-c, `` `text` ``. */
 export const codeMark: SduiMarkDefinition = {
   name: 'code',
   spec: {
@@ -12,5 +13,6 @@ export const codeMark: SduiMarkDefinition = {
   },
   renderStatic: (children) => <code className="inline">{children}</code>,
   toSduiMark: () => ({ type: 'code' }),
-  keys: (markType) => ({ 'Mod-e': toggleMark(markType) }),
+  keys: (markType) => ({ 'Mod-e': toggleMark(markType), 'Mod-Shift-c': toggleMark(markType) }),
+  inputRule: (markType) => markInputRule(/(?:^|[^`])(`([^`\s](?:[^`]*[^`\s])?)`)$/, markType),
 }

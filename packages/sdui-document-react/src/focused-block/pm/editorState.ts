@@ -22,6 +22,13 @@ function buildMarkKeymap(): Record<string, Command> {
   )
 }
 
+/** Shift-Enter — hard break inside the block (Outline nodes/HardBreak.ts). */
+const insertHardBreak: Command = (state, dispatch) => {
+  dispatch?.(state.tr.replaceSelectionWith(focusedBlockSchema.nodes.hard_break.create()).scrollIntoView())
+
+  return true
+}
+
 /**
  * Creates the editor state for one focused block.
  *
@@ -45,6 +52,7 @@ export function createFocusedBlockEditorState(
         'Mod-z': undo,
         'Mod-y': redo,
         'Mod-Shift-z': redo,
+        'Shift-Enter': insertHardBreak,
         ...buildMarkKeymap(),
       }),
       keymap(baseKeymap),

@@ -207,3 +207,28 @@ describe('expectedVersion field', () => {
     })
   })
 })
+
+describe('block.setType inverse', () => {
+  it('restores the previous type and attributes on round trip', () => {
+    expectRoundTrip({
+      type: 'block.setType',
+      blockId: 'para-1',
+      blockType: 'document.heading',
+      attributes: { level: 2 },
+    })
+  })
+
+  it('restores attributes that the turn-into cleared', () => {
+    const original = applyDocumentPatches(createContent(), [
+      { type: 'block.setType', blockId: 'para-1', blockType: 'document.heading', attributes: { level: 3 } },
+    ])
+
+    const { content: next, inverse } = applyDocumentPatchWithInverse(original, {
+      type: 'block.setType',
+      blockId: 'para-1',
+      blockType: 'document.paragraph',
+    })
+
+    expect(applyDocumentPatches(next, inverse)).toEqual(original)
+  })
+})
