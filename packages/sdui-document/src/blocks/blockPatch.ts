@@ -1,9 +1,24 @@
-import type { SduiDocument, SduiDocumentBlock, SduiDocumentContent, SduiDocumentPatch } from '../schema'
+import {
+  getInlineContentLength,
+  inlineContentToPlainText,
+  mergeInlineContent,
+  splitInlineContent,
+  textToInlineContent,
+} from '../content/inlineContent'
+import type {
+  SduiDocument,
+  SduiDocumentBlock,
+  SduiDocumentContent,
+  SduiDocumentPatch,
+  SduiInlineContent,
+} from '../schema'
 import { createDocumentBlock } from '../schema'
 import {
   BlockNotFoundError,
   DuplicateBlockIdError,
+  InvalidBlockMergeError,
   InvalidBlockMoveError,
+  InvalidBlockSplitError,
   ParentBlockNotFoundError,
   RootBlockCannotBeDeletedError,
 } from './errors'
@@ -60,6 +75,50 @@ export function findBlockById(content: SduiDocumentContent, blockId: string): Sd
   return findBlock(content.root, blockId)
 }
 
+/**
+ * Inline representation of a block's text state.
+ *
+ * Policies:
+ * - `content` mode: `state.content` is the rich source of truth, `state.text` is derived
+ * - `text` mode: `state.text` plain string only, no `state.content` is introduced by the engine
+ * - `empty` mode: block carries no inline text (offset 0 is the only valid split point)
+ */
+type BlockInlineState = {
+  mode: 'content' | 'text' | 'empty'
+  content: SduiInlineContent
+}
+
+function getBlockInline(block: SduiDocumentBlock): BlockInlineState {
+  const stateContent = block.state?.content
+  if (Array.isArray(stateContent)) {
+    return { mode: 'content', content: stateContent as SduiInlineContent }
+  }
+
+  const stateText = block.state?.text
+  if (typeof stateText === 'string') {
+    return { mode: 'text', content: textToInlineContent(stateText) }
+  }
+
+  return { mode: 'empty', content: [] }
+}
+
+function toInlineStatePatch(mode: BlockInlineState['mode'], content: SduiInlineContent): Record<string, unknown> {
+  if (mode === 'content') {
+    return { content, text: inlineContentToPlainText(content) }
+  }
+
+  return { text: inlineContentToPlainText(content) }
+}
+
+function stripUndefinedKeys(record: Record<string, unknown>): Record<string, unknown> | undefined {
+  const entries = Object.entries(record).filter(([, value]) => value !== undefined)
+  if (entries.length === 0) {
+    return undefined
+  }
+
+  return entries.reduce<Record<string, unknown>>((result, [key, value]) => ({ ...result, [key]: value }), {})
+}
+
 function insertBlock(content: SduiDocumentContent, parentId: string, index: number, block: SduiDocumentBlock): void {
   const parent = findBlockById(content, parentId)
   if (!parent) {
@@ -93,12 +152,14 @@ function updateBlock(
     throw new BlockNotFoundError(blockId)
   }
 
+  // Merging an explicit `undefined` value deletes the key; an empty result
+  // normalizes to an absent object. Keeps update patches exactly invertible.
   if (state) {
-    block.state = { ...(block.state ?? {}), ...state }
+    block.state = stripUndefinedKeys({ ...(block.state ?? {}), ...state })
   }
 
   if (attributes) {
-    block.attributes = { ...(block.attributes ?? {}), ...attributes }
+    block.attributes = stripUndefinedKeys({ ...(block.attributes ?? {}), ...attributes })
   }
 }
 
@@ -138,6 +199,83 @@ function moveBlock(content: SduiDocumentContent, blockId: string, parentId: stri
   insertBlock(content, parentId, index, movingBlock)
 }
 
+function splitBlock(content: SduiDocumentContent, blockId: string, offset: number, newBlockId: string): void {
+  if (content.root.id === blockId) {
+    throw new InvalidBlockSplitError('Root block cannot be split')
+  }
+
+  const block = findBlockById(content, blockId)
+  if (!block) {
+    throw new BlockNotFoundError(blockId)
+  }
+
+  const found = findParent(content.root, blockId)
+  if (!found) {
+    throw new BlockNotFoundError(blockId)
+  }
+
+  const inline = getBlockInline(block)
+  const [left, right] = splitInlineContent(inline.content, offset)
+
+  const newBlock: SduiDocumentBlock = {
+    id: newBlockId as SduiDocumentBlock['id'],
+    type: block.type,
+    ...(block.attributes ? { attributes: { ...block.attributes } } : {}),
+    ...(inline.mode === 'empty' ? {} : { state: toInlineStatePatch(inline.mode, right) }),
+  }
+
+  insertBlock(content, found.parent.id, found.index + 1, newBlock)
+
+  if (inline.mode !== 'empty') {
+    block.state = { ...(block.state ?? {}), ...toInlineStatePatch(inline.mode, left) }
+  }
+}
+
+function mergeBlock(content: SduiDocumentContent, blockId: string, intoBlockId: string): void {
+  if (blockId === intoBlockId) {
+    throw new InvalidBlockMergeError('Cannot merge a block into itself')
+  }
+
+  if (content.root.id === blockId) {
+    throw new InvalidBlockMergeError('Root block cannot be merged')
+  }
+
+  const block = findBlockById(content, blockId)
+  if (!block) {
+    throw new BlockNotFoundError(blockId)
+  }
+
+  const intoBlock = findBlockById(content, intoBlockId)
+  if (!intoBlock) {
+    throw new BlockNotFoundError(intoBlockId)
+  }
+
+  if (findBlock(block, intoBlockId)) {
+    throw new InvalidBlockMergeError('Cannot merge a block into its own descendant')
+  }
+
+  const blockInline = getBlockInline(block)
+  const intoInline = getBlockInline(intoBlock)
+
+  if (!(blockInline.mode === 'empty' && intoInline.mode === 'empty')) {
+    const resultMode = blockInline.mode === 'content' || intoInline.mode === 'content' ? 'content' : 'text'
+    const merged = mergeInlineContent(intoInline.content, blockInline.content)
+    intoBlock.state = { ...(intoBlock.state ?? {}), ...toInlineStatePatch(resultMode, merged) }
+  }
+
+  const found = findParent(content.root, blockId)
+  if (!found) {
+    throw new BlockNotFoundError(blockId)
+  }
+
+  const siblings = found.parent.children ?? []
+  found.parent.children = [
+    ...siblings.slice(0, found.index),
+    ...(block.children ?? []),
+    ...siblings.slice(found.index + 1),
+  ]
+}
+
 export function applyDocumentPatch(content: SduiDocumentContent, patch: SduiDocumentPatch): SduiDocumentContent {
   const next = cloneContent(content)
 
@@ -154,6 +292,12 @@ export function applyDocumentPatch(content: SduiDocumentContent, patch: SduiDocu
     case 'block.move':
       moveBlock(next, patch.blockId, patch.parentId, patch.index)
       return next
+    case 'block.split':
+      splitBlock(next, patch.blockId, patch.offset, patch.newBlockId)
+      return next
+    case 'block.merge':
+      mergeBlock(next, patch.blockId, patch.intoBlockId)
+      return next
     default:
       return next
   }
@@ -161,6 +305,154 @@ export function applyDocumentPatch(content: SduiDocumentContent, patch: SduiDocu
 
 export function applyDocumentPatches(content: SduiDocumentContent, patches: SduiDocumentPatch[]): SduiDocumentContent {
   return patches.reduce(applyDocumentPatch, content)
+}
+
+export type ApplyDocumentPatchResult = {
+  content: SduiDocumentContent
+  /** Patches that undo the applied patch when applied in array order. */
+  inverse: SduiDocumentPatch[]
+}
+
+function previousValuesOf(
+  current: Record<string, unknown> | undefined,
+  touched: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+  if (!touched) {
+    return undefined
+  }
+
+  return Object.keys(touched).reduce<Record<string, unknown>>(
+    (previous, key) => ({ ...previous, [key]: current?.[key] }),
+    {},
+  )
+}
+
+function computeInverse(content: SduiDocumentContent, patch: SduiDocumentPatch): SduiDocumentPatch[] {
+  switch (patch.type) {
+    case 'block.insert':
+      return [{ type: 'block.delete', blockId: patch.block.id }]
+
+    case 'block.delete': {
+      const found = findParent(content.root, patch.blockId)
+      const block = findBlockById(content, patch.blockId)
+      if (!found || !block) {
+        throw new BlockNotFoundError(patch.blockId)
+      }
+
+      return [
+        {
+          type: 'block.insert',
+          parentId: found.parent.id,
+          index: found.index,
+          block: createDocumentBlock(block),
+        },
+      ]
+    }
+
+    case 'block.update': {
+      const block = findBlockById(content, patch.blockId)
+      if (!block) {
+        throw new BlockNotFoundError(patch.blockId)
+      }
+
+      return [
+        {
+          type: 'block.update',
+          blockId: patch.blockId,
+          state: previousValuesOf(block.state, patch.state),
+          attributes: previousValuesOf(block.attributes, patch.attributes),
+        },
+      ]
+    }
+
+    case 'block.move': {
+      const found = findParent(content.root, patch.blockId)
+      if (!found) {
+        throw new BlockNotFoundError(patch.blockId)
+      }
+
+      return [
+        {
+          type: 'block.move',
+          blockId: patch.blockId,
+          parentId: found.parent.id,
+          index: found.index,
+        },
+      ]
+    }
+
+    case 'block.split':
+      return [{ type: 'block.merge', blockId: patch.newBlockId, intoBlockId: patch.blockId }]
+
+    case 'block.merge': {
+      const block = findBlockById(content, patch.blockId)
+      const intoBlock = findBlockById(content, patch.intoBlockId)
+      const found = findParent(content.root, patch.blockId)
+      if (!block || !found) {
+        throw new BlockNotFoundError(patch.blockId)
+      }
+
+      if (!intoBlock) {
+        throw new BlockNotFoundError(patch.intoBlockId)
+      }
+
+      // Restore the merge target's inline state, drop the promoted children,
+      // then re-insert the full pre-merge snapshot (children included).
+      const intoState = intoBlock.state
+      return [
+        {
+          type: 'block.update',
+          blockId: patch.intoBlockId,
+          state: { content: intoState?.content, text: intoState?.text },
+        },
+        ...(block.children ?? []).map((child): SduiDocumentPatch => ({ type: 'block.delete', blockId: child.id })),
+        {
+          type: 'block.insert',
+          parentId: found.parent.id,
+          index: found.index,
+          block: createDocumentBlock(block),
+        },
+      ]
+    }
+
+    case 'document.setTitle':
+      return []
+
+    default:
+      return []
+  }
+}
+
+/**
+ * Applies a patch and returns the inverse patches that undo it.
+ *
+ * @returns next content plus `inverse`, to be applied in array order for undo
+ *
+ * Policies:
+ * - the inverse is computed against the pre-patch content (snapshot semantics)
+ * - inverse of a patch sequence is each patch's inverse in reverse order
+ */
+export function applyDocumentPatchWithInverse(
+  content: SduiDocumentContent,
+  patch: SduiDocumentPatch,
+): ApplyDocumentPatchResult {
+  const inverse = computeInverse(content, patch)
+
+  return { content: applyDocumentPatch(content, patch), inverse }
+}
+
+export function applyDocumentPatchesWithInverse(
+  content: SduiDocumentContent,
+  patches: SduiDocumentPatch[],
+): ApplyDocumentPatchResult {
+  return patches.reduce<ApplyDocumentPatchResult>(
+    (acc, patch) => {
+      const result = applyDocumentPatchWithInverse(acc.content, patch)
+
+      return { content: result.content, inverse: [...result.inverse, ...acc.inverse] }
+    },
+    { content, inverse: [] },
+  )
 }
 
 export function applyPatchToDocument(document: SduiDocument, patch: SduiDocumentPatch): SduiDocument {
@@ -176,4 +468,25 @@ export function applyPatchToDocument(document: SduiDocument, patch: SduiDocument
 
 export function applyPatchesToDocument(document: SduiDocument, patches: SduiDocumentPatch[]): SduiDocument {
   return patches.reduce(applyPatchToDocument, document)
+}
+
+export type ApplyPatchToDocumentResult = {
+  document: SduiDocument
+  inverse: SduiDocumentPatch[]
+}
+
+export function applyPatchToDocumentWithInverse(
+  document: SduiDocument,
+  patch: SduiDocumentPatch,
+): ApplyPatchToDocumentResult {
+  if (patch.type === 'document.setTitle') {
+    return {
+      document: { ...document, title: patch.title },
+      inverse: [{ type: 'document.setTitle', title: document.title }],
+    }
+  }
+
+  const result = applyDocumentPatchWithInverse(document.content, patch)
+
+  return { document: { ...document, content: result.content }, inverse: result.inverse }
 }

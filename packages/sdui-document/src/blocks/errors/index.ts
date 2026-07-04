@@ -1,5 +1,7 @@
 export * from './BlockNotFoundError'
 export * from './DuplicateBlockIdError'
+export * from './InvalidBlockMergeError'
 export * from './InvalidBlockMoveError'
+export * from './InvalidBlockSplitError'
 export * from './ParentBlockNotFoundError'
 export * from './RootBlockCannotBeDeletedError'
