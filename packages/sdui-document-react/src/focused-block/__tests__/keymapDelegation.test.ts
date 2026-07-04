@@ -14,6 +14,11 @@ function createCallbacks(): jest.Mocked<FocusedBlockCallbacks> {
     onEscape: jest.fn(),
     onMoveBlock: jest.fn(),
     onBlockAction: jest.fn(),
+    onSlashMenuOpen: jest.fn(),
+    onSlashMenuQueryChange: jest.fn(),
+    onSlashMenuClose: jest.fn(),
+    isSlashMenuOpen: jest.fn(() => false),
+    onSlashMenuKey: jest.fn(() => false),
   }
 }
 
@@ -34,18 +39,24 @@ function pressChord(
   const base = createFocusedBlockEditorState(text.length > 0 ? [{ type: 'text', text }] : [], callbacks)
   const withCaret = base.apply(base.tr.setSelection(TextSelection.create(base.doc, offset)))
 
-  const keymapPlugin = withCaret.plugins.find((plugin) => {
-    const props = plugin.props as { handleKeyDown?: unknown }
-    return typeof props.handleKeyDown === 'function'
-  })
-  if (!keymapPlugin) {
-    throw new Error('keymap plugin not found')
-  }
-
-  const handleKeyDown = keymapPlugin.props.handleKeyDown as (
+  type KeyDownHandler = (
     view: { state: typeof withCaret; dispatch: (tr: unknown) => void; composing?: boolean },
     event: KeyboardEvent,
   ) => boolean
+
+  // Collect only the "owned" handler plugins: slashMenu (new) + delegation keymap.
+  // We do NOT include baseKeymap / history / mark keymaps — they are not the
+  // subject of this test suite and some of them fail in the mock-view environment.
+  const ownedPlugins = withCaret.plugins
+    .filter((plugin) => {
+      const props = plugin.props as { handleKeyDown?: unknown }
+      return typeof props.handleKeyDown === 'function'
+    })
+    .slice(0, 2) // slashMenuPlugin is [0], buildFocusedBlockKeymap is [1]
+
+  if (ownedPlugins.length === 0) {
+    throw new Error('no delegation plugin found')
+  }
 
   const event = {
     key,
@@ -56,7 +67,13 @@ function pressChord(
     preventDefault: () => undefined,
   } as unknown as KeyboardEvent
 
-  return handleKeyDown({ state: withCaret, dispatch: () => undefined, composing: false }, event)
+  const mockView = { state: withCaret, dispatch: () => undefined, composing: false }
+
+  // Try slashMenu first (returns false when closed), then delegation keymap.
+  return ownedPlugins.some((plugin) => {
+    const handleKeyDown = plugin.props.handleKeyDown as KeyDownHandler
+    return handleKeyDown(mockView, event)
+  })
 }
 
 type KeyName = 'Enter' | 'Backspace' | 'Tab' | 'Shift-Tab' | 'ArrowUp' | 'ArrowDown' | 'Escape'

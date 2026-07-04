@@ -14,6 +14,14 @@ function createProps(overrides?: Partial<FocusedBlockEditorProps>): FocusedBlock
     onOutdent: jest.fn(),
     onNavigate: jest.fn(),
     onTurnInto: jest.fn(),
+    onEscape: jest.fn(),
+    onMoveBlock: jest.fn(),
+    onBlockAction: jest.fn(),
+    onSlashMenuOpen: jest.fn(),
+    onSlashMenuQueryChange: jest.fn(),
+    onSlashMenuClose: jest.fn(),
+    isSlashMenuOpen: jest.fn(() => false),
+    onSlashMenuKey: jest.fn(() => false),
     ...overrides,
   }
 }

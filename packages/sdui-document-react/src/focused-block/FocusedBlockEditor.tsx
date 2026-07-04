@@ -187,6 +187,13 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
         retired.current = true
         latestProps.current.onEscape()
       },
+      // Slash menu callbacks — implemented by the block layer in Task 5.
+      // Here they are no-ops to satisfy the type; the plugin fires them via view.update.
+      onSlashMenuOpen: () => {},
+      onSlashMenuQueryChange: () => {},
+      onSlashMenuClose: () => {},
+      isSlashMenuOpen: () => false,
+      onSlashMenuKey: () => false,
     }
 
     const initialState = createFocusedBlockEditorState(content, callbacks)
