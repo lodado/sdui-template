@@ -71,6 +71,7 @@ export function marksEqual(a: SduiInlineMark[] = [], b: SduiInlineMark[] = []): 
       return false
     }
 
+    // TS cannot correlate mark.type with the registry entry; the registry map above guarantees the match.
     const markModule = markModuleByName[mark.type] as unknown as SduiMarkModule<SduiInlineMark>
     return markModule.equals(mark, other)
   })
