@@ -1,18 +1,7 @@
 import type { SduiInlineContent, SduiInlineMark, SduiInlineTextNode } from '@lodado/sdui-document'
 import React from 'react'
 
-const SAFE_LINK_PROTOCOLS = ['http:', 'https:', 'mailto:', 'tel:']
-
-function safeHref(href: string): string | undefined {
-  try {
-    // Relative hrefs resolve against the dummy https base and stay allowed.
-    const { protocol } = new URL(href, 'https://relative.invalid')
-
-    return SAFE_LINK_PROTOCOLS.includes(protocol) ? href : undefined
-  } catch {
-    return undefined
-  }
-}
+import { safeHref } from './safeHref'
 
 function wrapWithMark(element: React.ReactNode, mark: SduiInlineMark): React.ReactNode {
   switch (mark.type) {
@@ -21,11 +10,18 @@ function wrapWithMark(element: React.ReactNode, mark: SduiInlineMark): React.Rea
     case 'italic':
       return <em>{element}</em>
     case 'code':
-      return <code>{element}</code>
+      // Outline marks/Code.ts: <code class="inline">
+      return <code className="inline">{element}</code>
     case 'link': {
       const href = safeHref(mark.attrs.href)
 
-      return href ? <a href={href}>{element}</a> : <span>{element}</span>
+      return href ? (
+        <a href={href} rel="noopener noreferrer nofollow">
+          {element}
+        </a>
+      ) : (
+        <span>{element}</span>
+      )
     }
     default:
       return element

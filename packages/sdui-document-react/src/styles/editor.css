@@ -1,0 +1,410 @@
+/**
+ * Block editor chrome — design values ported verbatim from the Outline editor
+ * (github.com/outline/outline): shared/editor/components/Styles.ts and
+ * shared/styles/theme.ts. Structural selectors are scoped under
+ * [data-sdui-document-editor] so nothing leaks outside the editor container.
+ *
+ * Do not invent values here — every color/size/spacing traces back to Outline.
+ */
+
+:root,
+[data-theme='light'] {
+  /* base (Outline buildLightTheme) */
+  --sdui-doc-text: #111319;
+  --sdui-doc-text-secondary: #394351;
+  --sdui-doc-text-tertiary: #66778f;
+  --sdui-doc-background: #ffffff;
+  --sdui-doc-background-secondary: hsl(212 31% 90% / 1);
+  --sdui-doc-accent: #0366d6;
+  --sdui-doc-accent-text: #ffffff;
+  --sdui-doc-link: #0366d6;
+  --sdui-doc-quote: #dae1e9;
+  --sdui-doc-divider: #dae1e9;
+  --sdui-doc-hr: #e8ebed;
+
+  /* code (Outline code/codeBackground/codeBorder/codeKeyword) */
+  --sdui-doc-code: #2f3336;
+  --sdui-doc-code-background: #f4f7fa;
+  --sdui-doc-code-border: #e8ebed;
+  --sdui-doc-code-keyword: #00009f;
+
+  /* notice variants (Outline notice*Background/notice*Text) */
+  --sdui-doc-notice-info: #3633ff;
+  --sdui-doc-notice-tip: #f5be31;
+  --sdui-doc-notice-warning: #d73a49;
+  --sdui-doc-notice-success: #3ad984;
+  --sdui-doc-notice-text: #111319;
+
+  /* typography (Outline fontFamily/fontFamilyMono) */
+  --sdui-doc-font: -apple-system, BlinkMacSystemFont, Inter, 'Segoe UI', Roboto, Oxygen, sans-serif;
+  --sdui-doc-font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+
+  /* heading scale (Outline --font-size-h1..h4) */
+  --sdui-doc-font-size-h1: 28px;
+  --sdui-doc-font-size-h2: 22px;
+  --sdui-doc-font-size-h3: 18px;
+  --sdui-doc-font-size-h4: 16px;
+}
+
+[data-theme='dark'] {
+  /* base (Outline buildDarkTheme) */
+  --sdui-doc-text: #e6e6e6;
+  --sdui-doc-text-secondary: #78838f;
+  --sdui-doc-text-tertiary: #66778f;
+  --sdui-doc-background: #111319;
+  --sdui-doc-background-secondary: #1f232e;
+  --sdui-doc-accent: #0366d6;
+  --sdui-doc-accent-text: #ffffff;
+  --sdui-doc-link: #137ffb;
+  --sdui-doc-quote: #e6e6e6;
+  --sdui-doc-divider: #2b2f38;
+  --sdui-doc-hr: #2b2f38;
+
+  --sdui-doc-code: #e6e6e6;
+  --sdui-doc-code-background: #1d202a;
+  --sdui-doc-code-border: rgba(255, 255, 255, 0.1);
+  --sdui-doc-code-keyword: #569cd6;
+
+  --sdui-doc-notice-text: #ffffff;
+}
+
+/* ---------------------------------------------------------------- base */
+
+[data-sdui-document-editor] {
+  color: var(--sdui-doc-text);
+  font-family: var(--sdui-doc-font);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* the focused-block ProseMirror root inherits the wrapper typography.
+   Both the PM root and the static view are <span> (valid inside <p>/<h1>) —
+   display:block restores the row layout. */
+[data-sdui-document-editor] .ProseMirror,
+[data-sdui-document-editor] .sdui-doc-static {
+  display: block;
+  margin: 0;
+  outline: none;
+  white-space: pre-wrap;
+}
+
+/* ----------------------------------------------------------- paragraph */
+
+[data-sdui-document-editor] p {
+  margin: 0;
+  min-height: 1.6em;
+}
+
+/* ------------------------------------------------------------- heading */
+
+[data-sdui-document-editor] h1,
+[data-sdui-document-editor] h2,
+[data-sdui-document-editor] h3,
+[data-sdui-document-editor] h4 {
+  margin-top: 1em;
+  margin-bottom: 0.25em;
+  line-height: inherit;
+  font-weight: 600;
+  cursor: text;
+  clear: both;
+}
+
+[data-sdui-document-editor] h1 {
+  font-size: var(--sdui-doc-font-size-h1);
+}
+
+[data-sdui-document-editor] h2 {
+  font-size: var(--sdui-doc-font-size-h2);
+}
+
+[data-sdui-document-editor] h3 {
+  font-size: var(--sdui-doc-font-size-h3);
+}
+
+[data-sdui-document-editor] h4 {
+  font-size: var(--sdui-doc-font-size-h4);
+}
+
+/* ----------------------------------------------------------- checklist */
+
+[data-sdui-document-editor] [data-type='checkbox_item'] {
+  display: flex;
+  list-style: none;
+}
+
+[data-sdui-document-editor] [data-type='checkbox_item'].checked .content {
+  color: var(--sdui-doc-text-tertiary);
+}
+
+[data-sdui-document-editor] [data-type='checkbox_item'] > .content {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+[data-sdui-document-editor] .checkbox {
+  display: inline-block;
+  cursor: pointer;
+  pointer-events: initial;
+  width: 14px;
+  height: 14px;
+  position: relative;
+  top: 4px;
+  transition: transform 100ms ease-in-out;
+  opacity: 0.8;
+  margin: 0 0.5em 0 0;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+
+[data-sdui-document-editor] .checkbox[aria-checked='true'] {
+  opacity: 1;
+}
+
+[data-sdui-document-editor] .checkbox:active {
+  transform: scale(0.9);
+}
+
+[data-sdui-document-editor] .checkbox svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+  overflow: visible;
+}
+
+[data-sdui-document-editor] .checkbox-box {
+  fill: var(--sdui-doc-accent);
+  fill-opacity: 0;
+  stroke: var(--sdui-doc-text);
+  stroke-width: 2;
+  transition:
+    fill-opacity 100ms ease-in-out,
+    stroke 100ms ease-in-out;
+}
+
+[data-sdui-document-editor] .checkbox-tick {
+  fill: none;
+  stroke: var(--sdui-doc-accent-text);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 14;
+  stroke-dashoffset: 14;
+  transition: stroke-dashoffset 200ms ease-in-out;
+}
+
+[data-sdui-document-editor] .checkbox[aria-checked='true'] .checkbox-box {
+  fill-opacity: 1;
+  stroke: var(--sdui-doc-accent);
+}
+
+[data-sdui-document-editor] .checkbox[aria-checked='true'] .checkbox-tick {
+  stroke-dashoffset: 0;
+}
+
+/* ------------------------------------------------------ callout/notice */
+
+[data-sdui-document-editor] .notice-block {
+  display: flex;
+  align-items: center;
+  background: color-mix(in srgb, var(--sdui-doc-notice-info) 10%, transparent);
+  border-left: 4px solid var(--sdui-doc-notice-info);
+  color: var(--sdui-doc-notice-text);
+  border-radius: 4px;
+  padding: 8px 10px 8px 8px;
+  margin: 8px 0;
+}
+
+[data-sdui-document-editor] .notice-block .content {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+[data-sdui-document-editor] .notice-block .icon {
+  width: 24px;
+  height: 24px;
+  align-self: flex-start;
+  margin-right: 4px;
+  color: var(--sdui-doc-notice-info);
+}
+
+[data-sdui-document-editor] .notice-block.tip {
+  background: color-mix(in srgb, var(--sdui-doc-notice-tip) 10%, transparent);
+  border-left: 4px solid var(--sdui-doc-notice-tip);
+}
+
+[data-sdui-document-editor] .notice-block.tip .icon {
+  color: var(--sdui-doc-notice-tip);
+}
+
+[data-sdui-document-editor] .notice-block.warning {
+  background: color-mix(in srgb, var(--sdui-doc-notice-warning) 10%, transparent);
+  border-left: 4px solid var(--sdui-doc-notice-warning);
+}
+
+[data-sdui-document-editor] .notice-block.warning .icon {
+  color: var(--sdui-doc-notice-warning);
+}
+
+[data-sdui-document-editor] .notice-block.success {
+  background: color-mix(in srgb, var(--sdui-doc-notice-success) 10%, transparent);
+  border-left: 4px solid var(--sdui-doc-notice-success);
+}
+
+[data-sdui-document-editor] .notice-block.success .icon {
+  color: var(--sdui-doc-notice-success);
+}
+
+/* -------------------------------------------------------------- divider */
+
+[data-sdui-document-editor] hr {
+  position: relative;
+  height: 1em;
+  border: 0;
+  clear: both;
+  margin: 0;
+  width: 100%;
+}
+
+[data-sdui-document-editor] hr::before {
+  content: '';
+  display: block;
+  position: absolute;
+  border-top: 1px solid var(--sdui-doc-hr);
+  top: 0.5em;
+  left: 0;
+  right: 0;
+}
+
+[data-sdui-document-editor] hr.page-break {
+  page-break-after: always;
+}
+
+[data-sdui-document-editor] hr.page-break::before {
+  border-top: 1px dashed var(--sdui-doc-hr);
+}
+
+/* ---------------------------------------------------------------- image */
+
+[data-sdui-document-editor] .image {
+  line-height: 0;
+  text-align: center;
+  max-width: 100%;
+  clear: both;
+  position: relative;
+}
+
+[data-sdui-document-editor] .image img {
+  display: inline-block;
+  max-width: 100%;
+}
+
+[data-sdui-document-editor] .caption {
+  border: 0;
+  display: block;
+  font-style: italic;
+  font-weight: normal;
+  font-size: 13px;
+  color: var(--sdui-doc-text-secondary);
+  padding: 8px 0 4px;
+  line-height: 16px;
+  text-align: center;
+  min-height: 1em;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ----------------------------------------------------- file/attachment */
+
+[data-sdui-document-editor] .attachment {
+  display: block;
+  color: var(--sdui-doc-text);
+  box-shadow: 0 0 0 1px var(--sdui-doc-divider);
+  white-space: nowrap;
+  border-radius: 8px;
+  padding: 6px 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* -------------------------------------------------------- link/bookmark */
+
+[data-sdui-document-editor] .embed {
+  display: block;
+  color: var(--sdui-doc-link);
+  border: 1px solid var(--sdui-doc-divider);
+  border-radius: 8px;
+  padding: 6px 8px;
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------- inline marks */
+
+[data-sdui-document-editor] code.inline {
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  border-radius: 4px;
+  border: 1px solid var(--sdui-doc-code-border);
+  background: var(--sdui-doc-code-background);
+  padding: 3px 4px;
+  font-family: var(--sdui-doc-font-mono);
+  font-size: 90%;
+  color: var(--sdui-doc-code-keyword);
+}
+
+[data-sdui-document-editor] p a,
+[data-sdui-document-editor] .heading-content a {
+  color: var(--sdui-doc-text);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--sdui-doc-text) 50%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.15em;
+  font-weight: 500;
+}
+
+[data-sdui-document-editor] .heading-content a {
+  font-weight: inherit;
+}
+
+[data-sdui-document-editor] p a:hover,
+[data-sdui-document-editor] .heading-content a:hover {
+  text-decoration-color: var(--sdui-doc-text);
+}
+
+/* ------------------------------------------------- selection/drag chrome */
+
+[data-sdui-document-editor] [data-selected='true'] {
+  outline: 2px solid var(--sdui-doc-accent);
+  border-radius: 4px;
+}
+
+[data-sdui-document-editor] [data-drag-handle] {
+  width: 24px;
+  height: 24px;
+  color: var(--sdui-doc-text-secondary);
+  background: none;
+  border: 0;
+  padding: 0;
+  border-radius: 4px;
+  transition:
+    color 150ms cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    opacity 150ms ease-in-out;
+}
+
+[data-sdui-document-editor] [data-drag-handle]:hover,
+[data-sdui-document-editor] [data-drag-handle]:focus {
+  cursor: pointer;
+  color: var(--sdui-doc-text);
+  background: var(--sdui-doc-background-secondary);
+}
+
+[data-sdui-document-editor] [data-drop-indicator] {
+  background: var(--sdui-doc-accent);
+}

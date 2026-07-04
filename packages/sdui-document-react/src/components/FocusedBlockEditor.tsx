@@ -52,7 +52,7 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
   // onCommit is intentionally not destructured: it is only reached through
   // latestProps so late prop swaps still land (react/no-unused-prop-types).
   const { content, autoFocus, className } = props
-  const containerRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLSpanElement>(null)
   const latestProps = useRef(props)
   latestProps.current = props
 
@@ -113,19 +113,24 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
       initialState.tr.setSelection(TextSelection.create(initialState.doc, caret)),
     )
 
-    const view = new EditorView(container, {
-      state: stateWithCaret,
-      dispatchTransaction: (transaction) => {
-        view.updateState(view.state.apply(transaction))
-      },
-      handleDOMEvents: {
-        blur: () => {
-          commitNow()
+    // `mount` makes the span itself the contenteditable root — the editor adds
+    // no extra <div>, so the chrome wrapper (<p>/<h1>…) keeps valid nesting.
+    const view = new EditorView(
+      { mount: container },
+      {
+        state: stateWithCaret,
+        dispatchTransaction: (transaction) => {
+          view.updateState(view.state.apply(transaction))
+        },
+        handleDOMEvents: {
+          blur: () => {
+            commitNow()
 
-          return false
+            return false
+          },
         },
       },
-    })
+    )
     viewRef.current = view
 
     view.focus()
@@ -142,5 +147,5 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  return <div ref={containerRef} className={className} data-testid="focused-block-editor" />
+  return <span ref={containerRef} className={className} data-testid="focused-block-editor" />
 }
