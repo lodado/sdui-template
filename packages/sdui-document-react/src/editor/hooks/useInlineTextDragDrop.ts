@@ -131,7 +131,13 @@ export function useInlineTextDragDrop(input: UseInlineTextDragDropInput): void {
       // Deferred so the browser fully starts the drag before the focused PM
       // editor unmounts (its unmount commit persists any typed text; the drag
       // itself survives source DOM replacement per the HTML5 drag model).
-      setTimeout(() => latest.current.onDragStart?.(), 0)
+      // Skipped when the drag already ended — a late focus-clear would undo
+      // the drop's own focus.
+      setTimeout(() => {
+        if (sessionRef.current) {
+          latest.current.onDragStart?.()
+        }
+      }, 0)
     }
 
     const handleDragOver = (event: DragEvent) => {

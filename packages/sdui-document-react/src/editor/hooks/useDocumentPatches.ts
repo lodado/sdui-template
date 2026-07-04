@@ -53,7 +53,7 @@ export function useDocumentPatches({
     const first = applyDocumentPatchesWithInverse(docRef.current, patches)
     let next = first.content
     let applied = patches
-    let inverse = first.inverse
+    let { inverse } = first
 
     // Restore the invariant in the SAME batch — consumers and the undo stack
     // always observe a document that already ends in a text block, and one

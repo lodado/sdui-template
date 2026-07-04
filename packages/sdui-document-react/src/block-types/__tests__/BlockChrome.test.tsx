@@ -204,4 +204,26 @@ describe('BlockChrome', () => {
       })
     })
   })
+
+  describe('as is: natively draggable elements inside the editor (img, a)', () => {
+    it('to be: image is not draggable (native image drag competes with text drag)', () => {
+      const { container } = render(
+        <BlockChrome block={block('document.image', { src: 'https://example.com/x.png', alt: 'x' })} />,
+      )
+
+      expect(container.querySelector('img')).toHaveAttribute('draggable', 'false')
+    })
+
+    it('to be: file attachment anchor is not draggable', () => {
+      render(<BlockChrome block={block('document.file', { url: 'https://example.com/f.pdf', name: 'f.pdf' })} />)
+
+      expect(screen.getByText('f.pdf')).toHaveAttribute('draggable', 'false')
+    })
+
+    it('to be: link embed anchor is not draggable', () => {
+      render(<BlockChrome block={block('document.link', { url: 'https://example.com' }, 'Example')} />)
+
+      expect(screen.getByText('Example')).toHaveAttribute('draggable', 'false')
+    })
+  })
 })
