@@ -28,6 +28,33 @@ type NestedBlockDragDropOptions = {
  * DOM mutation (positionDropIndicatorOverlay). Zero re-renders per drag frame;
  * React is only involved again at drop time (one patch → one doc update).
  */
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max)
+}
+
+/**
+ * Vertical pointer position within the over row: 0 = top edge, 1 = bottom.
+ *
+ * dnd-kit does not expose live pointer coordinates on move/end events, so the
+ * current position is reconstructed as activator position + accumulated delta.
+ *
+ * @returns undefined when it cannot be measured (no over target, keyboard
+ *          activation, zero-height rect) — the projection then falls back to
+ *          the legacy after-only behavior.
+ */
+export function resolveOverRatio(event: DragMoveEvent | DragEndEvent): number | undefined {
+  const { over, activatorEvent, delta } = event
+  const clientY = (activatorEvent as { clientY?: unknown } | null)?.clientY
+
+  if (!over || typeof clientY !== 'number' || over.rect.height <= 0) {
+    return undefined
+  }
+
+  const pointerY = clientY + delta.y
+
+  return clamp((pointerY - over.rect.top) / over.rect.height, 0, 1)
+}
+
 export function useNestedBlockDragDrop({
   docRef,
   indentWidth,
@@ -47,6 +74,7 @@ export function useNestedBlockDragDrop({
       overId: String(event.over.id),
       offsetX: event.delta.x,
       indentWidth,
+      overRatio: resolveOverRatio(event),
     })
   }
 
@@ -80,6 +108,7 @@ export function useNestedBlockDragDrop({
       overId: String(event.over.id),
       offsetX: event.delta.x,
       indentWidth,
+      overRatio: resolveOverRatio(event),
     })
     if (patch) {
       applyPatches([patch])

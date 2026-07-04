@@ -47,10 +47,6 @@ export function flattenDocumentBlocks(content: SduiDocumentContent): FlattenedDo
   return flattenBlock(content.root, undefined, 0, 0)
 }
 
-function childCount(block?: SduiDocumentBlock): number {
-  return block?.children?.length ?? 0
-}
-
 export function isBlockDragDisabled(input: IsBlockDragDisabledInput): boolean {
   return input.dragDropEnabled === false || input.blockId === input.rootId
 }
@@ -78,11 +74,13 @@ export function createNestedBlockMovePatch(
   }
 
   if (position === 'inside') {
+    // First-child slot: the drop indicator paints its line immediately below
+    // the over row, so the block must land there — not after existing children.
     return {
       type: 'block.move',
       blockId: createBlockId(activeId),
       parentId: createBlockId(overId),
-      index: childCount(overBlock),
+      index: 0,
     }
   }
 

@@ -120,7 +120,7 @@ describe('nested drag scenario (complex 4-depth fixture)', () => {
 
   describe('as is: b-1 dragged onto a-1 whose next visible item is deeper (BVA: minDepth = maxDepth = 3)', () => {
     describe('when offsetX = 0 (clamp forces the single legal depth)', () => {
-      it('to be: b-1 appended as the last child of a-1 regardless of pointer offset', () => {
+      it('to be: b-1 inserted as the FIRST child of a-1 — the slot the indicator line points at', () => {
         const content = createNestedFixture()
 
         const patch = createProjectedBlockMovePatch({
@@ -131,10 +131,10 @@ describe('nested drag scenario (complex 4-depth fixture)', () => {
           indentWidth: INDENT_WIDTH,
         })
 
-        expect(patch).toEqual({ type: 'block.move', blockId: 'b-1', parentId: 'a-1', index: 2 })
+        expect(patch).toEqual({ type: 'block.move', blockId: 'b-1', parentId: 'a-1', index: 0 })
 
         const next = applyDocumentPatches(content, [patch!])
-        expect(childIdsOf(next, 'a-1')).toEqual(['a-1-1', 'a-1-2', 'b-1'])
+        expect(childIdsOf(next, 'a-1')).toEqual(['b-1', 'a-1-1', 'a-1-2'])
         expect(childIdsOf(next, 'section-b')).toEqual([])
       })
     })

@@ -46,7 +46,7 @@ describe('createProjectedBlockMovePatch', () => {
 
   describe('as is: projection resolving to inside (BVA: offsetX = indentWidth)', () => {
     describe('when the patch is created', () => {
-      it('to be: block.move appending as the last child of the over block', () => {
+      it('to be: block.move inserting as the first child of the over block', () => {
         expect(
           createProjectedBlockMovePatch({
             content: createContent(),
@@ -56,6 +56,38 @@ describe('createProjectedBlockMovePatch', () => {
             indentWidth: INDENT_WIDTH,
           }),
         ).toEqual({ type: 'block.move', blockId: 'c', parentId: 'b', index: 0 })
+      })
+    })
+  })
+
+  describe('as is: hover-nest via overRatio middle zone (EP: drop onto a block body)', () => {
+    describe('when c is dropped onto the middle of a (a has children a1, a2)', () => {
+      it('to be: c becomes the FIRST child of a — matching the indicator line right below the a row', () => {
+        expect(
+          createProjectedBlockMovePatch({
+            content: createContent(),
+            activeId: 'c',
+            overId: 'a',
+            offsetX: 0,
+            indentWidth: INDENT_WIDTH,
+            overRatio: 0.5,
+          }),
+        ).toEqual({ type: 'block.move', blockId: 'c', parentId: 'a', index: 0 })
+      })
+    })
+
+    describe('when c is dropped onto the top zone of b (BVA: overRatio 0.1)', () => {
+      it("to be: c inserted before b in b's parent", () => {
+        expect(
+          createProjectedBlockMovePatch({
+            content: createContent(),
+            activeId: 'c',
+            overId: 'b',
+            offsetX: 0,
+            indentWidth: INDENT_WIDTH,
+            overRatio: 0.1,
+          }),
+        ).toEqual({ type: 'block.move', blockId: 'c', parentId: 'root', index: 1 })
       })
     })
   })

@@ -48,11 +48,11 @@ export function positionDropIndicatorOverlay(
   const rowRect = rowContent.getBoundingClientRect()
   const rowDepth = Number(row.dataset.depth ?? '1')
   const indent = (projected.depth - rowDepth) * indentWidth
+  // 'before' slots sit above the row; everything else ('after'/'inside') below
+  const lineY = projected.position === 'before' ? rowRect.top : rowRect.bottom
 
   overlay.style.display = 'block'
-  overlay.style.transform = `translate(${rowRect.left - containerRect.left + indent}px, ${
-    rowRect.bottom - containerRect.top
-  }px)`
+  overlay.style.transform = `translate(${rowRect.left - containerRect.left + indent}px, ${lineY - containerRect.top}px)`
   overlay.style.width = `${Math.max(rowRect.width - indent, indentWidth)}px`
   overlay.setAttribute('data-drop-position', projected.position)
 }

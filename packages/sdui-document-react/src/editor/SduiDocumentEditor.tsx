@@ -1,4 +1,14 @@
-import { DndContext, PointerSensor, useDraggable, useDroppable, useSensor, useSensors } from '@dnd-kit/core'
+import type { CollisionDetection } from '@dnd-kit/core'
+import {
+  DndContext,
+  PointerSensor,
+  pointerWithin,
+  rectIntersection,
+  useDraggable,
+  useDroppable,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
 import type {
   BlockSelectionState,
   SduiDocumentBlock,
@@ -35,6 +45,15 @@ export const DRAG_INDENT_WIDTH = 24
 // memoized row to re-render on any container render.
 // distance constraint keeps plain clicks (selection) distinct from drags.
 const POINTER_SENSOR_OPTIONS = { activationConstraint: { distance: 4 } }
+
+// The pointer decides the drop row (vertical zones need the exact row under
+// the cursor); rect intersection only as a fallback when the pointer is
+// between rows (e.g. heading margins).
+const collisionDetection: CollisionDetection = (args) => {
+  const pointerCollisions = pointerWithin(args)
+
+  return pointerCollisions.length > 0 ? pointerCollisions : rectIntersection(args)
+}
 
 const NON_TEXT_BLOCK_TYPES = new Set([
   'document.root',
@@ -163,9 +182,11 @@ const BlockNode = React.memo(({ block, depth, readOnly }: BlockNodeProps) => {
   )
 
   return (
-    <div ref={setDropRef} data-block-id={block.id} data-depth={depth} data-selected={isSelected || undefined}>
+    <div data-block-id={block.id} data-depth={depth} data-selected={isSelected || undefined}>
       {/* row layout (flex + vertical centering + Notion block height) lives in editor.css */}
-      <div data-block-row>
+      {/* the ROW is the droppable — not the subtree wrapper — so the drop
+          projection's vertical zones are measured against this row only */}
+      <div ref={setDropRef} data-block-row>
         {!readOnly && (
           <button
             type="button"
@@ -453,6 +474,7 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     <EditorRuntimeContext.Provider value={runtime}>
       <DndContext
         sensors={sensors}
+        collisionDetection={collisionDetection}
         onDragStart={handleDragStart}
         onDragMove={handleDragMove}
         onDragEnd={handleDragEnd}
