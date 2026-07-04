@@ -4,7 +4,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 
-import { BlockChrome } from '../components/BlockChrome'
+import { BlockChrome } from '../BlockChrome'
 
 function block(type: string, attributes?: Record<string, unknown>, text?: string): SduiDocumentBlock {
   return createDocumentBlock({

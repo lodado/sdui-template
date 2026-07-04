@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react'
 import React from 'react'
 
-import type { FocusedBlockEditorProps } from '../../components/FocusedBlockEditor'
-import { FocusedBlockEditor } from '../../components/FocusedBlockEditor'
+import type { FocusedBlockEditorProps } from '../FocusedBlockEditor'
+import { FocusedBlockEditor } from '../FocusedBlockEditor'
 
 function createProps(overrides?: Partial<FocusedBlockEditorProps>): FocusedBlockEditorProps {
   return {

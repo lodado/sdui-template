@@ -19,12 +19,12 @@ import {
 } from '@lodado/sdui-document'
 import React, { useRef, useState } from 'react'
 
-import { useDocumentPatches } from '../blocks/code/useDocumentPatches'
-import { useNestedBlockDragDrop } from '../blocks/code/useNestedBlockDragDrop'
-import { BlockChrome } from './BlockChrome'
-import type { FocusedBlockCommit } from './FocusedBlockEditor'
-import { FocusedBlockEditor } from './FocusedBlockEditor'
-import { InlineContentView } from './InlineContentView'
+import { BlockChrome } from '../block-types/BlockChrome'
+import type { FocusedBlockCommit } from '../focused-block/FocusedBlockEditor'
+import { FocusedBlockEditor } from '../focused-block/FocusedBlockEditor'
+import { InlineContentView } from '../inline/InlineContentView'
+import { useDocumentPatches } from './hooks/useDocumentPatches'
+import { useNestedBlockDragDrop } from './hooks/useNestedBlockDragDrop'
 
 /** Pixel width of one indentation level for drag depth projection. */
 export const DRAG_INDENT_WIDTH = 24
