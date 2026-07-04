@@ -1790,6 +1790,52 @@ selection-toolbar/
 
 ---
 
+## Phase 23. DnD 드랍 위치 수정 — 수직 zone + hover 중첩
+
+유저 버그 리포트: "드랍하면 그 위치가 아니라 바로 밑에 놓임 (children이 아니라
+sibling으로)". 원인 2가지:
+
+1. 프로젝션이 수직 포인터 위치를 전혀 안 봄 — 드랍 슬롯이 항상 "over row 아래"
+   (`'before'`는 타입에만 존재, 어디서도 반환 안 됨). 블록 위쪽에 놓아도 아래 착지.
+2. 중첩 depth가 **드래그 시작점 대비 delta.x**로 결정 — 왼쪽 핸들을 잡고 타겟
+   row 중앙에 놓으면 delta.x ≈ +260px → "+10 depth"로 읽혀 clamp가 임의로
+   inside/sibling을 결정. 이동 거리가 의도로 오염되는 구조적 결함
+   (E2E로 재현: bottom-edge 드랍이 inside로 착지).
+
+### 설계 (pointer 기반 3-zone)
+
+- `projectNestedBlockDrop`에 `overRatio` 입력 추가 (over row 내 수직 위치 0~1):
+  - `< 0.25` → **before** (over 위 sibling)
+  - `0.25 ~ 0.75` → **inside** (over의 child로 중첩 — 유저가 기대한 hover-nest)
+  - `> 0.75` → **after** (over.depth 기준; next row가 over의 child면 minDepth
+    클램프로 첫 child 슬롯 강제 — 트리 정합성 유지)
+- **overRatio 경로에서는 delta.x 완전 무시**. 레거시 경로(ratio 미제공)는 기존
+  dnd-kit sortable-tree 관례(active.depth + delta.x) 유지 — API 하위호환.
+- `'inside'` 패치 index: `childCount`(마지막) → **0(첫 child)** — 인디케이터
+  라인이 가리키는 슬롯(부모 row 바로 밑)과 착지 지점 일치.
+- React: droppable을 subtree 래퍼에서 **row div로 이동** + `pointerWithin`
+  우선 충돌 감지(rectIntersection 폴백) → zone 계산이 row rect 기준으로 정확.
+- `resolveOverRatio(event)`: dnd-kit이 라이브 포인터 좌표를 안 주므로
+  activatorEvent.clientY + delta.y로 복원. 측정 불가(키보드 활성화, zero-height)
+  → undefined → 레거시 경로.
+- 인디케이터: `'before'`면 row top에 라인 (기존은 항상 bottom).
+
+### 구현 기록 (2026-07-04)
+
+- sdui-document: `dropProjection.ts` (zone + DROP_BEFORE_RATIO/DROP_AFTER_RATIO
+  상수), `dragHelpers.ts` (inside index 0). 테스트 221개.
+- sdui-document-react: `useNestedBlockDragDrop.ts` (`resolveOverRatio` export),
+  `SduiDocumentEditor.tsx` (row droppable + collisionDetection),
+  `dropIndicatorOverlay.ts` (before → top). 테스트 115개.
+- E2E 4개 추가 (`Block drag and drop`): 중앙 드랍 → child 중첩 / 위쪽 가장자리
+  → 위 sibling / 아래쪽 가장자리 → 아래 sibling / child 있는 부모 중앙 → 첫
+  child 슬롯. chromium 16/16.
+- 알려진 한계: 문서 맨 끝에서 깊은 subtree 뒤 얕은 depth로 드랍하는 슬롯은
+  현재 도달 불가(다음 블록의 top zone으로 대체 가능한 경우가 대부분).
+  필요 시 라인 위 수평 위치로 depth 선택(Notion식)을 후속 phase로.
+
+---
+
 ## 7. 테스트 전략
 
 ### 7.1 Unit tests

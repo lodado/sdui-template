@@ -11,7 +11,17 @@ export type ProjectNestedBlockDropInput = {
   offsetX: number
   /** Pixel width of one indentation level. */
   indentWidth: number
+  /**
+   * Vertical pointer position within the over row (0 = top edge, 1 = bottom).
+   * Omitted → legacy behavior (drop slot is always after the over row).
+   */
+  overRatio?: number
 }
+
+/** overRatio below this → insert before the over row (top edge zone). */
+export const DROP_BEFORE_RATIO = 0.25
+/** overRatio above this → the after/horizontal-depth logic (bottom edge zone). */
+export const DROP_AFTER_RATIO = 0.75
 
 export type ProjectedNestedBlockDrop = {
   overId: string
@@ -55,8 +65,14 @@ function ancestorAtDepth(
  * Projects a pointer position onto a concrete drop slot for nested block DnD
  * (dnd-kit nested-sortable pattern).
  *
- * The drop slot is "immediately after `overId`"; the horizontal offset picks
- * the depth within [minDepth, maxDepth] where
+ * Vertical zones (when `overRatio` is provided):
+ * - top zone (< DROP_BEFORE_RATIO)  → before the over row, at its depth
+ * - middle zone                     → inside the over row (nest as first child)
+ * - bottom zone (> DROP_AFTER_RATIO) → the horizontal-depth logic below
+ *
+ * In the bottom zone (and for legacy callers without overRatio) the drop slot
+ * is "immediately after `overId`"; the horizontal offset picks the depth
+ * within [minDepth, maxDepth] where
  * - maxDepth = over item's depth + 1 (become its child)
  * - minDepth = the next visible item's depth (keep the tree well-formed)
  *
@@ -65,7 +81,7 @@ function ancestorAtDepth(
  *          or anything inside the dragged subtree)
  */
 export function projectNestedBlockDrop(input: ProjectNestedBlockDropInput): ProjectedNestedBlockDrop | null {
-  const { content, activeId, overId, offsetX, indentWidth } = input
+  const { content, activeId, overId, offsetX, indentWidth, overRatio } = input
 
   if (overId === content.root.id || overId === activeId) {
     return null
@@ -91,9 +107,27 @@ export function projectNestedBlockDrop(input: ProjectNestedBlockDropInput): Proj
   const previous = visibleItems[overIndex]
   const next = visibleItems[overIndex + 1]
 
+  if (overRatio !== undefined) {
+    if (overRatio < DROP_BEFORE_RATIO) {
+      return { overId: previous.id, position: 'before', depth: previous.depth }
+    }
+
+    if (overRatio <= DROP_AFTER_RATIO) {
+      return { overId: previous.id, position: 'inside', depth: previous.depth + 1 }
+    }
+  }
+
   const maxDepth = previous.depth + 1
   const minDepth = next ? next.depth : 1
-  const projectedDepth = clamp(active.depth + Math.round(offsetX / indentWidth), minDepth, maxDepth)
+  // Pointer-driven drops (overRatio present) must ignore the horizontal drag
+  // delta: it measures travel from the grab point to the target, not intent —
+  // grabbing a handle on the left and dropping mid-row would read as "+10
+  // levels". The bottom zone targets the over row's own depth; the clamp only
+  // bends it to keep the tree well-formed (e.g. first-child slot when the
+  // next row is the over row's child). Legacy callers keep the dnd-kit
+  // sortable-tree convention (depth = active depth + horizontal delta).
+  const desiredDepth = overRatio === undefined ? active.depth + Math.round(offsetX / indentWidth) : previous.depth
+  const projectedDepth = clamp(desiredDepth, minDepth, maxDepth)
 
   if (projectedDepth === previous.depth + 1) {
     return { overId: previous.id, position: 'inside', depth: projectedDepth }

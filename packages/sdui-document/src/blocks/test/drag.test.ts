@@ -5,7 +5,7 @@ import {
   flattenDocumentBlocks,
   isBlockDragDisabled,
   type SduiDocumentContent,
-} from '../../index';
+} from '../../index'
 
 function createContent(): SduiDocumentContent {
   return {
@@ -27,7 +27,7 @@ function createContent(): SduiDocumentContent {
         createDocumentBlock({ id: 'c', type: 'document.paragraph', state: { text: 'C' } }),
       ],
     }),
-  };
+  }
 }
 
 describe('nested block drag helpers', () => {
@@ -39,8 +39,8 @@ describe('nested block drag helpers', () => {
       { id: 'b1', parentId: 'b', depth: 2, index: 0 },
       { id: 'b2', parentId: 'b', depth: 2, index: 1 },
       { id: 'c', parentId: 'root', depth: 1, index: 2 },
-    ]);
-  });
+    ])
+  })
 
   it('creates a move patch for dropping before a nested block', () => {
     const patch = createNestedBlockMovePatch({
@@ -48,24 +48,24 @@ describe('nested block drag helpers', () => {
       activeId: 'c',
       overId: 'b2',
       position: 'before',
-    });
+    })
 
-    expect(patch).toEqual({ type: 'block.move', blockId: 'c', parentId: 'b', index: 1 });
-  });
+    expect(patch).toEqual({ type: 'block.move', blockId: 'c', parentId: 'b', index: 1 })
+  })
 
-  it('creates a move patch for dropping inside a block', () => {
+  it('creates a move patch for dropping inside a block (first-child slot, where the indicator points)', () => {
     const patch = createNestedBlockMovePatch({
       content: createContent(),
       activeId: 'a',
       overId: 'b',
       position: 'inside',
-    });
+    })
 
-    const moved = applyDocumentPatch(createContent(), patch);
+    const moved = applyDocumentPatch(createContent(), patch)
 
-    expect(moved.root.children?.map((block) => block.id)).toEqual(['b', 'c']);
-    expect(moved.root.children?.[0].children?.map((block) => block.id)).toEqual(['b1', 'b2', 'a']);
-  });
+    expect(moved.root.children?.map((block) => block.id)).toEqual(['b', 'c'])
+    expect(moved.root.children?.[0].children?.map((block) => block.id)).toEqual(['a', 'b1', 'b2'])
+  })
 
   it('adjusts same-parent after drops when source was before target', () => {
     const patch = createNestedBlockMovePatch({
@@ -73,14 +73,14 @@ describe('nested block drag helpers', () => {
       activeId: 'b1',
       overId: 'b2',
       position: 'after',
-    });
+    })
 
-    expect(patch).toEqual({ type: 'block.move', blockId: 'b1', parentId: 'b', index: 1 });
-  });
+    expect(patch).toEqual({ type: 'block.move', blockId: 'b1', parentId: 'b', index: 1 })
+  })
 
   it('rejects root dragging and disabled drag options', () => {
-    expect(isBlockDragDisabled({ blockId: 'root', rootId: 'root', dragDropEnabled: true })).toBe(true);
-    expect(isBlockDragDisabled({ blockId: 'a', rootId: 'root', dragDropEnabled: false })).toBe(true);
-    expect(isBlockDragDisabled({ blockId: 'a', rootId: 'root', dragDropEnabled: true })).toBe(false);
-  });
-});
+    expect(isBlockDragDisabled({ blockId: 'root', rootId: 'root', dragDropEnabled: true })).toBe(true)
+    expect(isBlockDragDisabled({ blockId: 'a', rootId: 'root', dragDropEnabled: false })).toBe(true)
+    expect(isBlockDragDisabled({ blockId: 'a', rootId: 'root', dragDropEnabled: true })).toBe(false)
+  })
+})

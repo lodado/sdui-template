@@ -142,6 +142,74 @@ test.describe('Selection formatting toolbar', () => {
   })
 })
 
+test.describe('Block drag and drop', () => {
+  /**
+   * Drags a block's handle onto a vertical position within the target row.
+   * ratio 0..1 maps to the row's top..bottom edge (0.5 = middle → nest,
+   * 0.1 = top zone → before, 0.9 = bottom zone → after).
+   */
+  async function dragBlockOnto(page: Page, blockId: string, targetId: string, ratio: number) {
+    const handle = page.getByRole('button', { name: `Drag block ${blockId}` })
+    const targetRow = page.locator(`[data-block-id="${targetId}"] [data-block-row]`).first()
+    const handleBox = await handle.boundingBox()
+    const targetBox = await targetRow.boundingBox()
+    if (!handleBox || !targetBox) {
+      throw new Error('drag geometry unavailable')
+    }
+
+    await page.mouse.move(handleBox.x + handleBox.width / 2, handleBox.y + handleBox.height / 2)
+    await page.mouse.down()
+    // exceed the 4px activation distance before aiming at the target
+    await page.mouse.move(handleBox.x + handleBox.width / 2 + 8, handleBox.y + handleBox.height / 2, { steps: 3 })
+    await page.mouse.move(targetBox.x + targetBox.width / 2, targetBox.y + targetBox.height * ratio, { steps: 10 })
+    await page.mouse.up()
+  }
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/document-editor')
+    await expect(page.locator('[data-block-id="p1"]')).toBeVisible({ timeout: 15000 })
+  })
+
+  test('블록을 다른 블록 위(중앙)에 놓으면 그 블록의 child로 중첩된다', async ({ page }) => {
+    await dragBlockOnto(page, 'p3', 'p2', 0.5)
+
+    await expect(page.locator('[data-block-id="p2"] [data-block-id="p3"]')).toHaveCount(1)
+    await expect(page.locator('[data-block-id="p3"]')).toHaveAttribute('data-depth', '2')
+  })
+
+  test('블록을 다른 블록의 위쪽 가장자리에 놓으면 그 블록 위(sibling)에 놓인다', async ({ page }) => {
+    await dragBlockOnto(page, 'p3', 'p1', 0.1)
+
+    const rows = page.locator('[data-sdui-document-editor] > [data-block-id]')
+    await expect(rows.nth(0)).toHaveAttribute('data-block-id', 'p3')
+    await expect(rows.nth(1)).toHaveAttribute('data-block-id', 'p1')
+    await expect(page.locator('[data-block-id="p3"]')).toHaveAttribute('data-depth', '1')
+  })
+
+  test('블록을 다른 블록의 아래쪽 가장자리에 놓으면 그 블록 바로 아래(sibling)에 놓인다', async ({ page }) => {
+    await dragBlockOnto(page, 'p1', 'p2', 0.9)
+
+    const rows = page.locator('[data-sdui-document-editor] > [data-block-id]')
+    await expect(rows.nth(0)).toHaveAttribute('data-block-id', 'p2')
+    await expect(rows.nth(1)).toHaveAttribute('data-block-id', 'p1')
+    await expect(rows.nth(2)).toHaveAttribute('data-block-id', 'p3')
+  })
+
+  test('중첩된 child가 있는 부모 위에 놓으면 첫 번째 child 슬롯(인디케이터 라인 위치)에 들어간다', async ({ page }) => {
+    // arrange: nest p3 under p2 first
+    await dragBlockOnto(page, 'p3', 'p2', 0.5)
+    await expect(page.locator('[data-block-id="p2"] [data-block-id="p3"]')).toHaveCount(1)
+
+    // act: drop p1 onto the middle of p2 (which now has child p3)
+    await dragBlockOnto(page, 'p1', 'p2', 0.5)
+
+    // assert: p1 lands as the FIRST child — exactly where the indicator pointed
+    const children = page.locator('[data-block-id="p2"] [data-block-nested] > [data-block-id]')
+    await expect(children.nth(0)).toHaveAttribute('data-block-id', 'p1')
+    await expect(children.nth(1)).toHaveAttribute('data-block-id', 'p3')
+  })
+})
+
 test.describe('한글 IME 조합 입력', () => {
   test.beforeEach(async ({ page, browserName }) => {
     test.skip(browserName !== 'chromium', 'IME simulation requires CDP (Chromium only)')

@@ -15,7 +15,19 @@ function createDom() {
   overlay.style.display = 'none'
   container.appendChild(overlay)
 
-  return { container, overlay }
+  return { container, overlay, rowContent }
+}
+
+/** jsdom rects are all zero — stub a real box on the row content. */
+function stubRect(element: Element, rect: { top: number; bottom: number; left: number; width: number }) {
+  jest.spyOn(element, 'getBoundingClientRect').mockReturnValue({
+    ...rect,
+    height: rect.bottom - rect.top,
+    right: rect.left + rect.width,
+    x: rect.left,
+    y: rect.top,
+    toJSON: () => ({}),
+  } as DOMRect)
 }
 
 describe('positionDropIndicatorOverlay', () => {
@@ -52,6 +64,41 @@ describe('positionDropIndicatorOverlay', () => {
 
         expect(overlay.style.transform).toBe('translate(0px, 0px)')
         expect(overlay.getAttribute('data-drop-position')).toBe('after')
+      })
+    })
+
+    describe("when painted for a 'before' drop (EP: top-edge line)", () => {
+      it('to be: the line sits at the row TOP, not the bottom', () => {
+        const { container, overlay, rowContent } = createDom()
+        stubRect(container, { top: 0, bottom: 500, left: 0, width: 600 })
+        stubRect(rowContent, { top: 100, bottom: 130, left: 40, width: 560 })
+
+        positionDropIndicatorOverlay(
+          overlay,
+          container,
+          { overId: 'target', position: 'before', depth: 1 },
+          INDENT_WIDTH,
+        )
+
+        expect(overlay.style.transform).toBe('translate(40px, 100px)')
+        expect(overlay.getAttribute('data-drop-position')).toBe('before')
+      })
+    })
+
+    describe("when painted for an 'after' drop with real rects (EP: bottom-edge line)", () => {
+      it('to be: the line sits at the row bottom', () => {
+        const { container, overlay, rowContent } = createDom()
+        stubRect(container, { top: 0, bottom: 500, left: 0, width: 600 })
+        stubRect(rowContent, { top: 100, bottom: 130, left: 40, width: 560 })
+
+        positionDropIndicatorOverlay(
+          overlay,
+          container,
+          { overId: 'target', position: 'after', depth: 1 },
+          INDENT_WIDTH,
+        )
+
+        expect(overlay.style.transform).toBe('translate(40px, 130px)')
       })
     })
   })

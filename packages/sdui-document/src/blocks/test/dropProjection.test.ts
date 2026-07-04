@@ -34,13 +34,14 @@ function createContent(): SduiDocumentContent {
   }
 }
 
-function project(activeId: string, overId: string, offsetX: number) {
+function project(activeId: string, overId: string, offsetX: number, overRatio?: number) {
   return projectNestedBlockDrop({
     content: createContent(),
     activeId,
     overId,
     offsetX,
     indentWidth: INDENT_WIDTH,
+    ...(overRatio === undefined ? {} : { overRatio }),
   })
 }
 
@@ -129,6 +130,88 @@ describe('projectNestedBlockDrop', () => {
     describe('when overId is root', () => {
       it('to be: null', () => {
         expect(project('c', 'root', 0)).toBeNull()
+      })
+    })
+  })
+
+  describe('as is: vertical zones via overRatio (pointer position within the over row)', () => {
+    describe('when overRatio is 0.1 (EP: top zone)', () => {
+      it('to be: before b at its own depth — dropping on the upper edge inserts above', () => {
+        expect(project('c', 'b', 0, 0.1)).toEqual({ overId: 'b', position: 'before', depth: 1 })
+      })
+    })
+
+    describe('when overRatio is just below the before-threshold (BVA: 0.25 - epsilon)', () => {
+      it('to be: still before b', () => {
+        expect(project('c', 'b', 0, 0.24)).toEqual({ overId: 'b', position: 'before', depth: 1 })
+      })
+    })
+
+    describe('when overRatio is exactly the before-threshold (BVA: 0.25)', () => {
+      it('to be: inside b — hovering the body of a block nests as its child', () => {
+        expect(project('c', 'b', 0, 0.25)).toEqual({ overId: 'b', position: 'inside', depth: 2 })
+      })
+    })
+
+    describe('when overRatio is 0.5 (EP: middle zone)', () => {
+      it('to be: inside b even with zero horizontal offset', () => {
+        expect(project('c', 'b', 0, 0.5)).toEqual({ overId: 'b', position: 'inside', depth: 2 })
+      })
+    })
+
+    describe('when overRatio is exactly the after-threshold (BVA: 0.75)', () => {
+      it('to be: still inside b', () => {
+        expect(project('c', 'b', 0, 0.75)).toEqual({ overId: 'b', position: 'inside', depth: 2 })
+      })
+    })
+
+    describe('when overRatio is just above the after-threshold (BVA: 0.76)', () => {
+      it('to be: after b — bottom zone falls back to the horizontal depth logic', () => {
+        expect(project('c', 'b', 0, 0.76)).toEqual({ overId: 'b', position: 'after', depth: 1 })
+      })
+    })
+
+    describe('when overRatio is 1 with a huge horizontal offset (EP: pointer travel is not intent)', () => {
+      it('to be: after b at its own depth — dragging from a far-left handle must not read as nesting', () => {
+        expect(project('c', 'b', INDENT_WIDTH * 10, 1)).toEqual({ overId: 'b', position: 'after', depth: 1 })
+      })
+    })
+
+    describe('when hovering the bottom zone of a (next row a1 is its child — BVA: minDepth forces +1)', () => {
+      it('to be: inside a, first-child slot — the only well-formed slot right below the a row', () => {
+        expect(project('b', 'a', 0, 0.9)).toEqual({ overId: 'a', position: 'inside', depth: 2 })
+      })
+    })
+
+    describe('when hovering the bottom zone of a2 (last child, next row b is shallower)', () => {
+      it('to be: after a2 at depth 2 — stays a sibling of a2, not pulled to depth 1', () => {
+        expect(project('c', 'a2', 0, 0.9)).toEqual({ overId: 'a2', position: 'after', depth: 2 })
+      })
+    })
+
+    describe('when hovering the middle of a (a already has children)', () => {
+      it('to be: inside a', () => {
+        expect(project('b', 'a', 0, 0.5)).toEqual({ overId: 'a', position: 'inside', depth: 2 })
+      })
+    })
+
+    describe('when hovering the top zone of a1 (first child of a)', () => {
+      it('to be: before a1 at depth 2', () => {
+        expect(project('c', 'a1', 0, 0.1)).toEqual({ overId: 'a1', position: 'before', depth: 2 })
+      })
+    })
+
+    describe('when overRatio is omitted (EP: legacy callers)', () => {
+      it('to be: unchanged after-based projection', () => {
+        expect(project('c', 'b', 0)).toEqual({ overId: 'b', position: 'after', depth: 1 })
+      })
+    })
+
+    describe('when the target is invalid (EP: guards run before zones)', () => {
+      it('to be: null for root / self / own subtree regardless of ratio', () => {
+        expect(project('c', 'root', 0, 0.5)).toBeNull()
+        expect(project('a', 'a', 0, 0.5)).toBeNull()
+        expect(project('a', 'a1', 0, 0.5)).toBeNull()
       })
     })
   })
