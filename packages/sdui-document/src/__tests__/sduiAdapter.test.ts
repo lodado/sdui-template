@@ -39,6 +39,18 @@ describe('SDUI layout adapter', () => {
           state: { text: 'Related document' },
           attributes: { href: '/docs/related' },
         }),
+        createDocumentBlock({
+          id: 'image',
+          type: 'document.image',
+          state: { text: 'Architecture diagram' },
+          attributes: { src: '/diagram.png' },
+        }),
+        createDocumentBlock({
+          id: 'file',
+          type: 'document.file',
+          state: { text: 'Requirements.pdf' },
+          attributes: { size: '240 KB' },
+        }),
       ],
     }),
   };
@@ -62,6 +74,8 @@ describe('SDUI layout adapter', () => {
           expect.objectContaining({ id: 'divider', type: 'Div' }),
           expect.objectContaining({ id: 'callout', type: 'Div' }),
           expect.objectContaining({ id: 'link', type: 'Span' }),
+          expect.objectContaining({ id: 'image', type: 'Div' }),
+          expect.objectContaining({ id: 'file', type: 'Div' }),
         ],
       },
     });
@@ -79,4 +93,18 @@ describe('SDUI layout adapter', () => {
       state: { text: 'Write Storybook variations' },
     });
   });
+
+  it('uses Outline-derived editor tokens and block classes', () => {
+    const layout = toSduiLayoutDocument(content);
+
+    expect(layout.root.attributes?.className).toContain('#FFFFFF');
+    expect(layout.root.attributes?.className).toContain('#111319');
+    expect(layout.root.children?.[3].attributes?.className).toContain('bg-[#DAE1E9]');
+    expect(layout.root.children?.[4].attributes?.className).toContain('notice-block info');
+    expect(layout.root.children?.[5].attributes?.className).toContain('use-hover-preview');
+    expect(layout.root.children?.[5].attributes?.className).toContain('#0366d6');
+    expect(layout.root.children?.[6].attributes?.className).toContain('image');
+    expect(layout.root.children?.[7].attributes?.className).toContain('attachment');
+  });
+
 });

@@ -146,6 +146,18 @@ const imageLikeContent: SduiDocumentContent = {
         state: { text: 'Image/file blocks are metadata-first in the headless model.' },
       }),
       createDocumentBlock({
+        id: 'media-image',
+        type: 'document.image',
+        state: { text: 'Architecture diagram placeholder' },
+        attributes: { src: '/architecture-diagram.png', alt: 'Architecture diagram placeholder' },
+      }),
+      createDocumentBlock({
+        id: 'media-file',
+        type: 'document.file',
+        state: { text: 'implementation-plan.pdf' },
+        attributes: { title: 'implementation-plan.pdf', size: '240 KB' },
+      }),
+      createDocumentBlock({
         id: 'media-callout',
         type: 'document.callout',
         state: { text: 'Actual object storage is intentionally an adapter contract, not part of the renderer.' },
