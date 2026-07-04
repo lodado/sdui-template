@@ -3,7 +3,7 @@ import { createDocumentBlock } from '@lodado/sdui-document'
 import { render, screen } from '@testing-library/react'
 import React from 'react'
 
-import { SduiDocumentEditor } from '../SduiDocumentEditor'
+import { DRAG_INDENT_WIDTH, SduiDocumentEditor } from '../SduiDocumentEditor'
 
 /**
  * Complex nested fixture — same tree as the "Nested Drag And Drop" Storybook
@@ -96,6 +96,30 @@ describe('SduiDocumentEditor with complex nested document', () => {
 
         expect(container.querySelectorAll('[data-drag-handle]')).toHaveLength(9)
         expect(screen.getByLabelText('Drag block a-1-1-1')).toBeInTheDocument()
+      })
+
+      it('to be: children sit in an indented container, one indent unit per level', () => {
+        const { container } = render(<SduiDocumentEditor content={createNestedContent()} />)
+
+        // depth 4 block is wrapped by exactly 3 nested containers (BVA: deepest chain)
+        const deepest = container.querySelector('[data-block-id="a-1-1-1"]')
+        let nestedAncestors = 0
+        for (let node = deepest?.parentElement; node; node = node.parentElement) {
+          if (node.hasAttribute('data-block-nested')) {
+            nestedAncestors += 1
+          }
+        }
+        expect(nestedAncestors).toBe(3)
+
+        // each container indents by the drag projection unit so drops line up
+        const nested = container.querySelector('[data-block-nested]') as HTMLElement
+        expect(nested.style.paddingLeft).toBe(`${DRAG_INDENT_WIDTH}px`)
+      })
+
+      it('to be: leaf blocks render no empty nested container (EP: no-children partition)', () => {
+        const { container } = render(<SduiDocumentEditor content={createNestedContent()} />)
+
+        expect(container.querySelector('[data-block-id="tail"] [data-block-nested]')).toBeNull()
       })
     })
 
