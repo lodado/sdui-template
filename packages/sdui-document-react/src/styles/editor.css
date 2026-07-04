@@ -664,3 +664,72 @@
   font-size: 14px;
   font-family: var(--sdui-doc-font);
 }
+
+/* -------------------------------------------------------------- block menu
+   Slash-command / '+'-button insert menu. Portaled to <body>, same surface
+   tokens as the selection toolbar. */
+
+.sdui-doc-block-menu {
+  background: var(--sdui-doc-menu-background);
+  box-shadow: var(--sdui-doc-menu-shadow);
+  border-radius: 4px;
+  z-index: 750;
+  animation: sdui-doc-toolbar-in 150ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.sdui-doc-block-menu-list {
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  max-height: 280px;
+  padding: 4px;
+  overflow-y: auto;
+}
+
+.sdui-doc-block-menu-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border: 0;
+  background: none;
+  border-radius: 4px;
+  color: var(--sdui-doc-text);
+  font-size: 14px;
+  font-family: var(--sdui-doc-font);
+  text-align: left;
+  cursor: pointer;
+}
+
+.sdui-doc-block-menu-option:hover,
+.sdui-doc-block-menu-option[data-active] {
+  background: var(--sdui-doc-accent);
+  color: var(--sdui-doc-accent-text);
+}
+
+.sdui-doc-block-menu-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  color: var(--sdui-doc-text-secondary);
+  font-size: 12px;
+}
+
+.sdui-doc-block-menu-option:hover .sdui-doc-block-menu-glyph,
+.sdui-doc-block-menu-option[data-active] .sdui-doc-block-menu-glyph {
+  color: inherit;
+}
+
+.sdui-doc-block-menu-empty {
+  padding: 8px 10px;
+  color: var(--sdui-doc-text-tertiary);
+  font-size: 13px;
+  font-family: var(--sdui-doc-font);
+}
+
+.sdui-doc-block-menu-link {
+  display: flex;
+  align-items: center;
+  padding: 6px;
+}
