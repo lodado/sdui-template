@@ -13,6 +13,7 @@ export type SduiDocument = {
   workspaceId: SduiWorkspaceId;
   collectionId?: SduiCollectionId;
   parentDocumentId?: SduiDocumentId;
+  sortIndex?: number;
   title: string;
   state: SduiDocumentState;
   content: SduiDocumentContent;
