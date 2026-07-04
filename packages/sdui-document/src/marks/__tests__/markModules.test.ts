@@ -1,6 +1,8 @@
 import { boldMark } from '../bold/bold'
 import { codeMark } from '../code/code'
+import { HIGHLIGHT_COLOR_PATTERN, highlightMark, isValidHighlightColor } from '../highlight/highlight'
 import { italicMark } from '../italic/italic'
+import { linkMark } from '../link/link'
 import { strikethroughMark } from '../strikethrough/strikethrough'
 import { underlineMark } from '../underline/underline'
 
@@ -21,5 +23,36 @@ describe('attr-less mark modules', () => {
       expect(markModule.clone(mark)).toEqual(mark)
       expect(markModule.equals(mark, mark)).toBe(true)
     })
+  })
+})
+
+describe('attrs-bearing mark modules', () => {
+  test('link: schema, deep clone, href equality', () => {
+    const mark = { type: 'link' as const, attrs: { href: 'https://example.com' } }
+    expect(linkMark.schema.parse(mark)).toEqual(mark)
+    expect(() => linkMark.schema.parse({ type: 'link' })).toThrow()
+
+    const cloned = linkMark.clone(mark)
+    expect(cloned).toEqual(mark)
+    expect(cloned.attrs).not.toBe(mark.attrs)
+
+    expect(linkMark.equals(mark, { type: 'link', attrs: { href: 'https://example.com' } })).toBe(true)
+    expect(linkMark.equals(mark, { type: 'link', attrs: { href: 'https://other.com' } })).toBe(false)
+  })
+
+  test('highlight: 6-digit hex enforced, deep clone, color equality', () => {
+    const mark = { type: 'highlight' as const, attrs: { color: '#FFC107' } }
+    expect(highlightMark.schema.parse(mark)).toEqual(mark)
+    expect(() => highlightMark.schema.parse({ type: 'highlight', attrs: { color: 'red' } })).toThrow()
+
+    const cloned = highlightMark.clone(mark)
+    expect(cloned.attrs).not.toBe(mark.attrs)
+
+    expect(highlightMark.equals(mark, { type: 'highlight', attrs: { color: '#FFC107' } })).toBe(true)
+    expect(highlightMark.equals(mark, { type: 'highlight', attrs: { color: '#000000' } })).toBe(false)
+
+    expect(isValidHighlightColor('#a1B2c3')).toBe(true)
+    expect(isValidHighlightColor('#fff')).toBe(false)
+    expect(HIGHLIGHT_COLOR_PATTERN.test('#123456')).toBe(true)
   })
 })
