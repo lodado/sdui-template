@@ -15,7 +15,7 @@ const blockTypeSchema = z.union([
   z.string(),
 ])
 
-const blockSchema: z.ZodType<SduiDocumentBlock> = z.lazy(() =>
+const blockSchema: z.ZodTypeAny = z.lazy(() =>
   z.object({
     id: z.string().min(1),
     type: blockTypeSchema,
@@ -25,7 +25,7 @@ const blockSchema: z.ZodType<SduiDocumentBlock> = z.lazy(() =>
   }),
 )
 
-const contentSchema: z.ZodType<SduiDocumentContent> = z.object({
+const contentSchema = z.object({
   schemaVersion: z.literal('1.0'),
   root: blockSchema,
 })
@@ -37,7 +37,7 @@ const documentStateSchema = z.union([
   z.literal('deleted'),
 ])
 
-const documentSchema: z.ZodType<SduiDocument> = z.object({
+const documentSchema = z.object({
   id: z.string().min(1),
   workspaceId: z.string().min(1),
   collectionId: z.string().min(1).optional(),
@@ -51,7 +51,7 @@ const documentSchema: z.ZodType<SduiDocument> = z.object({
   updatedAt: z.string(),
 })
 
-const patchSchema: z.ZodType<SduiDocumentPatch> = z.discriminatedUnion('type', [
+const patchSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('block.insert'),
     parentId: z.string().min(1),
@@ -81,17 +81,20 @@ const patchSchema: z.ZodType<SduiDocumentPatch> = z.discriminatedUnion('type', [
 ])
 
 export function parseSduiDocument(input: unknown): SduiDocument {
-  return documentSchema.parse(input)
+  return documentSchema.parse(input) as unknown as SduiDocument
 }
 
 export function parseSduiDocumentContent(input: unknown): SduiDocumentContent {
-  return contentSchema.parse(input)
+  return contentSchema.parse(input) as unknown as SduiDocumentContent
 }
 
 export function parseSduiDocumentPatch(input: unknown): SduiDocumentPatch {
-  return patchSchema.parse(input)
+  return patchSchema.parse(input) as unknown as SduiDocumentPatch
 }
 
 export function parseSduiDocumentPatches(input: unknown): SduiDocumentPatch[] {
-  return z.array(patchSchema).parse(input)
+  return z.array(patchSchema).parse(input) as unknown as SduiDocumentPatch[]
 }
+
+// Keep internal types exported for tests that inspect Zod output shape
+export type RawSduiDocumentBlock = z.infer<typeof blockSchema>
