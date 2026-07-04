@@ -249,10 +249,36 @@ const allBlocksContent: SduiDocumentContent = {
             { type: 'text', text: 'code', marks: [{ type: 'code' }] },
             { type: 'text', text: ', ' },
             { type: 'text', text: 'link', marks: [{ type: 'link', attrs: { href: 'https://example.com' } }] },
+            { type: 'text', text: ', ' },
+            { type: 'text', text: 'strikethrough', marks: [{ type: 'strikethrough' }] },
+            { type: 'text', text: ', ' },
+            { type: 'text', text: 'underline', marks: [{ type: 'underline' }] },
             { type: 'hard_break' },
             { type: 'text', text: 'and a hard_break right above this line.' },
           ],
-          text: 'document.paragraph — default text block. Inline marks: bold, italic, code, link\nand a hard_break right above this line.',
+          text: 'document.paragraph — default text block. Inline marks: bold, italic, code, link, strikethrough, underline\nand a hard_break right above this line.',
+        },
+      }),
+      createDocumentBlock({
+        id: 'all-highlights',
+        type: 'document.paragraph',
+        state: {
+          content: [
+            { type: 'text', text: 'highlight (Outline palette): ' },
+            { type: 'text', text: 'Coral', marks: [{ type: 'highlight', attrs: { color: '#FDEA9B' } }] },
+            { type: 'text', text: ' ' },
+            { type: 'text', text: 'Apricot', marks: [{ type: 'highlight', attrs: { color: '#FED46A' } }] },
+            { type: 'text', text: ' ' },
+            { type: 'text', text: 'Sunset', marks: [{ type: 'highlight', attrs: { color: '#FA551E' } }] },
+            { type: 'text', text: ' ' },
+            { type: 'text', text: 'Smoothie', marks: [{ type: 'highlight', attrs: { color: '#B4DC19' } }] },
+            { type: 'text', text: ' ' },
+            { type: 'text', text: 'Bubblegum', marks: [{ type: 'highlight', attrs: { color: '#C8AFF0' } }] },
+            { type: 'text', text: ' ' },
+            { type: 'text', text: 'Neon', marks: [{ type: 'highlight', attrs: { color: '#3CBEFC' } }] },
+            { type: 'text', text: ' — drag-select any text to open the formatting toolbar.' },
+          ],
+          text: 'highlight (Outline palette): Coral Apricot Sunset Smoothie Bubblegum Neon — drag-select any text to open the formatting toolbar.',
         },
       }),
       createDocumentBlock({
@@ -349,7 +375,9 @@ export const AllBlocks: Story = {
           '| `document.image` | `<div class="image"><img>` + caption from `state.text` | ❌ non-text |\n' +
           '| `document.file` | `<a class="attachment">` download card | ❌ non-text |\n' +
           '| `document.link` | `<a class="embed">` bookmark | ❌ non-text |\n\n' +
-          'The paragraph shows all inline marks (`bold`, `italic`, `code.inline`, `link`) plus `hard_break`. ' +
+          'The paragraphs show all inline marks (`bold`, `italic`, `strikethrough`, `underline`, `code.inline`, ' +
+          '`link`, `highlight` in all 6 Outline palette colors) plus `hard_break`. ' +
+          'Drag-selecting text in edit mode opens the floating formatting toolbar (Radix popover, Outline design). ' +
           'Light/dark tokens switch with the `data-theme` attribute. ' +
           'Focused and static states share the same wrapper tag, so entering/leaving edit mode causes no layout shift.',
       },

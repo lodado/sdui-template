@@ -1,5 +1,7 @@
 'use client'
 
+import '@lodado/sdui-document-react/src/styles/editor.css'
+
 import type { SduiDocumentContent } from '@lodado/sdui-document'
 import { createDocumentBlock } from '@lodado/sdui-document'
 import { SduiDocumentEditor } from '@lodado/sdui-document-react'

@@ -56,5 +56,8 @@ export function createEditorUIStore(): EditorUIStore {
  * objects taken directly from the state) so React can bail out of re-renders.
  */
 export function useEditorUISelector<T>(store: EditorUIStore, selector: (state: EditorUIState) => T): T {
-  return useSyncExternalStore(store.subscribe, () => selector(store.get()))
+  const getSnapshot = () => selector(store.get())
+
+  // same snapshot on the server: SSR renders the initial UI state
+  return useSyncExternalStore(store.subscribe, getSnapshot, getSnapshot)
 }

@@ -81,6 +81,67 @@ test.describe('Document editor (hybrid ProseMirror)', () => {
   })
 })
 
+test.describe('Selection formatting toolbar', () => {
+  const TOOLBAR = '.sdui-doc-toolbar'
+
+  /**
+   * Word-select inside the PM editable. The editable is display:block (full
+   * row width), so a centered dblclick would land right of the text and
+   * select nothing — aim at the first word instead.
+   */
+  async function selectFirstWord(page: Page) {
+    await page.locator(EDITABLE).dblclick({ position: { x: 12, y: 12 } })
+    await expect(page.locator(TOOLBAR)).toBeVisible()
+  }
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/document-editor')
+    await expect(page.locator('[data-block-id="p1"]')).toBeVisible({ timeout: 15000 })
+  })
+
+  test('캐럿(collapsed)에서는 툴바가 없고, 더블클릭 선택 시 툴바가 뜬다', async ({ page }) => {
+    await focusBlock(page, 'First')
+    await expect(page.locator(TOOLBAR)).toHaveCount(0)
+
+    await selectFirstWord(page)
+  })
+
+  test('Bold 버튼 클릭 시 선택 텍스트에 <strong>이 적용되고 blur 커밋 후 정적 뷰에 남는다', async ({ page }) => {
+    await focusBlock(page, 'First')
+    await selectFirstWord(page)
+
+    await page.getByRole('button', { name: 'Bold' }).click()
+    await expect(page.locator(`${EDITABLE} strong`)).toContainText('First')
+
+    // blur commits the mark through the normal block.update channel
+    await page.locator(EDITOR).getByText('Second').click()
+    await expect(page.locator('[data-block-id="p1"] strong')).toContainText('First')
+  })
+
+  test('활성 mark는 aria-pressed로 표시되고 재클릭 시 해제된다', async ({ page }) => {
+    await focusBlock(page, 'First')
+    await selectFirstWord(page)
+
+    const bold = page.getByRole('button', { name: 'Bold' })
+    await bold.click()
+    await expect(bold).toHaveAttribute('aria-pressed', 'true')
+
+    await bold.click()
+    await expect(bold).toHaveAttribute('aria-pressed', 'false')
+    await expect(page.locator(`${EDITABLE} strong`)).toHaveCount(0)
+  })
+
+  test('highlight 팔레트에서 색을 고르면 mark[data-color]가 적용된다', async ({ page }) => {
+    await focusBlock(page, 'First')
+    await selectFirstWord(page)
+
+    await page.getByRole('button', { name: 'Highlight' }).click()
+    await page.getByRole('button', { name: 'Highlight Coral' }).click()
+
+    await expect(page.locator(`${EDITABLE} mark[data-color="#FDEA9B"]`)).toContainText('First')
+  })
+})
+
 test.describe('한글 IME 조합 입력', () => {
   test.beforeEach(async ({ page, browserName }) => {
     test.skip(browserName !== 'chromium', 'IME simulation requires CDP (Chromium only)')
