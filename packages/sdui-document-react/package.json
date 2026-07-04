@@ -17,6 +17,7 @@
       "require": "./src/index.ts",
       "types": "./src/index.ts"
     },
+    "./src/styles/editor.css": "./src/styles/editor.css",
     "./package.json": "./package.json"
   },
   "files": [

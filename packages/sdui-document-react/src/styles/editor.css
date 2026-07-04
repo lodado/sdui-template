@@ -513,8 +513,10 @@
   opacity: 1;
 }
 
-/* no hover on touch devices — keep the handle always visible there */
-@media (hover: none) {
+/* Touch-primary devices only (coarse pointer + no hover). Headless Firefox
+   reports (hover: none) with (pointer: fine), so require both — otherwise CI
+   and desktop-like environments keep the hover-reveal behavior. */
+@media (hover: none) and (pointer: coarse) {
   [data-sdui-document-editor] [data-drag-handle] {
     opacity: 1;
   }

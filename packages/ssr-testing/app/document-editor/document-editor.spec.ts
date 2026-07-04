@@ -261,16 +261,21 @@ test.describe('Block drag and drop', () => {
   test('드래그 핸들은 블록에 호버했을 때만 보인다', async ({ page }) => {
     const handle = page.getByRole('button', { name: 'Drag block p1' })
     const row = page.locator('[data-block-id="p1"] [data-block-row]').first()
+    const otherRow = page.locator('[data-block-id="p3"] [data-block-row]').first()
 
-    // hidden via opacity (not display) so drag geometry stays stable
-    await page.locator('[data-block-id="p3"] [data-block-row]').first().hover()
+    // Hover-reveal only applies when the primary pointer can hover. Touch-primary
+    // (and some headless) environments keep handles always visible by design.
+    const hoverReveal = await page.evaluate(() => matchMedia('(hover: hover)').matches)
+    test.skip(!hoverReveal, 'hover-reveal requires (hover: hover)')
+
+    // clear any sticky :hover from prior tests / default pointer position
+    await page.mouse.move(0, 0)
     await expect(handle).toHaveCSS('opacity', '0')
 
     await row.hover()
     await expect(handle).toHaveCSS('opacity', '1')
 
-    // moving to another block hides it again
-    await page.locator('[data-block-id="p3"] [data-block-row]').first().hover()
+    await otherRow.hover()
     await expect(handle).toHaveCSS('opacity', '0')
   })
 
