@@ -171,6 +171,12 @@ export function buildSlashMenuPlugin(callbacks: FocusedBlockCallbacks): Plugin {
               // coordsAtPos may throw in jsdom / SSR — use fallback.
             }
             callbacks.onSlashMenuOpen(anchor)
+            // "/query" can arrive in ONE transaction (paste, batched insert) —
+            // the open event alone would leave the menu unfiltered.
+            const openQuery = view.state.doc.textBetween(currSlashPos + 1, view.state.selection.from)
+            if (openQuery !== '') {
+              callbacks.onSlashMenuQueryChange(openQuery)
+            }
           } else if (currSlashPos === null && prevSlashPos !== null) {
             // pos → null: menu closed.
             callbacks.onSlashMenuClose()

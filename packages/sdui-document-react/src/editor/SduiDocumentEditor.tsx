@@ -251,11 +251,7 @@ const BlockNode = React.memo(({ block, depth, readOnly }: BlockNodeProps) => {
                   onMoveBlock={(direction) => handlers.moveBlock(block.id, direction)}
                   onBlockAction={() => handlers.blockAction(block.id)}
                   onEscape={() => handlers.escape(block.id)}
-                  onSlashMenuOpen={() => {}}
-                  onSlashMenuQueryChange={() => {}}
-                  onSlashMenuClose={() => {}}
-                  isSlashMenuOpen={() => false}
-                  onSlashMenuKey={() => false}
+                  onBlockMenuSelect={() => {}}
                 />
               ) : (
                 staticView
