@@ -33,6 +33,7 @@ import type { FocusedBlockCommit } from '../focused-block/FocusedBlockEditor'
 import { FocusedBlockEditor } from '../focused-block/FocusedBlockEditor'
 import { InlineContentView } from '../inline/InlineContentView'
 import { useDocumentPatches } from './hooks/useDocumentPatches'
+import { useInlineTextDragDrop } from './hooks/useInlineTextDragDrop'
 import { useNestedBlockDragDrop } from './hooks/useNestedBlockDragDrop'
 import type { EditorUIStore, FocusTarget } from './uiStore'
 import { createEditorUIStore, useEditorUISelector } from './uiStore'
@@ -178,15 +179,25 @@ const BlockNode = React.memo(({ block, depth, readOnly }: BlockNodeProps) => {
 
   // span keeps the chrome wrapper (<p>/<h1>…) valid — div may not nest there
   const staticView = readOnly ? (
-    <span className="sdui-doc-static">
+    <span className="sdui-doc-static" data-inline-root>
       <InlineContentView content={blockInlineContent(block)} />
     </span>
   ) : (
     <span
       className="sdui-doc-static"
+      data-inline-root
       role="textbox"
       tabIndex={0}
-      onClick={() => handlers.focusBlock(block.id, 'start')}
+      onClick={() => {
+        // a non-collapsed selection means the user just selected text to drag
+        // (or copy) — focusing now would mount PM and destroy that selection
+        const selection = window.getSelection()
+        if (selection && !selection.isCollapsed) {
+          return
+        }
+
+        handlers.focusBlock(block.id, 'start')
+      }}
       onKeyDown={(event) => {
         if (event.key === 'Enter') {
           handlers.focusBlock(block.id, 'start')
@@ -287,6 +298,7 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
   const { doc, docRef, applyPatches } = useDocumentPatches({ content, onContentChange })
   const containerRef = useRef<HTMLDivElement>(null)
   const indicatorRef = useRef<HTMLDivElement>(null)
+  const inlineCaretRef = useRef<HTMLDivElement>(null)
   const storeRef = useRef<EditorUIStore>()
   if (!storeRef.current) {
     storeRef.current = createEditorUIStore()
@@ -508,6 +520,20 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     // store/docRef are stable per instance; live values go through `latest`
   }, [store, docRef])
 
+  useInlineTextDragDrop({
+    docRef,
+    containerRef,
+    caretRef: inlineCaretRef,
+    readOnly,
+    applyPatches,
+    onDropFocus: (blockId, caretOffset) => runtime.handlers.focusBlock(blockId, caretOffset),
+    onDragStart: () => {
+      // Same policy as the block drag: the focused PM editor must not survive
+      // a drag — unmounting commits it, and the drop path sees only static rows.
+      store.set({ focus: null, selection: clearBlockSelection() })
+    },
+  })
+
   const { handleDragStart, handleDragMove, handleDragEnd, handleDragCancel } = useNestedBlockDragDrop({
     docRef,
     indentWidth: DRAG_INDENT_WIDTH,
@@ -659,6 +685,21 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
               left: 0,
               height: 2,
               width: 0,
+              display: 'none',
+              pointerEvents: 'none',
+            }}
+          />
+          {/* insertion caret for inline text drags — same DOM-painting policy */}
+          <div
+            ref={inlineCaretRef}
+            data-drop-caret
+            aria-hidden
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: 2,
+              height: 0,
               display: 'none',
               pointerEvents: 'none',
             }}
