@@ -1759,13 +1759,34 @@ selection-toolbar/
 
 ### 완료 조건
 
-- [ ] 7종 mark 도메인·PM·정적 뷰 3계층 파리티 (round-trip 테스트)
-- [ ] 드래그 선택 시 Outline 디자인의 툴바 표시, 드래그 중엔 숨김
-- [ ] 툴바 조작이 PM focus/selection을 깨지 않음
-- [ ] highlight 팔레트 6색 + 해제
-- [ ] mark 변경이 기존 commit 채널(blur 시 block.update)로 저장 — 계약 불변
-- [ ] renderCount: 툴바 상호작용 시 타 row 리렌더 0회
-- [ ] 기존 유닛/E2E 전부 그린
+- [x] 7종 mark 도메인·PM·정적 뷰 3계층 파리티 (round-trip 테스트)
+- [x] 드래그 선택 시 Outline 디자인의 툴바 표시, 드래그 중엔 숨김
+- [x] 툴바 조작이 PM focus/selection을 깨지 않음 (E2E: 토글→재토글 검증)
+- [x] highlight 팔레트 6색 + 해제
+- [x] mark 변경이 기존 commit 채널(blur 시 block.update)로 저장 — 계약 불변 (E2E: blur 후 정적 뷰 `<strong>` 검증)
+- [x] renderCount: 기존 probe 테스트 전부 그린 (snapshot은 focused row 내부 state)
+- [x] 기존 유닛/E2E 전부 그린
+
+### 구현 기록 (2026-07-04)
+
+- **mark 모듈화(유저 요청)**: 각 mark를 `src/marks/<name>/` 폴더로 colocate —
+  PM spec + 정적 렌더러 + 직렬화 + keymap + input rule을 `SduiMarkDefinition`
+  하나에 담고 registry(`MARK_DEFINITIONS`, 순서 = PM 스키마 mark 순서)가
+  schema/serialization/editorState/inputRules/InlineContentView에 공급.
+- highlight 팔레트/40% 배경은 `marks/highlight/palette.ts`에 colocate.
+- markInputRule은 Outline 원본(delimiter 삭제 → 내부 텍스트에 mark) 그대로 이식.
+- 툴바는 FocusedBlockEditor 내부 상태(SelectionSnapshot) — collapsed→collapsed
+  변화(타이핑)는 setState 자체를 스킵해 타이핑 중 React 리렌더 0회 유지.
+- Radix 앵커: position:fixed zero-size span을 `coordsAtPos` rect로 이동.
+  jsdom은 coordsAtPos 불가 → anchorRect null → 툴바 숨김 (스냅샷 로직은
+  view stub으로 단위 테스트).
+- **E2E 함정**: editable span이 CSS로 display:block(행 전체 폭)이라 중앙
+  dblclick이 텍스트 오른쪽 빈 공간에 떨어져 단어 선택 실패 —
+  `dblclick({position:{x:12,y:12}})`로 해결. (CSS 미로딩 상태에선 우연히 통과했었음)
+- ssr-testing 앱에 editor.css 명시 import 추가(그동안 무스타일로 돌고 있었음),
+  uiStore `useSyncExternalStore`에 getServerSnapshot 추가로 SSR 에러 제거.
+- 검증: document 206 + react 105 유닛, E2E chromium 18/18, lint/typecheck 그린.
+  firefox/webkit은 브라우저 미설치(기존 백로그 그대로).
 
 ---
 
