@@ -297,7 +297,12 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     className,
   } = props
 
-  const { doc, docRef, applyPatches } = useDocumentPatches({ content, onContentChange, generateBlockId, readOnly })
+  const { doc, docRef, applyPatches, undo, redo } = useDocumentPatches({
+    content,
+    onContentChange,
+    generateBlockId,
+    readOnly,
+  })
   const containerRef = useRef<HTMLDivElement>(null)
   const indicatorRef = useRef<HTMLDivElement>(null)
   const inlineCaretRef = useRef<HTMLDivElement>(null)
@@ -558,6 +563,39 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     },
   })
 
+  // Document-level undo/redo. The focused PM editor binds Mod-Z/Y to its own
+  // per-session inline history FIRST; when that is empty its command returns
+  // false, the key bubbles here unprevented, and the block-level stack takes
+  // over — the same two-tier order Outline gets from a single PM history.
+  const handleHistoryStep = (direction: 'undo' | 'redo') => {
+    // Unmount the focused editor before touching the tree under it (the
+    // unmount commit is a no-op: an empty PM history means nothing typed).
+    store.set({ focus: null, selection: clearBlockSelection() })
+    const applied = direction === 'undo' ? undo() : redo()
+    if (!applied) {
+      return
+    }
+
+    // Land the caret on the first surviving text block the step touched.
+    const targetId = applied
+      .map((patch) => {
+        if (patch.type === 'block.insert') {
+          return patch.block.id
+        }
+
+        return 'intoBlockId' in patch ? patch.intoBlockId : 'blockId' in patch ? patch.blockId : undefined
+      })
+      .find((id) => {
+        const block = id ? findBlockById(docRef.current, id) : undefined
+
+        return block !== undefined && isTextBlock(block)
+      })
+
+    if (targetId) {
+      runtime.handlers.focusBlock(targetId, 'end')
+    }
+  }
+
   const handleSelectionKeyDown = (event: React.KeyboardEvent) => {
     // Keys already handled by the PM keymap (e.g. the Escape that just
     // CREATED this selection) bubble up defaultPrevented — don't double-handle.
@@ -565,12 +603,27 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
       return
     }
 
+    const isMod = event.metaKey || event.ctrlKey
+
+    // History keys work with or without a block selection.
+    if (!readOnly && isMod && (event.key === 'z' || event.key === 'Z')) {
+      event.preventDefault()
+      handleHistoryStep(event.shiftKey ? 'redo' : 'undo')
+
+      return
+    }
+
+    if (!readOnly && isMod && (event.key === 'y' || event.key === 'Y')) {
+      event.preventDefault()
+      handleHistoryStep('redo')
+
+      return
+    }
+
     const { selection } = store.get()
     if (selection.selectedIds.length === 0) {
       return
     }
-
-    const isMod = event.metaKey || event.ctrlKey
     const orderedIds = () =>
       flattenDocumentBlocks(docRef.current)
         .map((item) => item.id)

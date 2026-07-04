@@ -1,4 +1,5 @@
 export * from './blockGuards'
 export * from './blockPatch'
+export * from './documentHistory'
 export * from './errors'
 export * from './trailingBlock'
