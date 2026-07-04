@@ -44,6 +44,9 @@ importers:
       '@lodado/sdui-design-files':
         specifier: workspace:*
         version: link:../../packages/sdui-design-files
+      '@lodado/sdui-document':
+        specifier: workspace:*
+        version: link:../../packages/sdui-document
       '@lodado/sdui-template':
         specifier: workspace:*
         version: link:../../packages/sdui-template
