@@ -460,6 +460,29 @@
   text-decoration-color: var(--sdui-doc-text);
 }
 
+/* ------------------------------------------- empty document / trailing */
+
+/* Outline ClickablePadding (app/components/ClickablePadding.ts): the space
+   below the last block reads as writable surface. Clicking it focuses the
+   trailing empty paragraph kept alive by the trailing-block invariant. */
+[data-sdui-document-editor] [data-editor-clickable-padding] {
+  min-height: var(--sdui-doc-clickable-padding-height, 50vh);
+  cursor: text;
+}
+
+/* Outline PlaceholderPlugin — CSS-only placeholder via ::before, shown when
+   the document is a single empty paragraph (Doc.ts placeholder condition).
+   Static view: the empty [data-inline-root] span. Focused view: the empty
+   inline-only ProseMirror doc (a lone trailing <br>). */
+[data-sdui-document-editor][data-doc-empty] [data-inline-root]:empty::before,
+[data-sdui-document-editor][data-doc-empty] .ProseMirror:has(> br.ProseMirror-trailingBreak:only-child)::before {
+  content: var(--sdui-doc-placeholder, 'Type something…');
+  color: var(--sdui-doc-text-tertiary);
+  pointer-events: none;
+  height: 0;
+  float: left;
+}
+
 /* ------------------------------------------------- selection/drag chrome */
 
 /* Outline .ProseMirror-selectednode — plain 2px outline, no radius */

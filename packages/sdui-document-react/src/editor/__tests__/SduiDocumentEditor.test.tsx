@@ -175,7 +175,7 @@ describe('SduiDocumentEditor', () => {
 
   describe('as is: empty document root (BVA: zero blocks)', () => {
     describe('when rendered', () => {
-      it('to be: renders without crashing', () => {
+      it('to be: the trailing-block invariant seeds one empty paragraph', () => {
         const { container } = renderEditor({
           content: {
             schemaVersion: '1.0',
@@ -183,7 +183,7 @@ describe('SduiDocumentEditor', () => {
           },
         })
 
-        expect(blockIds(container)).toEqual([])
+        expect(blockIds(container)).toEqual(['gen-1'])
       })
     })
   })

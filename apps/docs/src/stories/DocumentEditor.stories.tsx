@@ -464,3 +464,92 @@ export const AllBlocks: Story = {
     },
   },
 }
+
+/**
+ * Empty-document scenario, ported from Outline:
+ * - trailing-block invariant (TrailingNode) seeds/keeps an empty paragraph at
+ *   the end, so the caret always has somewhere to land
+ * - clicking the padding below the document focuses that trailing paragraph
+ *   (ClickablePadding + focusAtEnd) — the click never inserts
+ * - a CSS-only placeholder shows while the document is a single empty paragraph
+ */
+const emptyContent: SduiDocumentContent = {
+  schemaVersion: '1.0',
+  root: createDocumentBlock({ id: 'empty-root', type: 'document.root' }),
+}
+
+const dividerTailContent: SduiDocumentContent = {
+  schemaVersion: '1.0',
+  root: createDocumentBlock({
+    id: 'divider-tail-root',
+    type: 'document.root',
+    children: [
+      createDocumentBlock({
+        id: 'divider-tail-heading',
+        type: 'document.heading',
+        state: { text: 'Document ending in a divider' },
+        attributes: { level: 2 },
+      }),
+      createDocumentBlock({ id: 'divider-tail-hr', type: 'document.divider' }),
+    ],
+  }),
+}
+
+const EmptyDocumentStory = () => {
+  const [patches, setPatches] = useState<SduiDocumentPatch[]>([])
+
+  return (
+    <div style={{ display: 'grid', gap: 16 }}>
+      <div style={{ border: '1px dashed #ccc', borderRadius: 6 }}>
+        <SduiDocumentEditor
+          content={emptyContent}
+          onContentChange={(_next, applied) => setPatches((previous) => [...previous, ...applied])}
+        />
+      </div>
+      <PatchLog patches={patches} />
+    </div>
+  )
+}
+
+export const EmptyDocument: Story = {
+  render: () => <EmptyDocumentStory />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Starts from a root with zero children: the trailing-block invariant seeds one empty paragraph on ' +
+          'mount (silently — no patch event, mirroring Outline `withTrailingNode`). Click anywhere in the dashed ' +
+          'area below the text to focus the trailing paragraph. Deleting every block always leaves one empty ' +
+          'paragraph behind, and the placeholder returns.',
+      },
+    },
+  },
+}
+
+const TrailingAfterDividerStory = () => {
+  const [patches, setPatches] = useState<SduiDocumentPatch[]>([])
+
+  return (
+    <div style={{ display: 'grid', gap: 16 }}>
+      <SduiDocumentEditor
+        content={dividerTailContent}
+        onContentChange={(_next, applied) => setPatches((previous) => [...previous, ...applied])}
+      />
+      <PatchLog patches={patches} />
+    </div>
+  )
+}
+
+export const TrailingAfterDivider: Story = {
+  render: () => <TrailingAfterDividerStory />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The stored document ends in a `document.divider` (a non-text block). On mount the invariant appends ' +
+          'an empty trailing paragraph after it, so the caret can always be placed after the divider — delete the ' +
+          'trailing paragraph and it comes right back in the same patch batch (watch the log).',
+      },
+    },
+  },
+}
