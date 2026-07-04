@@ -1,4 +1,4 @@
-import type { SduiDocumentBlock, SduiDocumentContent } from '../schema';
+import type { SduiDocumentBlock, SduiDocumentContent } from '../blocks/schema';
 
 export type SduiDocumentBlockVisitor = (block: SduiDocumentBlock) => void;
 

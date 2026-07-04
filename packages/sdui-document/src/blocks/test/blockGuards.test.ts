@@ -10,7 +10,7 @@ import {
   isLinkBlock,
   isParagraphBlock,
   type SduiDocumentBlock,
-} from '../index'
+} from '../../index'
 
 const make = (type: string, state?: Record<string, unknown>): SduiDocumentBlock =>
   createDocumentBlock({ id: 'b', type, state })

@@ -1,4 +1,4 @@
-import type { SduiDocumentId } from '../schema';
+import type { SduiDocumentId } from '../blocks/schema';
 
 export type IndexDocumentInput = {
   documentId: SduiDocumentId;

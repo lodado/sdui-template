@@ -1,4 +1,4 @@
-import type { SduiDocumentContent, SduiInlineContent } from '../schema'
+import type { SduiDocumentContent, SduiInlineContent } from '../blocks/schema'
 import { inlineContentToPlainText } from './inlineContent'
 import { walkDocumentBlocks } from './walkBlocks'
 

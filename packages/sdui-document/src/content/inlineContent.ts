@@ -1,5 +1,5 @@
-import type { SduiInlineContent, SduiInlineMark, SduiInlineNode, SduiInlineTextNode } from '../schema/inline'
-import { isInlineTextNode } from '../schema/inline'
+import type { SduiInlineContent, SduiInlineMark, SduiInlineNode, SduiInlineTextNode } from '../blocks/schema/inline'
+import { isInlineTextNode } from '../blocks/schema/inline'
 import { InvalidInlineOffsetError } from './errors'
 
 function cloneMark(mark: SduiInlineMark): SduiInlineMark {

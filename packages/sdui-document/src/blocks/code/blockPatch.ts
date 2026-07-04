@@ -4,7 +4,7 @@ import {
   mergeInlineContent,
   splitInlineContent,
   textToInlineContent,
-} from '../content/inlineContent'
+} from '../../content/inlineContent'
 import type {
   SduiDocument,
   SduiDocumentBlock,

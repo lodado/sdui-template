@@ -1,5 +1,5 @@
-import { findBlockById } from '../blocks'
-import { BlockNotFoundError, InvalidBlockMoveError } from '../blocks/errors'
+import { findBlockById } from '../code'
+import { BlockNotFoundError, InvalidBlockMoveError } from '../code/errors'
 import type { SduiDocumentBlock, SduiDocumentContent, SduiDocumentPatch } from '../schema'
 import { createBlockId } from '../schema/ids'
 

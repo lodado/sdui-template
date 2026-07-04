@@ -1,7 +1,7 @@
 import { TextSelection } from 'prosemirror-state'
 
-import { createFocusedBlockEditorState, editorStateToInline } from '../pm/editorState'
-import type { FocusedBlockCallbacks } from '../pm/keymapDelegation'
+import { createFocusedBlockEditorState, editorStateToInline } from '../../pm/editorState'
+import type { FocusedBlockCallbacks } from '../../pm/keymapDelegation'
 
 function createCallbacks(): jest.Mocked<FocusedBlockCallbacks> {
   return {

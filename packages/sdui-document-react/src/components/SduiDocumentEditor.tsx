@@ -1,4 +1,3 @@
-import type { DragEndEvent, DragMoveEvent, DragStartEvent } from '@dnd-kit/core'
 import { DndContext, PointerSensor, useDraggable, useDroppable, useSensor, useSensors } from '@dnd-kit/core'
 import type {
   BlockSelectionState,
@@ -9,20 +8,19 @@ import type {
   SduiInlineContent,
 } from '@lodado/sdui-document'
 import {
-  applyDocumentPatches,
   clearBlockSelection,
   createBlockId,
   createBlockSelection,
-  createProjectedBlockMovePatch,
   extendBlockSelection,
   findBlockById,
   flattenDocumentBlocks,
   getInlineContentLength,
-  projectNestedBlockDrop,
   textToInlineContent,
 } from '@lodado/sdui-document'
 import React, { useRef, useState } from 'react'
 
+import { useDocumentPatches } from '../blocks/code/useDocumentPatches'
+import { useNestedBlockDragDrop } from '../blocks/code/useNestedBlockDragDrop'
 import type { FocusedBlockCommit } from './FocusedBlockEditor'
 import { FocusedBlockEditor } from './FocusedBlockEditor'
 import { InlineContentView } from './InlineContentView'
@@ -175,10 +173,8 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     className,
   } = props
 
-  const [doc, setDoc] = useState(content)
-  const docRef = useRef(doc)
+  const { doc, docRef, applyPatches } = useDocumentPatches({ content, onContentChange })
   const [focus, setFocus] = useState<FocusTarget | null>(null)
-  const [dropIndicator, setDropIndicator] = useState<ProjectedNestedBlockDrop | null>(null)
   const [selection, setSelection] = useState<BlockSelectionState>(clearBlockSelection())
   const containerRef = useRef<HTMLDivElement>(null)
   const sensors = useSensors(
@@ -192,17 +188,6 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     if (next.selectedIds.length > 0) {
       containerRef.current?.focus()
     }
-  }
-
-  const applyPatches = (patches: SduiDocumentPatch[]) => {
-    if (patches.length === 0) {
-      return
-    }
-
-    const next = applyDocumentPatches(docRef.current, patches)
-    docRef.current = next
-    setDoc(next)
-    onContentChange?.(next, patches)
   }
 
   const refocus = (blockId: string, caret: FocusTarget['caret']) => {
@@ -333,25 +318,16 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     )
   }
 
-  const projectDrop = (event: DragMoveEvent | DragEndEvent): ProjectedNestedBlockDrop | null => {
-    if (!event.over) {
-      return null
-    }
-
-    return projectNestedBlockDrop({
-      content: docRef.current,
-      activeId: String(event.active.id),
-      overId: String(event.over.id),
-      offsetX: event.delta.x,
-      indentWidth: DRAG_INDENT_WIDTH,
-    })
-  }
-
-  const handleDragStart = (_event: DragStartEvent) => {
-    // Editing/selection state must not survive a drag: unmount commits the PM editor.
-    setFocus(null)
-    setSelection(clearBlockSelection())
-  }
+  const { dropIndicator, handleDragStart, handleDragMove, handleDragEnd, handleDragCancel } = useNestedBlockDragDrop({
+    docRef,
+    indentWidth: DRAG_INDENT_WIDTH,
+    applyPatches,
+    onDragStart: () => {
+      // Editing/selection state must not survive a drag: unmount commits the PM editor.
+      setFocus(null)
+      setSelection(clearBlockSelection())
+    },
+  })
 
   const handleEscapeFromEditor = (blockId: string) => () => {
     selectBlocks(createBlockSelection(blockId))
@@ -380,28 +356,6 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
 
     if (event.key === 'Escape') {
       setSelection(clearBlockSelection())
-    }
-  }
-
-  const handleDragMove = (event: DragMoveEvent) => {
-    setDropIndicator(projectDrop(event))
-  }
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    setDropIndicator(null)
-    if (!event.over) {
-      return
-    }
-
-    const patch = createProjectedBlockMovePatch({
-      content: docRef.current,
-      activeId: String(event.active.id),
-      overId: String(event.over.id),
-      offsetX: event.delta.x,
-      indentWidth: DRAG_INDENT_WIDTH,
-    })
-    if (patch) {
-      applyPatches([patch])
     }
   }
 
@@ -446,7 +400,7 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
       onDragStart={handleDragStart}
       onDragMove={handleDragMove}
       onDragEnd={handleDragEnd}
-      onDragCancel={() => setDropIndicator(null)}
+      onDragCancel={handleDragCancel}
     >
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
       <div

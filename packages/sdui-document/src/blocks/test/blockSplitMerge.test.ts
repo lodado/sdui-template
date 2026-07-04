@@ -8,7 +8,7 @@ import {
   InvalidBlockSplitError,
   InvalidInlineOffsetError,
   type SduiDocumentContent,
-} from '../index'
+} from '../../index'
 
 const bold = { type: 'bold' } as const
 

@@ -1,4 +1,4 @@
-import { createDocumentBlock, projectNestedBlockDrop, type SduiDocumentContent } from '../index'
+import { createDocumentBlock, projectNestedBlockDrop, type SduiDocumentContent } from '../../index'
 
 const INDENT_WIDTH = 24
 

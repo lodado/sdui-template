@@ -4,7 +4,7 @@ import {
   createProjectedBlockMovePatch,
   findBlockById,
   type SduiDocumentContent,
-} from '../index'
+} from '../../index'
 
 const INDENT_WIDTH = 24
 

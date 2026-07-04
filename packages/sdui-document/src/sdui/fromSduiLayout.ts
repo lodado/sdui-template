@@ -1,5 +1,5 @@
-import type { SduiDocumentBlock, SduiDocumentContent } from '../schema'
-import { createBlockId } from '../schema/ids'
+import type { SduiDocumentBlock, SduiDocumentContent } from '../blocks/schema'
+import { createBlockId } from '../blocks/schema/ids'
 import type { SduiLayoutLikeDocument, SduiLayoutLikeNode } from './toSduiLayout'
 
 function realBlockChildren(node: SduiLayoutLikeNode): SduiLayoutLikeNode[] {

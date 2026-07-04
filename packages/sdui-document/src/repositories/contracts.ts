@@ -1,4 +1,4 @@
-import type { SduiDocument, SduiDocumentId, SduiDocumentPatch } from '../schema';
+import type { SduiDocument, SduiDocumentId, SduiDocumentPatch } from '../blocks/schema';
 import type { DocumentTreeResult,MoveDocumentInput } from '../tree';
 
 export type SaveDocumentPatchesInput = {

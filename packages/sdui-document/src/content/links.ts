@@ -1,4 +1,4 @@
-import type { SduiDocumentContent } from '../schema';
+import type { SduiDocumentContent } from '../blocks/schema';
 import { walkDocumentBlocks } from './walkBlocks';
 
 export type SduiDocumentLink = {
