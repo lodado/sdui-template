@@ -1,31 +1,12 @@
 import type { SduiInlineContent, SduiInlineMark, SduiInlineTextNode } from '@lodado/sdui-document'
 import React from 'react'
 
-import { safeHref } from './safeHref'
+import { markDefinitionByName } from '../marks'
 
 function wrapWithMark(element: React.ReactNode, mark: SduiInlineMark): React.ReactNode {
-  switch (mark.type) {
-    case 'bold':
-      return <strong>{element}</strong>
-    case 'italic':
-      return <em>{element}</em>
-    case 'code':
-      // Outline marks/Code.ts: <code class="inline">
-      return <code className="inline">{element}</code>
-    case 'link': {
-      const href = safeHref(mark.attrs.href)
+  const definition = markDefinitionByName[mark.type]
 
-      return href ? (
-        <a href={href} rel="noopener noreferrer nofollow">
-          {element}
-        </a>
-      ) : (
-        <span>{element}</span>
-      )
-    }
-    default:
-      return element
-  }
+  return definition ? definition.renderStatic(element, mark) : element
 }
 
 function renderTextNode(node: SduiInlineTextNode): React.ReactNode {
@@ -41,10 +22,8 @@ export type InlineContentViewProps = {
  *
  * Renders `state.content` inline JSON as plain semantic tags — no ProseMirror
  * involved, which is what keeps the document at one PM instance total.
- *
- * Policies:
- * - link hrefs are scheme-whitelisted (http/https/mailto/tel); anything else
- *   renders as a plain span (no navigable href emitted)
+ * Per-mark rendering lives in the mark registry (src/marks/<name>/), keeping
+ * the static view and the PM toDOM definitions side by side.
  */
 export const InlineContentView = ({ content }: InlineContentViewProps) => {
   return (

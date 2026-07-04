@@ -1,7 +1,9 @@
 import { InputRule, inputRules } from 'prosemirror-inputrules'
 import type { Plugin } from 'prosemirror-state'
 
+import { MARK_DEFINITIONS } from '../../marks'
 import type { FocusedBlockCallbacks } from './keymapDelegation'
+import { focusedBlockSchema } from './schema'
 
 type TurnIntoRule = {
   pattern: RegExp
@@ -32,6 +34,18 @@ export function buildBlockTypeInputRules(callbacks: FocusedBlockCallbacks): Plug
           callbacks.onTurnInto(rule.type, rule.attrs)
           return state.tr.delete(start, end)
         }),
+    ),
+  })
+}
+
+/**
+ * Markdown mark shortcuts aggregated from the mark registry
+ * (Outline patterns: `~text~`, `__text__`, `==text==`).
+ */
+export function buildMarkInputRules(): Plugin {
+  return inputRules({
+    rules: MARK_DEFINITIONS.flatMap((definition) =>
+      definition.inputRule ? [definition.inputRule(focusedBlockSchema.marks[definition.name])] : [],
     ),
   })
 }
