@@ -23,8 +23,9 @@ export const MARK_DEFINITIONS: readonly SduiMarkDefinition[] = [
   linkMark,
 ]
 
-export const markDefinitionByName: Record<string, SduiMarkDefinition> = Object.fromEntries(
-  MARK_DEFINITIONS.map((definition) => [definition.name, definition]),
+export const markDefinitionByName: Record<string, SduiMarkDefinition> = MARK_DEFINITIONS.reduce(
+  (byName, definition) => ({ ...byName, [definition.name]: definition }),
+  {},
 )
 
 export type { HighlightPreset } from './highlight/palette'

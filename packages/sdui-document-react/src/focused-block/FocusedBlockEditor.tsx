@@ -1,10 +1,16 @@
 import type { SduiInlineContent } from '@lodado/sdui-document'
+import { toggleMark } from 'prosemirror-commands'
 import { TextSelection } from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
-import React, { useLayoutEffect, useRef } from 'react'
+import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
 
+import { safeHref } from '../inline/safeHref'
+import type { SelectionSnapshot } from '../selection-toolbar/selectionSnapshot'
+import { buildSelectionSnapshot, selectionSnapshotsEqual } from '../selection-toolbar/selectionSnapshot'
+import { SelectionToolbar } from '../selection-toolbar/SelectionToolbar'
 import { createFocusedBlockEditorState, editorStateToInline } from './pm/editorState'
 import type { FocusedBlockCallbacks } from './pm/keymapDelegation'
+import { focusedBlockSchema } from './pm/schema'
 
 export type FocusedBlockCommit = {
   content: SduiInlineContent
@@ -34,6 +40,13 @@ function resolveCaretOffset(autoFocus: FocusedBlockEditorProps['autoFocus'], doc
   return Math.max(0, Math.min(autoFocus, docSize))
 }
 
+/** Normalizes toolbar link input: bare domains get https://, unsafe schemes are rejected. */
+function normalizeLinkHref(input: string): string | null {
+  const candidate = /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(input) ? input : `https://${input}`
+
+  return safeHref(candidate) ?? null
+}
+
 /**
  * The single ProseMirror instance of the document, mounted only on the
  * focused text block. Unfocused blocks render via InlineContentView.
@@ -47,14 +60,75 @@ function resolveCaretOffset(autoFocus: FocusedBlockEditorProps['autoFocus'], doc
  *   so later blur/unmount commits are suppressed (they would be stale)
  * - indent/outdent commit first but do not retire (content is unaffected)
  * - block-boundary keys are delegated via FocusedBlockCallbacks (channel 3)
+ * - a ranged selection raises the SelectionToolbar (hidden while the mouse
+ *   drag is still in progress — Outline's isSelectingText rule); mark edits
+ *   are plain PM transactions, persisted through the normal commit channel
  */
 export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
   // onCommit is intentionally not destructured: it is only reached through
   // latestProps so late prop swaps still land (react/no-unused-prop-types).
   const { content, autoFocus, className } = props
   const containerRef = useRef<HTMLSpanElement>(null)
+  const viewRef = useRef<EditorView>()
   const latestProps = useRef(props)
   latestProps.current = props
+
+  const [snapshot, setSnapshot] = useState<SelectionSnapshot | null>(null)
+  const [isSelectingText, setIsSelectingText] = useState(false)
+
+  const refreshSnapshot = useCallback(() => {
+    const view = viewRef.current
+    if (!view) {
+      return
+    }
+
+    const next = buildSelectionSnapshot(view)
+    setSnapshot((previous) => {
+      // collapsed -> collapsed changes (typing) never affect a hidden toolbar
+      if (next.empty && (previous === null || previous.empty)) {
+        return previous
+      }
+
+      return previous && selectionSnapshotsEqual(previous, next) ? previous : next
+    })
+  }, [])
+
+  const toggleNamedMark = useCallback((name: 'bold' | 'italic' | 'strikethrough' | 'code') => {
+    const view = viewRef.current
+    if (!view) {
+      return
+    }
+
+    toggleMark(focusedBlockSchema.marks[name])(view.state, view.dispatch)
+    view.focus()
+  }, [])
+
+  const setHighlight = useCallback((color: string | null) => {
+    const view = viewRef.current
+    if (!view) {
+      return
+    }
+
+    const { from, to } = view.state.selection
+    const markType = focusedBlockSchema.marks.highlight
+    const transaction = view.state.tr.removeMark(from, to, markType)
+    view.dispatch(color ? transaction.addMark(from, to, markType.create({ color })) : transaction)
+    view.focus()
+  }, [])
+
+  const setLink = useCallback((href: string | null) => {
+    const view = viewRef.current
+    if (!view) {
+      return
+    }
+
+    const { from, to } = view.state.selection
+    const markType = focusedBlockSchema.marks.link
+    const normalized = href === null ? null : normalizeLinkHref(href)
+    const transaction = view.state.tr.removeMark(from, to, markType)
+    view.dispatch(normalized ? transaction.addMark(from, to, markType.create({ href: normalized })) : transaction)
+    view.focus()
+  }, [])
 
   useLayoutEffect(() => {
     const container = containerRef.current
@@ -62,7 +136,6 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
       return undefined
     }
 
-    const viewRef: { current: EditorView | undefined } = { current: undefined }
     const retired = { current: false }
 
     const commitNow = () => {
@@ -121,6 +194,7 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
         state: stateWithCaret,
         dispatchTransaction: (transaction) => {
           view.updateState(view.state.apply(transaction))
+          refreshSnapshot()
         },
         handleDOMEvents: {
           blur: () => {
@@ -133,9 +207,21 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
     )
     viewRef.current = view
 
+    // Outline's isSelectingText: hide the toolbar while the mouse is dragging
+    // out a selection, show it on release.
+    const handleMouseDown = () => setIsSelectingText(true)
+    const handleMouseUp = () => {
+      setIsSelectingText(false)
+      refreshSnapshot()
+    }
+    container.addEventListener('mousedown', handleMouseDown)
+    document.addEventListener('mouseup', handleMouseUp)
+
     view.focus()
 
     return () => {
+      container.removeEventListener('mousedown', handleMouseDown)
+      document.removeEventListener('mouseup', handleMouseUp)
       const finalCommit = retired.current ? undefined : editorStateToInline(view.state)
       viewRef.current = undefined
       view.destroy()
@@ -147,5 +233,17 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  return <span ref={containerRef} className={className} data-testid="focused-block-editor" />
+  return (
+    <>
+      <span ref={containerRef} className={className} data-testid="focused-block-editor" />
+      {snapshot && !isSelectingText ? (
+        <SelectionToolbar
+          snapshot={snapshot}
+          onToggleMark={toggleNamedMark}
+          onSetHighlight={setHighlight}
+          onSetLink={setLink}
+        />
+      ) : null}
+    </>
+  )
 }
