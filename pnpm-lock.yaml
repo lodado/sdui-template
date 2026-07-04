@@ -444,6 +444,10 @@ importers:
         version: link:../../configs/tsconfig
 
   packages/sdui-document:
+    dependencies:
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
     devDependencies:
       '@babel/runtime':
         specifier: ^7.23.4
