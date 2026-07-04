@@ -26,5 +26,5 @@ export const focusedBlockSchema = new Schema({
       toDOM: () => ['br'],
     },
   },
-  marks: Object.fromEntries(MARK_DEFINITIONS.map((definition) => [definition.name, definition.spec])),
+  marks: MARK_DEFINITIONS.reduce((marks, definition) => ({ ...marks, [definition.name]: definition.spec }), {}),
 })

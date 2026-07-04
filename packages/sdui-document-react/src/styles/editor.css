@@ -50,6 +50,11 @@
   --sdui-doc-block-min-height: 30px;
   --sdui-doc-block-padding-y: 3px;
   --sdui-doc-block-padding-x: 2px;
+
+  /* floating menu chrome (Outline theme.ts menuBackground/menuShadow) */
+  --sdui-doc-menu-background: #ffffff;
+  --sdui-doc-menu-shadow:
+    0 0 0 1px rgb(0 0 0 / 2%), 0 4px 8px rgb(0 0 0 / 8%), 0 2px 4px rgb(0 0 0 / 0%), 0 30px 40px rgb(0 0 0 / 8%);
 }
 
 [data-theme='dark'] {
@@ -72,6 +77,9 @@
   --sdui-doc-code-keyword: #569cd6;
 
   --sdui-doc-notice-text: #ffffff;
+
+  --sdui-doc-menu-background: #181c25;
+  --sdui-doc-menu-shadow: 0 0 0 1px rgb(34 40 52), 0 8px 16px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 /* ---------------------------------------------------------------- base */
@@ -467,4 +475,110 @@
 
 [data-sdui-document-editor] [data-drop-indicator] {
   background: var(--sdui-doc-accent);
+}
+
+/* -------------------------------------------------------- selection toolbar
+   Portaled to <body> so rules are class-scoped, not editor-scoped.
+   Values from Outline FloatingToolbar/ToolbarMenu/ToolbarButton/theme.ts. */
+
+.sdui-doc-toolbar {
+  background: var(--sdui-doc-menu-background);
+  box-shadow: var(--sdui-doc-menu-shadow);
+  border-radius: 4px;
+  z-index: 750; /* Outline depths.editorToolbar */
+  animation: sdui-doc-toolbar-in 150ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes sdui-doc-toolbar-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.sdui-doc-toolbar-menu,
+.sdui-doc-toolbar-palette,
+.sdui-doc-toolbar-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  color: var(--sdui-doc-text-secondary);
+}
+
+.sdui-doc-toolbar-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: 14px;
+  border-radius: 4px;
+  opacity: 0.8;
+  cursor: pointer;
+  transition:
+    opacity 100ms ease-in-out,
+    background 100ms ease-in-out;
+}
+
+.sdui-doc-toolbar-button:hover,
+.sdui-doc-toolbar-button:focus-visible {
+  opacity: 1;
+}
+
+.sdui-doc-toolbar-button[data-active] {
+  opacity: 1;
+  background: var(--sdui-doc-accent);
+  color: var(--sdui-doc-accent-text);
+}
+
+.sdui-doc-toolbar-separator {
+  width: 1px;
+  height: 36px;
+  margin: -6px 2px;
+  background: color-mix(in srgb, var(--sdui-doc-text-tertiary) 25%, transparent);
+}
+
+.sdui-doc-toolbar-highlight-dot {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid currentcolor;
+}
+
+.sdui-doc-toolbar-swatch {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 1px solid var(--sdui-doc-divider);
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1;
+  color: var(--sdui-doc-text-secondary);
+}
+
+.sdui-doc-toolbar-swatch[data-active] {
+  outline: 2px solid var(--sdui-doc-accent);
+  outline-offset: 1px;
+}
+
+.sdui-doc-toolbar-link-input {
+  min-width: 200px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--sdui-doc-text);
+  font-size: 14px;
+  font-family: var(--sdui-doc-font);
 }

@@ -44,8 +44,8 @@ export function buildBlockTypeInputRules(callbacks: FocusedBlockCallbacks): Plug
  */
 export function buildMarkInputRules(): Plugin {
   return inputRules({
-    rules: MARK_DEFINITIONS.flatMap((definition) =>
-      definition.inputRule ? [definition.inputRule(focusedBlockSchema.marks[definition.name])] : [],
+    rules: MARK_DEFINITIONS.filter((definition) => definition.inputRule).map((definition) =>
+      definition.inputRule!(focusedBlockSchema.marks[definition.name]),
     ),
   })
 }
