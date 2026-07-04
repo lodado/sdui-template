@@ -147,7 +147,13 @@ const BlockRow = ({
           }}
         />
       )}
-      {nested}
+      {nested && (
+        // one visual indent level per tree level — same unit the drag depth
+        // projection uses, so the drop indicator lines up with real indents
+        <div data-block-nested style={{ paddingLeft: DRAG_INDENT_WIDTH }}>
+          {nested}
+        </div>
+      )}
     </div>
   )
 }
@@ -378,7 +384,7 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
         isSelected={selection.selectedIds.includes(block.id)}
         dropIndicator={dropIndicator}
         onHandleClick={handleHandleClick}
-        nested={block.children?.map((child) => renderBlock(child, depth + 1))}
+        nested={block.children?.length ? block.children.map((child) => renderBlock(child, depth + 1)) : undefined}
       >
         <BlockChrome block={block} onToggleChecked={readOnly ? undefined : handleToggleChecked}>
           {isTextBlock(block) &&
