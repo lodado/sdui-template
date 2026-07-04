@@ -1,9 +1,10 @@
 import { toggleMark } from 'prosemirror-commands'
 import React from 'react'
 
+import { markInputRule } from '../markInputRule'
 import type { SduiMarkDefinition } from '../types'
 
-/** Outline marks/Italic.ts — <em>, Mod-i. */
+/** Outline marks/Italic.ts — <em>, Mod-i, `*text*` / `_text_`. */
 export const italicMark: SduiMarkDefinition = {
   name: 'italic',
   spec: {
@@ -13,4 +14,7 @@ export const italicMark: SduiMarkDefinition = {
   renderStatic: (children) => <em>{children}</em>,
   toSduiMark: () => ({ type: 'italic' }),
   keys: (markType) => ({ 'Mod-i': toggleMark(markType) }),
+  // single same-delimiter only (`*text*` / `_text_`) — `**` stays bold's,
+  // `__` stays underline's; the prefix guard keeps mid-word underscores inert
+  inputRule: (markType) => markInputRule(/(?:^|[^*_])(([*_])([^*_\s](?:[^*_]*[^*_\s])?)\2)$/, markType),
 }

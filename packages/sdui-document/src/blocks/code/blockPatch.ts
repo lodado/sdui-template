@@ -19,6 +19,7 @@ import {
   InvalidBlockMergeError,
   InvalidBlockMoveError,
   InvalidBlockSplitError,
+  InvalidBlockTypeChangeError,
   ParentBlockNotFoundError,
   RootBlockCannotBeDeletedError,
 } from './errors'
@@ -115,6 +116,8 @@ function touchedBlockIds(patch: SduiDocumentPatch): string[] {
       return [patch.blockId]
     case 'block.merge':
       return [patch.blockId, patch.intoBlockId]
+    case 'block.setType':
+      return [patch.blockId]
     default:
       return []
   }
@@ -340,6 +343,32 @@ function mergeBlock(content: SduiDocumentContent, blockId: string, intoBlockId: 
   ]
 }
 
+function setBlockType(
+  content: SduiDocumentContent,
+  blockId: string,
+  blockType: SduiDocumentBlock['type'],
+  attributes?: Record<string, unknown>,
+): void {
+  if (content.root.id === blockId) {
+    throw new InvalidBlockTypeChangeError('Root block type cannot change')
+  }
+
+  const block = findBlockById(content, blockId)
+  if (!block) {
+    throw new BlockNotFoundError(blockId)
+  }
+
+  block.type = blockType
+
+  // Whole-object replace, not merge — see the patch schema contract.
+  const nextAttributes = attributes ? stripUndefinedKeys(attributes) : undefined
+  if (nextAttributes) {
+    block.attributes = nextAttributes
+  } else {
+    delete block.attributes
+  }
+}
+
 export function applyDocumentPatch(content: SduiDocumentContent, patch: SduiDocumentPatch): SduiDocumentContent {
   const next = cloneTouchedPaths(content, touchedBlockIds(patch))
 
@@ -361,6 +390,9 @@ export function applyDocumentPatch(content: SduiDocumentContent, patch: SduiDocu
       return next
     case 'block.merge':
       mergeBlock(next, patch.blockId, patch.intoBlockId)
+      return next
+    case 'block.setType':
+      setBlockType(next, patch.blockId, patch.blockType, patch.attributes)
       return next
     default:
       return next
@@ -475,6 +507,22 @@ function computeInverse(content: SduiDocumentContent, patch: SduiDocumentPatch):
           parentId: found.parent.id,
           index: found.index,
           block: createDocumentBlock(block),
+        },
+      ]
+    }
+
+    case 'block.setType': {
+      const block = findBlockById(content, patch.blockId)
+      if (!block) {
+        throw new BlockNotFoundError(patch.blockId)
+      }
+
+      return [
+        {
+          type: 'block.setType',
+          blockId: patch.blockId,
+          blockType: block.type,
+          ...(block.attributes ? { attributes: { ...block.attributes } } : {}),
         },
       ]
     }

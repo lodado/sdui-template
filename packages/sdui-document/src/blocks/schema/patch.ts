@@ -58,6 +58,18 @@ export type SduiDocumentPatch = SduiDocumentPatchBase &
         intoBlockId: SduiDocumentBlockId
       }
     | {
+        /**
+         * Changes a block's type in place (turn-into). State and children are
+         * kept; `attributes` REPLACES the whole attribute object — stale
+         * attributes of the previous type (e.g. heading `level`) must not
+         * leak into the new type. Omitting it clears attributes.
+         */
+        type: 'block.setType'
+        blockId: SduiDocumentBlockId
+        blockType: SduiDocumentBlock['type']
+        attributes?: Record<string, unknown>
+      }
+    | {
         type: 'document.setTitle'
         title: string
       }

@@ -17,6 +17,17 @@ import type { SduiLayoutStoreState } from '../types'
  */
 export class LayoutStateRepository {
   /** Store state (plain object) */
+  // Monotonic mutation counter appended to lastModified stamps. A bare ISO
+  // timestamp has millisecond resolution, so two mutations in the same ms
+  // produced identical useSyncExternalStore snapshots and dropped re-renders.
+  private _revision = 0
+
+  private nextTimestamp(): string {
+    this._revision += 1
+
+    return `${new Date().toISOString()}#${this._revision}`
+  }
+
   private _state: SduiLayoutStoreState = {
     version: 0,
     rootId: undefined,
@@ -127,7 +138,7 @@ export class LayoutStateRepository {
   updateNodes(nodes: Record<string, SduiLayoutNode>): void {
     this._state.nodes = nodes
     // Update timestamps for all nodes (create new object to change reference)
-    const timestamp = new Date().toISOString()
+    const timestamp = this.nextTimestamp()
     const newLastModified: Record<string, string> = {}
     Object.keys(nodes).forEach((nodeId) => {
       newLastModified[nodeId] = timestamp
@@ -221,7 +232,7 @@ export class LayoutStateRepository {
     const newNodeIds = new Set(Object.keys(nodes))
     const deletedNodeIds = [...existingNodeIds].filter((id) => !newNodeIds.has(id))
 
-    const timestamp = new Date().toISOString()
+    const timestamp = this.nextTimestamp()
 
     // Merge existing and new nodes (create new object to change reference)
     const mergedNodes: Record<string, SduiLayoutNode> = {}
@@ -291,7 +302,7 @@ export class LayoutStateRepository {
       // Update timestamp (create new object to change reference)
       this._state.lastModified = {
         ...this._state.lastModified,
-        [nodeId]: new Date().toISOString(),
+        [nodeId]: this.nextTimestamp(),
       }
     }
   }
@@ -312,7 +323,7 @@ export class LayoutStateRepository {
       // Update timestamp (create new object to change reference)
       this._state.lastModified = {
         ...this._state.lastModified,
-        [nodeId]: new Date().toISOString(),
+        [nodeId]: this.nextTimestamp(),
       }
     }
   }
@@ -333,7 +344,7 @@ export class LayoutStateRepository {
       // Update timestamp (create new object to change reference)
       this._state.lastModified = {
         ...this._state.lastModified,
-        [nodeId]: new Date().toISOString(),
+        [nodeId]: this.nextTimestamp(),
       }
     }
   }

@@ -1931,6 +1931,34 @@ registry `actions['Mod-Enter']` 조회 → 있으면
 | registry 키 중복 (mark vs block vs 위임)                       | 집계 시 중복 감지 assert + 단위 테스트                         |
 | `Mod-Enter` link 열기 XSS                                      | scheme whitelist (`http:`/`https:`) — CLAUDE.md 보안 규칙 준수 |
 
+### 24.4 구현 기록 (2026-07-04)
+
+- **sdui-document**: `block.setType` patch 신설 (turn-into가 patch 미지원이던
+  갭 해소) — 타입 교체 + attributes 전체 치환(이전 타입 attr 누수 방지),
+  root 금지(`InvalidBlockTypeChangeError`), inverse 지원. 테스트 237개.
+- **sdui-document-react**:
+  - `block-types/turnInto.ts` registry (24-A) — shortcut/inputRule colocation,
+    중복 키 fail-fast. `inputRules.ts` 하드코딩 제거. `#### `, `[ ] `/`[x] `,
+    `---`/`*** ` 규칙 추가.
+  - 24-B: bold/italic/code inputRule (Outline 정규식, `markInputRule`을
+    prefix-guard 2그룹 형태로 확장), code `Mod-Shift-c`.
+  - 24-C: `Shift-Ctrl-0/1~4/7` → onTurnInto 위임. editor 기본 동작 =
+    `block.setType` patch (onTurnInto prop 있으면 consumer가 override —
+    기존 계약 유지). non-text로 전환 시 block selection 진입.
+  - 24-D: `Mod-]`/`Mod-[` alias, `Mod-Alt-ArrowUp/Down` → `onMoveBlock`
+    (sibling ±1 `block.move`), `Shift-Enter` hard break 바인딩.
+  - 24-E: `Mod-Enter` — link mark 위면 safeHref(http/https)로 open,
+    아니면 `onBlockAction` → checklist checked 토글.
+  - 24-F: selection 모드 — ArrowUp/Down 평탄화 이동, Enter 편집 재진입
+    (caret end), `Mod-A` 전체 선택, `Mod-D` subtree 복제(새 id) 후
+    복제본 선택. 테스트 136개.
+- E2E 7개 추가 (`Keyboard shortcuts (Phase 24)`): turn-into 왕복,
+  `**bold**` 커밋 왕복, `[] `→checklist→Mod-Enter 토글, 블록 이동,
+  Shift-Enter, selection 이동/재진입, Mod-D 복제. chromium 24/24.
+- 잔여: caret 위치가 turn-into 후 세션 기준으로 복원(정확한 오프셋 보존은
+  후속), `?` 도움말 다이얼로그 미구현, 8/9(list)·`Ctrl-Shift-c`(code fence)
+  블록 타입 생기면 registry 슬롯 활성화.
+
 ---
 
 ## Phase 25. 인라인 텍스트 드래그 이동 — PM 내부 + 블록 간 (cross-block)
