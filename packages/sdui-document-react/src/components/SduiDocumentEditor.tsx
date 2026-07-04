@@ -1,4 +1,8 @@
+import type { DragEndEvent, DragMoveEvent, DragStartEvent } from '@dnd-kit/core'
+import { DndContext, PointerSensor, useDraggable, useDroppable, useSensor, useSensors } from '@dnd-kit/core'
 import type {
+  BlockSelectionState,
+  ProjectedNestedBlockDrop,
   SduiDocumentBlock,
   SduiDocumentContent,
   SduiDocumentPatch,
@@ -6,10 +10,15 @@ import type {
 } from '@lodado/sdui-document'
 import {
   applyDocumentPatches,
+  clearBlockSelection,
   createBlockId,
+  createBlockSelection,
+  createProjectedBlockMovePatch,
+  extendBlockSelection,
   findBlockById,
   flattenDocumentBlocks,
   getInlineContentLength,
+  projectNestedBlockDrop,
   textToInlineContent,
 } from '@lodado/sdui-document'
 import React, { useRef, useState } from 'react'
@@ -17,6 +26,9 @@ import React, { useRef, useState } from 'react'
 import type { FocusedBlockCommit } from './FocusedBlockEditor'
 import { FocusedBlockEditor } from './FocusedBlockEditor'
 import { InlineContentView } from './InlineContentView'
+
+/** Pixel width of one indentation level for drag depth projection. */
+export const DRAG_INDENT_WIDTH = 24
 
 const NON_TEXT_BLOCK_TYPES = new Set([
   'document.root',
@@ -74,6 +86,73 @@ function isSameCommit(block: SduiDocumentBlock | undefined, commit: FocusedBlock
   return JSON.stringify(existing) === JSON.stringify(commit.content)
 }
 
+type BlockRowProps = {
+  block: SduiDocumentBlock
+  depth: number
+  readOnly: boolean
+  isSelected: boolean
+  dropIndicator: ProjectedNestedBlockDrop | null
+  onHandleClick(blockId: string, shiftKey: boolean): void
+  children: React.ReactNode
+  nested: React.ReactNode
+}
+
+/**
+ * Block chrome: droppable row + drag handle + drop indicator + selection state.
+ * Purely block-layer — the PM editor inside `children` is untouched.
+ */
+const BlockRow = ({
+  block,
+  depth,
+  readOnly,
+  isSelected,
+  dropIndicator,
+  onHandleClick,
+  children,
+  nested,
+}: BlockRowProps) => {
+  const { setNodeRef: setDropRef } = useDroppable({ id: block.id, disabled: readOnly })
+  const { setNodeRef: setDragRef, listeners, attributes } = useDraggable({ id: block.id, disabled: readOnly })
+  const indicator = dropIndicator?.overId === block.id ? dropIndicator : null
+
+  return (
+    <div ref={setDropRef} data-block-id={block.id} data-depth={depth} data-selected={isSelected || undefined}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 4 }}>
+        {!readOnly && (
+          <button
+            type="button"
+            ref={setDragRef}
+            data-drag-handle
+            aria-label={`Drag block ${block.id}`}
+            style={{ cursor: 'grab', border: 'none', background: 'transparent', padding: '2px 4px' }}
+            onClick={(event) => onHandleClick(block.id, event.shiftKey)}
+            // eslint-disable-next-line react/jsx-props-no-spreading -- dnd-kit activator contract
+            {...attributes}
+            // eslint-disable-next-line react/jsx-props-no-spreading -- dnd-kit activator contract
+            {...listeners}
+          >
+            ⠿
+          </button>
+        )}
+        <div style={{ flex: 1 }}>{children}</div>
+      </div>
+      {indicator && (
+        <div
+          data-drop-indicator
+          data-drop-position={indicator.position}
+          style={{
+            height: 2,
+            background: 'currentColor',
+            opacity: 0.6,
+            marginLeft: (indicator.depth - depth) * DRAG_INDENT_WIDTH,
+          }}
+        />
+      )}
+      {nested}
+    </div>
+  )
+}
+
 /**
  * Hybrid notion-like document editor surface.
  *
@@ -99,6 +178,21 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
   const [doc, setDoc] = useState(content)
   const docRef = useRef(doc)
   const [focus, setFocus] = useState<FocusTarget | null>(null)
+  const [dropIndicator, setDropIndicator] = useState<ProjectedNestedBlockDrop | null>(null)
+  const [selection, setSelection] = useState<BlockSelectionState>(clearBlockSelection())
+  const containerRef = useRef<HTMLDivElement>(null)
+  const sensors = useSensors(
+    // distance constraint keeps plain clicks (selection) distinct from drags
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+  )
+
+  const selectBlocks = (next: BlockSelectionState) => {
+    setSelection(next)
+    setFocus(null)
+    if (next.selectedIds.length > 0) {
+      containerRef.current?.focus()
+    }
+  }
 
   const applyPatches = (patches: SduiDocumentPatch[]) => {
     if (patches.length === 0) {
@@ -112,6 +206,7 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
   }
 
   const refocus = (blockId: string, caret: FocusTarget['caret']) => {
+    setSelection(clearBlockSelection())
     setFocus((previous) => ({ blockId, caret, session: (previous?.session ?? 0) + 1 }))
   }
 
@@ -238,11 +333,92 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     )
   }
 
+  const projectDrop = (event: DragMoveEvent | DragEndEvent): ProjectedNestedBlockDrop | null => {
+    if (!event.over) {
+      return null
+    }
+
+    return projectNestedBlockDrop({
+      content: docRef.current,
+      activeId: String(event.active.id),
+      overId: String(event.over.id),
+      offsetX: event.delta.x,
+      indentWidth: DRAG_INDENT_WIDTH,
+    })
+  }
+
+  const handleDragStart = (_event: DragStartEvent) => {
+    // Editing/selection state must not survive a drag: unmount commits the PM editor.
+    setFocus(null)
+    setSelection(clearBlockSelection())
+  }
+
+  const handleEscapeFromEditor = (blockId: string) => () => {
+    selectBlocks(createBlockSelection(blockId))
+  }
+
+  const handleHandleClick = (blockId: string, shiftKey: boolean) => {
+    if (shiftKey && selection.anchorId) {
+      selectBlocks(extendBlockSelection(selection, docRef.current, blockId))
+
+      return
+    }
+
+    selectBlocks(createBlockSelection(blockId))
+  }
+
+  const handleSelectionKeyDown = (event: React.KeyboardEvent) => {
+    if (selection.selectedIds.length === 0) {
+      return
+    }
+
+    if (event.key === 'Backspace' || event.key === 'Delete') {
+      event.preventDefault()
+      applyPatches(selection.selectedIds.map((id) => ({ type: 'block.delete', blockId: createBlockId(id) })))
+      setSelection(clearBlockSelection())
+    }
+
+    if (event.key === 'Escape') {
+      setSelection(clearBlockSelection())
+    }
+  }
+
+  const handleDragMove = (event: DragMoveEvent) => {
+    setDropIndicator(projectDrop(event))
+  }
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    setDropIndicator(null)
+    if (!event.over) {
+      return
+    }
+
+    const patch = createProjectedBlockMovePatch({
+      content: docRef.current,
+      activeId: String(event.active.id),
+      overId: String(event.over.id),
+      offsetX: event.delta.x,
+      indentWidth: DRAG_INDENT_WIDTH,
+    })
+    if (patch) {
+      applyPatches([patch])
+    }
+  }
+
   const renderBlock = (block: SduiDocumentBlock, depth: number): React.ReactNode => {
     const isFocused = !readOnly && focus?.blockId === block.id && isTextBlock(block)
 
     return (
-      <div key={block.id} data-block-id={block.id} data-depth={depth}>
+      <BlockRow
+        key={block.id}
+        block={block}
+        depth={depth}
+        readOnly={readOnly}
+        isSelected={selection.selectedIds.includes(block.id)}
+        dropIndicator={dropIndicator}
+        onHandleClick={handleHandleClick}
+        nested={block.children?.map((child) => renderBlock(child, depth + 1))}
+      >
         {isFocused ? (
           <FocusedBlockEditor
             key={focus.session}
@@ -255,18 +431,35 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
             onOutdent={handleOutdent(block.id)}
             onNavigate={handleNavigate(block.id)}
             onTurnInto={(type, attrs) => onTurnInto?.(block.id, type, attrs)}
+            onEscape={handleEscapeFromEditor(block.id)}
           />
         ) : (
           renderStaticBlock(block)
         )}
-        {block.children?.map((child) => renderBlock(child, depth + 1))}
-      </div>
+      </BlockRow>
     )
   }
 
   return (
-    <div className={className} data-sdui-document-editor>
-      {doc.root.children?.map((child) => renderBlock(child, 1))}
-    </div>
+    <DndContext
+      sensors={sensors}
+      onDragStart={handleDragStart}
+      onDragMove={handleDragMove}
+      onDragEnd={handleDragEnd}
+      onDragCancel={() => setDropIndicator(null)}
+    >
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
+      <div
+        ref={containerRef}
+        className={className}
+        data-sdui-document-editor
+        role="tree"
+        tabIndex={-1}
+        onKeyDown={handleSelectionKeyDown}
+        style={{ outline: 'none' }}
+      >
+        {doc.root.children?.map((child) => renderBlock(child, 1))}
+      </div>
+    </DndContext>
   )
 }

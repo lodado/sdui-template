@@ -187,4 +187,91 @@ describe('SduiDocumentEditor', () => {
       })
     })
   })
+
+  describe('as is: block selection mode', () => {
+    describe('when Escape is pressed while editing (EP: editing -> selection transition)', () => {
+      it('to be: PM unmounts and the block becomes selected', async () => {
+        const user = userEvent.setup()
+        const { container } = renderEditor()
+
+        await user.click(screen.getByText('First'))
+        await user.keyboard('{Escape}')
+
+        expect(container.querySelectorAll('[contenteditable="true"]')).toHaveLength(0)
+        expect(container.querySelector('[data-block-id="p1"]')).toHaveAttribute('data-selected', 'true')
+      })
+    })
+
+    describe('when a drag handle is clicked (EP: pointer entry)', () => {
+      it('to be: that block becomes the single selection', async () => {
+        const user = userEvent.setup()
+        const { container } = renderEditor()
+
+        await user.click(screen.getByLabelText('Drag block p2'))
+
+        expect(container.querySelector('[data-block-id="p2"]')).toHaveAttribute('data-selected', 'true')
+        expect(container.querySelector('[data-block-id="p1"]')).not.toHaveAttribute('data-selected', 'true')
+      })
+    })
+
+    describe('when a second handle is shift-clicked (EP: range extension)', () => {
+      it('to be: both blocks selected', async () => {
+        const user = userEvent.setup()
+        const { container } = renderEditor()
+
+        await user.click(screen.getByLabelText('Drag block p1'))
+        await user.keyboard('{Shift>}')
+        await user.click(screen.getByLabelText('Drag block p2'))
+        await user.keyboard('{/Shift}')
+
+        expect(container.querySelector('[data-block-id="p1"]')).toHaveAttribute('data-selected', 'true')
+        expect(container.querySelector('[data-block-id="p2"]')).toHaveAttribute('data-selected', 'true')
+      })
+    })
+
+    describe('when Backspace is pressed with a selection (EP: bulk delete)', () => {
+      it('to be: selected blocks deleted and selection cleared', async () => {
+        const user = userEvent.setup()
+        const { container } = renderEditor()
+
+        await user.click(screen.getByLabelText('Drag block p2'))
+        await user.keyboard('{Backspace}')
+
+        expect(blockIds(container)).toEqual(['p1'])
+        expect(container.querySelectorAll('[data-selected="true"]')).toHaveLength(0)
+      })
+    })
+
+    describe('when Escape is pressed with a selection (BVA: selection -> empty)', () => {
+      it('to be: selection cleared, blocks intact', async () => {
+        const user = userEvent.setup()
+        const { container } = renderEditor()
+
+        await user.click(screen.getByLabelText('Drag block p1'))
+        await user.keyboard('{Escape}')
+
+        expect(container.querySelectorAll('[data-selected="true"]')).toHaveLength(0)
+        expect(blockIds(container)).toEqual(['p1', 'p2'])
+      })
+    })
+  })
+
+  describe('as is: drag & drop chrome', () => {
+    describe('when editable (EP: editable partition)', () => {
+      it('to be: one drag handle per block', () => {
+        const { container } = renderEditor()
+
+        expect(container.querySelectorAll('[data-drag-handle]')).toHaveLength(2)
+        expect(screen.getByLabelText('Drag block p1')).toBeInTheDocument()
+      })
+    })
+
+    describe('when readOnly (EP: gated partition)', () => {
+      it('to be: no drag handles rendered', () => {
+        const { container } = renderEditor({ readOnly: true })
+
+        expect(container.querySelectorAll('[data-drag-handle]')).toHaveLength(0)
+      })
+    })
+  })
 })

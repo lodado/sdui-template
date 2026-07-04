@@ -13,6 +13,8 @@
     "test:e2e:headed": "playwright test --headed"
   },
   "dependencies": {
+    "@lodado/sdui-document": "workspace:^",
+    "@lodado/sdui-document-react": "workspace:^",
     "@lodado/sdui-template": "workspace:*",
     "@lodado/sdui-template-component": "workspace:*",
     "next": "16.1.1",
