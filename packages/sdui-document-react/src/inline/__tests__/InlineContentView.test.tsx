@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import React from 'react'
 
-import { InlineContentView } from '../../components/InlineContentView'
+import { InlineContentView } from '../InlineContentView'
 
 describe('InlineContentView', () => {
   describe('as is: empty content (BVA: min size)', () => {

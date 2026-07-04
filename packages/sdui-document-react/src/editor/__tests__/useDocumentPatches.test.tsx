@@ -1,7 +1,7 @@
 import { createBlockId, createDocumentBlock, findBlockById, type SduiDocumentContent } from '@lodado/sdui-document'
 import { fireEvent, render, screen } from '@testing-library/react'
 
-import { useDocumentPatches } from '../code/useDocumentPatches'
+import { useDocumentPatches } from '../hooks/useDocumentPatches'
 
 function createContent(): SduiDocumentContent {
   return {

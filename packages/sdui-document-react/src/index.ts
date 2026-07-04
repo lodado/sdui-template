@@ -1,4 +1,6 @@
 import './styles/editor.css'
 
-export * from './components'
-export * from './pm'
+export * from './block-types'
+export * from './editor'
+export * from './focused-block'
+export * from './inline'

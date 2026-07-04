@@ -3,8 +3,8 @@ import { TextSelection } from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
 import React, { useLayoutEffect, useRef } from 'react'
 
-import { createFocusedBlockEditorState, editorStateToInline } from '../pm/editorState'
-import type { FocusedBlockCallbacks } from '../pm/keymapDelegation'
+import { createFocusedBlockEditorState, editorStateToInline } from './pm/editorState'
+import type { FocusedBlockCallbacks } from './pm/keymapDelegation'
 
 export type FocusedBlockCommit = {
   content: SduiInlineContent
