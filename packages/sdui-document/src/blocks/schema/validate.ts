@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
-import type { SduiDocument, SduiDocumentBlock, SduiDocumentContent, SduiDocumentPatch } from './index'
 import { inlineMarkSchema } from '../../marks'
+import type { SduiDocument, SduiDocumentBlock, SduiDocumentContent, SduiDocumentPatch } from './index'
 import type { SduiInlineContent } from './inline'
 
 const inlineNodeSchema = z.union([

@@ -14,7 +14,7 @@
   --sdui-doc-text-secondary: #394351;
   --sdui-doc-text-tertiary: #66778f;
   --sdui-doc-background: #ffffff;
-  --sdui-doc-background-secondary: hsl(212 31% 90% / 1);
+  --sdui-doc-background-secondary: hsl(212 31% 95% / 1);
   --sdui-doc-accent: #0366d6;
   --sdui-doc-accent-text: #ffffff;
   --sdui-doc-link: #0366d6;
@@ -68,7 +68,8 @@
   --sdui-doc-accent-text: #ffffff;
   --sdui-doc-link: #137ffb;
   --sdui-doc-quote: #e6e6e6;
-  --sdui-doc-divider: #2b2f38;
+  /* Outline buildDarkTheme divider — near-invisible ring on dark surfaces */
+  --sdui-doc-divider: rgba(0, 0, 0, 0.5);
   --sdui-doc-hr: #2b2f38;
 
   --sdui-doc-code: #e6e6e6;
@@ -374,6 +375,7 @@
 
 /* ----------------------------------------------------- file/attachment */
 
+/* Outline Styles.ts .attachment — no border, hairline ring via box-shadow */
 [data-sdui-document-editor] .attachment {
   display: block;
   color: var(--sdui-doc-text);
@@ -382,24 +384,35 @@
   border-radius: 8px;
   padding: 6px 8px;
   text-decoration: none;
-  font-weight: 600;
-  font-size: 14px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 /* -------------------------------------------------------- link/bookmark */
 
+/* Outline Widget.tsx (embed/bookmark card): text-colored flex card,
+   borderless — the hairline is a box-shadow ring, radius = blockRadius (6px) */
 [data-sdui-document-editor] .embed {
-  display: block;
-  color: var(--sdui-doc-link);
-  border: 1px solid var(--sdui-doc-divider);
-  border-radius: 8px;
-  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--sdui-doc-background);
+  color: var(--sdui-doc-text);
+  box-shadow: 0 0 0 1px var(--sdui-doc-divider);
+  border-radius: 6px;
+  padding: 6px;
+  max-width: 840px;
+  cursor: pointer;
+  user-select: none;
   text-decoration: none;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+[data-sdui-document-editor] .embed:hover,
+[data-sdui-document-editor] .embed:active {
+  background: var(--sdui-doc-background-secondary);
 }
 
 /* ---------------------------------------------------------- inline marks */
@@ -427,9 +440,10 @@
   color: var(--sdui-doc-code-keyword);
 }
 
+/* Outline Styles.ts link rule — theme.link color, lightened underline */
 [data-sdui-document-editor] p a,
 [data-sdui-document-editor] .heading-content a {
-  color: var(--sdui-doc-text);
+  color: var(--sdui-doc-link);
   text-decoration: underline;
   text-decoration-color: color-mix(in srgb, var(--sdui-doc-text) 50%, transparent);
   text-decoration-thickness: 1px;
@@ -448,9 +462,9 @@
 
 /* ------------------------------------------------- selection/drag chrome */
 
+/* Outline .ProseMirror-selectednode — plain 2px outline, no radius */
 [data-sdui-document-editor] [data-selected='true'] {
   outline: 2px solid var(--sdui-doc-accent);
-  border-radius: 4px;
 }
 
 [data-sdui-document-editor] [data-drag-handle] {
@@ -461,9 +475,26 @@
   border: 0;
   padding: 0;
   border-radius: 4px;
+  /* hidden until the row is hovered (Notion/Outline behavior) — opacity, not
+     display, so the row never reflows and the handle stays a drop-zone-stable
+     flex item */
+  opacity: 0;
   transition:
     color 150ms cubic-bezier(0.175, 0.885, 0.32, 1.275),
     opacity 150ms ease-in-out;
+}
+
+[data-sdui-document-editor] [data-block-row]:hover > [data-drag-handle],
+[data-sdui-document-editor] [data-drag-handle]:focus-visible,
+[data-sdui-document-editor] [data-drag-handle][data-dragging='true'] {
+  opacity: 1;
+}
+
+/* no hover on touch devices — keep the handle always visible there */
+@media (hover: none) {
+  [data-sdui-document-editor] [data-drag-handle] {
+    opacity: 1;
+  }
 }
 
 [data-sdui-document-editor] [data-drag-handle]:hover,

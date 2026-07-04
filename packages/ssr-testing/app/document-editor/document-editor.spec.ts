@@ -170,6 +170,21 @@ test.describe('Block drag and drop', () => {
     await expect(page.locator('[data-block-id="p1"]')).toBeVisible({ timeout: 15000 })
   })
 
+  test('드래그 핸들은 블록에 호버했을 때만 보인다', async ({ page }) => {
+    const handle = page.getByRole('button', { name: 'Drag block p1' })
+    const row = page.locator('[data-block-id="p1"] [data-block-row]').first()
+
+    // hidden via opacity (not display) so drag geometry stays stable
+    await expect(handle).toHaveCSS('opacity', '0')
+
+    await row.hover()
+    await expect(handle).toHaveCSS('opacity', '1')
+
+    // moving to another block hides it again
+    await page.locator('[data-block-id="p3"] [data-block-row]').first().hover()
+    await expect(handle).toHaveCSS('opacity', '0')
+  })
+
   test('블록을 다른 블록 위(중앙)에 놓으면 그 블록의 child로 중첩된다', async ({ page }) => {
     await dragBlockOnto(page, 'p3', 'p2', 0.5)
 
