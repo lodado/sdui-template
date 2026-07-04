@@ -1,5 +1,6 @@
 import { blockText } from '../blocks/blockGuards'
 import type { SduiDocumentBlock, SduiDocumentContent } from '../schema'
+import { type BlockMapperTheme, outlineTheme } from './theme'
 
 export type SduiLayoutLikeNode = {
   id: string
@@ -21,10 +22,8 @@ export type SduiLayoutLikeDocument = {
 export type ToSduiLayoutDocumentOptions = {
   documentId?: string
   title?: string
+  theme?: BlockMapperTheme
 }
-
-const EDITOR_FONT = "font-[-apple-system,BlinkMacSystemFont,Inter,'Segoe_UI',Roboto,Oxygen,sans-serif]"
-const BLOCK_RADIUS = 'rounded-[6px]'
 
 const ALLOWED_HREF_SCHEMES = new Set(['http:', 'https:', 'mailto:', 'tel:'])
 
@@ -37,11 +36,9 @@ function sanitizeHref(href: unknown): string | undefined {
     const url = new URL(href)
     return ALLOWED_HREF_SCHEMES.has(url.protocol) ? href : undefined
   } catch {
-    // relative URL — allow if it doesn't start with a dangerous scheme
     if (/^javascript:/i.test(href) || /^data:/i.test(href)) {
       return undefined
     }
-
     return href
   }
 }
@@ -55,113 +52,88 @@ function textChild(id: string, text: unknown, className?: string): SduiLayoutLik
   }
 }
 
-function headingClassName(level: unknown): string {
-  if (level === 1) {
-    return 'block text-[28px] font-semibold leading-[1.2] text-[#111319]'
-  }
-
-  if (level === 2) {
-    return 'block text-[22px] font-semibold leading-[1.25] text-[#111319]'
-  }
-
-  return 'block text-[18px] font-semibold leading-[1.3] text-[#111319]'
+function resolveHeadingClassName(level: unknown, theme: BlockMapperTheme): string {
+  if (level === 1) return theme.heading.level1
+  if (level === 2) return theme.heading.level2
+  return theme.heading.level3
 }
 
-function mapChildren(block: SduiDocumentBlock): SduiLayoutLikeNode[] | undefined {
+function mapChildren(block: SduiDocumentBlock, theme: BlockMapperTheme): SduiLayoutLikeNode[] | undefined {
   // ponytail: recursive mapper; split only if dedicated block renderers need per-type modules.
   // eslint-disable-next-line no-use-before-define
-  return block.children?.map(mapDocumentBlockToSduiNode)
+  return block.children?.map((child) => mapDocumentBlockToSduiNode(child, theme))
 }
 
-function mapRoot(block: SduiDocumentBlock): SduiLayoutLikeNode {
+function mapRoot(block: SduiDocumentBlock, theme: BlockMapperTheme): SduiLayoutLikeNode {
+  const { background, textColor, maxWidth } = theme.root
   return {
     id: block.id,
     type: 'Div',
     attributes: {
-      className: `mx-auto flex w-full max-w-[760px] flex-col gap-3 bg-[#FFFFFF] px-8 py-6 text-[#111319] ${EDITOR_FONT}`,
+      'data-block-type': 'document.root',
+      className: `mx-auto flex w-full max-w-[${maxWidth}] flex-col gap-3 bg-[${background}] px-8 py-6 text-[${textColor}] ${theme.fontStack}`,
       ...block.attributes,
     },
-    children: mapChildren(block),
+    children: mapChildren(block, theme),
   }
 }
 
-function mapHeading(block: SduiDocumentBlock): SduiLayoutLikeNode {
+function mapHeading(block: SduiDocumentBlock, theme: BlockMapperTheme): SduiLayoutLikeNode {
   return {
     id: block.id,
     type: 'Div',
-    attributes: { className: 'py-1' },
-    children: [textChild(`${block.id}-text`, blockText(block), headingClassName(block.state?.level))],
+    state: { text: blockText(block), level: block.state?.level },
+    attributes: { 'data-block-type': 'document.heading', className: theme.heading.wrapper },
+    children: [textChild(`${block.id}-text`, blockText(block), resolveHeadingClassName(block.state?.level, theme))],
   }
 }
 
-function mapChecklist(block: SduiDocumentBlock): SduiLayoutLikeNode {
+function mapChecklist(block: SduiDocumentBlock, theme: BlockMapperTheme): SduiLayoutLikeNode {
   const checked = block.state?.checked === true
+  const t = theme.checklist
 
   return {
     id: block.id,
     type: 'Div',
-    attributes: {
-      className: 'flex items-start gap-2 py-1 text-[16px] leading-[1.6]',
-    },
+    state: { text: blockText(block), checked },
+    attributes: { 'data-block-type': 'document.checklist', className: t.wrapper },
     children: [
-      textChild(
-        `${block.id}-check`,
-        checked ? '☑' : '☐',
-        'mt-[1px] select-none text-[16px] leading-[1.6] text-[#66778F]',
-      ),
-      textChild(
-        `${block.id}-text`,
-        blockText(block),
-        checked ? 'leading-[1.6] text-[#66778F] line-through' : 'leading-[1.6] text-[#111319]',
-      ),
+      textChild(`${block.id}-check`, checked ? t.checkOn : t.checkOff, t.checkColor),
+      textChild(`${block.id}-text`, blockText(block), checked ? t.textOn : t.textOff),
     ],
   }
 }
 
-function mapDivider(block: SduiDocumentBlock): SduiLayoutLikeNode {
+function mapDivider(block: SduiDocumentBlock, theme: BlockMapperTheme): SduiLayoutLikeNode {
   return {
     id: block.id,
     type: 'Div',
-    attributes: { className: 'my-3 h-px bg-[#DAE1E9]' },
+    attributes: { 'data-block-type': 'document.divider', className: theme.divider },
   }
 }
 
-function noticeColorClass(tone: unknown): { background: string; border: string; icon: string } {
-  if (tone === 'tip') {
-    return { background: 'bg-[#f5be31]/10', border: 'border-[#f5be31]', icon: 'text-[#f5be31]' }
-  }
-
-  if (tone === 'warning') {
-    return { background: 'bg-[#d73a49]/10', border: 'border-[#d73a49]', icon: 'text-[#d73a49]' }
-  }
-
-  if (tone === 'success') {
-    return { background: 'bg-[#3ad984]/10', border: 'border-[#3ad984]', icon: 'text-[#3ad984]' }
-  }
-
-  return { background: 'bg-[#3633FF]/10', border: 'border-[#3633FF]', icon: 'text-[#3633FF]' }
-}
-
-function mapCallout(block: SduiDocumentBlock): SduiLayoutLikeNode {
-  const color = noticeColorClass(block.attributes?.tone)
+function mapCallout(block: SduiDocumentBlock, theme: BlockMapperTheme): SduiLayoutLikeNode {
+  const tone = String(block.attributes?.tone ?? theme.callout.defaultTone)
+  const colors = theme.callout.toneColors[tone] ?? theme.callout.toneColors[theme.callout.defaultTone]
 
   return {
     id: block.id,
     type: 'Div',
+    state: { text: blockText(block) },
     attributes: {
-      className: `notice-block ${String(block.attributes?.tone ?? 'info')} flex gap-3 ${BLOCK_RADIUS} border-l-4 ${
-        color.border
-      } ${color.background} px-[10px] py-2 text-[#111319]`,
+      'data-block-type': 'document.callout',
+      'data-tone': tone,
+      className: `notice-block ${tone} ${theme.callout.base} ${theme.radius} border-l-4 ${colors.border} ${colors.background} px-[10px] py-2 text-[#111319]`,
     },
     children: [
-      textChild(`${block.id}-icon`, 'ⓘ', `w-6 shrink-0 text-center ${color.icon}`),
+      textChild(`${block.id}-icon`, 'ⓘ', `w-6 shrink-0 text-center ${colors.icon}`),
       textChild(`${block.id}-text`, blockText(block), 'content leading-[1.6]'),
-      ...(mapChildren(block) ?? []),
+      ...(mapChildren(block, theme) ?? []),
     ],
   }
 }
 
-function mapLink(block: SduiDocumentBlock): SduiLayoutLikeNode {
+function mapLink(block: SduiDocumentBlock, theme: BlockMapperTheme): SduiLayoutLikeNode {
   const safeHref = sanitizeHref(block.attributes?.href)
 
   return {
@@ -169,89 +141,97 @@ function mapLink(block: SduiDocumentBlock): SduiLayoutLikeNode {
     type: 'Span',
     state: { text: blockText(block) || safeHref || '' },
     attributes: {
-      className: 'use-hover-preview cursor-pointer text-[#0366d6] hover:underline',
+      className: theme.link,
       ...block.attributes,
-      // sanitized href and rel override any values from block.attributes
+      // sanitized href, rel, and data-block-type override any values from block.attributes
+      'data-block-type': 'document.link',
       href: safeHref,
       rel: 'noopener noreferrer nofollow',
     },
   }
 }
 
-function mapImage(block: SduiDocumentBlock): SduiLayoutLikeNode {
+function mapImage(block: SduiDocumentBlock, theme: BlockMapperTheme): SduiLayoutLikeNode {
   const alt = blockText(block) || String(block.attributes?.alt ?? 'Image')
+  const t = theme.image
 
   return {
     id: block.id,
     type: 'Div',
+    state: { text: blockText(block) },
     attributes: {
-      className: `image ${BLOCK_RADIUS} border border-[#DAE1E9] bg-[#F9FBFC] p-3`,
+      'data-block-type': 'document.image',
+      className: `image ${theme.radius} border border-[#DAE1E9] bg-[#F9FBFC] ${t.wrapper}`,
       ...block.attributes,
     },
     children: [
-      textChild(`${block.id}-label`, alt, 'block text-[14px] leading-[1.5] text-[#394351]'),
-      textChild(
-        `${block.id}-caption`,
-        String(block.attributes?.src ?? 'image source pending'),
-        'caption block pt-1 text-[13px] leading-[1.4] text-[#66778F]',
-      ),
+      textChild(`${block.id}-label`, alt, t.labelClassName),
+      textChild(`${block.id}-caption`, String(block.attributes?.src ?? 'image source pending'), t.captionClassName),
     ],
   }
 }
 
-function mapFile(block: SduiDocumentBlock): SduiLayoutLikeNode {
+function mapFile(block: SduiDocumentBlock, theme: BlockMapperTheme): SduiLayoutLikeNode {
+  const t = theme.file
+
   return {
     id: block.id,
     type: 'Div',
+    state: { text: blockText(block) },
     attributes: {
-      className: `attachment ${BLOCK_RADIUS} flex items-center gap-3 border border-[#DAE1E9] bg-[#F4F7FA] px-3 py-2 text-[#111319]`,
+      'data-block-type': 'document.file',
+      className: `attachment ${theme.radius} border border-[#DAE1E9] bg-[#F4F7FA] ${t.wrapper}`,
       ...block.attributes,
     },
     children: [
-      textChild(`${block.id}-icon`, '▣', 'text-[#66778F]'),
+      textChild(`${block.id}-icon`, '▣', t.iconClassName),
       textChild(
         `${block.id}-title`,
         blockText(block) || String(block.attributes?.title ?? 'Attachment'),
-        'leading-[1.5]',
+        t.titleClassName,
       ),
-      textChild(`${block.id}-size`, String(block.attributes?.size ?? ''), 'text-[13px] leading-[1.5] text-[#66778F]'),
+      textChild(`${block.id}-size`, String(block.attributes?.size ?? ''), t.sizeClassName),
     ],
   }
 }
 
-function mapTextBlock(block: SduiDocumentBlock): SduiLayoutLikeNode {
+function mapTextBlock(block: SduiDocumentBlock, theme: BlockMapperTheme): SduiLayoutLikeNode {
   return {
     id: block.id,
     type: 'Span',
     state: { text: blockText(block) },
     attributes: {
-      className: 'block text-[16px] leading-[1.6] text-[#111319]',
+      'data-block-type': block.type,
+      className: theme.paragraph,
       ...block.attributes,
     },
   }
 }
 
-export function mapDocumentBlockToSduiNode(block: SduiDocumentBlock): SduiLayoutLikeNode {
+export function mapDocumentBlockToSduiNode(
+  block: SduiDocumentBlock,
+  theme: BlockMapperTheme = outlineTheme,
+): SduiLayoutLikeNode {
   switch (block.type) {
     case 'document.root':
-      return mapRoot(block)
+      return mapRoot(block, theme)
     case 'document.heading':
-      return mapHeading(block)
+      return mapHeading(block, theme)
     case 'document.checklist':
-      return mapChecklist(block)
+      return mapChecklist(block, theme)
     case 'document.divider':
-      return mapDivider(block)
+      return mapDivider(block, theme)
     case 'document.callout':
-      return mapCallout(block)
+      return mapCallout(block, theme)
     case 'document.link':
-      return mapLink(block)
+      return mapLink(block, theme)
     case 'document.image':
-      return mapImage(block)
+      return mapImage(block, theme)
     case 'document.file':
-      return mapFile(block)
+      return mapFile(block, theme)
     case 'document.paragraph':
     default:
-      return mapTextBlock(block)
+      return mapTextBlock(block, theme)
   }
 }
 
@@ -259,12 +239,14 @@ export function toSduiLayoutDocument(
   content: SduiDocumentContent,
   options: ToSduiLayoutDocumentOptions = {},
 ): SduiLayoutLikeDocument {
+  const theme = options.theme ?? outlineTheme
+
   return {
     version: '1.0.0',
     metadata: {
       id: options.documentId,
       name: options.title,
     },
-    root: mapDocumentBlockToSduiNode(content.root),
+    root: mapDocumentBlockToSduiNode(content.root, theme),
   }
 }

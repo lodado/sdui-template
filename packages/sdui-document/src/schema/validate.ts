@@ -49,6 +49,9 @@ const documentSchema = z.object({
   version: z.number().int().nonnegative(),
   createdAt: z.string(),
   updatedAt: z.string(),
+  archivedAt: z.string().optional(),
+  deletedAt: z.string().optional(),
+  createdBy: z.string().optional(),
 })
 
 const patchSchema = z.discriminatedUnion('type', [
