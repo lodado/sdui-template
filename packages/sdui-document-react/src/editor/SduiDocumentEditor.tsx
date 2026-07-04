@@ -164,8 +164,8 @@ const BlockNode = React.memo(({ block, depth, readOnly }: BlockNodeProps) => {
 
   return (
     <div ref={setDropRef} data-block-id={block.id} data-depth={depth} data-selected={isSelected || undefined}>
-      {/* center: the drag handle sits at the vertical middle of the block row */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+      {/* row layout (flex + vertical centering + Notion block height) lives in editor.css */}
+      <div data-block-row>
         {!readOnly && (
           <button
             type="button"
@@ -182,7 +182,7 @@ const BlockNode = React.memo(({ block, depth, readOnly }: BlockNodeProps) => {
             ⠿
           </button>
         )}
-        <div style={{ flex: 1 }}>
+        <div data-block-content>
           <BlockChrome block={block} onToggleChecked={readOnly ? undefined : handlers.toggleChecked}>
             {isTextBlock(block) &&
               (isFocused && focus ? (

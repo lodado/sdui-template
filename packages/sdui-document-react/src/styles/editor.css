@@ -44,6 +44,12 @@
   --sdui-doc-font-size-h2: 22px;
   --sdui-doc-font-size-h3: 18px;
   --sdui-doc-font-size-h4: 16px;
+
+  /* block row metrics (Notion text block: 24px line + 3px vertical padding
+     on each side = 30px row; 2px horizontal padding) */
+  --sdui-doc-block-min-height: 30px;
+  --sdui-doc-block-padding-y: 3px;
+  --sdui-doc-block-padding-x: 2px;
 }
 
 [data-theme='dark'] {
@@ -89,11 +95,28 @@
   white-space: pre-wrap;
 }
 
+/* ------------------------------------------------------------ block row */
+
+/* handle + content on one line; everything vertically centered inside a
+   row that is never shorter than a Notion text block (30px) */
+[data-sdui-document-editor] [data-block-row] {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: var(--sdui-doc-block-min-height);
+}
+
+[data-sdui-document-editor] [data-block-content] {
+  flex: 1;
+  min-width: 0;
+}
+
 /* ----------------------------------------------------------- paragraph */
 
 [data-sdui-document-editor] p {
   margin: 0;
-  min-height: 1.6em;
+  padding: var(--sdui-doc-block-padding-y) var(--sdui-doc-block-padding-x);
+  min-height: 1.5em; /* one 24px line — padding brings the row to 30px */
 }
 
 /* ------------------------------------------------------------- heading */
@@ -104,6 +127,7 @@
 [data-sdui-document-editor] h4 {
   margin-top: 1em;
   margin-bottom: 0.25em;
+  padding: var(--sdui-doc-block-padding-y) var(--sdui-doc-block-padding-x);
   line-height: inherit;
   font-weight: 600;
   cursor: text;
@@ -130,7 +154,10 @@
 
 [data-sdui-document-editor] [data-type='checkbox_item'] {
   display: flex;
+  align-items: center;
   list-style: none;
+  padding: var(--sdui-doc-block-padding-y) var(--sdui-doc-block-padding-x);
+  min-height: var(--sdui-doc-block-min-height);
 }
 
 [data-sdui-document-editor] [data-type='checkbox_item'].checked .content {
@@ -149,7 +176,6 @@
   width: 14px;
   height: 14px;
   position: relative;
-  top: 4px;
   transition: transform 100ms ease-in-out;
   opacity: 0.8;
   margin: 0 0.5em 0 0;
