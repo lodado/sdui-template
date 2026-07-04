@@ -139,7 +139,7 @@ test.describe('Keyboard shortcuts (Phase 24 — Outline parity)', () => {
     await page.keyboard.press('End')
     await page.keyboard.press('Shift+Enter')
 
-    await expect(page.locator(`${EDITABLE} br`)).toHaveCount(1)
+    await expect(page.locator(`${EDITABLE} br:not(.ProseMirror-trailingBreak)`)).toHaveCount(1)
   })
 
   test('selection 모드: 방향키로 이동, Enter로 편집 재진입', async ({ page }) => {
@@ -263,6 +263,7 @@ test.describe('Block drag and drop', () => {
     const row = page.locator('[data-block-id="p1"] [data-block-row]').first()
 
     // hidden via opacity (not display) so drag geometry stays stable
+    await page.locator('[data-block-id="p3"] [data-block-row]').first().hover()
     await expect(handle).toHaveCSS('opacity', '0')
 
     await row.hover()
