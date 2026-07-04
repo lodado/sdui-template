@@ -1312,6 +1312,204 @@ block 층 상호작용을 완성한다. 전부 React 관심사, PM 관여 없음
 
 ---
 
+## Phase 20. Block type rendering — 타입별 semantic 태그 + CSS (Outline 디자인 이식)
+
+### 목표
+
+각 block type을 걸맞는 semantic HTML 태그로 렌더링하고, 디자인 값(색/여백/폰트/보더)은 전부
+[Outline](https://github.com/outline/outline) 에디터 코드에서 추출해 이식한다.
+**디자인 창작 금지** — 모든 수치는 아래 표의 Outline 원본 값을 그대로 쓴다.
+
+출처(로컬 클론 `/Users/chungheon/Desktop/programming/outline`):
+
+- 태그 구조: `shared/editor/nodes/*.ts(x)` 의 `toDOM`, `shared/editor/marks/*.ts(x)`
+- CSS 값: `shared/editor/components/Styles.ts` (2767줄 styled-component)
+- 테마 토큰: `shared/styles/theme.ts` (`buildLightTheme` / `buildDarkTheme`)
+
+### 아키텍처 결정
+
+1. **전달 방식: plain CSS 파일 + CSS custom properties.**
+   `packages/sdui-document-react/src/styles/editor.css` 한 장.
+   모노레포 관례(`sdui-design-files`의 `colors.css`: `[data-theme='light']`/`[data-theme='dark']` + `--` 변수)를 따른다.
+   styled-components 도입 금지(신규 의존성 불필요, Outline CSS는 값만 이식하면 됨).
+2. **스코핑: `[data-sdui-document-editor]` 하위 셀렉터.**
+   Outline은 `.ProseMirror` 루트 하나에 전역급 셀렉터를 쓰지만, 우리는 라이브러리이므로
+   에디터 컨테이너 밖으로 새면 안 된다. 클래스명은 Outline 원본(`notice-block`, `checkbox`,
+   `attachment` 등)을 유지해 CSS 규칙을 거의 그대로 복사할 수 있게 한다.
+3. **토큰 prefix `--sdui-doc-*`.** Outline theme key → CSS var로 1:1 변환, light/dark 두 벌.
+4. **static/focused 시각 동일성.** 타입별 wrapper 태그(`h1`, `p`, `div.notice-block` …)는
+   static 뷰와 FocusedBlockEditor 양쪽을 **같은 wrapper로 감싼다**.
+   PM은 wrapper 안에 자기 contenteditable div를 만들므로 typography는 상속으로 통일되고,
+   `.ProseMirror { margin: 0; outline: none; }` reset만 추가한다.
+   → 포커스 진입/이탈 시 폰트·여백이 튀지 않는 것이 acceptance 기준.
+5. **PM mark toDOM은 이미 정합.** 현 `pm/schema.ts`(strong/em/code/a)와 `InlineContentView`
+   (strong/em/code/a)가 Outline mark 태그와 동일 — 태그 변경 없음, 클래스만 추가
+   (`code.inline`, link에 underline 스타일).
+
+### 타입 → 태그 매핑 (Outline toDOM 근거)
+
+| our type             | 렌더 태그 (Outline 원본 toDOM)                                                                                                                         | Outline 출처                                                                                                     | attrs 매핑                                                 |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `document.root`      | 렌더 안 함 (현행 유지)                                                                                                                                 | —                                                                                                                | —                                                          |
+| `document.paragraph` | `<p dir="auto">`                                                                                                                                       | `nodes/Paragraph.ts`                                                                                             | —                                                          |
+| `document.heading`   | `<h1..h4 dir="auto" class="heading-content">`                                                                                                          | `nodes/Heading.ts` (level 1–4)                                                                                   | `attributes.level` 1–4, 범위 밖 clamp                      |
+| `document.checklist` | `<div data-type="checkbox_item" class="checked?">` + `<span contentEditable=false><span class="checkbox" role="checkbox" aria-checked>` + `<div>` 내용 | `nodes/CheckboxItem.ts` (원본은 `li` — 우리는 block row 단위라 `div`로 치환, checkbox 마크업/클래스/ARIA는 동일) | `attributes.checked` boolean                               |
+| `document.callout`   | `<div class="notice-block {style}"><div class="icon">…</div><div class="content">`                                                                     | `nodes/Notice.tsx`                                                                                               | `attributes.style`: `info`(기본)/`warning`/`tip`/`success` |
+| `document.divider`   | `<hr>` / `<hr class="page-break">`                                                                                                                     | `nodes/HorizontalRule.tsx`                                                                                       | `attributes.markup === '***'` → page-break                 |
+| `document.image`     | `<div class="image"><img src alt>` + `<p class="caption">`                                                                                             | `nodes/Image.tsx` (layoutClass 변형은 백로그)                                                                    | `attributes.src/alt/width/height`, caption = `state.text`  |
+| `document.file`      | `<a class="attachment" href download data-size>`                                                                                                       | `nodes/Attachment.tsx`                                                                                           | `attributes.url/name/size`                                 |
+| `document.link`      | `<a class="embed" href>` (iframe 없는 fallback 형태)                                                                                                   | `nodes/Embed.tsx` fallback branch                                                                                | `attributes.url`, 제목 = `state.text`                      |
+| marks                | `strong` / `em` / `code.inline` / `a rel="noopener noreferrer nofollow"` / `br`                                                                        | `marks/*.ts`                                                                                                     | 현행 태그 유지 + 클래스·rel 추가                           |
+
+주: `document.image`/`file`/`link`의 `href/src`는 기존 `safeHref` 스킴 화이트리스트
+(http/https/mailto/tel)를 그대로 통과시킨다 (XSS 규칙 유지).
+
+### 디자인 토큰 (Outline theme.ts → CSS vars)
+
+| var                          | light                                                                              | dark                              | Outline key                      |
+| ---------------------------- | ---------------------------------------------------------------------------------- | --------------------------------- | -------------------------------- |
+| `--sdui-doc-text`            | `#111319`                                                                          | `#E6E6E6`                         | text                             |
+| `--sdui-doc-text-secondary`  | `#394351`                                                                          | `#78838f`(lighten .1 slate)       | textSecondary                    |
+| `--sdui-doc-text-tertiary`   | `#66778F`                                                                          | `#66778F`                         | textTertiary                     |
+| `--sdui-doc-background`      | `#FFFFFF`                                                                          | `#111319`                         | background                       |
+| `--sdui-doc-accent`          | `#0366d6`                                                                          | `#0366d6`                         | accent/selected                  |
+| `--sdui-doc-accent-text`     | `#FFFFFF`                                                                          | `#FFFFFF`                         | accentText                       |
+| `--sdui-doc-link`            | `#0366d6`                                                                          | `#137FFB`                         | link                             |
+| `--sdui-doc-quote`           | `#DAE1E9`                                                                          | `#E6E6E6`                         | quote                            |
+| `--sdui-doc-divider`         | `#DAE1E9`                                                                          | `#2b2f38`(lighten .1 almostBlack) | divider                          |
+| `--sdui-doc-hr`              | `#E8EBED`                                                                          | `#2b2f38`                         | horizontalRule                   |
+| `--sdui-doc-code`            | `#2F3336`                                                                          | `#E6E6E6`                         | code                             |
+| `--sdui-doc-code-background` | `#F4F7FA`                                                                          | `#1d202a`                         | codeBackground                   |
+| `--sdui-doc-code-border`     | `#E8EBED`                                                                          | `rgba(255,255,255,.1)`            | codeBorder                       |
+| `--sdui-doc-code-keyword`    | `#00009F`                                                                          | `#569Cd6`                         | codeKeyword (code.inline 글자색) |
+| `--sdui-doc-notice-info`     | `#3633FF`                                                                          | `#3633FF`                         | noticeInfoBackground             |
+| `--sdui-doc-notice-tip`      | `#F5BE31`                                                                          | `#F5BE31`                         | noticeTipBackground              |
+| `--sdui-doc-notice-warning`  | `#d73a49`                                                                          | `#d73a49`                         | noticeWarningBackground          |
+| `--sdui-doc-notice-success`  | `#3AD984`                                                                          | `#3AD984`                         | noticeSuccessBackground          |
+| `--sdui-doc-notice-text`     | `#111319`                                                                          | `#FFFFFF`                         | notice\*Text                     |
+| `--sdui-doc-font`            | `-apple-system, BlinkMacSystemFont, Inter, 'Segoe UI', Roboto, Oxygen, sans-serif` | 동일                              | fontFamily                       |
+| `--sdui-doc-font-mono`       | `'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace`         | 동일                              | fontFamilyMono                   |
+
+### 핵심 CSS 규칙 (Outline Styles.ts 값 그대로)
+
+```css
+/* base */
+[data-sdui-document-editor] {
+  color: var(--sdui-doc-text);
+  font-family: var(--sdui-doc-font);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.5;
+}
+[data-sdui-document-editor] .ProseMirror {
+  margin: 0;
+  outline: none;
+}
+
+/* paragraph: margin 0 / min-height 1.6em, 블록 간 여백 .5em */
+p {
+  margin: 0;
+  min-height: 1.6em;
+}
+
+/* heading: margin-top 1em / bottom .25em, weight 600,
+   h1 28px / h2 22px / h3 18px / h4 16px */
+
+/* checklist: .checkbox 14x14, svg box stroke text·fill accent(체크 시),
+   tick stroke accentText, dasharray 14 transition 200ms,
+   checked 시 본문 color: var(--sdui-doc-text-tertiary) */
+
+/* callout: display flex, background color-mix(in srgb, var(--variant) 10%, transparent),
+   border-left 4px solid var(--variant), border-radius 4px,
+   padding 8px 10px 8px 8px, margin 8px 0, .icon 24x24 margin-right 4px */
+/* (Outline은 polished transparentize(0.9) — 우리는 color-mix 10%로 동일값 구현) */
+
+/* divider: hr height 1em border 0, ::before border-top 1px solid var(--sdui-doc-hr),
+   .page-break는 dashed */
+
+/* code.inline: border 1px solid code-border, background code-background,
+   padding 3px 4px, border-radius 4px, font-size 90%, font-mono,
+   color var(--sdui-doc-code-keyword) */
+
+/* link(mark): color var(--sdui-doc-text), underline,
+   text-decoration-color 연한 text, thickness 1px, underline-offset .15em,
+   font-weight 500, hover 시 decoration-color 본색 */
+
+/* image: div.image text-align center, img max-width 100%,
+   .caption 13px italic color text-secondary, padding 8px 0 4px */
+
+/* attachment: display block, box-shadow 0 0 0 1px var(--sdui-doc-divider),
+   border-radius 8px, padding 6px 8px, title weight 600 14px */
+
+/* selection/drag (기존 data-selected, drop indicator에 적용):
+   selected outline 2px solid var(--sdui-doc-accent),
+   drag handle 24x24 color text-secondary, hover 시 background secondary radius 4px */
+```
+
+### 구현 단계
+
+**20.1 토큰 + base CSS** — `src/styles/editor.css` 생성 (위 토큰 표 + base/paragraph/heading).
+rollup 빌드에서 `dist/editor.css`로 복사, `package.json` `files`/`exports`에 추가.
+Storybook `preview`에서 import.
+
+**20.2 BlockChrome 컴포넌트** — `src/components/BlockChrome.tsx` 신설.
+`(block, children) => wrapper` 순수 매핑(위 표). `SduiDocumentEditor.renderBlock`에서
+static/focused **공통으로** 감싼다. divider는 void라 children 없음 —
+`NON_TEXT_BLOCK_TYPES` 분기에서 InlineContentView 대신 타입별 정적 렌더로 교체
+(hr / img+caption / a.attachment / a.embed).
+
+**20.3 mark 스타일 정합** — `InlineContentView`와 `pm/schema.ts` 양쪽에
+`code` → `class="inline"`, `a` → `rel="noopener noreferrer nofollow"` 추가. 태그는 불변.
+
+**20.4 checklist 인터랙션(최소)** — checkbox 클릭 → `block.update`
+(`attributes.checked` 토글) patch. Outline의 checked 시각 상태(체크 svg fill,
+본문 tertiary 색) 재현. focused 여부와 무관하게 동작(체크박스는 contentEditable=false 영역).
+
+**20.5 Storybook + 테스트** — `AllBlocks` 스토리가 실제 타입별 chrome을 보여주도록 갱신
+(divider에 텍스트 라벨 제거, image에 실제 src, callout 4-variant 추가).
+"renderer backlog" 문구 제거.
+
+### 테스트 플랜 (BVA)
+
+`BlockChrome.test.tsx` (신규):
+
+- as is: heading level 1 / 4 (BVA: 지원 경계) → `h1`/`h4` 태그, level 0/5 → clamp h1/h4
+- as is: heading level 미지정 (EP: default) → `h1`
+- as is: callout style 4종 + 미지정 (EP: variant 파티션) → `.notice-block.{style}`, 기본 info
+- as is: checklist checked true/false (EP) → `aria-checked`, `.checked` 클래스, 본문 색 클래스
+- as is: divider markup `'---'`/`'***'` (EP) → `hr` / `hr.page-break`
+- as is: image src 유효/`javascript:` (EP: 보안 파티션) → img 렌더 / src 미출력
+- as is: file·link url 유효/무효 → `a.attachment`·`a.embed` href / span fallback
+
+`SduiDocumentEditor` 추가 시나리오:
+
+- as is: paragraph 포커스 진입 (when: 클릭) → to be: PM이 `p` wrapper 안에 마운트,
+  wrapper 태그가 static일 때와 동일
+- as is: checklist (when: checkbox 클릭) → to be: `block.update` patch로
+  `attributes.checked` 토글, PM 마운트 안 됨
+- InlineContentView: code mark → `code.inline`, link → `rel` 속성 (기존 테스트 확장)
+
+E2E(선택, 기존 spec 확장): heading 블록이 `h2`로 보이고 포커스 후에도 태그 유지.
+
+### 완료 조건
+
+- [ ] 9개 타입 전부 위 표의 태그로 렌더 (jsdom 태그 단언)
+- [ ] light/dark 토큰 두 벌, `data-theme` 스위치로 동작
+- [ ] 포커스 진입/이탈 시 레이아웃 시프트 없음 (같은 wrapper)
+- [ ] checklist 체크 토글이 patch로 기록됨
+- [ ] 디자인 수치 전부 Outline 원본과 일치 (위 표 대조)
+- [ ] `pnpm run test` 그린, Storybook AllBlocks에서 육안 확인
+
+### Non-goals (이번 phase 제외)
+
+- `blockquote`/`code_fence`/`bullet_list`/`ordered_list`/`table`/`toggle` — 우리 스키마에
+  타입 자체가 없음. 타입 추가는 별도 phase (Outline CSS는 이미 추출해 둠: quote 좌측
+  2px bar `--sdui-doc-quote`, pre/code 블록, toggleBlock 등).
+- image layoutClass(left-50/right-50/full-width), 첨부 업로드, embed iframe 렌더
+- syntax highlight 토큰 (code_fence 도입 시 함께)
+
+---
+
 ## 7. 테스트 전략
 
 ### 7.1 Unit tests
