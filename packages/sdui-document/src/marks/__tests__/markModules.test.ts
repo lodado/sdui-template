@@ -1,6 +1,7 @@
 import { boldMark } from '../bold/bold'
 import { codeMark } from '../code/code'
 import { HIGHLIGHT_COLOR_PATTERN, highlightMark, isValidHighlightColor } from '../highlight/highlight'
+import { cloneMark, inlineMarkSchema, MARK_MODULES, marksEqual } from '../index'
 import { italicMark } from '../italic/italic'
 import { linkMark } from '../link/link'
 import { strikethroughMark } from '../strikethrough/strikethrough'
@@ -54,5 +55,40 @@ describe('attrs-bearing mark modules', () => {
     expect(isValidHighlightColor('#a1B2c3')).toBe(true)
     expect(isValidHighlightColor('#fff')).toBe(false)
     expect(HIGHLIGHT_COLOR_PATTERN.test('#123456')).toBe(true)
+  })
+})
+
+describe('mark registry', () => {
+  test('registry names are unique and cover all 7 marks', () => {
+    const names = MARK_MODULES.map((markModule) => markModule.name)
+    expect(new Set(names).size).toBe(names.length)
+    expect(names.sort()).toEqual(['bold', 'code', 'highlight', 'italic', 'link', 'strikethrough', 'underline'])
+  })
+
+  test('inlineMarkSchema parses every mark shape and rejects bad highlight', () => {
+    expect(inlineMarkSchema.parse({ type: 'bold' })).toEqual({ type: 'bold' })
+    expect(inlineMarkSchema.parse({ type: 'link', attrs: { href: 'https://a.io' } })).toEqual({
+      type: 'link',
+      attrs: { href: 'https://a.io' },
+    })
+    expect(() => inlineMarkSchema.parse({ type: 'highlight', attrs: { color: 'red' } })).toThrow()
+  })
+
+  test('cloneMark deep-copies attrs-bearing marks', () => {
+    const link = { type: 'link' as const, attrs: { href: 'https://a.io' } }
+    expect(cloneMark(link).attrs).not.toBe(link.attrs)
+    expect(cloneMark({ type: 'bold' })).toEqual({ type: 'bold' })
+  })
+
+  test('marksEqual compares per-mark attrs', () => {
+    expect(marksEqual([{ type: 'bold' }], [{ type: 'bold' }])).toBe(true)
+    expect(marksEqual([{ type: 'bold' }], [{ type: 'italic' }])).toBe(false)
+    expect(marksEqual(undefined, [])).toBe(true)
+    expect(
+      marksEqual(
+        [{ type: 'highlight', attrs: { color: '#111111' } }],
+        [{ type: 'highlight', attrs: { color: '#222222' } }],
+      ),
+    ).toBe(false)
   })
 })
