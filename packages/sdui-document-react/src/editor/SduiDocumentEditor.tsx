@@ -216,6 +216,8 @@ const BlockNode = React.memo(({ block, depth, readOnly }: BlockNodeProps) => {
       {/* the ROW is the droppable — not the subtree wrapper — so the drop
           projection's vertical zones are measured against this row only */}
       <div ref={setDropRef} data-block-row>
+        {/* the ⠿ glyph is CSS ::before content — a real text node would join
+            cross-block native selections and get copied between blocks */}
         {!readOnly && (
           <button
             type="button"
@@ -229,9 +231,7 @@ const BlockNode = React.memo(({ block, depth, readOnly }: BlockNodeProps) => {
             {...attributes}
             // eslint-disable-next-line react/jsx-props-no-spreading -- dnd-kit activator contract
             {...listeners}
-          >
-            ⠿
-          </button>
+          />
         )}
         <div data-block-content>
           <BlockChrome block={block} onToggleChecked={readOnly ? undefined : handlers.toggleChecked}>
@@ -583,7 +583,11 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
           return patch.block.id
         }
 
-        return 'intoBlockId' in patch ? patch.intoBlockId : 'blockId' in patch ? patch.blockId : undefined
+        if ('intoBlockId' in patch) {
+          return patch.intoBlockId
+        }
+
+        return 'blockId' in patch ? patch.blockId : undefined
       })
       .find((id) => {
         const block = id ? findBlockById(docRef.current, id) : undefined

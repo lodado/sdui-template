@@ -537,6 +537,26 @@
   border-radius: 1px;
 }
 
+/* native element drags (image ghost, link drag) must never compete with the
+   text-selection drag or the ⠿ block drag — draggable=false plus the webkit
+   escape hatch */
+[data-sdui-document-editor] img,
+[data-sdui-document-editor] a {
+  -webkit-user-drag: none;
+}
+
+/* the ⠿ glyph lives in pseudo content: it can never join a text selection or
+   a copy (a real text node would — user-select:none alone does not keep it
+   out of Selection.toString() in Chromium) */
+[data-sdui-document-editor] [data-drag-handle] {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+[data-sdui-document-editor] [data-drag-handle]::before {
+  content: '⠿';
+}
+
 /* -------------------------------------------------------- selection toolbar
    Portaled to <body> so rules are class-scoped, not editor-scoped.
    Values from Outline FloatingToolbar/ToolbarMenu/ToolbarButton/theme.ts. */

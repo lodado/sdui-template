@@ -288,6 +288,86 @@ export const InlineTextDragAndDrop: Story = {
 }
 
 /**
+ * Fixture for multi-block selection + clipboard: enough sibling and nested
+ * blocks to drag a meaningful range across.
+ */
+const rangeClipboardContent: SduiDocumentContent = {
+  schemaVersion: '1.0',
+  root: createDocumentBlock({
+    id: 'root',
+    type: 'document.root',
+    children: [
+      createDocumentBlock({
+        id: 'range-heading',
+        type: 'document.heading',
+        state: { text: 'Drag across blocks to select them' },
+        attributes: { level: 2 },
+      }),
+      createDocumentBlock({
+        id: 'range-p1',
+        type: 'document.paragraph',
+        state: { text: 'Start a text drag here and cross into the next block — the selection snaps to whole blocks.' },
+      }),
+      createDocumentBlock({
+        id: 'range-p2',
+        type: 'document.paragraph',
+        state: { text: 'Then Cmd/Ctrl-C to copy, X to cut, V to paste after the selection.' },
+        children: [
+          createDocumentBlock({
+            id: 'range-p2-child',
+            type: 'document.paragraph',
+            state: { text: 'Nested children travel with their parent.' },
+          }),
+        ],
+      }),
+      createDocumentBlock({
+        id: 'range-check',
+        type: 'document.checklist',
+        state: { text: 'Paste also accepts plain markdown from other apps' },
+        attributes: { checked: false },
+      }),
+      createDocumentBlock({
+        id: 'range-tail',
+        type: 'document.paragraph',
+        state: { text: 'Pasted blocks get fresh ids and become the new selection.' },
+      }),
+    ],
+  }),
+}
+
+const RangeClipboardEditorWithPatchLog = () => {
+  const [patches, setPatches] = useState<SduiDocumentPatch[]>([])
+
+  return (
+    <div style={{ display: 'grid', gap: 16 }}>
+      <SduiDocumentEditor
+        content={rangeClipboardContent}
+        onContentChange={(_next, applied) => setPatches((previous) => [...previous, ...applied])}
+      />
+      <PatchLog patches={patches} />
+    </div>
+  )
+}
+
+export const BlockRangeSelectionAndClipboard: Story = {
+  render: () => <RangeClipboardEditorWithPatchLog />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Notion-style range selection: drag text across a block boundary and the selection snaps from ' +
+          'text to whole blocks (`extendBlockSelection`, ancestor-normalized). With blocks selected: ' +
+          '**Cmd/Ctrl-C** copies (`application/x-sdui-blocks` JSON + plain text), **X** cuts (copy + atomic ' +
+          '`block.delete` batch), **V** pastes after the selection with fresh ids (`block.insert` batch — see the log). ' +
+          'Pasting plain text routes through the markdown importer, so `# headings`, `- [ ] tasks` etc. from other ' +
+          'apps become real blocks. Payloads are zod-validated on the way in. ' +
+          'Single-block text selection/copy stays native (ProseMirror untouched).',
+      },
+    },
+  },
+}
+
+/**
  * One block of every type in the sdui-document schema, plus every inline mark.
  * Text blocks (paragraph/heading/checklist/callout) are click-to-edit;
  * non-text blocks (divider/image/file/link) never mount ProseMirror.

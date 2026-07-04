@@ -8,6 +8,7 @@ import { safeHref } from '../inline/safeHref'
 import type { SelectionSnapshot } from '../selection-toolbar/selectionSnapshot'
 import { buildSelectionSnapshot, selectionSnapshotsEqual } from '../selection-toolbar/selectionSnapshot'
 import { SelectionToolbar } from '../selection-toolbar/SelectionToolbar'
+import { handleMultilinePaste, insertLineBreaksBetweenBlocks } from './pm/clipboard'
 import { createFocusedBlockEditorState, editorStateToInline } from './pm/editorState'
 import type { FocusedBlockCallbacks } from './pm/keymapDelegation'
 import { focusedBlockSchema } from './pm/schema'
@@ -204,6 +205,11 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
           view.updateState(view.state.apply(transaction))
           refreshSnapshot()
         },
+        // rich (text/html) pastes keep marks on PM's default path; block
+        // boundaries become hard_breaks via the HTML transform. Plain-text
+        // multiline pastes get the same line structure via handlePaste.
+        transformPastedHTML: insertLineBreaksBetweenBlocks,
+        handlePaste: (pasteView, event) => handleMultilinePaste(pasteView, event),
         handleDOMEvents: {
           blur: () => {
             commitNow()

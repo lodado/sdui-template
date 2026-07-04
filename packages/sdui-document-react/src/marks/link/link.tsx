@@ -19,7 +19,13 @@ export const linkMark: SduiMarkDefinition = {
         getAttrs: (dom) => ({ href: (dom as HTMLElement).getAttribute('href') }),
       },
     ],
-    toDOM: (mark) => ['a', { href: String(mark.attrs.href), rel: 'noopener noreferrer nofollow' }, 0],
+    // draggable=false: dragging a link mark must not start a native link drag —
+    // inline text drag works off the selection, not the anchor element
+    toDOM: (mark) => [
+      'a',
+      { href: String(mark.attrs.href), rel: 'noopener noreferrer nofollow', draggable: 'false' },
+      0,
+    ],
   },
   renderStatic: (children, mark) => {
     if (mark.type !== 'link') {
@@ -29,7 +35,7 @@ export const linkMark: SduiMarkDefinition = {
     const href = safeHref(mark.attrs.href)
 
     return href ? (
-      <a href={href} rel="noopener noreferrer nofollow">
+      <a href={href} rel="noopener noreferrer nofollow" draggable={false}>
         {children}
       </a>
     ) : (

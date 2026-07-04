@@ -15,6 +15,7 @@ export const ImageBlock = ({ block }: BlockChromeProps) => {
         <img
           src={src}
           alt={alt}
+          draggable={false}
           width={typeof block.attributes?.width === 'number' ? block.attributes.width : undefined}
           height={typeof block.attributes?.height === 'number' ? block.attributes.height : undefined}
         />

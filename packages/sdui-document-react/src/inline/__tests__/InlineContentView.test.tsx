@@ -91,4 +91,20 @@ describe('InlineContentView', () => {
       })
     })
   })
+
+  describe('as is: link mark in static view', () => {
+    describe('when rendered', () => {
+      it('to be: anchor is not natively draggable (text drag works off the selection)', () => {
+        render(
+          <InlineContentView
+            content={[
+              { type: 'text', text: 'docs', marks: [{ type: 'link', attrs: { href: 'https://example.com' } }] },
+            ]}
+          />,
+        )
+
+        expect(screen.getByText('docs').closest('a')).toHaveAttribute('draggable', 'false')
+      })
+    })
+  })
 })

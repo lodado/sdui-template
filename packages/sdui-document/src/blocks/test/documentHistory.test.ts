@@ -1,7 +1,7 @@
 import {
   applyDocumentPatches,
-  createBlockId,
   applyDocumentPatchesWithInverse,
+  createBlockId,
   createDocumentBlock,
   createDocumentHistory,
   type DocumentHistoryEntry,

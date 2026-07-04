@@ -9,7 +9,7 @@ export const LinkBlock = ({ block }: BlockChromeProps) => {
   const label = blockText(block) || (typeof block.attributes?.url === 'string' ? block.attributes.url : '')
 
   return href ? (
-    <a className="embed" href={href} rel="noopener noreferrer nofollow">
+    <a className="embed" href={href} rel="noopener noreferrer nofollow" draggable={false}>
       {label}
     </a>
   ) : (

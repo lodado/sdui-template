@@ -10,7 +10,13 @@ export const FileBlock = ({ block }: BlockChromeProps) => {
   const label = name || blockText(block)
 
   return href ? (
-    <a className="attachment" href={href} download={name || undefined} data-size={block.attributes?.size}>
+    <a
+      className="attachment"
+      href={href}
+      download={name || undefined}
+      data-size={block.attributes?.size}
+      draggable={false}
+    >
       {label}
     </a>
   ) : (
