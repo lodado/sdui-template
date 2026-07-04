@@ -8,6 +8,24 @@ export const ImageBlock = ({ block }: BlockChromeProps) => {
   const src = typeof block.attributes?.src === 'string' ? safeHref(block.attributes.src) : undefined
   const alt = typeof block.attributes?.alt === 'string' ? block.attributes.alt : ''
   const caption = blockText(block)
+  const upload = block.state?.upload
+
+  // block-menu upload lifecycle: placeholder while uploading, alert on failure
+  if (upload === 'uploading') {
+    return (
+      <div className="image image-uploading" role="status">
+        Uploading {alt || 'image'}…
+      </div>
+    )
+  }
+
+  if (upload === 'error') {
+    return (
+      <div className="image image-error" role="alert">
+        Upload failed{alt ? ` — ${alt}` : ''}
+      </div>
+    )
+  }
 
   return (
     <div className="image">

@@ -42,11 +42,11 @@ function createContent(): SduiDocumentContent {
 }
 
 describe('block patch engine', () => {
-  it('inserts a block into a parent at the requested index', () => {
+  it('inserts a block into a parent at the requested anchor', () => {
     const next = applyDocumentPatch(createContent(), {
       type: 'block.insert',
       parentId: 'root',
-      index: 1,
+      before: 'callout-1',
       block: createDocumentBlock({
         id: 'heading-1',
         type: 'document.heading',
@@ -86,7 +86,7 @@ describe('block patch engine', () => {
       type: 'block.move',
       blockId: 'paragraph-1',
       parentId: 'callout-1',
-      index: 1,
+      after: 'paragraph-2',
     })
 
     expect(next.root.children?.map((block) => block.id)).toEqual(['callout-1'])
@@ -120,7 +120,7 @@ describe('block patch engine', () => {
         type: 'block.move',
         blockId: 'callout-1',
         parentId: 'paragraph-2',
-        index: 0,
+        after: null,
       }),
     ).toThrow(InvalidBlockMoveError)
   })
@@ -130,7 +130,7 @@ describe('block patch engine', () => {
       applyDocumentPatch(createContent(), {
         type: 'block.insert',
         parentId: 'root',
-        index: 0,
+        after: null,
         block: createDocumentBlock({ id: 'paragraph-1', type: 'document.paragraph' }),
       }),
     ).toThrow(DuplicateBlockIdError)
@@ -141,7 +141,7 @@ describe('block patch engine', () => {
       applyDocumentPatch(createContent(), {
         type: 'block.insert',
         parentId: 'root',
-        index: 0,
+        after: null,
         block: createDocumentBlock({
           id: 'new-parent',
           type: 'document.callout',
@@ -164,7 +164,7 @@ describe('block patch engine', () => {
       applyDocumentPatch(createContent(), {
         type: 'block.insert',
         parentId: 'missing-parent',
-        index: 0,
+        after: null,
         block: createDocumentBlock({ id: 'new', type: 'document.paragraph' }),
       }),
     ).toThrow(ParentBlockNotFoundError)

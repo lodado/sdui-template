@@ -17,9 +17,13 @@ import type {
   SduiInlineContent,
 } from '@lodado/sdui-document'
 import {
+  anchorAfterBlock,
+  anchorAppendToParent,
+  anchorBeforeBlock,
   clearBlockSelection,
   createBlockId,
   createBlockSelection,
+  createDefaultBlock,
   createTrailingBlockPatch,
   extendBlockSelection,
   findBlockById,
@@ -34,6 +38,7 @@ import { BlockChrome } from '../block-types/BlockChrome'
 import type { FocusedBlockCommit } from '../focused-block/FocusedBlockEditor'
 import { FocusedBlockEditor } from '../focused-block/FocusedBlockEditor'
 import { InlineContentView } from '../inline/InlineContentView'
+import type { BlockMenuItem } from './block-menu/blockMenuItems'
 import { useDocumentPatches } from './hooks/useDocumentPatches'
 import { useInlineTextDragDrop } from './hooks/useInlineTextDragDrop'
 import { useNestedBlockDragDrop } from './hooks/useNestedBlockDragDrop'
@@ -72,6 +77,11 @@ export type SduiDocumentEditorProps = {
   onContentChange?(next: SduiDocumentContent, patches: SduiDocumentPatch[]): void
   /** Notified when a markdown shortcut requests a block type change. */
   onTurnInto?(blockId: string, type: string, attrs?: Record<string, unknown>): void
+  /**
+   * Uploads a picked image/file to the host's storage. Omitted → the editor
+   * falls back to URL.createObjectURL (local-only, lost on reload).
+   */
+  onUploadFile?(file: File): Promise<{ url: string }>
   readOnly?: boolean
   /** Injectable for deterministic tests; defaults to a random id. */
   generateBlockId?(): string
@@ -135,6 +145,9 @@ type EditorHandlers = {
   turnInto(blockId: string, type: string, attrs?: Record<string, unknown>): void
   moveBlock(blockId: string, direction: 'up' | 'down'): void
   blockAction(blockId: string): void
+  blockMenuSelect(blockId: string, item: BlockMenuItem, extraAttributes?: Record<string, unknown>): void
+  blockMenuFilePicked(file: File): void
+  insertBlockBelow(blockId: string): void
 }
 
 type EditorRuntime = {
@@ -221,6 +234,14 @@ const BlockNode = React.memo(({ block, depth, readOnly }: BlockNodeProps) => {
         {!readOnly && (
           <button
             type="button"
+            data-plus-handle
+            aria-label={`Add block below ${block.id}`}
+            onClick={() => handlers.insertBlockBelow(block.id)}
+          />
+        )}
+        {!readOnly && (
+          <button
+            type="button"
             ref={setDragRef}
             data-drag-handle
             data-dragging={isDragging || undefined}
@@ -241,6 +262,7 @@ const BlockNode = React.memo(({ block, depth, readOnly }: BlockNodeProps) => {
                   key={focus.session}
                   content={blockInlineContent(block)}
                   autoFocus={focus.caret}
+                  autoOpenBlockMenu={focus.openBlockMenu === true}
                   onCommit={(commit) => handlers.commit(block.id, commit)}
                   onSplit={(offset) => handlers.split(block.id, offset)}
                   onMergeBackward={() => handlers.mergeBackward(block.id)}
@@ -251,6 +273,7 @@ const BlockNode = React.memo(({ block, depth, readOnly }: BlockNodeProps) => {
                   onMoveBlock={(direction) => handlers.moveBlock(block.id, direction)}
                   onBlockAction={() => handlers.blockAction(block.id)}
                   onEscape={() => handlers.escape(block.id)}
+                  onBlockMenuSelect={(item, extra) => handlers.blockMenuSelect(block.id, item, extra)}
                 />
               ) : (
                 staticView
@@ -292,6 +315,7 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     content,
     onContentChange,
     onTurnInto,
+    onUploadFile,
     readOnly = false,
     generateBlockId = defaultGenerateBlockId,
     className,
@@ -313,8 +337,13 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
   const store = storeRef.current
 
   // Live values behind a ref so the once-created handlers never go stale.
-  const latest = useRef({ applyPatches, generateBlockId, onTurnInto })
-  latest.current = { applyPatches, generateBlockId, onTurnInto }
+  const latest = useRef({ applyPatches, generateBlockId, onTurnInto, onUploadFile })
+  latest.current = { applyPatches, generateBlockId, onTurnInto, onUploadFile }
+
+  // Block-menu file picking: the hidden input is clicked for image/file items,
+  // and the target block/item wait here until the user chooses a file.
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const pendingFilePickRef = useRef<{ blockId: string; item: BlockMenuItem } | null>(null)
 
   const runtime = useMemo<EditorRuntime>(() => {
     const selectBlocks = (next: BlockSelectionState) => {
@@ -340,6 +369,60 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
 
           return block !== undefined && isTextBlock(block)
         })
+
+    /**
+     * Notion semantics: an empty block converts in place (block.setType),
+     * a non-empty block gets a new default sibling below (block.insert).
+     * Returns the id that received the type, or null when the block has no
+     * insert position (root-less).
+     */
+    const applyMenuType = (
+      blockId: string,
+      item: BlockMenuItem,
+      attributes: Record<string, unknown> | undefined,
+      extraState?: Record<string, unknown>,
+    ): string | null => {
+      const source = findBlockById(docRef.current, blockId)
+      const isEmpty = getInlineContentLength(blockInlineContent(source)) === 0
+
+      if (isEmpty) {
+        const patches: SduiDocumentPatch[] = [
+          {
+            type: 'block.setType',
+            blockId: createBlockId(blockId),
+            blockType: item.type,
+            ...(attributes ? { attributes } : {}),
+          },
+        ]
+        if (extraState) {
+          patches.push({ type: 'block.update', blockId: createBlockId(blockId), state: extraState })
+        }
+
+        latest.current.applyPatches(patches)
+
+        return blockId
+      }
+
+      const flattened = flattenDocumentBlocks(docRef.current)
+      const location = flattened.find((candidate) => candidate.id === blockId)
+      if (!location?.parentId) {
+        return null
+      }
+
+      const newId = latest.current.generateBlockId()
+      const base = createDefaultBlock(item.type, newId, attributes)
+      const block = extraState ? { ...base, state: { ...base.state, ...extraState } } : base
+      latest.current.applyPatches([
+        {
+          type: 'block.insert',
+          parentId: createBlockId(location.parentId),
+          ...anchorAfterBlock(docRef.current, location.parentId, blockId),
+          block,
+        },
+      ])
+
+      return newId
+    }
 
     const handlers: EditorHandlers = {
       handleClick: (blockId, shiftKey) => {
@@ -428,7 +511,7 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
             type: 'block.move',
             blockId: createBlockId(blockId),
             parentId: createBlockId(previousSibling.id),
-            index: newParent?.children?.length ?? 0,
+            ...anchorAppendToParent(docRef.current, previousSibling.id),
           },
         ])
         refocus(blockId, 'start')
@@ -449,7 +532,7 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
             type: 'block.move',
             blockId: createBlockId(blockId),
             parentId: createBlockId(parentItem.parentId),
-            index: parentItem.index + 1,
+            ...anchorAfterBlock(docRef.current, parentItem.parentId, parentItem.id),
           },
         ])
         refocus(blockId, 'start')
@@ -509,12 +592,21 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
           return
         }
 
+        const neighbor = flattenDocumentBlocks(docRef.current).find(
+          (candidate) => candidate.parentId === item.parentId && candidate.index === targetIndex,
+        )
+        if (!neighbor) {
+          return
+        }
+
         latest.current.applyPatches([
           {
             type: 'block.move',
             blockId: createBlockId(blockId),
             parentId: createBlockId(item.parentId),
-            index: targetIndex,
+            ...(direction === 'up'
+              ? anchorBeforeBlock(docRef.current, item.parentId, neighbor.id)
+              : anchorAfterBlock(docRef.current, item.parentId, neighbor.id)),
           },
         ])
       },
@@ -530,6 +622,108 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
             },
           ])
         }
+      },
+
+      blockMenuSelect: (blockId, item, extraAttributes) => {
+        if (item.action === 'file') {
+          // no patches yet — a cancelled picker must leave the document untouched
+          pendingFilePickRef.current = { blockId, item }
+          fileInputRef.current?.click()
+
+          return
+        }
+
+        const merged = { ...item.attributes, ...extraAttributes }
+        const attributes = Object.keys(merged).length > 0 ? merged : undefined
+        const targetId = applyMenuType(blockId, item, attributes)
+        if (!targetId) {
+          return
+        }
+
+        if (NON_TEXT_BLOCK_TYPES.has(item.type)) {
+          selectBlocks(createBlockSelection(targetId))
+        } else {
+          refocus(targetId, 'start')
+        }
+      },
+
+      blockMenuFilePicked: (file) => {
+        const pending = pendingFilePickRef.current
+        pendingFilePickRef.current = null
+        if (!pending) {
+          return
+        }
+
+        const isImage = pending.item.type === 'document.image'
+        // FileBlock reads attributes.name (download label); ImageBlock reads alt
+        const nameAttributes = isImage ? { alt: file.name } : { name: file.name }
+        const targetId = applyMenuType(
+          pending.blockId,
+          pending.item,
+          { ...pending.item.attributes, ...nameAttributes },
+          { upload: 'uploading' },
+        )
+        if (!targetId) {
+          return
+        }
+
+        selectBlocks(createBlockSelection(targetId))
+
+        // The upload resolves after arbitrary user edits — the block may be
+        // gone (undo, delete). Existence is re-checked before every patch.
+        const finish = (attributes: Record<string, unknown>) => {
+          if (!findBlockById(docRef.current, targetId)) {
+            return
+          }
+
+          latest.current.applyPatches([
+            { type: 'block.update', blockId: createBlockId(targetId), state: { upload: undefined }, attributes },
+          ])
+        }
+
+        const upload = latest.current.onUploadFile
+        if (!upload) {
+          finish(isImage ? { src: URL.createObjectURL(file) } : { url: URL.createObjectURL(file) })
+
+          return
+        }
+
+        upload(file).then(
+          ({ url }) => finish(isImage ? { src: url } : { url }),
+          () => {
+            if (!findBlockById(docRef.current, targetId)) {
+              return
+            }
+
+            latest.current.applyPatches([
+              { type: 'block.update', blockId: createBlockId(targetId), state: { upload: 'error' } },
+            ])
+          },
+        )
+      },
+
+      insertBlockBelow: (blockId) => {
+        const flattened = flattenDocumentBlocks(docRef.current)
+        const location = flattened.find((candidate) => candidate.id === blockId)
+        if (!location?.parentId) {
+          return
+        }
+
+        const newId = latest.current.generateBlockId()
+        latest.current.applyPatches([
+          {
+            type: 'block.insert',
+            parentId: createBlockId(location.parentId),
+            ...anchorAfterBlock(docRef.current, location.parentId, blockId),
+            block: createDefaultBlock('document.paragraph', newId),
+          },
+        ])
+
+        const previous = store.get().focus
+        store.set({
+          selection: clearBlockSelection(),
+          focus: { blockId: newId, caret: 'start', session: (previous?.session ?? 0) + 1, openBlockMenu: true },
+        })
       },
     }
 
@@ -698,7 +892,12 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
 
         return [
           ...accumulated,
-          { type: 'block.insert', parentId: createBlockId(item.parentId), index: item.index + 1, block: clone },
+          {
+            type: 'block.insert',
+            parentId: createBlockId(item.parentId),
+            ...anchorAfterBlock(docRef.current, item.parentId, id),
+            block: clone,
+          },
         ]
       }, [])
 
@@ -771,6 +970,26 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
             // block; keyboard users reach the same spot via ArrowDown.
             // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
             <div data-editor-clickable-padding onClick={handlePaddingClick} />
+          )}
+          {!readOnly && (
+            // Hidden picker for the block menu's image/file items — clicked
+            // programmatically, value reset so the same file can be re-picked.
+            <input
+              ref={fileInputRef}
+              type="file"
+              data-block-menu-file-input
+              aria-hidden
+              tabIndex={-1}
+              style={{ display: 'none' }}
+              onChange={(event) => {
+                const file = event.target.files?.[0]
+                // eslint-disable-next-line no-param-reassign -- reset the native picker for re-picks
+                event.target.value = ''
+                if (file) {
+                  runtime.handlers.blockMenuFilePicked(file)
+                }
+              }}
+            />
           )}
           {/* single drop indicator, painted via DOM during drags (no re-render) */}
           <div

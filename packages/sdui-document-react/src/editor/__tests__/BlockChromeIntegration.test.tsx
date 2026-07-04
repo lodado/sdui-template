@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event'
 import React from 'react'
 
 import { SduiDocumentEditor } from '../SduiDocumentEditor'
+import { stripPatchOrigins } from './patchTestUtils'
 
 /**
  * Fixture: one block per chrome-relevant type.
@@ -76,7 +77,9 @@ describe('SduiDocumentEditor block chrome integration', () => {
 
         expect(onContentChange).toHaveBeenCalledTimes(1)
         const [, patches] = onContentChange.mock.calls[0]
-        expect(patches).toEqual([{ type: 'block.update', blockId: 'todo', attributes: { checked: true } }])
+        expect(stripPatchOrigins(patches)).toEqual([
+          { type: 'block.update', blockId: 'todo', attributes: { checked: true } },
+        ])
         expect(screen.getByRole('checkbox')).toHaveAttribute('aria-checked', 'true')
         expect(container.querySelectorAll('[contenteditable="true"]')).toHaveLength(0)
       })

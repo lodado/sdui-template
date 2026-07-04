@@ -7,6 +7,8 @@ export type FocusTarget = {
   caret: 'start' | 'end' | number
   /** Bumped to force a fresh PM mount even when blockId stays the same. */
   session: number
+  /** '+' button flow: the mounting editor opens the block menu immediately. */
+  openBlockMenu?: boolean
 }
 
 export type EditorUIState = {

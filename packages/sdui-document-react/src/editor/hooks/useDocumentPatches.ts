@@ -39,6 +39,19 @@ export function useDocumentPatches({
   // session; everything that lands here as a patch batch is one undo step).
   const historyRef = useRef<DocumentHistory>(createDocumentHistory())
 
+  const clientIdRef = useRef(`client-${Math.random().toString(36).slice(2, 11)}`)
+  const opCounterRef = useRef(0)
+
+  const stampPatches = (patches: SduiDocumentPatch[]): SduiDocumentPatch[] =>
+    patches.map((patch) => {
+      opCounterRef.current += 1
+
+      return {
+        ...patch,
+        origin: { clientId: clientIdRef.current, opId: String(opCounterRef.current) },
+      }
+    })
+
   const publish = (next: SduiDocumentContent, patches: SduiDocumentPatch[]) => {
     docRef.current = next
     setDoc(next)
@@ -50,9 +63,10 @@ export function useDocumentPatches({
       return
     }
 
-    const first = applyDocumentPatchesWithInverse(docRef.current, patches)
+    const stamped = stampPatches(patches)
+    const first = applyDocumentPatchesWithInverse(docRef.current, stamped)
     let next = first.content
-    let applied = patches
+    let applied = stamped
     let { inverse } = first
 
     // Restore the invariant in the SAME batch — consumers and the undo stack
@@ -61,9 +75,10 @@ export function useDocumentPatches({
     if (!readOnly && generateBlockId) {
       const trailing = createTrailingBlockPatch(next, generateBlockId)
       if (trailing) {
-        const second = applyDocumentPatchWithInverse(next, trailing)
+        const [stampedTrailing] = stampPatches([trailing])
+        const second = applyDocumentPatchWithInverse(next, stampedTrailing)
         next = second.content
-        applied = [...patches, trailing]
+        applied = [...stamped, stampedTrailing]
         inverse = [...second.inverse, ...inverse]
       }
     }

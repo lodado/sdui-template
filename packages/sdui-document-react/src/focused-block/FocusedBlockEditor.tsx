@@ -4,6 +4,10 @@ import { TextSelection } from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
 
+import type { BlockMenuAnchorRect } from '../editor/block-menu/BlockMenu'
+import { BlockMenu } from '../editor/block-menu/BlockMenu'
+import type { BlockMenuItem } from '../editor/block-menu/blockMenuItems'
+import { filterBlockMenuItems } from '../editor/block-menu/blockMenuItems'
 import { safeHref } from '../inline/safeHref'
 import type { SelectionSnapshot } from '../selection-toolbar/selectionSnapshot'
 import { buildSelectionSnapshot, selectionSnapshotsEqual } from '../selection-toolbar/selectionSnapshot'
@@ -12,13 +16,17 @@ import { handleMultilinePaste, insertLineBreaksBetweenBlocks } from './pm/clipbo
 import { createFocusedBlockEditorState, editorStateToInline } from './pm/editorState'
 import type { FocusedBlockCallbacks } from './pm/keymapDelegation'
 import { focusedBlockSchema } from './pm/schema'
+import { getSlashRange } from './pm/slashMenuPlugin'
 
 export type FocusedBlockCommit = {
   content: SduiInlineContent
   text: string
 }
 
-export type FocusedBlockEditorProps = FocusedBlockCallbacks & {
+export type FocusedBlockEditorProps = Omit<
+  FocusedBlockCallbacks,
+  'onSlashMenuOpen' | 'onSlashMenuQueryChange' | 'onSlashMenuClose' | 'isSlashMenuOpen' | 'onSlashMenuKey'
+> & {
   /** Inline JSON injected once on mount (channel 1 of 3). */
   content: SduiInlineContent
   /** Caret placement on mount: start / end / explicit offset. */
@@ -26,7 +34,23 @@ export type FocusedBlockEditorProps = FocusedBlockCallbacks & {
   /** Called on blur, unmount, and before boundary delegation (channel 2 of 3). */
   // eslint-disable-next-line react/no-unused-prop-types -- consumed via latestProps ref
   onCommit(result: FocusedBlockCommit): void
+  /** Block-menu item chosen. `extraAttributes` carries e.g. `{ url }` from the link view. */
+  // eslint-disable-next-line react/no-unused-prop-types -- consumed via latestProps ref
+  onBlockMenuSelect(item: BlockMenuItem, extraAttributes?: Record<string, unknown>): void
+  /** '+' button flow: insert '/' on mount so the slash plugin opens the menu. */
+  // eslint-disable-next-line react/no-unused-prop-types -- consumed via latestProps ref
+  autoOpenBlockMenu?: boolean
   className?: string
+}
+
+/** Slash/plus menu UI state — owned here, keyboard-driven via PM delegation. */
+type BlockMenuState = {
+  anchor: BlockMenuAnchorRect
+  query: string
+  activeIndex: number
+  view: 'menu' | 'link'
+  /** Set while the link URL input is open — the item to delegate on submit. */
+  pendingLinkItem?: BlockMenuItem
 }
 
 function resolveCaretOffset(autoFocus: FocusedBlockEditorProps['autoFocus'], docSize: number): number {
@@ -76,6 +100,18 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
 
   const [snapshot, setSnapshot] = useState<SelectionSnapshot | null>(null)
   const [isSelectingText, setIsSelectingText] = useState(false)
+
+  const [menu, setMenu] = useState<BlockMenuState | null>(null)
+  // Plugin callbacks (isSlashMenuOpen, onSlashMenuKey) run synchronously inside
+  // PM event handling — they read the ref, never the async state.
+  const menuRef = useRef<BlockMenuState | null>(null)
+  const updateMenu = useCallback((next: BlockMenuState | null) => {
+    menuRef.current = next
+    setMenu(next)
+  }, [])
+  // Select/submit need commitNow/retired from the mount effect — bridged via refs.
+  const selectItemRef = useRef<(item: BlockMenuItem) => void>()
+  const submitLinkRef = useRef<(url: string) => void>()
 
   const refreshSnapshot = useCallback(() => {
     const view = viewRef.current
@@ -187,6 +223,106 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
         retired.current = true
         latestProps.current.onEscape()
       },
+      onSlashMenuOpen: (anchor) => {
+        updateMenu({ anchor, query: '', activeIndex: 0, view: 'menu' })
+      },
+      onSlashMenuQueryChange: (query) => {
+        const { current } = menuRef
+        if (current) {
+          updateMenu({ ...current, query, activeIndex: 0 })
+        }
+      },
+      onSlashMenuClose: () => {
+        // selecting a link item deletes the slash range (plugin fires close),
+        // but the URL input must stay open until submit/escape
+        const { current } = menuRef
+        if (current && current.view !== 'link') {
+          updateMenu(null)
+        }
+      },
+      isSlashMenuOpen: () => menuRef.current !== null && menuRef.current.view === 'menu',
+      onSlashMenuKey: (key) => {
+        const { current } = menuRef
+        if (!current) {
+          return false
+        }
+
+        const items = filterBlockMenuItems(current.query)
+        if (key === 'escape') {
+          // close the menu only — the typed /query text stays (Notion behavior)
+          updateMenu(null)
+
+          return true
+        }
+
+        if (key === 'up' || key === 'down') {
+          if (items.length === 0) {
+            return true
+          }
+
+          const delta = key === 'up' ? -1 : 1
+          const activeIndex = Math.min(Math.max(current.activeIndex + delta, 0), items.length - 1)
+          updateMenu({ ...current, activeIndex })
+
+          return true
+        }
+
+        // enter: no matches → let the keymap handle Enter (split)
+        const item = items[current.activeIndex]
+        if (!item) {
+          return false
+        }
+
+        selectItemRef.current?.(item)
+
+        return true
+      },
+    }
+
+    selectItemRef.current = (item: BlockMenuItem) => {
+      const view = viewRef.current
+      if (!view) {
+        return
+      }
+
+      // Switch to the link view BEFORE deleting the slash range: the deletion
+      // fires the plugin's close event synchronously, and only view==='link'
+      // survives onSlashMenuClose.
+      if (item.action === 'link') {
+        const { current } = menuRef
+        if (current) {
+          updateMenu({ ...current, view: 'link', pendingLinkItem: item })
+        }
+      }
+
+      // remove the "/query" trigger text before anything is committed
+      const range = getSlashRange(view.state)
+      if (range) {
+        view.dispatch(view.state.tr.delete(range.from, range.to))
+      }
+
+      if (item.action === 'link') {
+        return
+      }
+
+      updateMenu(null)
+      commitNow()
+      retired.current = true
+      latestProps.current.onBlockMenuSelect(item)
+    }
+
+    submitLinkRef.current = (url: string) => {
+      const item = menuRef.current?.pendingLinkItem
+      const normalized = normalizeLinkHref(url)
+      if (!item || !normalized) {
+        // unsafe/empty URL: keep the input open, nothing to insert
+        return
+      }
+
+      updateMenu(null)
+      commitNow()
+      retired.current = true
+      latestProps.current.onBlockMenuSelect(item, { url: normalized })
     }
 
     const initialState = createFocusedBlockEditorState(content, callbacks)
@@ -220,6 +356,8 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
       },
     )
     viewRef.current = view
+    // jsdom cannot type into contenteditable — tests drive PM through this handle.
+    ;(container as HTMLElement & { pmView?: EditorView }).pmView = view
 
     // Outline's isSelectingText: hide the toolbar while the mouse is dragging
     // out a selection, show it on release.
@@ -233,9 +371,16 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
 
     view.focus()
 
+    // '+' button flow: a typed '/' opens the menu through the plugin's normal
+    // path (single code path for both entry points); it is deleted on select.
+    if (latestProps.current.autoOpenBlockMenu) {
+      view.dispatch(view.state.tr.insertText('/', view.state.selection.from))
+    }
+
     return () => {
       container.removeEventListener('mousedown', handleMouseDown)
       document.removeEventListener('mouseup', handleMouseUp)
+      delete (container as HTMLElement & { pmView?: EditorView }).pmView
       const finalCommit = retired.current ? undefined : editorStateToInline(view.state)
       viewRef.current = undefined
       view.destroy()
@@ -256,6 +401,17 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
           onToggleMark={toggleNamedMark}
           onSetHighlight={setHighlight}
           onSetLink={setLink}
+        />
+      ) : null}
+      {menu ? (
+        <BlockMenu
+          anchor={menu.anchor}
+          items={filterBlockMenuItems(menu.query)}
+          activeIndex={menu.activeIndex}
+          view={menu.view}
+          onSelect={(item) => selectItemRef.current?.(item)}
+          onSubmitLink={(url) => submitLinkRef.current?.(url)}
+          onClose={() => updateMenu(null)}
         />
       ) : null}
     </>

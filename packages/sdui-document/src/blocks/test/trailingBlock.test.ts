@@ -58,7 +58,7 @@ describe('trailing block invariant (Outline TrailingNode port)', () => {
       expect(patch).toEqual({
         type: 'block.insert',
         parentId: 'root',
-        index: 2,
+        after: 'divider-1',
         block: { id: 'gen-1', type: 'document.paragraph' },
       })
     })

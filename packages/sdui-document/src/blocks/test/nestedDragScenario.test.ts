@@ -90,7 +90,7 @@ describe('nested drag scenario (complex 4-depth fixture)', () => {
           indentWidth: INDENT_WIDTH,
         })
 
-        expect(patch).toEqual({ type: 'block.move', blockId: 'tail', parentId: 'a-1', index: 1 })
+        expect(patch).toEqual({ type: 'block.move', blockId: 'tail', parentId: 'a-1', after: 'a-1-1' })
 
         const next = applyDocumentPatches(content, [patch!])
         expect(childIdsOf(next, 'a-1')).toEqual(['a-1-1', 'tail', 'a-1-2'])
@@ -110,7 +110,7 @@ describe('nested drag scenario (complex 4-depth fixture)', () => {
           indentWidth: INDENT_WIDTH,
         })
 
-        expect(patch).toEqual({ type: 'block.move', blockId: 'tail', parentId: 'a-1-1-1', index: 0 })
+        expect(patch).toEqual({ type: 'block.move', blockId: 'tail', parentId: 'a-1-1-1', after: null })
 
         const next = applyDocumentPatches(content, [patch!])
         expect(childIdsOf(next, 'a-1-1-1')).toEqual(['tail'])
@@ -131,7 +131,7 @@ describe('nested drag scenario (complex 4-depth fixture)', () => {
           indentWidth: INDENT_WIDTH,
         })
 
-        expect(patch).toEqual({ type: 'block.move', blockId: 'b-1', parentId: 'a-1', index: 0 })
+        expect(patch).toEqual({ type: 'block.move', blockId: 'b-1', parentId: 'a-1', after: null })
 
         const next = applyDocumentPatches(content, [patch!])
         expect(childIdsOf(next, 'a-1')).toEqual(['b-1', 'a-1-1', 'a-1-2'])
@@ -153,7 +153,7 @@ describe('nested drag scenario (complex 4-depth fixture)', () => {
           indentWidth: INDENT_WIDTH,
         })
 
-        expect(patch).toEqual({ type: 'block.move', blockId: 'a-1', parentId: 'section-b', index: 1 })
+        expect(patch).toEqual({ type: 'block.move', blockId: 'a-1', parentId: 'section-b', after: 'b-1' })
 
         const next = applyDocumentPatches(content, [patch!])
         expect(childIdsOf(next, 'section-b')).toEqual(['b-1', 'a-1'])
@@ -178,7 +178,7 @@ describe('nested drag scenario (complex 4-depth fixture)', () => {
           indentWidth: INDENT_WIDTH,
         })
 
-        expect(patch).toEqual({ type: 'block.move', blockId: 'a-1-1-1', parentId: 'section-a', index: 1 })
+        expect(patch).toEqual({ type: 'block.move', blockId: 'a-1-1-1', parentId: 'section-a', after: 'a-1' })
 
         const next = applyDocumentPatches(content, [patch!])
         expect(childIdsOf(next, 'section-a')).toEqual(['a-1', 'a-1-1-1', 'a-2'])

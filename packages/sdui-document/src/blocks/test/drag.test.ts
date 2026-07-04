@@ -50,7 +50,7 @@ describe('nested block drag helpers', () => {
       position: 'before',
     })
 
-    expect(patch).toEqual({ type: 'block.move', blockId: 'c', parentId: 'b', index: 1 })
+    expect(patch).toEqual({ type: 'block.move', blockId: 'c', parentId: 'b', before: 'b2' })
   })
 
   it('creates a move patch for dropping inside a block (first-child slot, where the indicator points)', () => {
@@ -75,7 +75,7 @@ describe('nested block drag helpers', () => {
       position: 'after',
     })
 
-    expect(patch).toEqual({ type: 'block.move', blockId: 'b1', parentId: 'b', index: 1 })
+    expect(patch).toEqual({ type: 'block.move', blockId: 'b1', parentId: 'b', after: 'b2' })
   })
 
   it('rejects root dragging and disabled drag options', () => {

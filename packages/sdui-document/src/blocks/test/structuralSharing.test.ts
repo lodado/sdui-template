@@ -2,6 +2,7 @@ import {
   applyDocumentPatch,
   createBlockId,
   createDocumentBlock,
+  ensureFractionalContent,
   findBlockById,
   type SduiDocumentContent,
 } from '../../index'
@@ -14,7 +15,7 @@ import {
  * └── c
  */
 function createContent(): SduiDocumentContent {
-  return {
+  return ensureFractionalContent({
     schemaVersion: '1.0',
     root: createDocumentBlock({
       id: 'root',
@@ -38,7 +39,7 @@ function createContent(): SduiDocumentContent {
         createDocumentBlock({ id: 'c', type: 'document.paragraph', state: { text: 'C' } }),
       ],
     }),
-  }
+  })
 }
 
 describe('applyDocumentPatch structural sharing', () => {
@@ -46,6 +47,7 @@ describe('applyDocumentPatch structural sharing', () => {
     describe('when a1 is updated', () => {
       it('to be: the a1 path gets fresh references while untouched subtrees are shared', () => {
         const content = createContent()
+        const baseline = content
 
         const next = applyDocumentPatch(content, {
           type: 'block.update',
@@ -56,14 +58,14 @@ describe('applyDocumentPatch structural sharing', () => {
         // path to the touched block: all new references (immutability contract)
         expect(next).not.toBe(content)
         expect(next.root).not.toBe(content.root)
-        expect(findBlockById(next, 'a')).not.toBe(findBlockById(content, 'a'))
-        expect(findBlockById(next, 'a1')).not.toBe(findBlockById(content, 'a1'))
+        expect(findBlockById(next, 'a')).not.toBe(findBlockById(baseline, 'a'))
+        expect(findBlockById(next, 'a1')).not.toBe(findBlockById(baseline, 'a1'))
 
         // off-path subtrees: identical references (memo bail-out contract)
-        expect(findBlockById(next, 'a2')).toBe(findBlockById(content, 'a2'))
-        expect(findBlockById(next, 'b')).toBe(findBlockById(content, 'b'))
-        expect(findBlockById(next, 'b1')).toBe(findBlockById(content, 'b1'))
-        expect(findBlockById(next, 'c')).toBe(findBlockById(content, 'c'))
+        expect(findBlockById(next, 'a2')).toBe(findBlockById(baseline, 'a2'))
+        expect(findBlockById(next, 'b')).toBe(findBlockById(baseline, 'b'))
+        expect(findBlockById(next, 'b1')).toBe(findBlockById(baseline, 'b1'))
+        expect(findBlockById(next, 'c')).toBe(findBlockById(baseline, 'c'))
       })
 
       it('to be: the original document is left untouched (immutability)', () => {
@@ -85,6 +87,7 @@ describe('applyDocumentPatch structural sharing', () => {
     describe('when a1 is deleted', () => {
       it('to be: siblings of the path stay shared, original intact', () => {
         const content = createContent()
+        const baseline = content
         const snapshot = JSON.parse(JSON.stringify(content))
 
         const next = applyDocumentPatch(content, {
@@ -92,8 +95,8 @@ describe('applyDocumentPatch structural sharing', () => {
           blockId: findBlockById(content, 'a1')!.id,
         })
 
-        expect(findBlockById(next, 'a2')).toBe(findBlockById(content, 'a2'))
-        expect(findBlockById(next, 'b')).toBe(findBlockById(content, 'b'))
+        expect(findBlockById(next, 'a2')).toBe(findBlockById(baseline, 'a2'))
+        expect(findBlockById(next, 'b')).toBe(findBlockById(baseline, 'b'))
         expect(content).toEqual(snapshot)
       })
     })
@@ -103,18 +106,19 @@ describe('applyDocumentPatch structural sharing', () => {
     describe('when b1 moves under a', () => {
       it('to be: both parents get fresh references, the c subtree stays shared', () => {
         const content = createContent()
+        const baseline = content
         const snapshot = JSON.parse(JSON.stringify(content))
 
         const next = applyDocumentPatch(content, {
           type: 'block.move',
           blockId: findBlockById(content, 'b1')!.id,
           parentId: findBlockById(content, 'a')!.id,
-          index: 0,
+          after: null,
         })
 
-        expect(findBlockById(next, 'a')).not.toBe(findBlockById(content, 'a'))
-        expect(findBlockById(next, 'b')).not.toBe(findBlockById(content, 'b'))
-        expect(findBlockById(next, 'c')).toBe(findBlockById(content, 'c'))
+        expect(findBlockById(next, 'a')).not.toBe(findBlockById(baseline, 'a'))
+        expect(findBlockById(next, 'b')).not.toBe(findBlockById(baseline, 'b'))
+        expect(findBlockById(next, 'c')).toBe(findBlockById(baseline, 'c'))
         expect(content).toEqual(snapshot)
       })
     })

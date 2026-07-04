@@ -32,6 +32,16 @@ export type FocusedBlockCallbacks = {
   onMoveBlock(direction: 'up' | 'down'): void
   /** Mod-Enter — type-specific action (checklist toggle, …) resolved by the block layer. */
   onBlockAction(): void
+  /** '/' detected at block start or after whitespace — menu should open. */
+  onSlashMenuOpen(anchor: { left: number; top: number; bottom: number }): void
+  /** Query text after the '/' changed while the range is still valid. */
+  onSlashMenuQueryChange(query: string): void
+  /** Slash range destroyed (slash deleted, whitespace typed, caret left). */
+  onSlashMenuClose(): void
+  /** React owns menu-open state (also true for '+'-opened menus). */
+  isSlashMenuOpen(): boolean
+  /** Arrow/Enter/Escape routed to the menu while open. true = consumed. */
+  onSlashMenuKey(key: 'up' | 'down' | 'enter' | 'escape'): boolean
 }
 
 function isAtVerticalBoundary(state: EditorState, view: EditorView | undefined, direction: 'up' | 'down'): boolean {

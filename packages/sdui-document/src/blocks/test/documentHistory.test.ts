@@ -4,6 +4,7 @@ import {
   createBlockId,
   createDocumentBlock,
   createDocumentHistory,
+  ensureFractionalContent,
   type DocumentHistoryEntry,
   recordHistoryEntry,
   redoHistory,
@@ -87,7 +88,7 @@ describe('document history (two-stack undo/redo)', () => {
 
   describe('integration: engine inverse round-trip through the stacks', () => {
     it('undo restores the pre-batch tree, redo replays it exactly', () => {
-      const original = createContent()
+      const original = ensureFractionalContent(createContent())
       const batch = [
         {
           type: 'block.split' as const,

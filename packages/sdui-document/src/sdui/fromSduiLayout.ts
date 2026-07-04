@@ -4,6 +4,7 @@ import { realBlockChildren } from '../block-types/shared'
 import type { SduiLayoutLikeDocument, SduiLayoutLikeNode } from '../block-types/types'
 import type { SduiDocumentBlock, SduiDocumentContent } from '../blocks/schema'
 import { createBlockId } from '../blocks/schema/ids'
+import { migrateToFractionalPositions } from '../ordering/migrate'
 
 function fromSduiNode(node: SduiLayoutLikeNode): SduiDocumentBlock {
   const blockType = String(node.attributes?.['data-block-type'] ?? 'document.paragraph')
@@ -16,8 +17,8 @@ function fromSduiNode(node: SduiLayoutLikeNode): SduiDocumentBlock {
 }
 
 export function fromSduiLayoutDocument(layout: SduiLayoutLikeDocument): SduiDocumentContent {
-  return {
+  return migrateToFractionalPositions({
     schemaVersion: '1.0',
     root: fromSduiNode(layout.root),
-  }
+  })
 }

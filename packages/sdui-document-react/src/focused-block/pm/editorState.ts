@@ -12,6 +12,7 @@ import type { FocusedBlockCallbacks } from './keymapDelegation'
 import { buildFocusedBlockKeymap } from './keymapDelegation'
 import { focusedBlockSchema } from './schema'
 import { inlineContentToPmDoc, pmDocToInlineContent } from './serialization'
+import { buildSlashMenuPlugin } from './slashMenuPlugin'
 
 /** Mark shortcuts aggregated from the mark registry (Outline bindings). */
 function buildMarkKeymap(): Record<string, Command> {
@@ -44,6 +45,7 @@ export function createFocusedBlockEditorState(
   return EditorState.create({
     doc: inlineContentToPmDoc(content),
     plugins: [
+      buildSlashMenuPlugin(callbacks),
       buildFocusedBlockKeymap(callbacks),
       buildBlockTypeInputRules(callbacks),
       buildMarkInputRules(),

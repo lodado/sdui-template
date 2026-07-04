@@ -47,10 +47,13 @@ export function createTrailingBlockPatch(
     return null
   }
 
+  const children = content.root.children ?? []
+  const last = children[children.length - 1]
+
   return {
     type: 'block.insert',
     parentId: createBlockId(content.root.id),
-    index: content.root.children?.length ?? 0,
+    after: last ? last.id : null,
     block: createEmptyParagraphBlock(generateBlockId()),
   }
 }
