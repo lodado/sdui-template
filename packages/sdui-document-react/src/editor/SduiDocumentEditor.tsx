@@ -638,7 +638,8 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
         }
 
         const isImage = pending.item.type === 'document.image'
-        const nameAttributes = isImage ? { alt: file.name } : { title: file.name }
+        // FileBlock reads attributes.name (download label); ImageBlock reads alt
+        const nameAttributes = isImage ? { alt: file.name } : { name: file.name }
         const targetId = applyMenuType(
           pending.blockId,
           pending.item,

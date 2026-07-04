@@ -8,6 +8,24 @@ export const FileBlock = ({ block }: BlockChromeProps) => {
   const href = typeof block.attributes?.url === 'string' ? safeHref(block.attributes.url) : undefined
   const name = typeof block.attributes?.name === 'string' ? block.attributes.name : ''
   const label = name || blockText(block)
+  const upload = block.state?.upload
+
+  // block-menu upload lifecycle: placeholder while uploading, alert on failure
+  if (upload === 'uploading') {
+    return (
+      <div className="attachment attachment-uploading" role="status">
+        Uploading {label || 'file'}…
+      </div>
+    )
+  }
+
+  if (upload === 'error') {
+    return (
+      <div className="attachment attachment-error" role="alert">
+        Upload failed{label ? ` — ${label}` : ''}
+      </div>
+    )
+  }
 
   return href ? (
     <a

@@ -772,3 +772,23 @@
   align-items: center;
   padding: 6px;
 }
+
+/* --------------------------------------------------------- upload states
+   Image/file blocks between file pick and upload completion. */
+
+[data-sdui-document-editor] .image-uploading,
+[data-sdui-document-editor] .attachment-uploading,
+[data-sdui-document-editor] .image-error,
+[data-sdui-document-editor] .attachment-error {
+  padding: 12px;
+  border: 1px dashed var(--sdui-doc-divider);
+  border-radius: 4px;
+  color: var(--sdui-doc-text-secondary);
+  font-size: 14px;
+}
+
+[data-sdui-document-editor] .image-error,
+[data-sdui-document-editor] .attachment-error {
+  color: var(--sdui-doc-danger, #d33);
+  border-color: currentcolor;
+}
