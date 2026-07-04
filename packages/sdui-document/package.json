@@ -1,0 +1,34 @@
+{
+  "name": "@lodado/sdui-document",
+  "description": "Headless SDUI block document domain package.",
+  "version": "0.0.0",
+  "license": "MIT",
+  "author": "lodado",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "source": "./src/index.ts",
+  "types": "./src/index.ts",
+  "files": [
+    "dist/**",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "rollup -c && tsc --emitDeclarationOnly --declarationMap false --declaration --declarationDir dist/types",
+    "clean": "rm -rf .turbo dist .cache",
+    "lint": "eslint \"src/**/*.ts*\"",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@babel/runtime": "^7.23.4",
+    "@types/jest": "29.5.14",
+    "eslint-config-sdui-template": "workspace:*",
+    "jest-config": "workspace:*",
+    "rollup-config": "workspace:*",
+    "ts-jest": "29.0.5",
+    "tsconfig": "workspace:*",
+    "typescript": "^5.4.5"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
