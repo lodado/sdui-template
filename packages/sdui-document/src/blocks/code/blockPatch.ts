@@ -35,13 +35,6 @@ function clampIndex(index: number, length: number): number {
   return index
 }
 
-function cloneContent(content: SduiDocumentContent): SduiDocumentContent {
-  return {
-    ...content,
-    root: createDocumentBlock(content.root),
-  }
-}
-
 function collectBlockIds(block: SduiDocumentBlock, ids: Set<string>): void {
   ids.add(block.id)
   block.children?.forEach((child) => collectBlockIds(child, ids))
@@ -73,6 +66,77 @@ function findParent(
 
 export function findBlockById(content: SduiDocumentContent, blockId: string): SduiDocumentBlock | undefined {
   return findBlock(content.root, blockId)
+}
+
+/**
+ * Copies only the ancestor chain from `node` down to `blockId` (path-copy);
+ * every subtree off that path keeps its original reference.
+ *
+ * Safe because the mutation helpers below never mutate arrays/objects in
+ * place — they always assign fresh `children`/`state` values — so shared
+ * subtrees can never be corrupted through the copy.
+ *
+ * @returns the copied node, or null when blockId is not in this subtree
+ */
+function copyPathTo(node: SduiDocumentBlock, blockId: string): SduiDocumentBlock | null {
+  if (node.id === blockId) {
+    return { ...node }
+  }
+
+  const children = node.children ?? []
+  const index = children.findIndex((child) => Boolean(findBlock(child, blockId)))
+  if (index < 0) {
+    return null
+  }
+
+  const copiedChild = copyPathTo(children[index], blockId)
+  if (!copiedChild) {
+    return null
+  }
+
+  const nextChildren = [...children]
+  nextChildren[index] = copiedChild
+
+  return { ...node, children: nextChildren }
+}
+
+/** Block ids whose ancestor chains a patch mutates (see the helpers below). */
+function touchedBlockIds(patch: SduiDocumentPatch): string[] {
+  switch (patch.type) {
+    case 'block.insert':
+      return [patch.parentId]
+    case 'block.update':
+      return [patch.blockId]
+    case 'block.delete':
+      return [patch.blockId]
+    case 'block.move':
+      return [patch.blockId, patch.parentId]
+    case 'block.split':
+      return [patch.blockId]
+    case 'block.merge':
+      return [patch.blockId, patch.intoBlockId]
+    default:
+      return []
+  }
+}
+
+/**
+ * Structural-sharing clone: the root is always a fresh object (immutability
+ * contract), but only the paths a patch touches are copied — untouched
+ * subtrees keep their references, so memoized React rows can bail out.
+ */
+function cloneTouchedPaths(content: SduiDocumentContent, blockIds: string[]): SduiDocumentContent {
+  const freshRoot: SduiDocumentBlock = {
+    ...content.root,
+    ...(content.root.children ? { children: [...content.root.children] } : {}),
+  }
+
+  const root = blockIds.reduce<SduiDocumentBlock>(
+    (currentRoot, blockId) => copyPathTo(currentRoot, blockId) ?? currentRoot,
+    freshRoot,
+  )
+
+  return { ...content, root }
 }
 
 /**
@@ -277,7 +341,7 @@ function mergeBlock(content: SduiDocumentContent, blockId: string, intoBlockId: 
 }
 
 export function applyDocumentPatch(content: SduiDocumentContent, patch: SduiDocumentPatch): SduiDocumentContent {
-  const next = cloneContent(content)
+  const next = cloneTouchedPaths(content, touchedBlockIds(patch))
 
   switch (patch.type) {
     case 'block.insert':

@@ -6,19 +6,36 @@ import {
   type SduiDocumentContent,
   type SduiDocumentPatch,
 } from '@lodado/sdui-document'
-import type { MutableRefObject } from 'react'
-import { useState } from 'react'
+import type { MutableRefObject, RefObject } from 'react'
+
+import { positionDropIndicatorOverlay } from './dropIndicatorOverlay'
 
 type NestedBlockDragDropOptions = {
   docRef: MutableRefObject<SduiDocumentContent>
   indentWidth: number
+  containerRef: RefObject<HTMLElement>
+  /** Single absolutely-positioned indicator element inside the container. */
+  indicatorRef: RefObject<HTMLElement>
   applyPatches(patches: SduiDocumentPatch[]): void
   onDragStart(): void
 }
 
-export function useNestedBlockDragDrop({ docRef, indentWidth, applyPatches, onDragStart }: NestedBlockDragDropOptions) {
-  const [dropIndicator, setDropIndicator] = useState<ProjectedNestedBlockDrop | null>(null)
-
+/**
+ * dnd-kit wiring for nested block drag & drop.
+ *
+ * The drop indicator is NOT React state: onDragMove fires at pointer
+ * frequency, so the projection is painted onto one overlay element via direct
+ * DOM mutation (positionDropIndicatorOverlay). Zero re-renders per drag frame;
+ * React is only involved again at drop time (one patch → one doc update).
+ */
+export function useNestedBlockDragDrop({
+  docRef,
+  indentWidth,
+  containerRef,
+  indicatorRef,
+  applyPatches,
+  onDragStart,
+}: NestedBlockDragDropOptions) {
   const projectDrop = (event: DragMoveEvent | DragEndEvent): ProjectedNestedBlockDrop | null => {
     if (!event.over) {
       return null
@@ -33,16 +50,26 @@ export function useNestedBlockDragDrop({ docRef, indentWidth, applyPatches, onDr
     })
   }
 
+  const paintIndicator = (projected: ProjectedNestedBlockDrop | null) => {
+    const overlay = indicatorRef.current
+    const container = containerRef.current
+    if (!overlay || !container) {
+      return
+    }
+
+    positionDropIndicatorOverlay(overlay, container, projected, indentWidth)
+  }
+
   const handleDragStart = (_event: DragStartEvent) => {
     onDragStart()
   }
 
   const handleDragMove = (event: DragMoveEvent) => {
-    setDropIndicator(projectDrop(event))
+    paintIndicator(projectDrop(event))
   }
 
   const handleDragEnd = (event: DragEndEvent) => {
-    setDropIndicator(null)
+    paintIndicator(null)
     if (!event.over) {
       return
     }
@@ -60,8 +87,8 @@ export function useNestedBlockDragDrop({ docRef, indentWidth, applyPatches, onDr
   }
 
   const handleDragCancel = () => {
-    setDropIndicator(null)
+    paintIndicator(null)
   }
 
-  return { dropIndicator, handleDragStart, handleDragMove, handleDragEnd, handleDragCancel }
+  return { handleDragStart, handleDragMove, handleDragEnd, handleDragCancel }
 }
