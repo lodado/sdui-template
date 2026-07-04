@@ -1,8 +1,4 @@
-import {
-  createDocumentBlock,
-  type SduiDocumentContent,
-  toSduiLayoutDocument,
-} from '../index';
+import { createDocumentBlock, type SduiDocumentContent, toSduiLayoutDocument } from '../index'
 
 describe('SDUI layout adapter', () => {
   const content: SduiDocumentContent = {
@@ -53,13 +49,13 @@ describe('SDUI layout adapter', () => {
         }),
       ],
     }),
-  };
+  }
 
   it('maps document content to an SDUI layout document', () => {
     const layout = toSduiLayoutDocument(content, {
       documentId: 'doc-1',
       title: 'Document story',
-    });
+    })
 
     expect(layout).toMatchObject({
       version: '1.0.0',
@@ -78,33 +74,93 @@ describe('SDUI layout adapter', () => {
           expect.objectContaining({ id: 'file', type: 'Div' }),
         ],
       },
-    });
-  });
+    })
+  })
 
   it('preserves readable text in mapped node state', () => {
-    const layout = toSduiLayoutDocument(content);
+    const layout = toSduiLayoutDocument(content)
 
     expect(layout.root.children?.[0].children?.[0]).toMatchObject({
       type: 'Span',
       state: { text: 'Launch plan' },
-    });
+    })
     expect(layout.root.children?.[2].children?.[1]).toMatchObject({
       type: 'Span',
       state: { text: 'Write Storybook variations' },
-    });
-  });
+    })
+  })
 
   it('uses Outline-derived editor tokens and block classes', () => {
-    const layout = toSduiLayoutDocument(content);
+    const layout = toSduiLayoutDocument(content)
 
-    expect(layout.root.attributes?.className).toContain('#FFFFFF');
-    expect(layout.root.attributes?.className).toContain('#111319');
-    expect(layout.root.children?.[3].attributes?.className).toContain('bg-[#DAE1E9]');
-    expect(layout.root.children?.[4].attributes?.className).toContain('notice-block info');
-    expect(layout.root.children?.[5].attributes?.className).toContain('use-hover-preview');
-    expect(layout.root.children?.[5].attributes?.className).toContain('#0366d6');
-    expect(layout.root.children?.[6].attributes?.className).toContain('image');
-    expect(layout.root.children?.[7].attributes?.className).toContain('attachment');
-  });
+    expect(layout.root.attributes?.className).toContain('#FFFFFF')
+    expect(layout.root.attributes?.className).toContain('#111319')
+    expect(layout.root.children?.[3].attributes?.className).toContain('bg-[#DAE1E9]')
+    expect(layout.root.children?.[4].attributes?.className).toContain('notice-block info')
+    expect(layout.root.children?.[5].attributes?.className).toContain('use-hover-preview')
+    expect(layout.root.children?.[5].attributes?.className).toContain('#0366d6')
+    expect(layout.root.children?.[6].attributes?.className).toContain('image')
+    expect(layout.root.children?.[7].attributes?.className).toContain('attachment')
+  })
+})
 
-});
+describe('link href sanitization', () => {
+  function makeLinkLayout(href: string) {
+    return toSduiLayoutDocument({
+      schemaVersion: '1.0',
+      root: createDocumentBlock({
+        id: 'root',
+        type: 'document.root',
+        children: [
+          createDocumentBlock({
+            id: 'link',
+            type: 'document.link',
+            state: { text: 'Click' },
+            attributes: { href },
+          }),
+        ],
+      }),
+    })
+  }
+
+  it.each([
+    ['https://example.com', 'https://example.com'],
+    ['http://example.com', 'http://example.com'],
+    ['mailto:user@example.com', 'mailto:user@example.com'],
+    ['tel:+1234567890', 'tel:+1234567890'],
+    ['/docs/relative', '/docs/relative'],
+  ])('allows safe href %s', (href, expected) => {
+    const node = makeLinkLayout(href).root.children?.[0]
+    expect(node?.attributes?.href).toBe(expected)
+  })
+
+  it.each([
+    // eslint-disable-next-line no-script-url
+    [`javascript${':'}alert(1)`],
+    // eslint-disable-next-line no-script-url
+    [`javascript${':'}void(0)`],
+    ['data:text/html,<script>alert(1)</script>'],
+  ])('strips dangerous href %s', (href) => {
+    const node = makeLinkLayout(href).root.children?.[0]
+    expect(node?.attributes?.href).toBeUndefined()
+  })
+
+  it('always enforces rel=noopener noreferrer nofollow even when attributes spread contains rel', () => {
+    const layout = toSduiLayoutDocument({
+      schemaVersion: '1.0',
+      root: createDocumentBlock({
+        id: 'root',
+        type: 'document.root',
+        children: [
+          createDocumentBlock({
+            id: 'link',
+            type: 'document.link',
+            attributes: { href: 'https://example.com', rel: 'follow' },
+          }),
+        ],
+      }),
+    })
+
+    expect(layout.root.children?.[0].attributes?.rel).toBe('noopener noreferrer nofollow')
+  })
+})
