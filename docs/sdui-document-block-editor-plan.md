@@ -1427,10 +1427,15 @@ pnpm storybook
 
 ### Milestone 4.5. Hybrid editor (Phase 16~19)
 
-- [ ] inline content model + split/merge patch (Phase 16)
-- [ ] FocusedBlockEditor — PM inline 엔진 (Phase 17)
-- [ ] block selection + n-depth DnD UI (Phase 18)
-- [ ] realtime R1(conflict 감지) + R2(presence) (Phase 19)
+- [x] inline content model + split/merge patch + inverse patch (Phase 16)
+- [x] FocusedBlockEditor — PM inline 엔진, `@lodado/sdui-document-react` 패키지 (Phase 17)
+  - [ ] 한글 IME 실브라우저 E2E (jsdom 불가 — Playwright 필요)
+- [x] Phase 18 headless — depth projection(`projectNestedBlockDrop`) + block selection 모델
+- [x] 에디터 표면 조립 — `SduiDocumentEditor` (click-to-focus, split/merge/indent/outdent/navigate 배선) + Storybook `DocumentEditor.stories.tsx`
+  - [ ] dnd-kit 실배선 (drop indicator, auto-scroll, collapsed subtree)
+  - [ ] block selection UI 배선 (Esc/handle 진입, 다중 delete/move)
+- [x] realtime R1 헬퍼(`detectVersionConflicts`/`bumpBlockVersions`) + R2 presence 헬퍼 (Phase 19)
+  - [ ] savePatches 어댑터/서버 연동 및 conflict UI
 
 ### Milestone 5. 고급 기능 후보
 
