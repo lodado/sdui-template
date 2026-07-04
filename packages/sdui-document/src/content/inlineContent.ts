@@ -7,6 +7,10 @@ function cloneMark(mark: SduiInlineMark): SduiInlineMark {
     return { type: 'link', attrs: { ...mark.attrs } }
   }
 
+  if (mark.type === 'highlight') {
+    return { type: 'highlight', attrs: { ...mark.attrs } }
+  }
+
   return { ...mark }
 }
 
@@ -41,6 +45,10 @@ function marksEqual(a: SduiInlineMark[] = [], b: SduiInlineMark[] = []): boolean
 
     if (mark.type === 'link' && other.type === 'link') {
       return mark.attrs.href === other.attrs.href
+    }
+
+    if (mark.type === 'highlight' && other.type === 'highlight') {
+      return mark.attrs.color === other.attrs.color
     }
 
     return true

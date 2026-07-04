@@ -13,8 +13,18 @@
 export type SduiInlineMark =
   | { type: 'bold' }
   | { type: 'italic' }
+  | { type: 'strikethrough' }
+  | { type: 'underline' }
   | { type: 'code' }
   | { type: 'link'; attrs: { href: string } }
+  | { type: 'highlight'; attrs: { color: string } }
+
+/** Highlight colors must be 6-digit hex — the only attrs format renderers accept. */
+export const HIGHLIGHT_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/
+
+export function isValidHighlightColor(color: string): boolean {
+  return HIGHLIGHT_COLOR_PATTERN.test(color)
+}
 
 export type SduiInlineTextNode = {
   type: 'text'
