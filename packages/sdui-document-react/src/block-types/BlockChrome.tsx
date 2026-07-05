@@ -12,6 +12,7 @@ import { LinkBlock } from './link/LinkBlock'
 import { NumberedListBlock } from './numbered-list/NumberedListBlock'
 import { ParagraphBlock } from './paragraph/ParagraphBlock'
 import { QuoteBlock } from './quote/QuoteBlock'
+import { ToggleBlock } from './toggle/ToggleBlock'
 
 export type BlockChromeProps = {
   block: SduiDocumentBlock
@@ -21,6 +22,8 @@ export type BlockChromeProps = {
   listOrdinal?: number
   /** Checklist checkbox toggle — omitted (readOnly) renders a non-interactive box. */
   onToggleChecked?(blockId: string, checked: boolean): void
+  /** Toggle collapse — omitted (readOnly) renders a disabled triangle. */
+  onToggleCollapsed?(blockId: string, collapsed: boolean): void
   /** Inline content: static InlineContentView or the focused ProseMirror editor. */
   children?: React.ReactNode
 }
@@ -39,7 +42,14 @@ export type BlockChromeProps = {
  * - image src and file/link hrefs are scheme-whitelisted via safeHref;
  *   unsafe URLs render without the attribute (span fallback for anchors)
  */
-export const BlockChrome = ({ block, depth, listOrdinal, onToggleChecked, children }: BlockChromeProps) => {
+export const BlockChrome = ({
+  block,
+  depth,
+  listOrdinal,
+  onToggleChecked,
+  onToggleCollapsed,
+  children,
+}: BlockChromeProps) => {
   switch (block.type) {
     case 'document.heading':
       return <HeadingBlock block={block}>{children}</HeadingBlock>
@@ -67,6 +77,13 @@ export const BlockChrome = ({ block, depth, listOrdinal, onToggleChecked, childr
 
     case 'document.quote':
       return <QuoteBlock block={block}>{children}</QuoteBlock>
+
+    case 'document.toggle':
+      return (
+        <ToggleBlock block={block} onToggleCollapsed={onToggleCollapsed}>
+          {children}
+        </ToggleBlock>
+      )
 
     case 'document.callout':
       return <CalloutBlock block={block}>{children}</CalloutBlock>

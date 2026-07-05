@@ -162,6 +162,11 @@ const BlockRow = React.memo(({ block, depth, readOnly, listOrdinal }: BlockNodeP
 
   const isFocused = !readOnly && focus !== null && isTextBlock(block)
 
+  // toggle collapse hides children at render time only — they stay in the document
+  const isToggle = block.type === 'document.toggle'
+  const isCollapsedToggle = isToggle && block.attributes?.collapsed === true
+  const isExpandedEmptyToggle = isToggle && !isCollapsedToggle && !block.children?.length
+
   // span keeps the chrome wrapper (<p>/<h1>…) valid — div may not nest there
   const staticView = readOnly ? (
     <span className="sdui-doc-static" data-inline-root>
@@ -230,6 +235,7 @@ const BlockRow = React.memo(({ block, depth, readOnly, listOrdinal }: BlockNodeP
             depth={depth}
             listOrdinal={listOrdinal}
             onToggleChecked={readOnly ? undefined : handlers.toggleChecked}
+            onToggleCollapsed={readOnly ? undefined : handlers.toggleCollapsed}
           >
             {isTextBlock(block) &&
               (isFocused && focus ? (
@@ -256,7 +262,7 @@ const BlockRow = React.memo(({ block, depth, readOnly, listOrdinal }: BlockNodeP
           </BlockChrome>
         </div>
       </div>
-      {block.children?.length ? (
+      {block.children?.length && !isCollapsedToggle ? (
         // one visual indent level per tree level — same unit the drag depth
         // projection uses, so the drop indicator lines up with real indents
         <div data-block-nested style={{ paddingLeft: DRAG_INDENT_WIDTH }}>
@@ -272,6 +278,11 @@ const BlockRow = React.memo(({ block, depth, readOnly, listOrdinal }: BlockNodeP
               />
             ))
           })()}
+        </div>
+      ) : null}
+      {isExpandedEmptyToggle ? (
+        <div data-block-nested style={{ paddingLeft: DRAG_INDENT_WIDTH }}>
+          <div className="toggle-empty-placeholder">Empty toggle. Click or drop blocks inside.</div>
         </div>
       ) : null}
     </div>

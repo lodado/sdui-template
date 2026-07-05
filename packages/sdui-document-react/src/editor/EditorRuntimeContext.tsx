@@ -12,6 +12,8 @@ import type { EditorUIStore, FocusTarget } from './uiStore'
 export type EditorHandlers = {
   handleClick(blockId: string, shiftKey: boolean): void
   toggleChecked(blockId: string, checked: boolean): void
+  /** Toggle block collapse — block.update on attributes.collapsed. */
+  toggleCollapsed(blockId: string, collapsed: boolean): void
   focusBlock(blockId: string, caret: FocusTarget['caret']): void
   commit(blockId: string, commit: FocusedBlockCommit): void
   split(blockId: string, offset: number): void

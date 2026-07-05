@@ -151,6 +151,12 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
         ])
       },
 
+      toggleCollapsed: (blockId, collapsed) => {
+        latest.current.applyPatches([
+          { type: 'block.update', blockId: createBlockId(blockId), attributes: { collapsed } },
+        ])
+      },
+
       focusBlock: refocus,
 
       commit: (blockId, commit) => {
@@ -328,6 +334,16 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
               type: 'block.update',
               blockId: createBlockId(blockId),
               attributes: { checked: block.attributes?.checked !== true },
+            },
+          ])
+        }
+
+        if (block?.type === 'document.toggle') {
+          latest.current.applyPatches([
+            {
+              type: 'block.update',
+              blockId: createBlockId(blockId),
+              attributes: { collapsed: block.attributes?.collapsed !== true },
             },
           ])
         }

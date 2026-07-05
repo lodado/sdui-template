@@ -909,3 +909,45 @@ blockquote.quote-block {
   font-size: 1em;
   line-height: 1.5;
 }
+
+/* ---- Notion toggle ---- */
+.toggle-block {
+  display: flex;
+  align-items: flex-start;
+  padding: 3px 2px;
+}
+.toggle-block > span > .toggle-triangle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  border-radius: 3px;
+  cursor: pointer;
+  padding: 0;
+}
+.toggle-block > span > .toggle-triangle:hover {
+  background: rgba(55, 53, 47, 0.08);
+}
+.toggle-block > span > .toggle-triangle svg {
+  width: 12px;
+  height: 12px;
+  fill: currentcolor;
+  transform: rotate(90deg);
+  transition: transform 200ms ease-out;
+}
+.toggle-block > span > .toggle-triangle[data-collapsed] svg {
+  transform: rotate(0deg);
+}
+.toggle-block > .content {
+  flex: 1 1 0;
+  min-width: 0;
+  line-height: 1.5;
+}
+.toggle-empty-placeholder {
+  color: rgba(55, 53, 47, 0.5);
+  padding: 3px 2px;
+  user-select: none;
+}
