@@ -1,0 +1,120 @@
+import type { Meta, StoryObj } from '@storybook/react-vite'
+import React from 'react'
+
+import { type DeepDiveConfig, DeepDiveTemplate, type Principle } from '../components'
+
+const meta: Meta = {
+  title: 'Document/Deep Dive/14 · 에디터 UI 스토어',
+  parameters: {
+    layout: 'fullscreen',
+    docs: {
+      description: {
+        component: 'React state 밖의 외부 스토어에서 각 행이 자기 슬라이스만 구독해 낭비 없는 재렌더를 달성하는 방법.',
+      },
+    },
+  },
+}
+
+export default meta
+type Story = StoryObj
+
+const STEPS: Principle[] = [
+  {
+    num: '01',
+    title: '외부 스토어',
+    body: (
+      <>
+        <code>EditorUIStore</code> 는 React state 밖에 있는 외부 스토어입니다. focus·selection 같은 편집 UI 상태를
+        여기에 모아 둡니다.
+      </>
+    ),
+  },
+  {
+    num: '02',
+    title: '행별 슬라이스 구독',
+    body: (
+      <>
+        각 블록 행이 <code>useSyncExternalStore</code> 로 자기 focus·selection 슬라이스만 구독합니다. 관심 없는 변경에는
+        깨어나지 않습니다.
+      </>
+    ),
+  },
+  {
+    num: '03',
+    title: '2행만 재렌더',
+    body: <>포커스가 A에서 B로 이동해도 A·B 두 행만 재렌더되고, 나머지 수백 개 블록은 그대로 남습니다.</>,
+    wide: true,
+  },
+]
+
+const SUBSCRIPTION_CODE = `// EditorUIStore: React state 밖의 외부 스토어.
+// 각 행이 useSyncExternalStore 로 자기 focus/selection 슬라이스만 구독.
+const focus = useSyncExternalStore(store.subscribe, () => store.getFocus(id))
+
+// 포커스가 A→B 로 바뀌어도 A·B 두 행만 재렌더.
+// 나머지 수백 개 블록은 구독이 걸리지 않아 그대로.`
+
+const config: DeepDiveConfig = {
+  accent: 'react',
+  kicker: 'Deep Dive · @lodado/sdui-document-react',
+  title: '에디터 UI 스토어 · 구독형 렌더링',
+  lead: 'EditorUIStore는 React state 밖의 외부 스토어. 각 블록 행이 useSyncExternalStore로 자기 focus·selection 슬라이스만 구독하므로 포커스가 이동해도 관련된 두 행만 재렌더. 코어의 copy-on-write와 더해져 sdui-template의 ID 기반 구독 철학과 대칭.',
+  pills: ['EditorUIStore', 'useSyncExternalStore', 'slice subscription', 'no wasted re-render'],
+  steps: STEPS,
+  stepsIntro: '외부 스토어에 편집 UI 상태를 모으고, 각 행이 자기 슬라이스만 구독해 딱 필요한 두 행만 다시 그립니다.',
+  sections: [
+    {
+      index: '14.1',
+      label: 'Store',
+      title: 'React state 밖의 외부 스토어',
+      blocks: [
+        {
+          kind: 'prose',
+          body: (
+            <>
+              <code>EditorUIStore</code> 는 React state 밖의 외부 스토어입니다. 각 블록 행이{' '}
+              <code>useSyncExternalStore</code> 로 자기 <strong>focus·selection 슬라이스만</strong> 구독하므로, 포커스가
+              이동해도 관련된 두 행만 재렌더됩니다. 여기에 코어의 copy-on-write가 더해져, 변하지 않은 블록은 참조가
+              그대로라 memo 행이 렌더를 건너뜁니다 — <code>@lodado/sdui-template</code> 의 ID 기반 구독 철학과 정확히
+              대칭입니다.
+            </>
+          ),
+        },
+        { kind: 'code', file: 'editor/uiStore.ts', code: SUBSCRIPTION_CODE },
+      ],
+    },
+    {
+      index: '14.2',
+      label: 'Symmetry',
+      title: 'sdui-template와 대칭',
+      blocks: [
+        {
+          kind: 'prose',
+          body: (
+            <>
+              편집 UI의 구독형 렌더링은 렌더러 코어와 같은 원리 위에 서 있습니다. 스토어에 슬라이스 단위로 상태를
+              모으고, 그 슬라이스에 관심 있는 소비자만 구독으로 연결해 두면, 변경이 나가도 구독한 쪽만 깨어납니다. 편집
+              레이어의 <code>useSyncExternalStore</code> 행 구독과 렌더러의 ID 기반 노드 구독은 이름만 다를 뿐 같은 설계
+              결정입니다.
+            </>
+          ),
+        },
+        {
+          kind: 'callout',
+          icon: '◆',
+          body: (
+            <>
+              <strong>한 가지 원리:</strong> 편집 UI의 구독형 렌더링과 렌더러의 ID 기반 구독은 결국 같은 원리입니다 —
+              슬라이스·노드 단위로 구독을 좁혀 두면, 어떤 변경도 관심 있는 최소한의 소비자만 재렌더합니다.
+            </>
+          ),
+        },
+      ],
+    },
+  ],
+}
+
+export const EditorUiStore: Story = {
+  name: '에디터 UI 스토어',
+  render: () => <DeepDiveTemplate config={config} />,
+}

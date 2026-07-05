@@ -1,0 +1,111 @@
+import type { Meta, StoryObj } from '@storybook/react-vite'
+import React from 'react'
+
+import { type DeepDiveConfig, DeepDiveTemplate, type Principle } from '../components'
+import { SduiNormalizeDemo } from '../demos/SduiTemplateDemos'
+
+const meta: Meta = {
+  title: 'Document/Deep Dive/16 · 정규화',
+  parameters: {
+    layout: 'fullscreen',
+    docs: {
+      description: {
+        component: '중첩 문서를 id → 노드 맵과 childrenIds로 평탄화해 어떤 노드든 O(1)로 찾고 ID 단위로 구독하는 방법.',
+      },
+    },
+  },
+}
+
+export default meta
+type Story = StoryObj
+
+const STEPS: Principle[] = [
+  {
+    num: '01',
+    title: '중첩 입력',
+    body: (
+      <>
+        서버가 내려준 문서는 <code>root</code> 아래로 자식이 계속 중첩된 트리입니다. 깊은 노드를 찾으려면 매번 트리를
+        타고 내려가야 합니다.
+      </>
+    ),
+  },
+  {
+    num: '02',
+    title: '평탄화',
+    body: (
+      <>
+        <code>normalizeSduiLayout</code> 이 트리를 <code>id → 노드</code> 맵과 각 노드의 <code>childrenIds</code> 로
+        펼칩니다. 계층은 참조로만 남습니다.
+      </>
+    ),
+  },
+  {
+    num: '03',
+    title: 'ID 단위 구독',
+    body: (
+      <>
+        어떤 노드든 <code>id</code> 하나로 O(1)에 조회하고, 그 <code>id</code> 단위로 구독해 바뀐 노드만 다시 그립니다.
+      </>
+    ),
+  },
+]
+
+const config: DeepDiveConfig = {
+  accent: 'renderer',
+  kicker: 'Deep Dive · @lodado/sdui-template',
+  title: '정규화 · 트리를 평탄한 맵으로',
+  lead: '중첩 문서를 normalizeSduiLayout으로 id → 노드 맵과 childrenIds로 평탄화합니다. 어떤 노드든 O(1)로 조회하고, 구독도 id 단위로 걸 수 있습니다.',
+  pills: ['normalizeSduiLayout', 'denormalizeSduiLayout', 'flat map', 'O(1) lookup'],
+  steps: STEPS,
+  stepsIntro: '중첩 입력이 평탄한 맵으로 펼쳐지면, 조회도 구독도 계층이 아니라 id 하나로 수렴합니다.',
+  sections: [
+    {
+      index: '16.1',
+      label: 'Why',
+      title: '평탄 맵이 필요한 이유',
+      blocks: [
+        {
+          kind: 'prose',
+          body: (
+            <>
+              들어온 중첩 문서는 <code>normalizeSduiLayout</code> 으로 <code>id → 노드</code> 맵과 각 노드의{' '}
+              <code>childrenIds</code> 로 평탄화됩니다. 이래야 어떤 노드든 O(1)로 찾고, <strong>ID 단위로 구독</strong>
+              할 수 있습니다. 트리를 그대로 두면 깊은 노드를 찾을 때마다 경로를 타야 하지만, 평탄 맵에서는{' '}
+              <code>id</code> 하나면 끝입니다. 계층 정보는 <code>childrenIds</code> 참조로만 보존되므로 렌더러는 자식을
+              필요할 때만 펼칩니다.
+            </>
+          ),
+        },
+      ],
+    },
+    {
+      index: '16.2',
+      label: 'Live',
+      title: 'normalizeSduiLayout',
+      blocks: [
+        {
+          kind: 'prose',
+          body: (
+            <>
+              아래에서 입력 트리와 출력 <code>nodes</code> 맵을 나란히 전환해 보세요. 중첩된 <code>root</code> 가{' '}
+              <code>id</code> 를 키로 하는 평탄한 맵으로 어떻게 펼쳐지는지, 그리고 계층이 어떻게 참조로만 남는지 눈으로
+              확인할 수 있습니다.
+            </>
+          ),
+        },
+        {
+          kind: 'demo',
+          title: 'normalizeSduiLayout',
+          hint: '입력 트리 ↔ 출력 nodes 맵 전환',
+          node: <SduiNormalizeDemo />,
+        },
+      ],
+    },
+  ],
+}
+
+export const Normalization: Story = {
+  name: '정규화',
+  render: () => <DeepDiveTemplate config={config} />,
+}

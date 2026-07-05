@@ -1,0 +1,210 @@
+import type { Meta, StoryObj } from '@storybook/react-vite'
+import React from 'react'
+
+import {
+  BadgeRow,
+  Callout,
+  CodeSnippet,
+  DemoFrame,
+  DocHero,
+  DocPage,
+  DocSection,
+  type Layer,
+  LayerDiagram,
+  Prose,
+} from './components'
+import { EditorWithPatchLog } from './demos/EditorWithPatchLog'
+import { allBlocksContent, blockMenuContent, marksContent, nestedContent } from './demos/sampleContents'
+
+const meta: Meta = {
+  title: 'Document/Architecture/3. sdui-document-react',
+  parameters: {
+    layout: 'fullscreen',
+    docs: {
+      description: {
+        component:
+          '헤드리스 도메인을 인터랙티브 에디터로 바인딩하는 React 레이어 — 하이브리드 렌더링, 구독형 스토어, BlockChrome 라우팅, 드래그, 슬래시 메뉴, 셀렉션 툴바.',
+      },
+    },
+  },
+}
+
+export default meta
+type Story = StoryObj
+
+const FLOW_LAYERS: Layer[] = [
+  {
+    name: 'props.content',
+    tag: 'input',
+    desc: '불변 SduiDocumentContent — 도메인 상태가 그대로 들어옴',
+  },
+  {
+    name: 'handlers',
+    tag: 'intent',
+    desc: '사용자 조작(split/merge/toggle/move…)을 SduiDocumentPatch[] 로 구성',
+  },
+  {
+    name: 'applyDocumentPatches',
+    tag: 'domain',
+    desc: '코어의 순수 함수로 다음 content 계산 (copy-on-write)',
+    accent: 'var(--color-text-discovery, #6e5dc6)',
+  },
+  {
+    name: 'onContentChange(next, patches)',
+    tag: 'output',
+    desc: '소비자에게 다음 content와 적용된 패치를 통지 — 영속·서버 전송은 소비자 몫',
+    accent: 'var(--color-text-brand, #1868db)',
+  },
+]
+
+const HYBRID_CODE = `// 포커스된 블록만 ProseMirror EditorView 를 마운트.
+// 나머지 블록은 정적 InlineContentView (마크 렌더러 트리).
+{isFocused ? (
+  <FocusedBlockEditor block={block} onCommit={commitInline} />  // PM 1개
+) : (
+  <InlineContentView content={block.state.content} />           // 정적 React
+)}
+// blur/unmount 시 PM 상태 → block.state.content 로 커밋(block.update).`
+
+const SUBSCRIPTION_CODE = `// EditorUIStore: React state 밖의 외부 스토어.
+// 각 행이 useSyncExternalStore 로 자기 focus/selection 슬라이스만 구독.
+const focus = useSyncExternalStore(store.subscribe, () => store.getFocus(id))
+
+// 포커스가 A→B 로 바뀌어도 A·B 두 행만 재렌더.
+// 나머지 수백 개 블록은 구독이 걸리지 않아 그대로.`
+
+const ReactPage = () => {
+  return (
+    <DocPage accent="react">
+      <DocHero
+        kicker="Package · @lodado/sdui-document-react"
+        title="하이브리드 Notion형 에디터 바인딩"
+        lead="블록 구조·선택·드래그는 React가, 인라인 텍스트 편집은 포커스된 단일 블록의 ProseMirror가 담당합니다. 도메인은 헤드리스로 남고, React는 트리 변환을 패치로 표현합니다."
+        pills={[
+          'SduiDocumentEditor',
+          'EditorUIStore',
+          'useSyncExternalStore',
+          'dnd-kit',
+          'ProseMirror',
+          'Radix Popover',
+        ]}
+      />
+
+      <DocSection index="3.1" label="Hybrid" title="하이브리드 아키텍처 · PM은 하나만">
+        <Prose>
+          <p>
+            전체 문서에 ProseMirror를 깔지 않습니다. <strong>포커스된 블록에만</strong> 단일{' '}
+            <code>FocusedBlockEditor</code>
+            (PM EditorView)가 마운트되고, 나머지는 정적 <code>InlineContentView</code> 로 렌더링됩니다. blur 시 PM
+            상태가 <code>block.state.content</code> 로 커밋됩니다. 포커스/정적 뷰가 같은 래퍼 태그를 쓰므로 편집
+            진입·이탈 시 레이아웃 시프트가 없습니다.
+          </p>
+        </Prose>
+        <CodeSnippet file="editor/SduiDocumentEditor.tsx · focused-block/FocusedBlockEditor.tsx" code={HYBRID_CODE} />
+        <DemoFrame title="Focus mounts one editor" hint="블록을 클릭해 포커스 이동 — 패치 로그 확인">
+          <EditorWithPatchLog content={marksContent} />
+        </DemoFrame>
+      </DocSection>
+
+      <DocSection index="3.2" label="Data flow" title="단방향 데이터 흐름">
+        <Prose>
+          <p>
+            에디터는 content를 받아 조작을 패치로 만들고, 코어의 <code>applyDocumentPatches</code> 로 다음 content를
+            계산한 뒤 <code>onContentChange(next, patches)</code> 로 통지합니다. 영속화·서버 전송은 전적으로 소비자의
+            몫입니다.
+          </p>
+        </Prose>
+        <LayerDiagram layers={FLOW_LAYERS} connector="↓" />
+      </DocSection>
+
+      <DocSection index="3.3" label="Rendering" title="구독형 렌더링 · sdui-template와 대칭">
+        <Prose>
+          <p>
+            <code>EditorUIStore</code> 는 React state 밖의 외부 스토어입니다. 각 블록 행이{' '}
+            <code>useSyncExternalStore</code> 로 자기 <strong>focus·selection 슬라이스만</strong> 구독하므로, 포커스가
+            이동해도 관련된 두 행만 재렌더됩니다. 여기에 코어의 copy-on-write가 더해져, 변하지 않은 블록은 참조가
+            그대로라 memo 행이 렌더를 건너뜁니다 — <code>@lodado/sdui-template</code> 의 ID 기반 구독 철학과 정확히
+            대칭입니다.
+          </p>
+        </Prose>
+        <CodeSnippet file="editor/uiStore.ts" code={SUBSCRIPTION_CODE} />
+      </DocSection>
+
+      <DocSection index="3.4" label="Routing" title="BlockChrome · 타입별 렌더 라우팅">
+        <Prose>
+          <p>
+            <code>BlockChrome</code> 은 블록 타입을 대응하는 React 래퍼로 라우팅합니다. 텍스트 블록
+            (paragraph/heading/checklist/callout)은 인라인 자식을 렌더하고, 비텍스트 블록(divider/image/file/link)은
+            자신을 렌더하며 PM을 절대 마운트하지 않습니다.
+          </p>
+        </Prose>
+        <BadgeRow
+          items={[
+            '<p>',
+            '<h1..h4>',
+            'checkbox',
+            '.notice-block',
+            '<hr>',
+            '<img> + caption',
+            'attachment card',
+            'bookmark embed',
+          ]}
+        />
+        <DemoFrame title="Every block type" hint="한 문서에 모든 렌더 타입">
+          <EditorWithPatchLog content={allBlocksContent} readOnly />
+        </DemoFrame>
+      </DocSection>
+
+      <DocSection index="3.5" label="Drag & drop" title="중첩 드래그 · 역할 분리">
+        <Prose>
+          <p>
+            드롭 위치 계산은 도메인(<code>projectNestedBlockDrop</code>)이, dnd-kit 센서·오버레이는 React(
+            <code>useNestedBlockDragDrop</code>)가 맡습니다. 드롭 슬롯은 항상 "hover한 블록의 뒤"이고,{' '}
+            <strong>수평 포인터 오프셋</strong>(레벨당 24px)이 깊이를 정합니다 — 오른쪽으로 밀면 nest, 왼쪽으로 밀면
+            outdent. 자기 자손으로의 드롭은 거부되고, 모든 드롭은 단일 <code>block.move</code> 패치를 냅니다.
+          </p>
+        </Prose>
+        <DemoFrame title="Nested drag & drop" hint="⠿ 핸들을 잡고 좌우로 밀어 깊이 조절">
+          <EditorWithPatchLog content={nestedContent} />
+        </DemoFrame>
+      </DocSection>
+
+      <DocSection index="3.6" label="Menus & keys" title="블록 메뉴 · 키보드 위임">
+        <Prose>
+          <p>
+            빈 줄에서 <code>/</code> 를 입력하면 <code>slashMenuPlugin</code> 이 블록 삽입·변환 메뉴를 엽니다. 블록
+            왼쪽의 <code>+</code> 버튼도 아래에 블록을 넣습니다. 구조 편집 키(Enter split · Backspace merge ·
+            Tab/Shift-Tab indent/outdent · Arrow 이동)는 PM 키맵이 <code>keymapDelegation</code> 을 통해 에디터로
+            위임합니다.
+          </p>
+        </Prose>
+        <DemoFrame title="Slash menu & + button" hint="빈 줄에서 / 입력 · 왼쪽 + 버튼">
+          <EditorWithPatchLog content={blockMenuContent} />
+        </DemoFrame>
+      </DocSection>
+
+      <DocSection index="3.7" label="Marks" title="셀렉션 툴바 · 인라인 마크">
+        <Prose>
+          <p>
+            텍스트를 드래그로 선택하면 <code>SelectionToolbar</code> (Radix Popover)가 뜹니다 — 마크 토글·하이라이트
+            팔레트·링크 에디터. <code>**</code>, <code>`</code> 같은 마크다운 단축키는 <code>markInputRule</code> 로
+            즉시 마크를 적용합니다. 링크 URL은 <code>safeHref</code> 가 스킴 화이트리스트(http·https·mailto·tel)로
+            검증해 XSS를 막습니다.
+          </p>
+        </Prose>
+        <DemoFrame title="Selection toolbar & highlights" hint="텍스트를 드래그 선택해 툴바 열기">
+          <EditorWithPatchLog content={marksContent} />
+        </DemoFrame>
+        <Callout icon="◆">
+          <strong>보안:</strong> 인라인 링크는 렌더 시점에 <code>safeHref</code> 로 스킴을 화이트리스트 검증합니다.{' '}
+          <code>javascript:</code> · <code>data:</code> 스킴은 렌더되지 않습니다.
+        </Callout>
+      </DocSection>
+    </DocPage>
+  )
+}
+
+export const React_: Story = {
+  name: 'sdui-document-react',
+  render: () => <ReactPage />,
+}
