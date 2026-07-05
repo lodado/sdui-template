@@ -4,7 +4,7 @@ import { blockText, stateText, stripKeys } from '../shared'
 import type { ContentBlockTypeModule } from '../types'
 import { createDefaultParagraph } from './paragraph.default'
 import { paragraphToMarkdown } from './paragraph.markdown'
-import { type ParagraphBlockState, paragraphStateSchema } from './paragraph.schema'
+import { paragraphAttributesSchema, type ParagraphBlockState, paragraphStateSchema } from './paragraph.schema'
 import { PARAGRAPH_BLOCK_TYPE } from './paragraph.type'
 
 export type { ParagraphBlockState } from './paragraph.schema'
@@ -50,5 +50,6 @@ export const paragraphBlockModule = {
   },
   createDefault: createDefaultParagraph,
   stateSchema: paragraphStateSchema,
+  attributesSchema: paragraphAttributesSchema,
   toMarkdown: paragraphToMarkdown,
 } satisfies ContentBlockTypeModule

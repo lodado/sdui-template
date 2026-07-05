@@ -5,7 +5,7 @@ import { blockText, stateText, textChild } from '../shared'
 import type { ContentBlockTypeModule } from '../types'
 import { createDefaultHeading } from './heading.default'
 import { headingToMarkdown } from './heading.markdown'
-import { type HeadingBlockState, headingStateSchema } from './heading.schema'
+import { headingAttributesSchema, type HeadingBlockState, headingStateSchema } from './heading.schema'
 import { HEADING_BLOCK_TYPE } from './heading.type'
 
 export type { HeadingBlockState } from './heading.schema'
@@ -47,5 +47,6 @@ export const headingBlockModule = {
   },
   createDefault: createDefaultHeading,
   stateSchema: headingStateSchema,
+  attributesSchema: headingAttributesSchema,
   toMarkdown: headingToMarkdown,
 } satisfies ContentBlockTypeModule

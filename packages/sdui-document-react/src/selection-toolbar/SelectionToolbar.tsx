@@ -1,6 +1,8 @@
+import type { BlockAlign } from '@lodado/sdui-document'
 import * as Popover from '@radix-ui/react-popover'
 import React, { useEffect, useRef, useState } from 'react'
 
+import { ColorPalette } from './ColorPalette'
 import { HighlightPalette } from './HighlightPalette'
 import { LinkEditor } from './LinkEditor'
 import type { SelectionSnapshot } from './selectionSnapshot'
@@ -10,10 +12,21 @@ export type SelectionToolbarProps = {
   snapshot: SelectionSnapshot
   onToggleMark(name: 'bold' | 'italic' | 'strikethrough' | 'code'): void
   onSetHighlight(color: string | null): void
+  onSetColor(color: string | null): void
   onSetLink(href: string | null): void
+  /** Current block alignment (for active state); omitted when align is unsupported here. */
+  blockAlign?: BlockAlign | null
+  /** Set/clear the focused block's alignment; toggling the active one clears it. */
+  onSetAlign?(align: BlockAlign | null): void
 }
 
-type ToolbarView = 'menu' | 'highlight' | 'link'
+const ALIGN_OPTIONS: ReadonlyArray<{ value: BlockAlign; label: string; glyph: string }> = [
+  { value: 'left', label: 'Align left', glyph: '⇤' },
+  { value: 'center', label: 'Align center', glyph: '↔' },
+  { value: 'right', label: 'Align right', glyph: '⇥' },
+]
+
+type ToolbarView = 'menu' | 'highlight' | 'color' | 'link'
 
 /**
  * Floating formatting toolbar over the current text selection.
@@ -31,7 +44,15 @@ type ToolbarView = 'menu' | 'highlight' | 'link'
  * - button order is Outline formatting.tsx: bold, italic, strikethrough,
  *   code | highlight | link
  */
-export const SelectionToolbar = ({ snapshot, onToggleMark, onSetHighlight, onSetLink }: SelectionToolbarProps) => {
+export const SelectionToolbar = ({
+  snapshot,
+  onToggleMark,
+  onSetHighlight,
+  onSetColor,
+  onSetLink,
+  blockAlign = null,
+  onSetAlign,
+}: SelectionToolbarProps) => {
   const [view, setView] = useState<ToolbarView>('menu')
   const anchorRef = useRef<HTMLSpanElement>(null)
   const open = !snapshot.empty && snapshot.anchorRect !== null
@@ -95,9 +116,29 @@ export const SelectionToolbar = ({ snapshot, onToggleMark, onSetHighlight, onSet
                   style={snapshot.highlightColor ? { backgroundColor: snapshot.highlightColor } : undefined}
                 />
               </ToolbarButton>
+              <ToolbarButton label="Text color" active={snapshot.activeMarks.color} onClick={() => setView('color')}>
+                <span className="sdui-doc-toolbar-color-dot" style={{ color: snapshot.textColor ?? undefined }}>
+                  A
+                </span>
+              </ToolbarButton>
               <ToolbarButton label="Link" active={snapshot.activeMarks.link} onClick={() => setView('link')}>
                 ⌁
               </ToolbarButton>
+              {onSetAlign && (
+                <>
+                  <span className="sdui-doc-toolbar-separator" />
+                  {ALIGN_OPTIONS.map((option) => (
+                    <ToolbarButton
+                      key={option.value}
+                      label={option.label}
+                      active={blockAlign === option.value}
+                      onClick={() => onSetAlign(blockAlign === option.value ? null : option.value)}
+                    >
+                      {option.glyph}
+                    </ToolbarButton>
+                  ))}
+                </>
+              )}
             </div>
           )}
           {view === 'highlight' && (
@@ -105,6 +146,15 @@ export const SelectionToolbar = ({ snapshot, onToggleMark, onSetHighlight, onSet
               activeColor={snapshot.highlightColor}
               onSelect={(color) => {
                 onSetHighlight(color)
+                setView('menu')
+              }}
+            />
+          )}
+          {view === 'color' && (
+            <ColorPalette
+              activeColor={snapshot.textColor}
+              onSelect={(color) => {
+                onSetColor(color)
                 setView('menu')
               }}
             />

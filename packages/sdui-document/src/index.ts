@@ -1,5 +1,6 @@
 export * from './autosave'
 export { createDefaultBlock } from './block-types/createDefaultBlock'
+export { type BlockAlign, blockAlignSchema, resolveBlockAlign } from './block-types/shared/align'
 export * from './blocks/code'
 export * from './blocks/drag'
 export * from './blocks/schema'

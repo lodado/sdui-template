@@ -158,6 +158,56 @@ describe('BlockChrome', () => {
         expect(container.querySelector('img')).toBeNull()
       })
     })
+
+    describe('when align is set (EP: horizontal position)', () => {
+      it('to be: .image wrapper carries the textAlign style', () => {
+        const { container } = render(
+          <BlockChrome block={block('document.image', { src: 'https://example.com/a.png', align: 'right' })} />,
+        )
+
+        expect(container.querySelector('.image')).toHaveStyle({ textAlign: 'right' })
+      })
+    })
+
+    describe('when onSetImageLayout is provided (EP: editable partition)', () => {
+      it('to be: layout controls render and align clicks emit patches', async () => {
+        const user = userEvent.setup()
+        const onSetImageLayout = jest.fn()
+        render(
+          <BlockChrome
+            block={block('document.image', { src: 'https://example.com/a.png', align: 'center' }, '')}
+            onSetImageLayout={onSetImageLayout}
+          />,
+        )
+
+        // clicking a different alignment sets it
+        await user.click(screen.getByLabelText('Align image left'))
+        expect(onSetImageLayout).toHaveBeenCalledWith('target', { align: 'left' })
+
+        // clicking the active alignment clears it
+        onSetImageLayout.mockClear()
+        await user.click(screen.getByLabelText('Align image center'))
+        expect(onSetImageLayout).toHaveBeenCalledWith('target', { align: undefined })
+      })
+    })
+
+    describe('when onSetImageLayout is omitted (EP: readOnly partition)', () => {
+      it('to be: no layout controls rendered', () => {
+        render(<BlockChrome block={block('document.image', { src: 'https://example.com/a.png' })} />)
+
+        expect(screen.queryByLabelText('Align image left')).toBeNull()
+      })
+    })
+  })
+
+  describe('as is: callout tone attribute (regression: schema uses tone, not style)', () => {
+    it('to be: attributes.tone selects the variant class', () => {
+      const { container } = render(
+        <BlockChrome block={block('document.callout', { tone: 'warning' })}>note</BlockChrome>,
+      )
+
+      expect(container.querySelector('.notice-block.warning')).not.toBeNull()
+    })
   })
 
   describe('as is: file block (EP: safe vs unsafe url partitions)', () => {

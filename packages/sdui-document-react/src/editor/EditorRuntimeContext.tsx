@@ -1,8 +1,12 @@
+import type { BlockAlign } from '@lodado/sdui-document'
 import React, { useContext } from 'react'
 
 import type { FocusedBlockCommit } from '../focused-block/FocusedBlockEditor'
 import type { BlockMenuItem } from './block-menu/blockMenuItems'
 import type { EditorUIStore, FocusTarget } from './uiStore'
+
+/** Image layout attributes settable from the image block's inline controls. */
+export type ImageLayoutPatch = { width?: number; align?: BlockAlign }
 
 /**
  * Per-block interaction handlers. Created ONCE per editor instance (stable
@@ -16,6 +20,10 @@ export type EditorHandlers = {
   toggleCollapsed(blockId: string, collapsed: boolean): void
   /** Code block language picker — block.update on attributes.language. */
   setCodeLanguage(blockId: string, language: string): void
+  /** Horizontal alignment for a text block — block.update on attributes.align (null clears). */
+  setBlockAlign(blockId: string, align: BlockAlign | null): void
+  /** Image size/position — block.update merging attributes.width / attributes.align. */
+  setImageLayout(blockId: string, layout: ImageLayoutPatch): void
   focusBlock(blockId: string, caret: FocusTarget['caret']): void
   commit(blockId: string, commit: FocusedBlockCommit): void
   split(blockId: string, offset: number): void

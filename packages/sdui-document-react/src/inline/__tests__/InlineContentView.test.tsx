@@ -26,6 +26,7 @@ describe('InlineContentView', () => {
               { type: 'text', text: 'under', marks: [{ type: 'underline' }] },
               { type: 'text', text: 'code', marks: [{ type: 'code' }] },
               { type: 'text', text: 'lit', marks: [{ type: 'highlight', attrs: { color: '#FDEA9B' } }] },
+              { type: 'text', text: 'tinted', marks: [{ type: 'color', attrs: { color: '#66778F' } }] },
               { type: 'text', text: 'docs', marks: [{ type: 'link', attrs: { href: 'https://example.com' } }] },
             ]}
           />,
@@ -40,6 +41,10 @@ describe('InlineContentView', () => {
         // Outline Highlight.ts: data-color hex + 40%-opacity background
         expect(screen.getByText('lit')).toHaveAttribute('data-color', '#FDEA9B')
         expect(screen.getByText('lit')).toHaveStyle({ backgroundColor: 'rgba(253, 234, 155, 0.4)' })
+        // foreground text color: <span data-text-color> painted as `color`
+        expect(screen.getByText('tinted').tagName).toBe('SPAN')
+        expect(screen.getByText('tinted')).toHaveAttribute('data-text-color', '#66778F')
+        expect(screen.getByText('tinted')).toHaveStyle({ color: '#66778F' })
         expect(screen.getByText('docs')).toHaveAttribute('href', 'https://example.com')
       })
     })

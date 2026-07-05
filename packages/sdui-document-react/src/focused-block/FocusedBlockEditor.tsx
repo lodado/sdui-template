@@ -1,4 +1,4 @@
-import type { SduiInlineContent } from '@lodado/sdui-document'
+import type { BlockAlign, SduiInlineContent } from '@lodado/sdui-document'
 import { toggleMark } from 'prosemirror-commands'
 import { TextSelection } from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
@@ -44,6 +44,10 @@ export type FocusedBlockEditorProps = Omit<
   /** Code blocks: Enter inserts a newline, Tab inserts two spaces (no split/indent). */
   // eslint-disable-next-line react/no-unused-prop-types -- consumed via latestProps ref
   rawTextMode?: boolean
+  /** Current horizontal alignment of the block, shown as active state in the toolbar. */
+  blockAlign?: BlockAlign | null
+  /** Set/clear the block's horizontal alignment from the selection toolbar. */
+  onSetAlign?(align: BlockAlign | null): void
   className?: string
 }
 
@@ -67,7 +71,7 @@ export type FocusedBlockEditorProps = Omit<
 export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
   // onCommit is intentionally not destructured: it is only reached through
   // latestProps so late prop swaps still land (react/no-unused-prop-types).
-  const { content, autoFocus, className } = props
+  const { content, autoFocus, className, blockAlign, onSetAlign } = props
   const containerRef = useRef<HTMLSpanElement>(null)
   const viewRef = useRef<EditorView>()
   const latestProps = useRef(props)
@@ -116,6 +120,19 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
 
     const { from, to } = view.state.selection
     const markType = focusedBlockSchema.marks.highlight
+    const transaction = view.state.tr.removeMark(from, to, markType)
+    view.dispatch(color ? transaction.addMark(from, to, markType.create({ color })) : transaction)
+    view.focus()
+  }, [])
+
+  const setColor = useCallback((color: string | null) => {
+    const view = viewRef.current
+    if (!view) {
+      return
+    }
+
+    const { from, to } = view.state.selection
+    const markType = focusedBlockSchema.marks.color
     const transaction = view.state.tr.removeMark(from, to, markType)
     view.dispatch(color ? transaction.addMark(from, to, markType.create({ color })) : transaction)
     view.focus()
@@ -370,7 +387,10 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
           snapshot={snapshot}
           onToggleMark={toggleNamedMark}
           onSetHighlight={setHighlight}
+          onSetColor={setColor}
           onSetLink={setLink}
+          blockAlign={blockAlign ?? null}
+          onSetAlign={onSetAlign}
         />
       ) : null}
       {menu ? (

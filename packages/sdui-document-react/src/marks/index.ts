@@ -1,5 +1,6 @@
 import { boldMark } from './bold/bold'
 import { codeMark } from './code/code'
+import { colorMark } from './color/color'
 import { highlightMark } from './highlight/highlight'
 import { italicMark } from './italic/italic'
 import { linkMark } from './link/link'
@@ -19,6 +20,7 @@ export const MARK_DEFINITIONS: readonly SduiMarkDefinition[] = [
   strikethroughMark,
   underlineMark,
   highlightMark,
+  colorMark,
   codeMark,
   linkMark,
 ]

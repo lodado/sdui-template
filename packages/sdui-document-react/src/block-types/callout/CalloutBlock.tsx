@@ -2,10 +2,10 @@ import React from 'react'
 
 import type { BlockChromeProps } from '../BlockChrome'
 
-const CALLOUT_STYLES = new Set(['info', 'warning', 'tip', 'success'])
+const CALLOUT_TONES = new Set(['info', 'warning', 'tip', 'success'])
 
-function calloutStyle(style: unknown): string {
-  return typeof style === 'string' && CALLOUT_STYLES.has(style) ? style : 'info'
+function calloutTone(tone: unknown): string {
+  return typeof tone === 'string' && CALLOUT_TONES.has(tone) ? tone : 'info'
 }
 
 /** Minimal glyphs standing in for Outline's icon set (outline-icons). */
@@ -16,19 +16,20 @@ const CALLOUT_ICON_PATHS: Record<string, string> = {
   success: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1.2 14.5-4-4 1.4-1.4 2.6 2.6 5.6-5.6 1.4 1.4-7 7Z',
 }
 
-const CalloutIcon = ({ style }: { style: string }) => (
+const CalloutIcon = ({ tone }: { tone: string }) => (
   <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden focusable="false">
-    <path d={CALLOUT_ICON_PATHS[style]} />
+    <path d={CALLOUT_ICON_PATHS[tone]} />
   </svg>
 )
 
 export const CalloutBlock = ({ block, children }: BlockChromeProps) => {
-  const style = calloutStyle(block.attributes?.style)
+  // Schema + mapper store the variant under `tone`; older docs may use `style`.
+  const tone = calloutTone(block.attributes?.tone ?? block.attributes?.style)
 
   return (
-    <div className={`notice-block ${style}`}>
+    <div className={`notice-block ${tone}`}>
       <div className="icon">
-        <CalloutIcon style={style} />
+        <CalloutIcon tone={tone} />
       </div>
       <div className="content">{children}</div>
     </div>

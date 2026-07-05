@@ -4,6 +4,7 @@ import { z } from 'zod'
 import type { SduiInlineNode } from '../blocks/schema/inline'
 import { type BoldMark, boldMark } from './bold/bold'
 import { type CodeMark, codeMark } from './code/code'
+import { type ColorMark, colorMark } from './color/color'
 import { type HighlightMark, highlightMark } from './highlight/highlight'
 import { type ItalicMark, italicMark } from './italic/italic'
 import { type LinkMark, linkMark } from './link/link'
@@ -19,6 +20,7 @@ export type SduiInlineMark =
   | CodeMark
   | LinkMark
   | HighlightMark
+  | ColorMark
 
 /**
  * Domain mark registry — drives validation (inlineMarkSchema) and the
@@ -33,6 +35,7 @@ export const MARK_MODULES = [
   codeMark,
   linkMark,
   highlightMark,
+  colorMark,
 ] as const
 
 const markModuleByName = {
@@ -43,6 +46,7 @@ const markModuleByName = {
   code: codeMark,
   link: linkMark,
   highlight: highlightMark,
+  color: colorMark,
   // eslint-disable-next-line no-use-before-define
 } satisfies { [Name in SduiInlineMark['type']]: SduiMarkModule<Extract<SduiInlineMark, { type: Name }>> }
 
@@ -54,6 +58,7 @@ export const inlineMarkSchema = z.union([
   codeMark.schema,
   linkMark.schema,
   highlightMark.schema,
+  colorMark.schema,
 ])
 
 export function cloneMark<Mark extends SduiInlineMark>(mark: Mark): Mark {
@@ -109,7 +114,8 @@ export function inlineMarkFromToken(
   return markModule?.fromMarkdown ? markModule.fromMarkdown(token, marks, ctx) : undefined
 }
 
-export type { BoldMark, CodeMark, HighlightMark, ItalicMark, LinkMark, StrikethroughMark, UnderlineMark }
-export { boldMark, codeMark, highlightMark, italicMark, linkMark, strikethroughMark, underlineMark }
+export type { BoldMark, CodeMark, ColorMark, HighlightMark, ItalicMark, LinkMark, StrikethroughMark, UnderlineMark }
+export { boldMark, codeMark, colorMark, highlightMark, italicMark, linkMark, strikethroughMark, underlineMark }
+export { isValidTextColor, TEXT_COLOR_PATTERN } from './color/color'
 export { HIGHLIGHT_COLOR_PATTERN, isValidHighlightColor } from './highlight/highlight'
 export type { MarkFromMarkdownContext, SduiMarkModule } from './types'

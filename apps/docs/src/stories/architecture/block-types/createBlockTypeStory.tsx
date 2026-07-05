@@ -1,23 +1,9 @@
-import type { Meta, StoryObj } from '@storybook/react-vite'
+import type { StoryObj } from '@storybook/react-vite'
 import React from 'react'
 
 import { type DeepDiveConfig, DeepDiveTemplate } from '../components'
 import { EditorWithPatchLog } from '../demos/EditorWithPatchLog'
 import type { BlockTypeDoc } from './blockRegistry'
-
-export function blockTypeMeta(doc: BlockTypeDoc): Meta {
-  return {
-    title: `Document/Block Types/${doc.slug}`,
-    parameters: {
-      layout: 'fullscreen',
-      docs: {
-        description: {
-          component: doc.lead,
-        },
-      },
-    },
-  }
-}
 
 function blockTypeConfig(doc: BlockTypeDoc): DeepDiveConfig {
   return {

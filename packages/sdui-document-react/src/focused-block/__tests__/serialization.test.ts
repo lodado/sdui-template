@@ -57,6 +57,16 @@ describe('inline content <-> ProseMirror doc serialization', () => {
       })
     })
 
+    describe('when round-tripped with a color mark (EP: attrs-bearing mark)', () => {
+      it('to be: color attr preserved', () => {
+        const content: SduiInlineContent = [
+          { type: 'text', text: 'hi', marks: [{ type: 'color', attrs: { color: '#66778F' } }] },
+        ]
+
+        expect(roundTrip(content)).toEqual(content)
+      })
+    })
+
     describe('when round-tripped with a link mark', () => {
       it('to be: href attr preserved', () => {
         const content: SduiInlineContent = [

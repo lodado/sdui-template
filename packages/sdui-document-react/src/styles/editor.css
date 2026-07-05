@@ -436,6 +436,51 @@
   max-width: 100%;
 }
 
+/* image size/position controls — inline bar shown only in editable mode */
+[data-sdui-document-editor] .image-controls {
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+  margin-top: 6px;
+  padding: 2px;
+  border-radius: 6px;
+  background: var(--sdui-doc-background-secondary);
+  font-size: 13px;
+}
+
+[data-sdui-document-editor] .image-controls button {
+  border: 0;
+  background: transparent;
+  border-radius: 4px;
+  padding: 2px 6px;
+  cursor: pointer;
+  color: var(--sdui-doc-text-secondary);
+  line-height: 1.2;
+}
+
+[data-sdui-document-editor] .image-controls button:hover,
+[data-sdui-document-editor] .image-controls button[data-active] {
+  background: var(--sdui-doc-background);
+  color: var(--sdui-doc-text);
+}
+
+[data-sdui-document-editor] .image-controls .image-width {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--sdui-doc-text-secondary);
+}
+
+[data-sdui-document-editor] .image-controls .image-width input {
+  width: 56px;
+  border: 1px solid var(--sdui-doc-divider);
+  border-radius: 4px;
+  padding: 1px 4px;
+  font: inherit;
+  background: var(--sdui-doc-background);
+  color: var(--sdui-doc-text);
+}
+
 [data-sdui-document-editor] .caption {
   border: 0;
   display: block;
@@ -770,6 +815,11 @@
 .sdui-doc-toolbar-swatch[data-active] {
   outline: 2px solid var(--sdui-doc-accent);
   outline-offset: 1px;
+}
+
+/* text-color toolbar button glyph — the "A" tints to the active color */
+.sdui-doc-toolbar-color-dot {
+  font-weight: 700;
 }
 
 .sdui-doc-toolbar-link-input {

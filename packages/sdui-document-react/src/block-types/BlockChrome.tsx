@@ -1,6 +1,7 @@
 import type { SduiDocumentBlock } from '@lodado/sdui-document'
 import React from 'react'
 
+import type { ImageLayoutPatch } from '../editor/EditorRuntimeContext'
 import { BulletedListBlock } from './bulleted-list/BulletedListBlock'
 import { CalloutBlock } from './callout/CalloutBlock'
 import { ChecklistBlock } from './checklist/ChecklistBlock'
@@ -27,6 +28,8 @@ export type BlockChromeProps = {
   onToggleCollapsed?(blockId: string, collapsed: boolean): void
   /** Code language picker — omitted (readOnly) renders a static label. */
   onSetCodeLanguage?(blockId: string, language: string): void
+  /** Image size/position controls — omitted (readOnly) renders the image without controls. */
+  onSetImageLayout?(blockId: string, layout: ImageLayoutPatch): void
   /** Inline content: static InlineContentView or the focused ProseMirror editor. */
   children?: React.ReactNode
 }
@@ -52,6 +55,7 @@ export const BlockChrome = ({
   onToggleChecked,
   onToggleCollapsed,
   onSetCodeLanguage,
+  onSetImageLayout,
   children,
 }: BlockChromeProps) => {
   switch (block.type) {
@@ -103,7 +107,7 @@ export const BlockChrome = ({
       return <DividerBlock block={block} />
 
     case 'document.image':
-      return <ImageBlock block={block} />
+      return <ImageBlock block={block} onSetImageLayout={onSetImageLayout} />
 
     case 'document.file':
       return <FileBlock block={block} />

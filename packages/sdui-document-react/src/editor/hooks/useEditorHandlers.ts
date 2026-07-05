@@ -163,6 +163,18 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
         ])
       },
 
+      setBlockAlign: (blockId, align) => {
+        latest.current.applyPatches([
+          { type: 'block.update', blockId: createBlockId(blockId), attributes: { align: align ?? undefined } },
+        ])
+      },
+
+      setImageLayout: (blockId, layout) => {
+        latest.current.applyPatches([
+          { type: 'block.update', blockId: createBlockId(blockId), attributes: { ...layout } },
+        ])
+      },
+
       focusBlock: refocus,
 
       commit: (blockId, commit) => {

@@ -21,6 +21,8 @@ export type SelectionSnapshot = {
   activeMarks: Record<string, boolean>
   /** color of the highlight mark under the selection, if any */
   highlightColor: string | null
+  /** color of the foreground text-color mark under the selection, if any */
+  textColor: string | null
   /** href of the link mark under the selection, if any */
   linkHref: string | null
   /** viewport rect spanning the selection (null when unmeasurable, e.g. jsdom) */
@@ -94,6 +96,7 @@ export function buildSelectionSnapshot(view: EditorView): SelectionSnapshot {
   const highlightAttrs = activeMarks.highlight
     ? getMarkAttrsInSelection(state, focusedBlockSchema.marks.highlight)
     : null
+  const colorAttrs = activeMarks.color ? getMarkAttrsInSelection(state, focusedBlockSchema.marks.color) : null
   const linkAttrs = activeMarks.link ? getMarkAttrsInSelection(state, focusedBlockSchema.marks.link) : null
 
   return {
@@ -102,6 +105,7 @@ export function buildSelectionSnapshot(view: EditorView): SelectionSnapshot {
     to,
     activeMarks,
     highlightColor: highlightAttrs ? String(highlightAttrs.color) : null,
+    textColor: colorAttrs ? String(colorAttrs.color) : null,
     linkHref: linkAttrs ? String(linkAttrs.href) : null,
     anchorRect: empty ? null : measureAnchorRect(view, from, to),
   }
@@ -113,6 +117,7 @@ export function selectionSnapshotsEqual(a: SelectionSnapshot, b: SelectionSnapsh
     a.from === b.from &&
     a.to === b.to &&
     a.highlightColor === b.highlightColor &&
+    a.textColor === b.textColor &&
     a.linkHref === b.linkHref &&
     MARK_DEFINITIONS.every((definition) => a.activeMarks[definition.name] === b.activeMarks[definition.name]) &&
     a.anchorRect?.left === b.anchorRect?.left &&

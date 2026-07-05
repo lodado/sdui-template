@@ -1,5 +1,6 @@
 import { boldMark } from '../bold/bold'
 import { codeMark } from '../code/code'
+import { colorMark, isValidTextColor, TEXT_COLOR_PATTERN } from '../color/color'
 import { HIGHLIGHT_COLOR_PATTERN, highlightMark, isValidHighlightColor } from '../highlight/highlight'
 import { cloneMark, inlineMarkSchema, MARK_MODULES, marksEqual } from '../index'
 import { italicMark } from '../italic/italic'
@@ -56,13 +57,29 @@ describe('attrs-bearing mark modules', () => {
     expect(isValidHighlightColor('#fff')).toBe(false)
     expect(HIGHLIGHT_COLOR_PATTERN.test('#123456')).toBe(true)
   })
+
+  test('color: 6-digit hex enforced, deep clone, color equality', () => {
+    const mark = { type: 'color' as const, attrs: { color: '#66778F' } }
+    expect(colorMark.schema.parse(mark)).toEqual(mark)
+    expect(() => colorMark.schema.parse({ type: 'color', attrs: { color: 'gray' } })).toThrow()
+
+    const cloned = colorMark.clone(mark)
+    expect(cloned.attrs).not.toBe(mark.attrs)
+
+    expect(colorMark.equals(mark, { type: 'color', attrs: { color: '#66778F' } })).toBe(true)
+    expect(colorMark.equals(mark, { type: 'color', attrs: { color: '#000000' } })).toBe(false)
+
+    expect(isValidTextColor('#a1B2c3')).toBe(true)
+    expect(isValidTextColor('#fff')).toBe(false)
+    expect(TEXT_COLOR_PATTERN.test('#123456')).toBe(true)
+  })
 })
 
 describe('mark registry', () => {
-  test('registry names are unique and cover all 7 marks', () => {
+  test('registry names are unique and cover all 8 marks', () => {
     const names = MARK_MODULES.map((markModule) => markModule.name)
     expect(new Set(names).size).toBe(names.length)
-    expect(names.sort()).toEqual(['bold', 'code', 'highlight', 'italic', 'link', 'strikethrough', 'underline'])
+    expect(names.sort()).toEqual(['bold', 'code', 'color', 'highlight', 'italic', 'link', 'strikethrough', 'underline'])
   })
 
   test('inlineMarkSchema parses every mark shape and rejects bad highlight', () => {
@@ -70,6 +87,10 @@ describe('mark registry', () => {
     expect(inlineMarkSchema.parse({ type: 'link', attrs: { href: 'https://a.io' } })).toEqual({
       type: 'link',
       attrs: { href: 'https://a.io' },
+    })
+    expect(inlineMarkSchema.parse({ type: 'color', attrs: { color: '#66778F' } })).toEqual({
+      type: 'color',
+      attrs: { color: '#66778F' },
     })
     expect(() => inlineMarkSchema.parse({ type: 'highlight', attrs: { color: 'red' } })).toThrow()
   })

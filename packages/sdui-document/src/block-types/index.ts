@@ -86,6 +86,7 @@ export { NUMBERED_LIST_BLOCK_TYPE } from './numbered-list/numberedList.type'
 export { PARAGRAPH_BLOCK_TYPE } from './paragraph/paragraph.type'
 export { QUOTE_BLOCK_TYPE } from './quote/quote.type'
 export { ROOT_BLOCK_TYPE } from './root/root.type'
+export { type BlockAlign, blockAlignSchema, resolveBlockAlign } from './shared/align'
 export { TOGGLE_BLOCK_TYPE } from './toggle/toggle.type'
 export type {
   BlockFromMarkdownContext,
