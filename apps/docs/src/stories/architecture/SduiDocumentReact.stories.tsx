@@ -159,7 +159,7 @@ const ReactPage = () => {
         <Prose>
           <p>
             드롭 위치 계산은 도메인(<code>projectNestedBlockDrop</code>)이, dnd-kit 센서·오버레이는 React(
-            <code>useNestedBlockDragDrop</code>)가 맡습니다. 드롭 슬롯은 항상 "hover한 블록의 뒤"이고,{' '}
+            <code>useNestedBlockDragDrop</code>)가 맡습니다. 드롭 슬롯은 항상 &ldquo;hover한 블록의 뒤&rdquo;이고,{' '}
             <strong>수평 포인터 오프셋</strong>(레벨당 24px)이 깊이를 정합니다 — 오른쪽으로 밀면 nest, 왼쪽으로 밀면
             outdent. 자기 자손으로의 드롭은 거부되고, 모든 드롭은 단일 <code>block.move</code> 패치를 냅니다.
           </p>

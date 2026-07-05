@@ -29,11 +29,11 @@
 
 // React Components
 export { SduiLayoutRenderer } from './react-wrapper/components/SduiLayoutRenderer'
-export { SduiLayoutStateInspector } from './react-wrapper/components/SduiLayoutStateInspector'
 export type {
   SduiLayoutStateInspectorProps,
   SduiLayoutStateInspectorView,
 } from './react-wrapper/components/SduiLayoutStateInspector'
+export { SduiLayoutStateInspector } from './react-wrapper/components/SduiLayoutStateInspector'
 export { SduiLayoutProvider } from './react-wrapper/context/SduiLayoutContext'
 
 // React Hooks
@@ -65,9 +65,9 @@ export { denormalizeSduiLayout, denormalizeSduiNode, normalizeSduiLayout, normal
 export type { NormalizedSduiEntities } from './utils/normalize/types'
 
 // Debug / inspection utilities
+export type { LayoutStateSnapshot } from './react-wrapper/utils/layoutStateSnapshot'
 export {
   formatLayoutStateJson,
   snapshotLayoutStateFromDocument,
   snapshotLayoutStateFromStore,
 } from './react-wrapper/utils/layoutStateSnapshot'
-export type { LayoutStateSnapshot } from './react-wrapper/utils/layoutStateSnapshot'

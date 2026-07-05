@@ -25,7 +25,7 @@ describe('rebalanceChildren', () => {
         ...migrated.root,
         children: sortBlocksByPosition([
           { ...migrated.root.children![0], position: longKey.repeat(10) },
-          { ...migrated.root.children![1], position: longKey.repeat(10) + 'z' },
+          { ...migrated.root.children![1], position: `${longKey.repeat(10)}z` },
         ]),
       },
     }

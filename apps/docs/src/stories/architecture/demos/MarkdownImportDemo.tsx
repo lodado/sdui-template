@@ -33,17 +33,23 @@ export const MarkdownImportDemo = () => {
   return (
     <>
       <div>
-        <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--doc-text-subtle)' }}>Markdown 입력</label>
-        <textarea
-          className="sdui-doc__textarea"
-          value={source}
-          spellCheck={false}
-          onChange={(e) => setSource(e.target.value)}
-          style={{ marginTop: 6 }}
-        />
+        <label
+          htmlFor="markdown-import-source"
+          style={{ fontSize: 12, fontWeight: 600, color: 'var(--doc-text-subtle)' }}
+        >
+          Markdown 입력
+          <textarea
+            id="markdown-import-source"
+            className="sdui-doc__textarea"
+            value={source}
+            spellCheck={false}
+            onChange={(e) => setSource(e.target.value)}
+            style={{ marginTop: 6 }}
+          />
+        </label>
       </div>
       <div>
-        <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--doc-text-subtle)' }}>변환된 문서</label>
+        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--doc-text-subtle)' }}>변환된 문서</span>
         <div
           style={{
             marginTop: 6,

@@ -2,9 +2,19 @@ import type { SduiDocumentContent, SduiDocumentPatch } from '@lodado/sdui-docume
 import { SduiDocumentEditor } from '@lodado/sdui-document-react'
 import React, { useState } from 'react'
 
+function patchTargetId(patch: SduiDocumentPatch): string {
+  if ('blockId' in patch) {
+    return patch.blockId
+  }
+  if ('block' in patch) {
+    return patch.block.id
+  }
+  return ''
+}
+
 function formatPatch(patch: SduiDocumentPatch): string {
   const { type } = patch
-  const id = 'blockId' in patch ? patch.blockId : 'block' in patch ? patch.block.id : ''
+  const id = patchTargetId(patch)
   return id ? `${type}  ${id}` : type
 }
 
