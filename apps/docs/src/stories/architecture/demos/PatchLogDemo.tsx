@@ -1,6 +1,7 @@
 import type { PatchEnvelope, SduiDocumentContent, SequencerState } from '@lodado/sdui-document'
 import {
   commitEnvelope,
+  createBlockId,
   createDocumentBlock,
   createDocumentId,
   createSequencerState,
@@ -72,7 +73,7 @@ export const PatchLogDemo = () => {
       patches: [
         {
           type: 'block.update',
-          blockId: input.blockId,
+          blockId: createBlockId(input.blockId),
           state: { text: input.text },
           ...(input.expectedVersion !== undefined ? { expectedVersion: input.expectedVersion } : {}),
         },
