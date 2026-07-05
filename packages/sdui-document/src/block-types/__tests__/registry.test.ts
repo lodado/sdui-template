@@ -15,6 +15,7 @@ import {
   LINK_BLOCK_TYPE,
   NUMBERED_LIST_BLOCK_TYPE,
   PARAGRAPH_BLOCK_TYPE,
+  QUOTE_BLOCK_TYPE,
   ROOT_BLOCK_TYPE,
 } from '../index'
 
@@ -31,6 +32,7 @@ describe('block-type constants', () => {
       CHECKLIST_BLOCK_TYPE,
       DIVIDER_BLOCK_TYPE,
       CALLOUT_BLOCK_TYPE,
+      QUOTE_BLOCK_TYPE,
       IMAGE_BLOCK_TYPE,
       FILE_BLOCK_TYPE,
       LINK_BLOCK_TYPE,

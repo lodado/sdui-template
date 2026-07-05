@@ -10,6 +10,7 @@ import { IMAGE_BLOCK_TYPE } from '../../block-types/image/image.type'
 import { LINK_BLOCK_TYPE } from '../../block-types/link/link.type'
 import { NUMBERED_LIST_BLOCK_TYPE } from '../../block-types/numbered-list/numberedList.type'
 import { PARAGRAPH_BLOCK_TYPE } from '../../block-types/paragraph/paragraph.type'
+import { QUOTE_BLOCK_TYPE } from '../../block-types/quote/quote.type'
 import { ROOT_BLOCK_TYPE } from '../../block-types/root/root.type'
 import { createBlockId, type SduiDocumentBlockId } from './ids'
 
@@ -36,6 +37,7 @@ export type SduiDocumentBlockType =
   | typeof IMAGE_BLOCK_TYPE
   | typeof FILE_BLOCK_TYPE
   | typeof LINK_BLOCK_TYPE
+  | typeof QUOTE_BLOCK_TYPE
   | typeof COLUMN_LIST_BLOCK_TYPE
   | typeof COLUMN_BLOCK_TYPE
 
