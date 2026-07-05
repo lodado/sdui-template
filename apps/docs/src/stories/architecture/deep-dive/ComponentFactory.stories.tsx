@@ -71,7 +71,7 @@ function Container({ nodeId }: { nodeId: string }) {
   return <div>{renderChildren(childrenIds)}</div>
 }
 // renderNode(id) 우선순위:
-//   byNodeId[id] > byNodeType[type] > componentMap[type] > defaultComponentFactory`
+//   byNodeId[id] > byNodeType[type] > components[type] > defaultComponentFactory`
 
 const config: DeepDiveConfig = {
   accent: 'renderer',
@@ -110,8 +110,8 @@ const config: DeepDiveConfig = {
             <>
               같은 타입이라도 특정 노드만 다르게 그리고 싶을 때가 있습니다. 그래서 <code>renderNode(id)</code> 는{' '}
               <code>byNodeId[id]</code> 를 가장 먼저 보고, 없으면 <code>byNodeType[type]</code>,{' '}
-              <code>componentMap[type]</code>, 마지막으로 <code>defaultComponentFactory</code> 순서로 내려갑니다. 좁은
-              규칙이 넓은 규칙을 이깁니다.
+              <code>components[type]</code>(소비자가 주입한 맵), 마지막으로 <code>defaultComponentFactory</code> 순서로
+              내려갑니다. 좁은 규칙이 넓은 규칙을 이깁니다.
             </>
           ),
         },

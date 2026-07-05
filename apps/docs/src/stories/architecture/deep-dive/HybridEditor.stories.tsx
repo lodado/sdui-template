@@ -60,9 +60,9 @@ const STEPS: Principle[] = [
 const HYBRID_CODE = `// 포커스된 블록만 ProseMirror EditorView 를 마운트.
 // 나머지 블록은 정적 InlineContentView (마크 렌더러 트리).
 {isFocused ? (
-  <FocusedBlockEditor block={block} onCommit={commitInline} />  // PM 1개
+  <FocusedBlockEditor content={blockInlineContent(block)} onCommit={commitInline} />  // PM 1개
 ) : (
-  <InlineContentView content={block.state.content} />           // 정적 React
+  <InlineContentView content={blockInlineContent(block)} />                           // 정적 React
 )}
 // blur/unmount 시 PM 상태 → block.state.content 로 커밋(block.update).`
 

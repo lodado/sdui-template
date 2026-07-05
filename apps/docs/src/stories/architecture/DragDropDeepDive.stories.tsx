@@ -65,11 +65,13 @@ const STEPS: Principle[] = [
   },
   {
     num: '04',
-    title: 'after면 가로로 깊이를 정한다',
+    title: 'after면 over 행 깊이로',
     body: (
       <>
-        <code>after</code> 존에서는 <strong>가로 오프셋</strong>(레벨당 24px)이 깊이를 결정. 오른쪽으로 밀면 nest,
-        왼쪽은 outdent. 트리가 깨지지 않도록 <code>[minDepth, maxDepth]</code> 로 clamp.
+        포인터 드롭(<code>overRatio</code> 존재, 기본 동작)에서 <code>after</code> 존은 over 행{' '}
+        <strong>자신의 깊이</strong>를 노립니다 — 가로 이동량은 잡은 지점→목표 거리라 의도가 아니므로 무시. 트리가
+        깨지지 않도록 <code>[minDepth, maxDepth]</code> 로 clamp. 레거시 dnd-kit sortable-tree 호출(
+        <code>overRatio</code> 없음)만 가로 오프셋(레벨당 24px)으로 깊이를 정합니다.
       </>
     ),
     wide: true,
@@ -94,13 +96,18 @@ if (overRatio <= 0.75) {
   // 가운데 → 이 행의 "첫 자식"으로 nest
   return { overId: previous.id, position: 'inside', depth: previous.depth + 1 }
 }
-// 아래 25% → 가로 오프셋이 깊이를 정하는 after 로직으로`
+// 아래 25% → over 행 자신의 깊이를 노리는 after 로직으로`
 
-const DEPTH_LOGIC = `// after 존 — 가로 오프셋으로 깊이 결정
+const DEPTH_LOGIC = `// after 존 — 깊이 계산
 const maxDepth = previous.depth + 1          // 최대: over의 자식
 const minDepth = next ? next.depth : 1       // 최소: 다음 행 깊이(트리 보존)
 
-const desiredDepth = active.depth + Math.round(offsetX / indentWidth)
+// 포인터 드롭(overRatio 존재, 기본 동작): over 행 자신의 깊이.
+// 가로 이동량은 잡은 지점→목표 이동 거리라 의도가 아니므로 무시.
+// 레거시 dnd-kit sortable-tree 호출(overRatio 없음)만 가로 오프셋 사용.
+const desiredDepth = overRatio === undefined
+  ? active.depth + Math.round(offsetX / indentWidth)  // 레거시 경로
+  : previous.depth                                    // 포인터 드롭(기본)
 const projectedDepth = clamp(desiredDepth, minDepth, maxDepth)
 
 // 깊이를 실제 위치로 환원
@@ -170,13 +177,14 @@ const DeepDivePage = () => {
         <CodeSnippet file="projectNestedBlockDrop — 세로 분기" code={ZONE_LOGIC} />
       </DocSection>
 
-      <DocSection index="4.5" label="Horizontal" title="가로 깊이 — 밀어서 nest / outdent">
+      <DocSection index="4.5" label="Depth" title="after 존의 깊이 — over 행에 맞춘다">
         <Prose>
           <p>
-            <code>after</code> 존에서만 가로가 의미를 가집니다. 원하는 깊이는{' '}
-            <code>active.depth + round(offsetX / 24)</code> 로 계산하되, 트리가 망가지지 않도록{' '}
-            <code>[minDepth, maxDepth]</code> 로 clamp합니다. 그 뒤 깊이를 다시 &quot;누구의 · 앞뒤 어디&quot;로
-            환원합니다.
+            포인터 드롭(<code>overRatio</code> 존재, 기본 동작)에서 <code>after</code> 존의 원하는 깊이는 over 행{' '}
+            <strong>자신의 깊이</strong>(<code>previous.depth</code>)입니다 — 가로 이동량은 잡은 지점에서 목표까지의
+            거리라 의도가 아니므로 무시합니다. 레거시 dnd-kit sortable-tree 호출(<code>overRatio</code> 없음)만{' '}
+            <code>active.depth + round(offsetX / 24)</code> 로 계산합니다. 어느 경로든 트리가 망가지지 않도록{' '}
+            <code>[minDepth, maxDepth]</code> 로 clamp한 뒤 깊이를 다시 &quot;누구의 · 앞뒤 어디&quot;로 환원합니다.
           </p>
         </Prose>
         <CodeSnippet file="projectNestedBlockDrop — 가로 깊이" code={DEPTH_LOGIC} />

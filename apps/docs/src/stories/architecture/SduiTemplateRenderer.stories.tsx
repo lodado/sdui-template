@@ -139,7 +139,7 @@ function Container({ nodeId }: { nodeId: string }) {
   return <div>{renderChildren(childrenIds)}</div>
 }
 // renderNode(id) 우선순위:
-//   byNodeId[id] > byNodeType[type] > componentMap[type] > defaultComponentFactory`
+//   byNodeId[id] > byNodeType[type] > components[type] > defaultComponentFactory`
 
 const ZOD_CODE = `import { z } from 'zod'
 

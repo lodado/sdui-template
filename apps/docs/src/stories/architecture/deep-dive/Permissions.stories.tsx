@@ -25,8 +25,8 @@ const STEPS: Principle[] = [
     title: 'Actor 역할',
     body: (
       <>
-        요청 주체를 <code>SduiDocumentActor</code> 로 표현합니다 — workspaceRole 은 admin·member, collectionRole 은
-        editor·viewer.
+        요청 주체를 <code>SduiDocumentActor</code> 로 표현합니다 — workspaceRole 은 admin·member·guest, collectionRole
+        은 manager·editor·viewer.
       </>
     ),
   },
@@ -35,7 +35,11 @@ const STEPS: Principle[] = [
     title: 'Action 요청',
     body: (
       <>
-        수행하려는 동작을 액션으로 넘깁니다: <code>read · update · move · delete</code>.
+        수행하려는 동작을 액션으로 넘깁니다:{' '}
+        <code>
+          read · update · createChild · move · archive · delete · restore · comment · share · downloadAttachment
+        </code>
+        .
       </>
     ),
   },
@@ -104,7 +108,12 @@ const config: DeepDiveConfig = {
         },
         {
           kind: 'badges',
-          items: ['admin · 전체', 'editor · read/update/move', 'viewer · read', 'action: read/update/move/delete'],
+          items: [
+            'admin · 전체',
+            'editor · read/update/move',
+            'viewer · read',
+            'action: read·update·createChild·move·archive·delete·restore·comment·share·downloadAttachment',
+          ],
         },
         {
           kind: 'callout',

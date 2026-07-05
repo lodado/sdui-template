@@ -84,15 +84,17 @@ const config: DeepDiveConfig = {
     },
     {
       index: '8.2',
-      label: 'Future',
-      title: '협업은 확장점으로만',
+      label: 'Collaboration',
+      title: '협업: 계약 + 이제 순수 코어 구현',
       blocks: [
         {
           kind: 'prose',
           body: (
             <>
-              계약은 오늘의 백엔드만이 아니라 내일의 기능도 겨냥합니다. <code>collaboration</code> 어댑터는 지금 필요한
-              것보다 넓게 그려져, 구현이 붙기 전에도 도메인이 그 형태를 알고 있습니다.
+              계약(<code>SduiDocumentCollaborationAdapter.connect</code>)은 <strong>전송·인증</strong>만 코어 밖으로
+              열어둡니다. 그 아래 <strong>병합 로직</strong>은 이제 코어 안에 순수 함수로 구현돼 있습니다 —{' '}
+              <code>collaboration/</code> 의 HLC 시계, <code>PatchEnvelope</code>, append-only <code>DocumentLog</code>,
+              서버 <code>sequencer</code>, 클라이언트 <code>outbox</code> rebase (이벤트소싱 R3).
             </>
           ),
         },
@@ -101,8 +103,10 @@ const config: DeepDiveConfig = {
           icon: '◆',
           body: (
             <>
-              <strong>collaboration</strong> 어댑터는 <code>blockVersions</code> · <code>presence</code> 를 포함해
-              미래의 문자 단위 협업을 위한 확장점을 열어둡니다 — 지금은 계약만, 구현은 없음.
+              <strong>collaboration</strong> 은 <code>blockVersions</code> (R1 충돌 감지) · <code>presence</code> 계약에
+              더해, R3 패치 로그 코어(<code>hlc</code> · <code>envelope</code> · <code>documentLog</code> ·{' '}
+              <code>sequencer</code> · <code>outbox</code>)를 갖춥니다. 전체 원리는{' '}
+              <strong>26번 문서(협업 패치 로그)</strong> 참조 — 전송/영속 어댑터만 여전히 소비자 몫입니다.
             </>
           ),
         },

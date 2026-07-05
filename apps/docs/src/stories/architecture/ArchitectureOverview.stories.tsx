@@ -56,7 +56,7 @@ const PRINCIPLES: Principle[] = [
   {
     num: '03',
     title: 'Block-level first',
-    body: '문자 단위 협업(CRDT)은 어댑터 계약으로 유예합니다. 먼저 블록 트리를 견고하게 만들고, 협업은 인터페이스만 열어둡니다.',
+    body: '블록 단위 협업(이벤트소싱 패치 로그 — HLC·sequencer·outbox rebase)은 코어에 구현하되, 문자 단위 CRDT는 유예합니다. 전송은 어댑터 계약으로 열어둡니다.',
   },
   {
     num: '04',

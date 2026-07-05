@@ -60,15 +60,17 @@ const FLOW_LAYERS: Layer[] = [
 const HYBRID_CODE = `// 포커스된 블록만 ProseMirror EditorView 를 마운트.
 // 나머지 블록은 정적 InlineContentView (마크 렌더러 트리).
 {isFocused ? (
-  <FocusedBlockEditor block={block} onCommit={commitInline} />  // PM 1개
+  <FocusedBlockEditor content={blockInlineContent(block)} onCommit={commitInline} />  // PM 1개
 ) : (
-  <InlineContentView content={block.state.content} />           // 정적 React
+  <InlineContentView content={blockInlineContent(block)} />                           // 정적 React
 )}
 // blur/unmount 시 PM 상태 → block.state.content 로 커밋(block.update).`
 
 const SUBSCRIPTION_CODE = `// EditorUIStore: React state 밖의 외부 스토어.
-// 각 행이 useSyncExternalStore 로 자기 focus/selection 슬라이스만 구독.
-const focus = useSyncExternalStore(store.subscribe, () => store.getFocus(id))
+// 각 행이 useEditorUISelector(내부적으로 useSyncExternalStore)로 자기 focus 슬라이스만 구독.
+const focus = useEditorUISelector(store, (state) =>
+  state.focus?.blockId === id ? state.focus : null,
+)
 
 // 포커스가 A→B 로 바뀌어도 A·B 두 행만 재렌더.
 // 나머지 수백 개 블록은 구독이 걸리지 않아 그대로.`
@@ -159,9 +161,11 @@ const ReactPage = () => {
         <Prose>
           <p>
             드롭 위치 계산은 도메인(<code>projectNestedBlockDrop</code>)이, dnd-kit 센서·오버레이는 React(
-            <code>useNestedBlockDragDrop</code>)가 맡습니다. 드롭 슬롯은 항상 &ldquo;hover한 블록의 뒤&rdquo;이고,{' '}
-            <strong>수평 포인터 오프셋</strong>(레벨당 24px)이 깊이를 정합니다 — 오른쪽으로 밀면 nest, 왼쪽으로 밀면
-            outdent. 자기 자손으로의 드롭은 거부되고, 모든 드롭은 단일 <code>block.move</code> 패치를 냅니다.
+            <code>useNestedBlockDragDrop</code>)가 맡습니다. hover한 행의 <strong>세로 비율</strong>(
+            <code>overRatio</code>)로 위 <code>before</code> · 가운데 <code>inside</code>(첫 자식으로 nest) · 아래{' '}
+            <code>after</code> 3존을 나눕니다. 포인터 드롭에선 깊이가 over 행에 맞춰지고(수평 이동량은 무시),{' '}
+            <code>[minDepth, maxDepth]</code> 로 clamp됩니다. 자기 자손으로의 드롭은 거부되고, 모든 드롭은 단일{' '}
+            <code>block.move</code> 패치를 냅니다.
           </p>
         </Prose>
         <DemoFrame title="Nested drag & drop" hint="⠿ 핸들을 잡고 좌우로 밀어 깊이 조절">

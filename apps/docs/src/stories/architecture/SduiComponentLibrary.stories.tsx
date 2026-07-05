@@ -181,7 +181,7 @@ const LibraryPage = () => {
         </DemoFrame>
         <BadgeRow
           items={[
-            'Dialog · Trigger · Content · Header · Body · Footer',
+            'Dialog · Trigger · Portal · Content · Header · Body · Footer',
             'Dropdown · Trigger · Content · Item · Value',
             'Popover · Trigger · Content · Close',
           ]}

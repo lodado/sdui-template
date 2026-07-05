@@ -93,10 +93,16 @@ const MODULES: ModuleEntry[] = [
     file: 'repositories/contracts.ts',
   },
   {
-    name: 'search · collaboration',
+    name: 'search',
     tag: 'contract',
-    desc: '검색 인덱서·협업 어댑터 계약 (미래 확장점)',
-    file: 'collaboration/contracts.ts',
+    desc: '검색 인덱서 어댑터 계약 (미래 확장점)',
+    file: 'search/contracts.ts',
+  },
+  {
+    name: 'collaboration',
+    tag: 'core',
+    desc: '이벤트소싱 협업 코어: HLC·envelope·log·sequencer·outbox + 전송 계약',
+    file: 'collaboration/',
   },
   { name: 'sdui', tag: 'adapter', desc: 'toSduiLayoutDocument — 문서 → SDUI 레이아웃', file: 'sdui/toSduiLayout.ts' },
 ]
@@ -265,15 +271,17 @@ const CorePage = () => {
       <DocSection index="2.8" label="Adapters" title="어댑터 계약 · 구현은 밖으로">
         <Prose>
           <p>
-            영속·첨부·검색·협업은 <strong>인터페이스만</strong> 정의됩니다. 도메인은 백엔드 선택을 알지 못하므로
-            순수하게 유지되고, 소비자가 DB·스토리지·검색 엔진을 주입합니다. 라이브 데모가 없는 유일한 영역 — 계약만
-            존재하기 때문입니다.
+            영속·첨부·검색은 <strong>인터페이스만</strong> 정의됩니다. 도메인은 백엔드 선택을 알지 못하므로 순수하게
+            유지되고, 소비자가 DB·스토리지·검색 엔진을 주입합니다. 협업도 <strong>전송</strong>은 계약(
+            <code>SduiDocumentCollaborationAdapter</code>)으로 열어두지만, <strong>병합 로직</strong>은 이제 코어 안의
+            순수 함수로 구현돼 있습니다.
           </p>
         </Prose>
         <CodeSnippet file="repositories/contracts.ts · storage/contracts.ts" code={CONTRACT_CODE} />
         <Callout icon="◆">
-          <strong>collaboration</strong> 어댑터는 blockVersions·presence 를 포함해 미래의 문자 단위 협업을 위한 확장점을
-          열어둡니다 — 지금은 계약만, 구현은 없음.
+          <strong>collaboration</strong> 은 <code>blockVersions</code>(R1 충돌 감지)·<code>presence</code> 계약에 더해,
+          이벤트소싱 패치 로그 코어(HLC·envelope·log·sequencer·outbox rebase, R3)를 갖췄습니다. 원리는{' '}
+          <strong>Deep Dive 26번(협업 패치 로그)</strong> 참조 — 전송/영속 어댑터만 소비자 몫.
         </Callout>
       </DocSection>
     </DocPage>

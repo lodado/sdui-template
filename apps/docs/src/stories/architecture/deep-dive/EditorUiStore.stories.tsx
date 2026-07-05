@@ -48,8 +48,10 @@ const STEPS: Principle[] = [
 ]
 
 const SUBSCRIPTION_CODE = `// EditorUIStore: React state 밖의 외부 스토어.
-// 각 행이 useSyncExternalStore 로 자기 focus/selection 슬라이스만 구독.
-const focus = useSyncExternalStore(store.subscribe, () => store.getFocus(id))
+// 각 행이 useEditorUISelector(내부적으로 useSyncExternalStore)로 자기 focus 슬라이스만 구독.
+const focus = useEditorUISelector(store, (state) =>
+  state.focus?.blockId === id ? state.focus : null,
+)
 
 // 포커스가 A→B 로 바뀌어도 A·B 두 행만 재렌더.
 // 나머지 수백 개 블록은 구독이 걸리지 않아 그대로.`

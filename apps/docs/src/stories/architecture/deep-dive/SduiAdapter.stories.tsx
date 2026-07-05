@@ -47,8 +47,8 @@ const STEPS: Principle[] = [
     title: 'SDUI 레이아웃 노드',
     body: (
       <>
-        결과는 <code>@lodado/sdui-template</code> 가 이해하는 <code>SduiLayoutDocument</code> — 발행·미리보기·서버 구동
-        렌더에 그대로 재사용됩니다.
+        결과는 <code>@lodado/sdui-template</code> 가 이해하는 <code>SduiLayoutLikeDocument</code> — 발행·미리보기·서버
+        구동 렌더에 그대로 재사용됩니다.
       </>
     ),
   },
@@ -75,7 +75,7 @@ const config: DeepDiveConfig = {
               편집 모델과 렌더 모델은 서로 다른 관심사입니다. 편집기는 <code>document.heading</code> 같은{' '}
               <strong>의미 블록</strong>으로 의도를 표현하고, 렌더러는 <code>SduiLayoutNode</code> 트리를 소비합니다.{' '}
               <code>toSduiLayoutDocument(content, options)</code> 가 그 사이의 어댑터입니다 — 의미 블록을 순회하며 각
-              타입을 대응하는 레이아웃 노드로 <strong>낮춰(lower)</strong> 하나의 <code>SduiLayoutDocument</code> 로
+              타입을 대응하는 레이아웃 노드로 <strong>낮춰(lower)</strong> 하나의 <code>SduiLayoutLikeDocument</code> 로
               합칩니다. 덕분에 편집기와 렌더러는 서로의 내부 표현에 결합되지 않고, 같은 문서를 발행·미리보기·서버 구동
               렌더에 재사용할 수 있습니다.
             </>

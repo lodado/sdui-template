@@ -36,7 +36,7 @@ const STEPS: Principle[] = [
     body: (
       <>
         <code>reduceAutosaveState(state, event)</code> 는 새 상태를 반환하는 순수 함수입니다. 타이머도 네트워크도 없이{' '}
-        <code>local · saving · offline · failed</code> 전이가 결정론적으로 계산됩니다.
+        <code>dirty · saving · offline · failed</code> 전이가 결정론적으로 계산됩니다.
       </>
     ),
   },
@@ -52,7 +52,7 @@ const config: DeepDiveConfig = {
   accent: 'core',
   kicker: 'Deep Dive · @lodado/sdui-document',
   title: 'Autosave 상태 머신 · 타이머 없는 순수 리듀서',
-  lead: 'reduceAutosaveState(state, event) 는 타이머도 네트워크도 없는 순수 리듀서입니다. 저장 루프가 발생시킬 이벤트를 디스패치하며 local·saving·offline·failed 전이를 결정론적으로 확인합니다.',
+  lead: 'reduceAutosaveState(state, event) 는 타이머도 네트워크도 없는 순수 리듀서입니다. 저장 루프가 발생시킬 이벤트를 디스패치하며 dirty·saving·offline·failed 전이를 결정론적으로 확인합니다.',
   pills: ['reduceAutosaveState', 'pure reducer', 'no timers', 'deterministic'],
   steps: STEPS,
   stepsIntro:
@@ -86,7 +86,7 @@ const config: DeepDiveConfig = {
           body: (
             <>
               아래 이벤트 버튼을 눌러 저장 루프가 내보낼 이벤트를 직접 디스패치해 보세요. 상단 상태 링이 그때그때{' '}
-              <code>local · saving · offline · failed</code> 로 전이하는 것을 눈으로 확인할 수 있습니다.
+              <code>dirty · saving · offline · failed</code> 로 전이하는 것을 눈으로 확인할 수 있습니다.
             </>
           ),
         },

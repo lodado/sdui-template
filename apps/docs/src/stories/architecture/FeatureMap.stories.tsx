@@ -131,9 +131,21 @@ const CORE_GROUP: FeatureGroup = {
     },
     {
       name: '어댑터 계약',
-      what: <>저장소·스토리지·검색·협업을 인터페이스로만 열어둠. 구현은 코어 밖에서 주입.</>,
+      what: <>저장소·스토리지·검색·협업 전송을 인터페이스로만 열어둠. 구현은 코어 밖에서 주입.</>,
       api: 'DocumentRepository, StorageProvider, SearchIndex, CollaborationAdapter',
       file: 'repositories/, storage/, search/, collaboration/',
+    },
+    {
+      name: '협업 패치 로그 (이벤트소싱)',
+      what: (
+        <>
+          편집을 append-only 로그의 이벤트로. HLC 시계 + <code>PatchEnvelope</code> 전송, 순수 서버 sequencer가
+          블록단위로 충돌 판정 후 seq 부여, 클라이언트 outbox가 낙관적 편집을 rebase. 순서 권위는 서버 seq.{' '}
+          <strong>Deep Dive 26번</strong>.
+        </>
+      ),
+      api: 'commitEnvelope, appendToLog, reconcileRemote, hlcTick',
+      file: 'collaboration/{sequencer,documentLog,outbox,hlc}.ts',
     },
     {
       name: 'SDUI 어댑터',
@@ -309,7 +321,7 @@ const FeatureMapPage = () => {
         <FeatureTable groups={GROUPS} />
         <Callout icon="◆">
           <strong>더 파고들기:</strong> 아키텍처 개요는 <code>1~3. sdui-document / react</code> 와{' '}
-          <code>5~6. sdui-template / component</code>, 기능별 딥다이브는 <code>Document/Deep Dive</code> 챕터의 25개
+          <code>5~6. sdui-template / component</code>, 기능별 딥다이브는 <code>Document/Deep Dive</code> 챕터의 26개
           문서로. 각 문서가 이 표의 한 줄에 대응합니다.
         </Callout>
       </DocSection>
