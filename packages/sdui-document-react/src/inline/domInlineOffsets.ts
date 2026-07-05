@@ -88,6 +88,44 @@ export type CaretDomPosition = {
   offset: number
 }
 
+/**
+ * Inverse of inlineOffsetFromDomPosition: finds the DOM (node, offset) at a
+ * given inline offset under `root`. Used to re-derive a browser selection after
+ * a cross-block edit re-renders the static DOM (nodes are recreated, so the old
+ * Selection is stale). Clamps to the end when `target` runs past the content.
+ */
+export function domPositionFromInlineOffset(root: Element, target: number): CaretDomPosition {
+  // eslint-disable-next-line no-bitwise -- NodeFilter whatToShow is a DOM bitmask API
+  const walker = root.ownerDocument.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT)
+  let consumed = 0
+  let lastText: Text | null = null
+  let current = walker.nextNode()
+
+  while (current) {
+    if (current.nodeType === Node.TEXT_NODE) {
+      const length = current.textContent?.length ?? 0
+      if (target <= consumed + length) {
+        return { node: current, offset: target - consumed }
+      }
+      consumed += length
+      lastText = current as Text
+    } else if (isBreakElement(current)) {
+      if (target <= consumed) {
+        // sit just before the <br> in its parent
+        const parent = current.parentNode as Node
+        return { node: parent, offset: Array.prototype.indexOf.call(parent.childNodes, current) }
+      }
+      consumed += 1
+    }
+    current = walker.nextNode()
+  }
+
+  if (lastText) {
+    return { node: lastText, offset: lastText.textContent?.length ?? 0 }
+  }
+  return { node: root, offset: 0 }
+}
+
 type CaretPositionLike = { offsetNode: Node; offset: number }
 type DocumentWithCaretApis = Document & {
   caretPositionFromPoint?(x: number, y: number): CaretPositionLike | null

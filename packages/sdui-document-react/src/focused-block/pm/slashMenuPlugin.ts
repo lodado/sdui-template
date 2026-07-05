@@ -103,7 +103,7 @@ export function buildSlashMenuPlugin(callbacks: FocusedBlockCallbacks): Plugin {
         // Re-validate an existing slash range.
         if (slashPos !== null) {
           const caret = tr.selection.from
-          const {doc} = tr
+          const { doc } = tr
 
           // Bounds guard: slashPos must still be within the document.
           if (slashPos + 1 > doc.content.size) {
@@ -113,14 +113,26 @@ export function buildSlashMenuPlugin(callbacks: FocusedBlockCallbacks): Plugin {
             const beforeSlash = slashPos > 0 ? doc.textBetween(slashPos - 1, slashPos) : ''
             const query = slashPos + 1 <= caret ? doc.textBetween(slashPos + 1, caret) : ''
 
+            // A '/' before the slash is tolerated so a relocated range (see
+            // below) survives re-validation — the initial trigger detection
+            // via SLASH_TRIGGER_RE stays strict, so mid-word '/' never opens.
             const valid =
               charAtSlash === '/' &&
               caret >= slashPos + 1 &&
               !/\s/.test(query) &&
-              (slashPos === 0 || /^\s$/.test(beforeSlash))
+              (slashPos === 0 || /^[\s/]$/.test(beforeSlash))
 
             if (!valid) {
               slashPos = null
+            } else {
+              // A second '/' typed while the menu is open restarts the query at
+              // the latest '/' (Notion behavior). This also fixes the '+' flow:
+              // auto-'/' then a typed '/heading' would otherwise leave the query
+              // as '/heading' and match nothing.
+              const lastSlash = query.lastIndexOf('/')
+              if (lastSlash >= 0) {
+                slashPos = slashPos + 1 + lastSlash
+              }
             }
           }
         }
@@ -180,6 +192,11 @@ export function buildSlashMenuPlugin(callbacks: FocusedBlockCallbacks): Plugin {
           } else if (currSlashPos === null && prevSlashPos !== null) {
             // pos → null: menu closed.
             callbacks.onSlashMenuClose()
+          } else {
+            // pos → different pos: the range relocated to a later '/' (a second
+            // '/' typed while open). Menu stays open; re-filter with the new query.
+            const currQuery = view.state.doc.textBetween(currSlashPos! + 1, view.state.selection.from)
+            callbacks.onSlashMenuQueryChange(currQuery)
           }
 
           prevSlashPos = currSlashPos
@@ -194,7 +211,7 @@ export function buildSlashMenuPlugin(callbacks: FocusedBlockCallbacks): Plugin {
           return false
         }
 
-        const {key} = event
+        const { key } = event
         if (key === 'ArrowUp') return callbacks.onSlashMenuKey('up')
         if (key === 'ArrowDown') return callbacks.onSlashMenuKey('down')
         if (key === 'Enter') return callbacks.onSlashMenuKey('enter')

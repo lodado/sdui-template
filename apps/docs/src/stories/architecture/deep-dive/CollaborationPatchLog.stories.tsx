@@ -87,6 +87,18 @@ function commitEnvelope(state, envelope): CommitEnvelopeResult {
 }
 // stale baseSeq 자체는 거부 사유가 아니다 — 충돌은 블록 단위`
 
+const PRESENCE_CODE = `// packages/sdui-document/src/collaboration/presence.ts
+upsertPresence(list, {
+  documentId,
+  userId,
+  blockId,
+  status: 'editing',
+  lastActiveAt,
+})
+
+prunePresence(list, nowIso, ttlMs)
+getBlockEditors(list, blockId)`
+
 const config: DeepDiveConfig = {
   accent: 'core',
   kicker: 'Deep Dive · @lodado/sdui-document',
@@ -226,6 +238,25 @@ const config: DeepDiveConfig = {
             </>
           ),
         },
+      ],
+    },
+    {
+      index: '26.5',
+      label: 'Presence',
+      title: 'Presence는 로그가 아니라 TTL 상태',
+      blocks: [
+        {
+          kind: 'prose',
+          body: (
+            <>
+              패치 로그는 영구 이벤트지만 presence는 “지금 누가 어느 블록을 보고/편집 중인가”를 나타내는 휘발성
+              상태입니다. 같은 사용자·문서 조합은 <code>upsertPresence</code> 로 덮어쓰고, 오래된 항목은{' '}
+              <code>prunePresence</code> 로 제거합니다. 충돌 판정 권위는 여전히 sequencer와 block version에 있고,
+              presence는 UI 힌트로만 씁니다.
+            </>
+          ),
+        },
+        { kind: 'code', file: 'collaboration/presence.ts', code: PRESENCE_CODE },
       ],
     },
   ],

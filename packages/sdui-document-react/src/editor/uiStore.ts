@@ -9,11 +9,21 @@ export type FocusTarget = {
   session: number
   /** '+' button flow: the mounting editor opens the block menu immediately. */
   openBlockMenu?: boolean
+  /** Freshly created block: triggers a one-shot insert highlight on its row. */
+  justInserted?: boolean
+}
+
+/** Block-actions menu opened from the ⠿ drag handle (turn into / duplicate / delete). */
+export type BlockActionsTarget = {
+  blockId: string
+  /** Handle rect the menu positions against (viewport coords). */
+  rect: DOMRect
 }
 
 export type EditorUIState = {
   focus: FocusTarget | null
   selection: BlockSelectionState
+  blockActions: BlockActionsTarget | null
 }
 
 export type EditorUIStore = {
@@ -32,7 +42,7 @@ export type EditorUIStore = {
  * useEditorUISelector and only affected rows re-render.
  */
 export function createEditorUIStore(): EditorUIStore {
-  let state: EditorUIState = { focus: null, selection: clearBlockSelection() }
+  let state: EditorUIState = { focus: null, selection: clearBlockSelection(), blockActions: null }
   const listeners = new Set<() => void>()
 
   return {

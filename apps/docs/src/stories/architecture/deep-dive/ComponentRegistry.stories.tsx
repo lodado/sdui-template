@@ -21,6 +21,15 @@ const meta: Meta = {
 export default meta
 type Story = StoryObj
 
+const COMPONENT_TYPE_NAMES = Object.keys(sduiComponents).sort()
+
+const COMPONENT_REGISTRY_CODE = `const components = createSduiComponents({
+  canvas3DRenderStrategy,
+})
+
+Object.keys(components).sort()
+// 45 SDUI types, including primitive, compound, form, title and Canvas3D nodes`
+
 const STEPS: Principle[] = [
   {
     num: '01',
@@ -132,6 +141,25 @@ const config: DeepDiveConfig = {
           hint: '모두 같은 sduiComponents 맵으로 렌더',
           node: <SduiLayoutRenderer document={basicsDoc} components={sduiComponents} />,
         },
+      ],
+    },
+    {
+      index: '22.4',
+      label: 'Coverage',
+      title: '현재 레지스트리 커버리지: 45개 타입',
+      blocks: [
+        {
+          kind: 'prose',
+          body: (
+            <>
+              현재 <code>sduiComponents</code> 는 <strong>{COMPONENT_TYPE_NAMES.length}개</strong> SDUI 타입을
+              노출합니다: <code>{COMPONENT_TYPE_NAMES.join(', ')}</code>. 새 컴포넌트를 추가할 때는 컨테이너
+              export만으로 끝내지 말고 이 레지스트리에 타입 문자열을 연결해야 <code>SduiLayoutRenderer</code> 가 서버
+              JSON을 실제 React 컴포넌트로 바꿀 수 있습니다.
+            </>
+          ),
+        },
+        { kind: 'code', file: 'app/sduiComponents.tsx', code: COMPONENT_REGISTRY_CODE },
       ],
     },
   ],

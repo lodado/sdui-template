@@ -16,8 +16,9 @@ import {
   type SduiDocumentContent,
   text,
 } from '@lodado/sdui-document'
-import { SduiDocumentEditor } from '@lodado/sdui-document-react'
+import { SduiDocumentEditor, type SduiDocumentEditorApi } from '@lodado/sdui-document-react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { type CSSProperties, useRef, useState } from 'react'
 
 import profilePhoto from './assets/resume-profile.jpg'
 
@@ -209,12 +210,81 @@ export default meta
 
 type Story = StoryObj<typeof SduiDocumentEditor>
 
+const toolbarStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  padding: '8px 12px',
+  borderBottom: '1px solid var(--sdui-doc-divider, #e5e7eb)',
+  position: 'sticky',
+  top: 0,
+  background: 'var(--sdui-doc-background, #fff)',
+  zIndex: 10,
+}
+
+const badgeStyle: CSSProperties = {
+  padding: '2px 8px',
+  borderRadius: 999,
+  fontSize: 12,
+  fontWeight: 600,
+  background: '#e0edff',
+  color: '#0b5cd6',
+}
+
+/**
+ * Storybook-only chrome around the editor: undo/redo/reset/export driven by the
+ * editor's imperative apiRef. Not part of the library — a demo of how a host app
+ * wires document controls. Reset remounts the editor (uncontrolled) via `key`.
+ */
+function EditableResume() {
+  const apiRef = useRef<SduiDocumentEditorApi>(null)
+  const [instanceKey, setInstanceKey] = useState(0)
+
+  const exportJson = () => {
+    const data = apiRef.current?.getContent()
+    if (!data) return
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = 'document.json'
+    anchor.click()
+    URL.revokeObjectURL(url)
+  }
+
+  // Korean placeholder for the focused-empty block (Phase 2c CSS var).
+  const rootStyle = {
+    ['--sdui-doc-placeholder-focused' as string]: "'내용을 입력하세요. \\'/\\' 로 블록 선택'",
+  } as CSSProperties
+
+  return (
+    <div style={rootStyle}>
+      <div style={toolbarStyle}>
+        <span style={badgeStyle}>편집 모드</span>
+        <button type="button" onClick={() => apiRef.current?.undo()}>
+          Undo
+        </button>
+        <button type="button" onClick={() => apiRef.current?.redo()}>
+          Redo
+        </button>
+        <button type="button" onClick={() => setInstanceKey((key) => key + 1)}>
+          Reset
+        </button>
+        <button type="button" onClick={exportJson}>
+          Export JSON
+        </button>
+      </div>
+      <SduiDocumentEditor key={instanceKey} content={resumeContent} apiRef={apiRef} />
+    </div>
+  )
+}
+
 export const ReadOnly: Story = {
   render: () => <SduiDocumentEditor content={resumeContent} readOnly />,
 }
 
 export const Editable: Story = {
-  render: () => <SduiDocumentEditor content={resumeContent} />,
+  render: () => <EditableResume />,
   parameters: {
     docs: {
       description: {

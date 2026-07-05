@@ -112,6 +112,18 @@ const CORE_GROUP: FeatureGroup = {
       file: 'block-types/, marks/',
     },
     {
+      name: '컬럼 레이아웃 · 리사이즈',
+      what: (
+        <>
+          <code>columnList/column</code> 불변식을 정규화하고, 가로 드롭으로 2단 레이아웃을 만들며, gutter 드래그는 인접
+          컬럼의 <code>ratio</code> 만 패치합니다.
+        </>
+      ),
+      api: 'createHorizontalBlockDropPatches, resizeColumnPair, normalizeColumnStructure',
+      file: 'blocks/drag/columnDropPatches.ts, blocks/code/columnResize.ts',
+    },
+
+    {
       name: '마크다운 임포트/익스포트',
       what: <>marked 토큰 ↔ 문서 트리 양방향 변환.</>,
       api: 'fromMarkdown, toMarkdown',
@@ -144,8 +156,8 @@ const CORE_GROUP: FeatureGroup = {
           <strong>Deep Dive 26번</strong>.
         </>
       ),
-      api: 'commitEnvelope, appendToLog, reconcileRemote, hlcTick',
-      file: 'collaboration/{sequencer,documentLog,outbox,hlc}.ts',
+      api: 'commitEnvelope, appendToLog, reconcileRemote, hlcTick, upsertPresence, createSnapshot',
+      file: 'collaboration/{sequencer,documentLog,outbox,hlc,presence,snapshot}.ts',
     },
     {
       name: 'SDUI 어댑터',
@@ -262,7 +274,7 @@ const COMPONENT_GROUP: FeatureGroup = {
   rows: [
     {
       name: 'sduiComponents 레지스트리',
-      what: <>Button·Dialog·Dropdown·Form 등 30여 개 컴포넌트 타입을 한 맵으로. 렌더러에 그대로 주입.</>,
+      what: <>Div·Button·Dialog·Dropdown·TextField·Canvas3D 등 45개 컴포넌트 타입을 한 맵으로. 렌더러에 그대로 주입.</>,
       api: 'sduiComponents, createSduiComponents',
       file: 'app/sduiComponents.tsx',
     },
@@ -315,13 +327,13 @@ const FeatureMapPage = () => {
           <p>
             처음이라면 이름과 <strong>하는 일</strong> 컬럼만 읽어도 전체 그림이 잡힙니다. 더 파고들 땐 API 이름으로
             코드를, 파일 경로로 위치를 찾으세요. 아래 표의 <strong>모든 기능</strong>은 <code>Document/Deep Dive</code>{' '}
-            챕터에 기능별 전용 문서(인터랙티브 데모 + 단계별 설명)로 하나씩 정리돼 있습니다.
+            챕터에 기능별 전용 문서나 섹션(인터랙티브 데모 + 단계별 설명)으로 정리돼 있습니다.
           </p>
         </Prose>
         <FeatureTable groups={GROUPS} />
         <Callout icon="◆">
           <strong>더 파고들기:</strong> 아키텍처 개요는 <code>1~3. sdui-document / react</code> 와{' '}
-          <code>5~6. sdui-template / component</code>, 기능별 딥다이브는 <code>Document/Deep Dive</code> 챕터의 26개
+          <code>5~6. sdui-template / component</code>, 기능별 딥다이브는 <code>Document/Deep Dive</code> 챕터의 27개
           문서로. 각 문서가 이 표의 한 줄에 대응합니다.
         </Callout>
       </DocSection>

@@ -53,6 +53,12 @@ describe('blockMenuItems', () => {
     expect(filterBlockMenuItems('이미지').map((item) => item.id)).toEqual(['image'])
   })
 
+  test('numbered korean heading aliases target a single level', () => {
+    expect(filterBlockMenuItems('제목1').map((item) => item.id)).toEqual(['heading-1'])
+    expect(filterBlockMenuItems('제목2').map((item) => item.id)).toEqual(['heading-2'])
+    expect(filterBlockMenuItems('제목3').map((item) => item.id)).toEqual(['heading-3'])
+  })
+
   test('no match returns empty list', () => {
     expect(filterBlockMenuItems('zzzz')).toEqual([])
   })
