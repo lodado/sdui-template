@@ -1,20 +1,9 @@
-import type { CollisionDetection } from '@dnd-kit/core'
-import {
-  DndContext,
-  PointerSensor,
-  pointerWithin,
-  rectIntersection,
-  useDraggable,
-  useDroppable,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core'
+import { DndContext, PointerSensor, useDraggable, useDroppable, useSensor, useSensors } from '@dnd-kit/core'
 import type {
   BlockSelectionState,
   SduiDocumentBlock,
   SduiDocumentContent,
   SduiDocumentPatch,
-  SduiInlineContent,
 } from '@lodado/sdui-document'
 import {
   anchorAfterBlock,
@@ -30,7 +19,6 @@ import {
   flattenDocumentBlocks,
   getInlineContentLength,
   isEmptyDocument,
-  textToInlineContent,
 } from '@lodado/sdui-document'
 import React, { useContext, useMemo, useRef } from 'react'
 
@@ -39,37 +27,21 @@ import type { FocusedBlockCommit } from '../focused-block/FocusedBlockEditor'
 import { FocusedBlockEditor } from '../focused-block/FocusedBlockEditor'
 import { InlineContentView } from '../inline/InlineContentView'
 import type { BlockMenuItem } from './block-menu/blockMenuItems'
+import {
+  blockInlineContent,
+  cloneBlockWithNewIds,
+  defaultGenerateBlockId,
+  isSameCommit,
+  isTextBlock,
+} from './blockContent'
+import { collisionDetection, DRAG_INDENT_WIDTH, NON_TEXT_BLOCK_TYPES, POINTER_SENSOR_OPTIONS } from './editorConstants'
 import { useDocumentPatches } from './hooks/useDocumentPatches'
 import { useInlineTextDragDrop } from './hooks/useInlineTextDragDrop'
 import { useNestedBlockDragDrop } from './hooks/useNestedBlockDragDrop'
 import type { EditorUIStore, FocusTarget } from './uiStore'
 import { createEditorUIStore, useEditorUISelector } from './uiStore'
 
-/** Pixel width of one indentation level for drag depth projection. */
-export const DRAG_INDENT_WIDTH = 24
-
-// Module-level constant: a fresh options object each render would change the
-// sensors identity, recreate DndContext's internal context, and force every
-// memoized row to re-render on any container render.
-// distance constraint keeps plain clicks (selection) distinct from drags.
-const POINTER_SENSOR_OPTIONS = { activationConstraint: { distance: 4 } }
-
-// The pointer decides the drop row (vertical zones need the exact row under
-// the cursor); rect intersection only as a fallback when the pointer is
-// between rows (e.g. heading margins).
-const collisionDetection: CollisionDetection = (args) => {
-  const pointerCollisions = pointerWithin(args)
-
-  return pointerCollisions.length > 0 ? pointerCollisions : rectIntersection(args)
-}
-
-const NON_TEXT_BLOCK_TYPES = new Set([
-  'document.root',
-  'document.divider',
-  'document.image',
-  'document.file',
-  'document.link',
-])
+export { DRAG_INDENT_WIDTH } from './editorConstants'
 
 export type SduiDocumentEditorProps = {
   /** Initial document content (uncontrolled after mount). */
@@ -86,44 +58,6 @@ export type SduiDocumentEditorProps = {
   /** Injectable for deterministic tests; defaults to a random id. */
   generateBlockId?(): string
   className?: string
-}
-
-function defaultGenerateBlockId(): string {
-  return `block-${Math.random().toString(36).slice(2, 10)}`
-}
-
-/** Deep-clones a subtree with fresh ids — Mod-D duplicate (Notion behavior). */
-function cloneBlockWithNewIds(block: SduiDocumentBlock, generateId: () => string): SduiDocumentBlock {
-  return {
-    ...block,
-    id: createBlockId(generateId()),
-    ...(block.children ? { children: block.children.map((child) => cloneBlockWithNewIds(child, generateId)) } : {}),
-  }
-}
-
-function isTextBlock(block: SduiDocumentBlock): boolean {
-  return !NON_TEXT_BLOCK_TYPES.has(block.type)
-}
-
-function blockInlineContent(block: SduiDocumentBlock | undefined): SduiInlineContent {
-  const content = block?.state?.content
-  if (Array.isArray(content)) {
-    return content as SduiInlineContent
-  }
-
-  const text = block?.state?.text
-
-  return typeof text === 'string' ? textToInlineContent(text) : []
-}
-
-function isSameCommit(block: SduiDocumentBlock | undefined, commit: FocusedBlockCommit): boolean {
-  if (!block) {
-    return true
-  }
-
-  const existing = blockInlineContent(block)
-
-  return JSON.stringify(existing) === JSON.stringify(commit.content)
 }
 
 /**
