@@ -10,6 +10,7 @@ import { fileBlockModule } from './file/file'
 import { headingBlockModule } from './heading/heading'
 import { imageBlockModule } from './image/image'
 import { linkBlockModule } from './link/link'
+import { numberedListBlockModule } from './numbered-list/numberedList'
 import { paragraphBlockModule } from './paragraph/paragraph'
 import { rootBlockModule } from './root/root'
 import type { BlockLinkRef, SduiBlockTypeModule } from './types'
@@ -27,6 +28,7 @@ export const BLOCK_TYPE_MODULES: readonly SduiBlockTypeModule[] = [
   paragraphBlockModule,
   headingBlockModule,
   bulletedListBlockModule,
+  numberedListBlockModule,
   checklistBlockModule,
   dividerBlockModule,
   calloutBlockModule,
@@ -70,6 +72,7 @@ export { FILE_BLOCK_TYPE } from './file/file.type'
 export { HEADING_BLOCK_TYPE } from './heading/heading.type'
 export { IMAGE_BLOCK_TYPE } from './image/image.type'
 export { LINK_BLOCK_TYPE } from './link/link.type'
+export { NUMBERED_LIST_BLOCK_TYPE } from './numbered-list/numberedList.type'
 export { PARAGRAPH_BLOCK_TYPE } from './paragraph/paragraph.type'
 export { ROOT_BLOCK_TYPE } from './root/root.type'
 export type {

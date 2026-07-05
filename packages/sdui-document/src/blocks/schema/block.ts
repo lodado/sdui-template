@@ -8,6 +8,7 @@ import { FILE_BLOCK_TYPE } from '../../block-types/file/file.type'
 import { HEADING_BLOCK_TYPE } from '../../block-types/heading/heading.type'
 import { IMAGE_BLOCK_TYPE } from '../../block-types/image/image.type'
 import { LINK_BLOCK_TYPE } from '../../block-types/link/link.type'
+import { NUMBERED_LIST_BLOCK_TYPE } from '../../block-types/numbered-list/numberedList.type'
 import { PARAGRAPH_BLOCK_TYPE } from '../../block-types/paragraph/paragraph.type'
 import { ROOT_BLOCK_TYPE } from '../../block-types/root/root.type'
 import { createBlockId, type SduiDocumentBlockId } from './ids'
@@ -28,6 +29,7 @@ export type SduiDocumentBlockType =
   | typeof PARAGRAPH_BLOCK_TYPE
   | typeof HEADING_BLOCK_TYPE
   | typeof BULLETED_LIST_BLOCK_TYPE
+  | typeof NUMBERED_LIST_BLOCK_TYPE
   | typeof CHECKLIST_BLOCK_TYPE
   | typeof DIVIDER_BLOCK_TYPE
   | typeof CALLOUT_BLOCK_TYPE

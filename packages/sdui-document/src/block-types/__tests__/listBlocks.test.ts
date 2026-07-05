@@ -1,6 +1,7 @@
 import { createDocumentBlock } from '../../blocks/schema'
 import { createBlockId } from '../../blocks/schema/ids'
 import { BULLETED_LIST_BLOCK_TYPE, bulletedListBlockModule } from '../bulleted-list/bulletedList'
+import { NUMBERED_LIST_BLOCK_TYPE, numberedListBlockModule } from '../numbered-list/numberedList'
 import type { BlockToMarkdownContext } from '../types'
 
 const mdCtx = (childrenMd = ''): BlockToMarkdownContext => ({
@@ -35,5 +36,19 @@ describe('bulletedListBlockModule', () => {
     const back = bulletedListBlockModule.fromSduiNode(node, { id: createBlockId('b1') })
     expect(back.type).toBe('document.bulleted-list')
     expect(back.state?.text).toBe('hi')
+  })
+})
+
+describe('numberedListBlockModule', () => {
+  test('type constant and default block', () => {
+    expect(NUMBERED_LIST_BLOCK_TYPE).toBe('document.numbered-list')
+    const block = numberedListBlockModule.createDefault?.(createBlockId('n1'))
+    expect(block).toEqual({ id: 'n1', type: 'document.numbered-list', state: { content: [], text: '' } })
+  })
+
+  test('toMarkdown always writes "1." (renderers renumber) and indents children', () => {
+    const block = createDocumentBlock({ id: 'n1', type: NUMBERED_LIST_BLOCK_TYPE, state: { text: 'first' } })
+    expect(numberedListBlockModule.toMarkdown?.(block, mdCtx())).toBe('1. first')
+    expect(numberedListBlockModule.toMarkdown?.(block, mdCtx('1. sub'))).toBe('1. first\n  1. sub')
   })
 })
