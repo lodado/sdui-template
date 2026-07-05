@@ -71,6 +71,57 @@ describe('column resize gutter', () => {
       })
     })
 
+    describe('when rendered (splitter ARIA value)', () => {
+      it('to be: aria-valuenow is the left column percentage, clamped to the reachable range', () => {
+        const { container } = render(<SduiDocumentEditor content={createSplitContent()} />)
+
+        const gutter = container.querySelectorAll('[data-column-resize]')[0]
+        // equal split → 50%, min/max from MIN_COLUMN_RATIO (0.2) over pair total 2
+        expect(gutter.getAttribute('aria-valuenow')).toBe('50')
+        expect(gutter.getAttribute('aria-valuemin')).toBe('10')
+        expect(gutter.getAttribute('aria-valuemax')).toBe('90')
+      })
+
+      it('to be: aria-valuenow follows a committed keyboard resize', () => {
+        const { container } = render(<SduiDocumentEditor content={createSplitContent()} />)
+
+        const gutter = container.querySelectorAll('[data-column-resize]')[0]
+        fireEvent.keyDown(gutter, { key: 'ArrowRight' })
+        // 1.1 / 0.9 → 55%
+        expect(gutter.getAttribute('aria-valuenow')).toBe('55')
+      })
+    })
+
+    describe('when the gutter receives a pointerdown (focus for keyboard follow-up)', () => {
+      it('to be: the gutter is focused so a later ArrowLeft/Right resizes', () => {
+        const { container } = render(<SduiDocumentEditor content={createSplitContent()} />)
+        stubColumnWidths(container)
+
+        const gutter = container.querySelectorAll('[data-column-resize]')[0] as HTMLElement
+        fireEvent(gutter, new MouseEvent('pointerdown', { bubbles: true, clientX: 100, button: 0 }))
+
+        expect(document.activeElement).toBe(gutter)
+      })
+    })
+
+    describe('when dragging (live percentage tooltip)', () => {
+      it('to be: a tooltip appears on pointermove and is removed on pointerup', () => {
+        const { container } = render(<SduiDocumentEditor content={createSplitContent()} />)
+        stubColumnWidths(container)
+
+        const gutter = container.querySelectorAll('[data-column-resize]')[0]
+        fireEvent(gutter, new MouseEvent('pointerdown', { bubbles: true, clientX: 100, button: 0 }))
+        fireEvent(window, new MouseEvent('pointermove', { clientX: 140 }))
+
+        const tooltip = gutter.querySelector('[data-resize-tooltip]')
+        expect(tooltip).not.toBeNull()
+        expect(tooltip?.textContent).toBe('60%') // equal split + 10% shift
+
+        fireEvent(window, new MouseEvent('pointerup', { clientX: 140 }))
+        expect(gutter.querySelector('[data-resize-tooltip]')).toBeNull()
+      })
+    })
+
     describe('when rendered readOnly (no-interaction partition)', () => {
       it('to be: zero gutters', () => {
         const { container } = render(<SduiDocumentEditor content={createSplitContent()} readOnly />)

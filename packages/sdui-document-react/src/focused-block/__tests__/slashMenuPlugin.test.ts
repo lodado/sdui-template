@@ -1,4 +1,4 @@
-import { EditorState,TextSelection  } from 'prosemirror-state'
+import { EditorState, TextSelection } from 'prosemirror-state'
 
 import type { FocusedBlockCallbacks } from '../pm/keymapDelegation'
 import { focusedBlockSchema } from '../pm/schema'
@@ -73,5 +73,17 @@ describe('slashMenuPlugin', () => {
     // flat schema: '/' at position 0; moving caret to 0 puts it before the slash
     state = state.apply(state.tr.setSelection(TextSelection.create(state.doc, 0)))
     expect(getSlashRange(state)).toBeNull()
+  })
+
+  test('a second slash relocates the range to the latest slash', () => {
+    // Reproduces the '+' flow: auto-'/' then a typed '/' → range restarts.
+    const state = typeText(typeText(stateWithPlugin(), '/'), '/')
+    expect(getSlashRange(state)).toEqual({ from: 1, to: 2 })
+  })
+
+  test('typing after a relocated slash keeps the range open with the new query', () => {
+    const state = typeText(typeText(typeText(stateWithPlugin(), '/'), '/'), 'head')
+    // '//head' → query 'head' anchored at the second slash, range stays open.
+    expect(getSlashRange(state)).toEqual({ from: 1, to: 6 })
   })
 })

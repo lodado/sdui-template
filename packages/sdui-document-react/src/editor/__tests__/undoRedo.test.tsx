@@ -1,10 +1,10 @@
 import type { SduiDocumentContent } from '@lodado/sdui-document'
 import { createDocumentBlock } from '@lodado/sdui-document'
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 
-import { SduiDocumentEditor } from '../SduiDocumentEditor'
+import { SduiDocumentEditor,type SduiDocumentEditorApi } from '../SduiDocumentEditor'
 
 function createContent(children: Parameters<typeof createDocumentBlock>[0][]): SduiDocumentContent {
   return {
@@ -159,6 +159,27 @@ describe('document-level undo/redo (Mod-Z / Mod-Shift-Z / Mod-Y)', () => {
         expect(blockIds(container)).toEqual(['p1', 'p2'])
         expect(onContentChange).not.toHaveBeenCalled()
       })
+    })
+  })
+
+  describe('imperative apiRef (host chrome)', () => {
+    it('getContent returns the live doc and undo reverts a patch', async () => {
+      const user = userEvent.setup()
+      const api = React.createRef<SduiDocumentEditorApi>()
+      const ids = ['gen-1', 'gen-2', 'gen-3']
+      const { container } = render(
+        <SduiDocumentEditor content={twoParagraphs()} apiRef={api} generateBlockId={() => ids.shift() ?? 'gen-x'} />,
+      )
+
+      await user.click(screen.getByText('First'))
+      await user.keyboard('{Enter}')
+      expect(blockIds(container)).toEqual(['p1', 'gen-1', 'p2'])
+
+      const snapshot = api.current?.getContent()
+      expect(snapshot?.root.children?.map((child) => child.id)).toEqual(['p1', 'gen-1', 'p2'])
+
+      act(() => api.current?.undo())
+      expect(blockIds(container)).toEqual(['p1', 'p2'])
     })
   })
 })

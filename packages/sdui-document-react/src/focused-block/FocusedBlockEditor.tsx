@@ -378,6 +378,12 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
 
     view.focus()
 
+    // Keep a freshly focused block (e.g. one just inserted below the fold) in
+    // view. 'nearest' is a no-op when the block is already visible.
+    if (typeof container.scrollIntoView === 'function') {
+      container.scrollIntoView({ block: 'nearest' })
+    }
+
     // '+' button flow: a typed '/' opens the menu through the plugin's normal
     // path (single code path for both entry points); it is deleted on select.
     if (latestProps.current.autoOpenBlockMenu) {

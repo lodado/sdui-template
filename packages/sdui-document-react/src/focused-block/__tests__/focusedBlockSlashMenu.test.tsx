@@ -104,4 +104,13 @@ describe('FocusedBlockEditor slash menu', () => {
     render(<FocusedBlockEditor {...createProps({ autoOpenBlockMenu: true })} />)
     expect(screen.getByRole('listbox')).toBeInTheDocument()
   })
+
+  test('a second / while open restarts the query instead of dead-ending', () => {
+    // Repro of the '+' flow: an auto-inserted '/' followed by a typed '/head'
+    // used to leave the query as '/head' and match nothing.
+    render(<FocusedBlockEditor {...createProps()} />)
+    typeText('/')
+    typeText('/head')
+    expect(screen.getAllByRole('option')).toHaveLength(3) // heading 1-3
+  })
 })

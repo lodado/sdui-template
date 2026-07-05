@@ -168,9 +168,9 @@
 /* resize gutter between two columns — a slim col-resize strip that reveals a
    center line on hover/focus (Notion-style); sits inside the flex gap */
 [data-sdui-document-editor] [data-column-resize] {
-  flex: 0 0 8px;
+  flex: 0 0 12px;
   align-self: stretch;
-  margin: 0 -8px;
+  margin: 0 -12px;
   cursor: col-resize;
   position: relative;
   outline: none;
@@ -190,8 +190,26 @@
 }
 
 [data-sdui-document-editor] [data-column-resize]:hover::after,
+[data-sdui-document-editor] [data-column-resize]:active::after,
 [data-sdui-document-editor] [data-column-resize]:focus-visible::after {
   background: rgba(35, 131, 226, 0.5);
+}
+
+/* Live percentage readout appended to the gutter during a drag. */
+[data-sdui-document-editor] [data-column-resize] [data-resize-tooltip] {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--sdui-doc-accent);
+  color: var(--sdui-doc-accent-text);
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 2;
 }
 
 /* ----------------------------------------------------------- paragraph */
@@ -394,6 +412,17 @@
 
 /* -------------------------------------------------------------- divider */
 
+/* A divider has no text line to pin to, so center it (and its handles) in the
+   row instead of the text-block flex-start default. */
+[data-sdui-document-editor] [data-block-row]:has(hr) {
+  align-items: center;
+}
+
+[data-sdui-document-editor] [data-block-row]:has(hr) > [data-drag-handle],
+[data-sdui-document-editor] [data-block-row]:has(hr) > [data-plus-handle] {
+  margin-top: 0;
+}
+
 [data-sdui-document-editor] hr {
   position: relative;
   height: 1em;
@@ -482,9 +511,11 @@
 }
 
 [data-sdui-document-editor] .image-controls {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: wrap;
   gap: 2px;
   align-items: center;
+  max-width: 240px;
   font-size: 13px;
 }
 
@@ -498,17 +529,34 @@
   line-height: 1.2;
 }
 
-[data-sdui-document-editor] .image-controls button:hover,
-[data-sdui-document-editor] .image-controls button[data-active] {
+[data-sdui-document-editor] .image-controls button:hover {
   background: var(--sdui-doc-background);
   color: var(--sdui-doc-text);
 }
 
-[data-sdui-document-editor] .image-controls .image-width {
+/* Selected alignment reads clearly apart from a plain hover. */
+[data-sdui-document-editor] .image-controls button[data-active] {
+  background: color-mix(in srgb, var(--sdui-doc-accent) 12%, transparent);
+  color: var(--sdui-doc-accent);
+}
+
+[data-sdui-document-editor] .image-controls .image-width,
+[data-sdui-document-editor] .image-controls .image-alt {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   color: var(--sdui-doc-text-secondary);
+}
+
+[data-sdui-document-editor] .image-controls .image-alt {
+  flex-basis: 100%;
+  margin-top: 2px;
+}
+
+[data-sdui-document-editor] .image-controls .image-alt-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 [data-sdui-document-editor] .image-controls .image-width input {
@@ -519,6 +567,45 @@
   font: inherit;
   background: var(--sdui-doc-background);
   color: var(--sdui-doc-text);
+}
+
+[data-sdui-document-editor] .image-controls .image-alt input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--sdui-doc-divider);
+  border-radius: 4px;
+  padding: 1px 4px;
+  font: inherit;
+  background: var(--sdui-doc-background);
+  color: var(--sdui-doc-text);
+}
+
+/* Edge drag-resize handles, revealed with the image frame (editable only). */
+[data-sdui-document-editor] .image-resize-handle {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 48px;
+  max-height: 60%;
+  border-radius: 6px;
+  background: var(--sdui-doc-accent);
+  opacity: 0;
+  transition: opacity 120ms ease;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+[data-sdui-document-editor] .image-resize-handle[data-image-resize-handle='left'] {
+  left: 6px;
+}
+
+[data-sdui-document-editor] .image-resize-handle[data-image-resize-handle='right'] {
+  right: 6px;
+}
+
+[data-sdui-document-editor] .image-frame:hover .image-resize-handle {
+  opacity: 0.85;
 }
 
 [data-sdui-document-editor] .caption {
@@ -652,11 +739,56 @@
   float: left;
 }
 
+/* Focused empty block (not the whole-doc-empty case above): prompt the slash
+   menu, Notion-style. Only one ProseMirror instance is mounted at a time, so
+   this matches the currently-focused block only. Lower specificity than the
+   [data-doc-empty] rule, so an empty document keeps its own placeholder. */
+[data-sdui-document-editor] .ProseMirror:has(> br.ProseMirror-trailingBreak:only-child)::before {
+  content: var(--sdui-doc-placeholder-focused, "Type '/' for commands…");
+  color: var(--sdui-doc-text-tertiary);
+  pointer-events: none;
+  height: 0;
+  float: left;
+}
+
 /* ------------------------------------------------- selection/drag chrome */
 
 /* Outline .ProseMirror-selectednode — plain 2px outline, no radius */
 [data-sdui-document-editor] [data-selected='true'] {
   outline: 2px solid var(--sdui-doc-accent);
+}
+
+/* Focused text block: faint accent wash so the active block reads apart from
+   the rest of the document without competing with the caret. */
+[data-sdui-document-editor] [data-focused] > [data-block-row] {
+  background-color: color-mix(in srgb, var(--sdui-doc-accent) 4%, transparent);
+  border-radius: 4px;
+}
+
+/* One-shot highlight when a block is created (Enter split, '+' or slash insert).
+   The data-just-inserted attr is dropped on the next focus change, so the
+   animation plays exactly once. */
+@keyframes sdui-doc-insert-highlight {
+  from {
+    background-color: color-mix(in srgb, var(--sdui-doc-accent) 14%, transparent);
+  }
+  to {
+    background-color: color-mix(in srgb, var(--sdui-doc-accent) 4%, transparent);
+  }
+}
+
+[data-sdui-document-editor] [data-just-inserted] > [data-block-row] {
+  animation: sdui-doc-insert-highlight 800ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-sdui-document-editor] [data-just-inserted] > [data-block-row] {
+    animation: none;
+  }
+
+  [data-sdui-document-editor] .sdui-doc-block-actions {
+    animation: none;
+  }
 }
 
 [data-sdui-document-editor] [data-drag-handle] {
@@ -677,7 +809,6 @@
 }
 
 [data-sdui-document-editor] [data-block-row]:hover > [data-drag-handle],
-[data-sdui-document-editor] [data-drag-handle]:focus-visible,
 [data-sdui-document-editor] [data-drag-handle][data-dragging='true'] {
   opacity: 1;
 }
@@ -703,8 +834,7 @@
   line-height: 1;
 }
 
-[data-sdui-document-editor] [data-block-row]:hover > [data-plus-handle],
-[data-sdui-document-editor] [data-plus-handle]:focus-visible {
+[data-sdui-document-editor] [data-block-row]:hover > [data-plus-handle] {
   opacity: 1;
 }
 
@@ -799,6 +929,44 @@
   gap: 6px;
   padding: 6px;
   color: var(--sdui-doc-text-secondary);
+}
+
+/* ------------------------------------------------------------ link popover
+   Editable-mode click actions on an existing link (Open/Copy/Edit/Remove). */
+.sdui-doc-link-popover {
+  background: var(--sdui-doc-menu-background);
+  box-shadow: var(--sdui-doc-menu-shadow);
+  border-radius: 6px;
+  animation: sdui-doc-toolbar-in 150ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.sdui-doc-link-popover-menu {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  color: var(--sdui-doc-text-secondary);
+}
+
+.sdui-doc-link-popover-href {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--sdui-doc-text-secondary);
+}
+
+.sdui-doc-link-popover .sdui-doc-toolbar-button {
+  width: auto;
+  min-width: 0;
+  padding: 2px 8px;
+  font-size: 13px;
+}
+
+.sdui-doc-link-popover .sdui-doc-toolbar-button:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 .sdui-doc-toolbar-button {
@@ -998,6 +1166,41 @@
   display: flex;
   align-items: center;
   padding: 6px;
+}
+
+/* ---------------------------------------------------- block-actions menu
+   Opened by clicking the ⠿ drag handle (turn into / duplicate / delete).
+   Same surface tokens as the slash menu; fixed-positioned against the handle
+   rect rather than portaled. */
+
+[data-sdui-document-editor] .sdui-doc-block-actions {
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+  padding: 4px;
+  border-radius: 4px;
+  background: var(--sdui-doc-menu-background);
+  box-shadow: var(--sdui-doc-menu-shadow);
+  animation: sdui-doc-toolbar-in 150ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.sdui-doc-block-actions .sdui-doc-block-menu-option {
+  width: 100%;
+}
+
+.sdui-doc-block-actions-chevron {
+  margin-left: auto;
+  color: var(--sdui-doc-text-tertiary);
+}
+
+.sdui-doc-block-actions-separator {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--sdui-doc-hr);
+}
+
+.sdui-doc-block-actions-back {
+  color: var(--sdui-doc-text-secondary);
 }
 
 /* --------------------------------------------------------- upload states

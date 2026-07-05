@@ -6,7 +6,7 @@ import type { BlockMenuItem } from './block-menu/blockMenuItems'
 import type { EditorUIStore, FocusTarget } from './uiStore'
 
 /** Image layout attributes settable from the image block's inline controls. */
-export type ImageLayoutPatch = { width?: number; align?: BlockAlign }
+export type ImageLayoutPatch = { width?: number; height?: number; align?: BlockAlign; alt?: string }
 
 /**
  * Per-block interaction handlers. Created ONCE per editor instance (stable
@@ -34,6 +34,13 @@ export type EditorHandlers = {
   escape(blockId: string): void
   turnInto(blockId: string, type: string, attrs?: Record<string, unknown>): void
   moveBlock(blockId: string, direction: 'up' | 'down'): void
+  /** Open the block-actions menu (turn into / duplicate / delete) anchored to the ⠿ handle. */
+  openBlockActions(blockId: string, rect: DOMRect): void
+  closeBlockActions(): void
+  /** Deep-clone a block with fresh ids and insert it directly below (Notion duplicate). */
+  duplicateBlock(blockId: string): void
+  /** Remove a block via block.delete (trailing-block invariant reapplied by the patch engine). */
+  deleteBlock(blockId: string): void
   /** Delegated document-level undo/redo from a focused block's empty PM history. */
   history(direction: 'undo' | 'redo'): void
   blockAction(blockId: string): void
@@ -42,6 +49,8 @@ export type EditorHandlers = {
   insertBlockBelow(blockId: string): void
   /** Gutter resize between two sibling columns; delta is a fraction of the pair width. */
   resizeColumnPair(leftColumnId: string, rightColumnId: string, deltaFraction: number): void
+  /** Rewrite (nextHref: string) or remove (nextHref: null) every link mark matching `href` in a block. */
+  updateLink(blockId: string, href: string, nextHref: string | null): void
 }
 
 export type EditorRuntime = {

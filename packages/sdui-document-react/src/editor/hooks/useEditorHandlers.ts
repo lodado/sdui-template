@@ -1,4 +1,9 @@
-import type { BlockSelectionState, SduiDocumentContent, SduiDocumentPatch } from '@lodado/sdui-document'
+import type {
+  BlockSelectionState,
+  SduiDocumentContent,
+  SduiDocumentPatch,
+  SduiInlineContent,
+} from '@lodado/sdui-document'
 import {
   anchorAfterBlock,
   anchorAppendToParent,
@@ -15,8 +20,10 @@ import {
 } from '@lodado/sdui-document'
 import React, { useMemo, useRef } from 'react'
 
+import { normalizeLinkHref } from '../../focused-block/linkHref'
+import { updateLinkMark } from '../../inline/updateLinkMark'
 import type { BlockMenuItem } from '../block-menu/blockMenuItems'
-import { blockInlineContent, isSameCommit, isTextBlock } from '../blockContent'
+import { blockInlineContent, cloneBlockWithNewIds, isSameCommit, isTextBlock } from '../blockContent'
 import { LIST_LIKE_BLOCK_TYPES, NON_TEXT_BLOCK_TYPES, SPLIT_TO_PARAGRAPH_BLOCK_TYPES } from '../editorConstants'
 import type { EditorHandlers } from '../EditorRuntimeContext'
 import type { EditorUIStore, FocusTarget } from '../uiStore'
@@ -58,17 +65,23 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
 
   const handlers = useMemo<EditorHandlers>(() => {
     const selectBlocks = (next: BlockSelectionState) => {
-      store.set({ selection: next, focus: null })
+      store.set({ selection: next, focus: null, blockActions: null })
       if (next.selectedIds.length > 0) {
         containerRef.current?.focus()
       }
     }
 
-    const refocus = (blockId: string, caret: FocusTarget['caret']) => {
+    const refocus = (blockId: string, caret: FocusTarget['caret'], justInserted?: boolean) => {
       const previous = store.get().focus
       store.set({
         selection: clearBlockSelection(),
-        focus: { blockId, caret, session: (previous?.session ?? 0) + 1 },
+        blockActions: null,
+        focus: {
+          blockId,
+          caret,
+          session: (previous?.session ?? 0) + 1,
+          ...(justInserted ? { justInserted: true } : {}),
+        },
       })
     }
 
@@ -177,6 +190,23 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
         ])
       },
 
+      updateLink: (blockId, href, nextHref) => {
+        const block = findBlockById(docRef.current, blockId)
+        const content = block?.state?.content as SduiInlineContent | undefined
+        if (!content) {
+          return
+        }
+        const normalized = nextHref === null ? null : normalizeLinkHref(nextHref)
+        // A bad edit URL (normalize → null) is a no-op, not a silent link wipe.
+        if (nextHref !== null && normalized === null) {
+          return
+        }
+        const nextContent = updateLinkMark(content, href, normalized)
+        latest.current.applyPatches([
+          { type: 'block.update', blockId: createBlockId(blockId), state: { content: nextContent } },
+        ])
+      },
+
       focusBlock: refocus,
 
       commit: (blockId, commit) => {
@@ -224,7 +254,7 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
         }
 
         latest.current.applyPatches(patches)
-        refocus(newBlockId, 'start')
+        refocus(newBlockId, 'start', true)
       },
 
       mergeBackward: (blockId) => {
@@ -375,6 +405,42 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
         ])
       },
 
+      openBlockActions: (blockId, rect) => {
+        // Open the ⠿ menu and mark the block selected so its row highlights beneath the menu.
+        store.set({ selection: createBlockSelection(blockId), focus: null, blockActions: { blockId, rect } })
+      },
+
+      closeBlockActions: () => {
+        store.set({ blockActions: null })
+      },
+
+      duplicateBlock: (blockId) => {
+        const flattened = flattenDocumentBlocks(docRef.current)
+        const location = flattened.find((candidate) => candidate.id === blockId)
+        const source = findBlockById(docRef.current, blockId)
+        if (!location?.parentId || !source) {
+          store.set({ blockActions: null })
+
+          return
+        }
+
+        const clone = cloneBlockWithNewIds(source, latest.current.generateBlockId)
+        latest.current.applyPatches([
+          {
+            type: 'block.insert',
+            parentId: createBlockId(location.parentId),
+            ...anchorAfterBlock(docRef.current, location.parentId, blockId),
+            block: clone,
+          },
+        ])
+        store.set({ selection: createBlockSelection(clone.id), focus: null, blockActions: null })
+      },
+
+      deleteBlock: (blockId) => {
+        latest.current.applyPatches([{ type: 'block.delete', blockId: createBlockId(blockId) }])
+        store.set({ selection: clearBlockSelection(), focus: null, blockActions: null })
+      },
+
       history: (direction) => {
         latest.current.onHistory(direction)
       },
@@ -421,7 +487,7 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
         if (NON_TEXT_BLOCK_TYPES.has(item.type)) {
           selectBlocks(createBlockSelection(targetId))
         } else {
-          refocus(targetId, 'start')
+          refocus(targetId, 'start', true)
         }
       },
 
@@ -500,7 +566,13 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
         const previous = store.get().focus
         store.set({
           selection: clearBlockSelection(),
-          focus: { blockId: newId, caret: 'start', session: (previous?.session ?? 0) + 1, openBlockMenu: true },
+          focus: {
+            blockId: newId,
+            caret: 'start',
+            session: (previous?.session ?? 0) + 1,
+            openBlockMenu: true,
+            justInserted: true,
+          },
         })
       },
 

@@ -66,6 +66,15 @@ const HYBRID_CODE = `// 포커스된 블록만 ProseMirror EditorView 를 마운
 )}
 // blur/unmount 시 PM 상태 → block.state.content 로 커밋(block.update).`
 
+const TRAILING_CODE = `// packages/sdui-document/src/blocks/code/trailingBlock.ts
+createTrailingBlockPatch(content, generateBlockId)
+// → root의 마지막 블록이 텍스트를 받을 수 없으면 빈 paragraph insert patch
+
+// packages/sdui-document-react/src/editor/hooks/useDocumentPatches.ts
+const trailing = createTrailingBlockPatch(next, generateBlockId)
+applyPatches([...userPatches, trailing].filter(Boolean))
+// user action과 같은 history entry에 묶여 undo가 정확히 복원됩니다.`
+
 const config: DeepDiveConfig = {
   accent: 'react',
   kicker: 'Deep Dive · @lodado/sdui-document-react',
@@ -119,6 +128,29 @@ const config: DeepDiveConfig = {
           title: 'Focus mounts one editor',
           hint: '블록을 클릭해 포커스 이동 — 패치 로그 확인',
           node: <EditorWithPatchLog content={marksContent} />,
+        },
+      ],
+    },
+    {
+      index: '10.3',
+      label: 'Invariant',
+      title: '항상 클릭 가능한 trailing paragraph',
+      blocks: [
+        {
+          kind: 'prose',
+          body: (
+            <>
+              문서 마지막이 divider·image·columnList처럼 직접 텍스트를 받을 수 없는 블록이면 사용자가 아래를 클릭해도
+              커서를 둘 곳이 없습니다. 그래서 편집 패치 적용 후 <code>createTrailingBlockPatch</code> 로 빈 paragraph를
+              보강하고, 이 보강 패치는 사용자 액션과 같은 history entry에 묶습니다. 덕분에 undo는 “사용자 편집 +
+              trailing 보강”을 한 번에 되돌립니다.
+            </>
+          ),
+        },
+        {
+          kind: 'code',
+          file: 'blocks/code/trailingBlock.ts · editor/hooks/useDocumentPatches.ts',
+          code: TRAILING_CODE,
         },
       ],
     },

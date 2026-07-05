@@ -30,7 +30,7 @@ export const BLOCK_MENU_ITEMS: readonly BlockMenuItem[] = [
     glyph: 'H1',
     action: 'insert',
     attributes: { level: 1 },
-    keywords: ['heading', 'h1', 'title', '제목', '헤딩'],
+    keywords: ['heading', 'h1', 'title', '제목', '제목1', '헤딩'],
   },
   {
     id: 'heading-2',
@@ -39,7 +39,7 @@ export const BLOCK_MENU_ITEMS: readonly BlockMenuItem[] = [
     glyph: 'H2',
     action: 'insert',
     attributes: { level: 2 },
-    keywords: ['heading', 'h2', 'subtitle', '제목', '헤딩'],
+    keywords: ['heading', 'h2', 'subtitle', '제목', '제목2', '헤딩'],
   },
   {
     id: 'heading-3',
@@ -48,7 +48,7 @@ export const BLOCK_MENU_ITEMS: readonly BlockMenuItem[] = [
     glyph: 'H3',
     action: 'insert',
     attributes: { level: 3 },
-    keywords: ['heading', 'h3', '제목', '헤딩'],
+    keywords: ['heading', 'h3', '제목', '제목3', '헤딩'],
   },
   {
     id: 'checklist',

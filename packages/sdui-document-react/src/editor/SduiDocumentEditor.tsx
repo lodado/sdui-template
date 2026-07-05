@@ -1,8 +1,18 @@
 import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import type { SduiDocumentContent, SduiDocumentPatch } from '@lodado/sdui-document'
 import { clearBlockSelection, isEmptyDocument } from '@lodado/sdui-document'
-import { useMemo, useRef } from 'react'
+import {
+  type MouseEvent as ReactMouseEvent,
+  type Ref,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
+import { SelectionToolbar } from '../selection-toolbar/SelectionToolbar'
+import { BlockActionsMenu } from './block-menu/BlockActionsMenu'
 import { defaultGenerateBlockId, numberedListOrdinals } from './blockContent'
 import { BlockNode } from './BlockNode'
 import { collisionDetection, DRAG_INDENT_WIDTH, POINTER_SENSOR_OPTIONS } from './editorConstants'
@@ -11,11 +21,20 @@ import { useDocumentPatches } from './hooks/useDocumentPatches'
 import { useEditorHandlers } from './hooks/useEditorHandlers'
 import { useInlineTextDragDrop } from './hooks/useInlineTextDragDrop'
 import { useNestedBlockDragDrop } from './hooks/useNestedBlockDragDrop'
+import { useRangeOperations } from './hooks/useRangeOperations'
 import { useSelectionKeyboard } from './hooks/useSelectionKeyboard'
+import { LinkPopover, type LinkPopoverTarget } from './LinkPopover'
 import type { EditorUIStore } from './uiStore'
 import { createEditorUIStore, useEditorUISelector } from './uiStore'
 
 export { DRAG_INDENT_WIDTH } from './editorConstants'
+
+/** Imperative handle for host chrome (toolbars): history + a content snapshot. */
+export type SduiDocumentEditorApi = {
+  undo(): void
+  redo(): void
+  getContent(): SduiDocumentContent
+}
 
 export type SduiDocumentEditorProps = {
   /** Initial document content (uncontrolled after mount). */
@@ -32,6 +51,8 @@ export type SduiDocumentEditorProps = {
   /** Injectable for deterministic tests; defaults to a random id. */
   generateBlockId?(): string
   className?: string
+  /** Optional imperative handle for host chrome (undo/redo/getContent). */
+  apiRef?: Ref<SduiDocumentEditorApi>
 }
 
 /**
@@ -58,6 +79,7 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     readOnly = false,
     generateBlockId = defaultGenerateBlockId,
     className,
+    apiRef,
   } = props
 
   const { doc, docRef, applyPatches, undo, redo } = useDocumentPatches({
@@ -130,6 +152,80 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
   })
   historyStepRef.current = historyStep
 
+  // Route undo/redo through historyStep (not raw undo/redo) so the focused PM
+  // editor unmounts first — a pending blur-commit can't stomp the undone state.
+  useImperativeHandle(
+    apiRef,
+    () => ({
+      undo: () => historyStepRef.current('undo'),
+      redo: () => historyStepRef.current('redo'),
+      getContent: () => docRef.current,
+    }),
+    [docRef, historyStepRef],
+  )
+
+  const [linkTarget, setLinkTarget] = useState<LinkPopoverTarget | null>(null)
+  const blockActions = useEditorUISelector(store, (state) => state.blockActions)
+
+  // Cross-block native selections have no focused PM to own them, so their
+  // keyboard ops (delete, mark toggles) are handled at the document level.
+  const {
+    handleRangeKeyDown,
+    handleClipboard,
+    toolbar: rangeToolbar,
+  } = useRangeOperations({
+    store,
+    docRef,
+    containerRef,
+    readOnly,
+    applyPatches,
+    focusBlock: runtime.handlers.focusBlock,
+  })
+  const rangeKeyRef = useRef(handleRangeKeyDown)
+  rangeKeyRef.current = handleRangeKeyDown
+  const clipboardRef = useRef(handleClipboard)
+  clipboardRef.current = handleClipboard
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      rangeKeyRef.current(event)
+    }
+    const onClipboard = (event: ClipboardEvent) => {
+      clipboardRef.current(event)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    document.addEventListener('copy', onClipboard)
+    document.addEventListener('cut', onClipboard)
+    document.addEventListener('paste', onClipboard)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      document.removeEventListener('copy', onClipboard)
+      document.removeEventListener('cut', onClipboard)
+      document.removeEventListener('paste', onClipboard)
+    }
+  }, [])
+
+  // Editable mode: intercept a link click so it opens the action popover instead
+  // of navigating. Cmd/Ctrl+click and links inside the focused PM editor pass
+  // through (the toolbar's link editor owns the latter). Read-only keeps native
+  // navigation — correct for a viewer.
+  const handleLinkClickCapture = (event: ReactMouseEvent<HTMLDivElement>) => {
+    if (readOnly || event.metaKey || event.ctrlKey) {
+      return
+    }
+    const anchor = (event.target as Element).closest?.('a.sdui-doc-link')
+    if (!anchor || anchor.closest('[data-testid="focused-block-editor"]')) {
+      return
+    }
+    const blockId = anchor.closest('[data-block-id]')?.getAttribute('data-block-id')
+    const href = anchor.getAttribute('href')
+    if (!blockId || !href) {
+      return
+    }
+    event.preventDefault()
+    event.stopPropagation()
+    setLinkTarget({ rect: anchor.getBoundingClientRect(), href, blockId })
+  }
+
   const sensors = useSensors(useSensor(PointerSensor, POINTER_SENSOR_OPTIONS))
 
   return (
@@ -151,6 +247,7 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
           role="tree"
           tabIndex={-1}
           onKeyDown={handleSelectionKeyDown}
+          onClickCapture={handleLinkClickCapture}
           style={{ outline: 'none', position: 'relative' }}
         >
           {(() => {
@@ -221,6 +318,41 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
               pointerEvents: 'none',
             }}
           />
+          {rangeToolbar && <SelectionToolbar {...rangeToolbar} />}
+          {linkTarget && (
+            <LinkPopover
+              target={linkTarget}
+              onEdit={(nextHref) => {
+                runtime.handlers.updateLink(linkTarget.blockId, linkTarget.href, nextHref)
+                setLinkTarget(null)
+              }}
+              onRemove={() => {
+                runtime.handlers.updateLink(linkTarget.blockId, linkTarget.href, null)
+                setLinkTarget(null)
+              }}
+              onClose={() => setLinkTarget(null)}
+            />
+          )}
+          {!readOnly && blockActions && (
+            <BlockActionsMenu
+              rect={blockActions.rect}
+              onTurnInto={(type, attrs) => {
+                runtime.handlers.turnInto(blockActions.blockId, type, attrs)
+                runtime.handlers.closeBlockActions()
+              }}
+              onDuplicate={() => runtime.handlers.duplicateBlock(blockActions.blockId)}
+              onMoveUp={() => {
+                runtime.handlers.moveBlock(blockActions.blockId, 'up')
+                runtime.handlers.closeBlockActions()
+              }}
+              onMoveDown={() => {
+                runtime.handlers.moveBlock(blockActions.blockId, 'down')
+                runtime.handlers.closeBlockActions()
+              }}
+              onDelete={() => runtime.handlers.deleteBlock(blockActions.blockId)}
+              onClose={() => runtime.handlers.closeBlockActions()}
+            />
+          )}
         </div>
       </DndContext>
     </EditorRuntimeContext.Provider>
