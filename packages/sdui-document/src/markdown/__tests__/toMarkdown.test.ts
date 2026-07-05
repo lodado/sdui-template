@@ -52,7 +52,11 @@ describe('sduiDocumentContentToMarkdown round-trips', () => {
     ['checked checklist', '- [x] done'],
     ['divider', '---'],
     ['image', '![alt](https://x.io/a.png)'],
-    ['callout', '> note'],
+    ['quote', '> note'],
+    ['bulleted list', '- alpha\n- beta'],
+    ['nested bulleted list', '- parent\n  - child'],
+    ['numbered list', '1. one\n1. two'],
+    ['fenced code with language', '```js\nconst x = 1\n```'],
     ['multiple blocks', '# Title\n\nbody'],
   ])('%s', (_label, markdown) => {
     expect(roundTrip(markdown)).toBe(markdown)

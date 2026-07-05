@@ -83,33 +83,52 @@ describe('markdownToSduiDocumentContent', () => {
     expect(blocks[1].state?.checked).toBe(false)
   })
 
-  test('degrades plain list items to paragraphs', () => {
+  test('maps plain list items to bulleted-list blocks', () => {
     const blocks = childBlocks(convert('- alpha\n- beta'))
 
-    expect(blocks.map((block) => block.type)).toEqual(['document.paragraph', 'document.paragraph'])
+    expect(blocks.map((block) => block.type)).toEqual(['document.bulleted-list', 'document.bulleted-list'])
     expect(blocks.map((block) => block.state?.text)).toEqual(['alpha', 'beta'])
   })
 
-  test('maps blockquote to an info callout, hoisting the first paragraph as its text', () => {
+  test('nests sub-lists as children of their bulleted-list item', () => {
+    const blocks = childBlocks(convert('- parent\n  - child'))
+
+    expect(blocks).toHaveLength(1)
+    const [parent] = blocks
+    expect(parent.type).toBe('document.bulleted-list')
+    expect(parent.state?.text).toBe('parent')
+    expect(parent.children?.map((child) => child.type)).toEqual(['document.bulleted-list'])
+    expect(parent.children?.[0].state?.text).toBe('child')
+  })
+
+  test('maps ordered list items to numbered-list blocks', () => {
+    const blocks = childBlocks(convert('1. one\n2. two'))
+
+    expect(blocks.map((block) => block.type)).toEqual(['document.numbered-list', 'document.numbered-list'])
+    expect(blocks.map((block) => block.state?.text)).toEqual(['one', 'two'])
+  })
+
+  test('maps blockquote to a quote, hoisting the first paragraph as its text', () => {
     const blocks = childBlocks(convert('> quoted **text**\n>\n> second line'))
 
     expect(blocks).toHaveLength(1)
-    const [callout] = blocks
-    expect(callout.type).toBe('document.callout')
-    expect(callout.attributes?.tone).toBe('info')
-    expect(callout.state?.text).toBe('quoted text')
-    expect(callout.children?.map((child) => child.type)).toEqual(['document.paragraph'])
-    expect(callout.children?.[0].state?.text).toBe('second line')
+    const [quote] = blocks
+    expect(quote.type).toBe('document.quote')
+    expect(quote.state?.text).toBe('quoted text')
+    expect(quote.children?.map((child) => child.type)).toEqual(['document.paragraph'])
+    expect(quote.children?.[0].state?.text).toBe('second line')
   })
 
-  test('degrades fenced code to a code-marked paragraph with hard_break line separators', () => {
+  test('maps fenced code to a code block with language and hard_break line separators', () => {
     const [block] = childBlocks(convert('```ts\nconst a = 1\nconst b = 2\n```'))
 
-    expect(block.type).toBe('document.paragraph')
+    expect(block.type).toBe('document.code')
+    expect(block.attributes).toEqual({ language: 'ts' })
+    expect(block.state?.text).toBe('const a = 1\nconst b = 2')
     expect(block.state?.content).toEqual([
-      { type: 'text', text: 'const a = 1', marks: [{ type: 'code' }] },
+      { type: 'text', text: 'const a = 1' },
       { type: 'hard_break' },
-      { type: 'text', text: 'const b = 2', marks: [{ type: 'code' }] },
+      { type: 'text', text: 'const b = 2' },
     ])
   })
 

@@ -13,10 +13,12 @@ export function checklistFromListItem(
   content: SduiInlineContent,
   checked: boolean,
   ctx: BlockFromMarkdownContext,
+  children: SduiDocumentBlock[] = [],
 ): SduiDocumentBlock {
   return {
     id: ctx.blockId('checklist'),
     type: CHECKLIST_BLOCK_TYPE,
     state: { ...ctx.textState(content), checked },
+    ...(children.length > 0 ? { children } : {}),
   }
 }

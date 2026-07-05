@@ -12,16 +12,34 @@ function blockInline(block: SduiDocumentBlock): string {
   return typeof block.state?.text === 'string' ? block.state.text : ''
 }
 
+/** Blocks that serialize as markdown list items — adjacent ones join with a single newline (tight list). */
+const LIST_ITEM_BLOCK_TYPES = new Set([
+  'document.bulleted-list',
+  'document.numbered-list',
+  'document.checklist',
+  'document.toggle',
+])
+
+function isListItemBlock(block: SduiDocumentBlock): boolean {
+  return LIST_ITEM_BLOCK_TYPES.has(block.type)
+}
+
 const markdownContext: BlockToMarkdownContext = {
   inline: blockInline,
   renderChildren(block) {
-    return (
-      (block.children ?? [])
-        // eslint-disable-next-line no-use-before-define
-        .map(renderBlock)
-        .filter((md) => md.length > 0)
-        .join('\n\n')
-    )
+    const rendered = (block.children ?? [])
+      // eslint-disable-next-line no-use-before-define
+      .map((child) => ({ child, md: renderBlock(child) }))
+      .filter((entry) => entry.md.length > 0)
+
+    return rendered.reduce((joined, entry, index) => {
+      if (index === 0) {
+        return entry.md
+      }
+
+      const separator = isListItemBlock(rendered[index - 1].child) && isListItemBlock(entry.child) ? '\n' : '\n\n'
+      return `${joined}${separator}${entry.md}`
+    }, '')
   },
 }
 
