@@ -26,6 +26,8 @@ export type EditorHandlers = {
   blockMenuSelect(blockId: string, item: BlockMenuItem, extraAttributes?: Record<string, unknown>): void
   blockMenuFilePicked(file: File): void
   insertBlockBelow(blockId: string): void
+  /** Gutter resize between two sibling columns; delta is a fraction of the pair width. */
+  resizeColumnPair(leftColumnId: string, rightColumnId: string, deltaFraction: number): void
 }
 
 export type EditorRuntime = {

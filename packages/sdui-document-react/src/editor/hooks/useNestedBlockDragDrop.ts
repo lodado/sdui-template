@@ -1,14 +1,16 @@
 import type { DragEndEvent, DragMoveEvent, DragStartEvent } from '@dnd-kit/core'
 import {
+  appendColumnCleanupPatches,
+  createHorizontalBlockDropPatches,
   createProjectedBlockMovePatch,
-  type ProjectedNestedBlockDrop,
+  projectHorizontalBlockDrop,
   projectNestedBlockDrop,
   type SduiDocumentContent,
   type SduiDocumentPatch,
 } from '@lodado/sdui-document'
 import type { MutableRefObject, RefObject } from 'react'
 
-import { positionDropIndicatorOverlay } from './dropIndicatorOverlay'
+import { type DropIndicatorProjection, positionDropIndicatorOverlay } from './dropIndicatorOverlay'
 
 type NestedBlockDragDropOptions = {
   docRef: MutableRefObject<SduiDocumentContent>
@@ -55,6 +57,33 @@ export function resolveOverRatio(event: DragMoveEvent | DragEndEvent): number | 
   return clamp((pointerY - over.rect.top) / over.rect.height, 0, 1)
 }
 
+export type OverPointerX = {
+  /** Pointer X offset from the over row's left edge, px (unclamped). */
+  offsetX: number
+  /** Over row width, px. */
+  width: number
+}
+
+/**
+ * Horizontal pointer position against the over row, in PIXELS (not a ratio —
+ * the split edge band is a fixed px width and must not scale with the row).
+ * Mirrors resolveOverRatio (activator position + accumulated delta).
+ *
+ * @returns undefined when it cannot be measured (no over target, keyboard
+ *          activation, zero-width rect) — horizontal drops are then disabled
+ *          and the vertical projection owns the gesture.
+ */
+export function resolveOverPointerX(event: DragMoveEvent | DragEndEvent): OverPointerX | undefined {
+  const { over, activatorEvent, delta } = event
+  const clientX = (activatorEvent as { clientX?: unknown } | null)?.clientX
+
+  if (!over || typeof clientX !== 'number' || over.rect.width <= 0) {
+    return undefined
+  }
+
+  return { offsetX: clientX + delta.x - over.rect.left, width: over.rect.width }
+}
+
 export function useNestedBlockDragDrop({
   docRef,
   indentWidth,
@@ -63,9 +92,33 @@ export function useNestedBlockDragDrop({
   applyPatches,
   onDragStart,
 }: NestedBlockDragDropOptions) {
-  const projectDrop = (event: DragMoveEvent | DragEndEvent): ProjectedNestedBlockDrop | null => {
+  // Horizontal (left/right edge) wins over the vertical slot projection: the
+  // edge band is a narrow fixed-px strip, so an edge pointer is an explicit
+  // split intent.
+  const projectHorizontal = (event: DragMoveEvent | DragEndEvent) => {
     if (!event.over) {
       return null
+    }
+
+    const pointer = resolveOverPointerX(event)
+
+    return projectHorizontalBlockDrop({
+      content: docRef.current,
+      activeId: String(event.active.id),
+      overId: String(event.over.id),
+      overOffsetX: pointer?.offsetX,
+      overWidth: pointer?.width,
+    })
+  }
+
+  const projectDrop = (event: DragMoveEvent | DragEndEvent): DropIndicatorProjection | null => {
+    if (!event.over) {
+      return null
+    }
+
+    const horizontal = projectHorizontal(event)
+    if (horizontal) {
+      return horizontal
     }
 
     return projectNestedBlockDrop({
@@ -78,7 +131,7 @@ export function useNestedBlockDragDrop({
     })
   }
 
-  const paintIndicator = (projected: ProjectedNestedBlockDrop | null) => {
+  const paintIndicator = (projected: DropIndicatorProjection | null) => {
     const overlay = indicatorRef.current
     const container = containerRef.current
     if (!overlay || !container) {
@@ -102,6 +155,21 @@ export function useNestedBlockDragDrop({
       return
     }
 
+    const horizontal = projectHorizontal(event)
+    if (horizontal) {
+      const patches = createHorizontalBlockDropPatches({
+        content: docRef.current,
+        activeId: String(event.active.id),
+        overId: String(event.over.id),
+        side: horizontal.side,
+      })
+      if (patches) {
+        applyPatches(appendColumnCleanupPatches(docRef.current, patches))
+      }
+
+      return
+    }
+
     const patch = createProjectedBlockMovePatch({
       content: docRef.current,
       activeId: String(event.active.id),
@@ -111,7 +179,8 @@ export function useNestedBlockDragDrop({
       overRatio: resolveOverRatio(event),
     })
     if (patch) {
-      applyPatches([patch])
+      // vertical moves can empty a column too — same-batch cleanup keeps undo atomic
+      applyPatches(appendColumnCleanupPatches(docRef.current, [patch]))
     }
   }
 

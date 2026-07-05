@@ -28,6 +28,10 @@ export type BlockMapperTheme = {
     textOff: string
   }
   divider: string
+  /** Horizontal flex-row container for column splits. */
+  columnList: string
+  /** One vertical stack inside a columnList (grow weight appended per ratio). */
+  column: string
   callout: {
     base: string
     toneColors: Record<string, CalloutColorTokens>
@@ -71,6 +75,8 @@ export const outlineTheme: BlockMapperTheme = {
     textOff: 'leading-[1.6] text-[#111319]',
   },
   divider: 'my-3 h-px bg-[#DAE1E9]',
+  columnList: 'flex w-full items-start gap-6',
+  column: 'flex min-w-0 grow basis-0 flex-col gap-3',
   callout: {
     base: 'flex gap-3',
     toneColors: {

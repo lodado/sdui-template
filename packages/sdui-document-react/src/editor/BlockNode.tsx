@@ -1,5 +1,6 @@
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 import type { SduiDocumentBlock } from '@lodado/sdui-document'
+import { COLUMN_BLOCK_TYPE, COLUMN_LIST_BLOCK_TYPE } from '@lodado/sdui-document'
 import React from 'react'
 
 import { BlockChrome } from '../block-types/BlockChrome'
@@ -16,6 +17,112 @@ type BlockNodeProps = {
   readOnly: boolean
 }
 
+function columnRatio(block: SduiDocumentBlock): number | undefined {
+  const ratio = block.attributes?.ratio
+  return typeof ratio === 'number' && Number.isFinite(ratio) && ratio > 0 ? ratio : undefined
+}
+
+/** One ArrowLeft/ArrowRight press moves the gutter by this fraction of the pair width. */
+const KEYBOARD_RESIZE_STEP = 0.05
+
+function escapeAttributeValue(value: string): string {
+  return value.replace(/["\\]/g, '\\$&')
+}
+
+/**
+ * Draggable/keyboard-operable divider between two sibling columns. Commits a
+ * ratio update on pointerup (drag) or per arrow press — the patch pair is one
+ * undo step. Pointer travel is measured against the two columns' current
+ * rendered widths so a 10% drag is a 10% visual change.
+ */
+const ColumnResizeGutter = ({ leftId, rightId }: { leftId: string; rightId: string }) => {
+  const { handlers } = useEditorRuntime()
+
+  return (
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex -- focusable separator IS the resize widget (window-splitter pattern)
+    <div
+      role="separator"
+      aria-orientation="vertical"
+      aria-label={`Resize columns ${leftId} and ${rightId}`}
+      // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- focusable separator IS the resize widget (window-splitter pattern)
+      tabIndex={0}
+      data-column-resize
+      onKeyDown={(event) => {
+        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {
+          return
+        }
+
+        event.preventDefault()
+        handlers.resizeColumnPair(
+          leftId,
+          rightId,
+          event.key === 'ArrowRight' ? KEYBOARD_RESIZE_STEP : -KEYBOARD_RESIZE_STEP,
+        )
+      }}
+      onPointerDown={(event) => {
+        if (event.button !== 0) {
+          return
+        }
+
+        // a drag, not a click — keep the gesture out of text selection
+        event.preventDefault()
+        const list = event.currentTarget.parentElement
+        const startX = event.clientX
+        const pairWidth =
+          (list?.querySelector(`[data-block-id="${escapeAttributeValue(leftId)}"]`)?.getBoundingClientRect().width ??
+            0) +
+          (list?.querySelector(`[data-block-id="${escapeAttributeValue(rightId)}"]`)?.getBoundingClientRect().width ??
+            0)
+
+        const onPointerUp = (up: PointerEvent) => {
+          window.removeEventListener('pointerup', onPointerUp)
+          const deltaX = up.clientX - startX
+          if (deltaX !== 0 && pairWidth > 0) {
+            handlers.resizeColumnPair(leftId, rightId, deltaX / pairWidth)
+          }
+        }
+
+        window.addEventListener('pointerup', onPointerUp)
+      }}
+    />
+  )
+}
+
+/**
+ * Layout-only containers for horizontal splits — no row chrome (drag handle /
+ * plus button / BlockChrome): only the content rows inside the columns are
+ * interactive. Column children do NOT get the [data-block-nested] indent —
+ * horizontal layout replaces vertical indentation at this level.
+ */
+const ColumnContainers = ({ block, depth, readOnly }: BlockNodeProps) => {
+  if (block.type === COLUMN_LIST_BLOCK_TYPE) {
+    const columns = block.children ?? []
+
+    return (
+      <div data-block-id={block.id} data-depth={depth} data-column-list>
+        {columns.map((child, index) => (
+          <React.Fragment key={child.id}>
+            {index > 0 && !readOnly && <ColumnResizeGutter leftId={columns[index - 1].id} rightId={child.id} />}
+            {/* eslint-disable-next-line no-use-before-define -- mutual recursion: containers render nested BlockNodes */}
+            <BlockNode block={child} depth={depth} readOnly={readOnly} />
+          </React.Fragment>
+        ))}
+      </div>
+    )
+  }
+
+  const ratio = columnRatio(block)
+
+  return (
+    <div data-block-id={block.id} data-column style={ratio !== undefined ? { flexGrow: ratio } : undefined}>
+      {block.children?.map((child) => (
+        // eslint-disable-next-line no-use-before-define -- mutual recursion: containers render nested BlockNodes
+        <BlockNode key={child.id} block={child} depth={depth} readOnly={readOnly} />
+      ))}
+    </div>
+  )
+}
+
 /**
  * One block row: droppable row + drag handle + type chrome + recursive
  * children. Memoized — re-renders only when its own block reference, its
@@ -23,6 +130,16 @@ type BlockNodeProps = {
  * and the drop indicator are NOT props, so sibling rows stay untouched.
  */
 export const BlockNode = React.memo(({ block, depth, readOnly }: BlockNodeProps) => {
+  if (block.type === COLUMN_LIST_BLOCK_TYPE || block.type === COLUMN_BLOCK_TYPE) {
+    return <ColumnContainers block={block} depth={depth} readOnly={readOnly} />
+  }
+
+  // eslint-disable-next-line no-use-before-define -- mutual recursion: rows render nested BlockNodes
+  return <BlockRow block={block} depth={depth} readOnly={readOnly} />
+})
+BlockNode.displayName = 'BlockNode'
+
+const BlockRow = React.memo(({ block, depth, readOnly }: BlockNodeProps) => {
   const { store, handlers } = useEditorRuntime()
   const isSelected = useEditorUISelector(store, (state) => state.selection.selectedIds.includes(block.id))
   const focus = useEditorUISelector(store, (state) => (state.focus?.blockId === block.id ? state.focus : null))
@@ -137,4 +254,4 @@ export const BlockNode = React.memo(({ block, depth, readOnly }: BlockNodeProps)
     </div>
   )
 })
-BlockNode.displayName = 'BlockNode'
+BlockRow.displayName = 'BlockRow'

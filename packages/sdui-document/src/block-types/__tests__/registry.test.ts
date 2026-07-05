@@ -4,6 +4,8 @@ import {
   CALLOUT_BLOCK_TYPE,
   canHostInlineText,
   CHECKLIST_BLOCK_TYPE,
+  COLUMN_BLOCK_TYPE,
+  COLUMN_LIST_BLOCK_TYPE,
   DIVIDER_BLOCK_TYPE,
   extractBlockLinks,
   FILE_BLOCK_TYPE,
@@ -28,6 +30,8 @@ describe('block-type constants', () => {
       IMAGE_BLOCK_TYPE,
       FILE_BLOCK_TYPE,
       LINK_BLOCK_TYPE,
+      COLUMN_LIST_BLOCK_TYPE,
+      COLUMN_BLOCK_TYPE,
     ])
     const moduleTypes = new Set(BLOCK_TYPE_MODULES.map((blockModule) => blockModule.type))
     expect(moduleTypes).toEqual(constants)
@@ -45,6 +49,8 @@ describe('canHostInlineText capability', () => {
     [IMAGE_BLOCK_TYPE, false],
     [FILE_BLOCK_TYPE, false],
     [LINK_BLOCK_TYPE, false],
+    [COLUMN_LIST_BLOCK_TYPE, false],
+    [COLUMN_BLOCK_TYPE, false],
   ])('%s -> %s', (type, expected) => {
     expect(canHostInlineText(make(type))).toBe(expected)
   })

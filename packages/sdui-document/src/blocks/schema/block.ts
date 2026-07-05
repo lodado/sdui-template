@@ -1,5 +1,7 @@
 import { CALLOUT_BLOCK_TYPE } from '../../block-types/callout/callout.type'
 import { CHECKLIST_BLOCK_TYPE } from '../../block-types/checklist/checklist.type'
+import { COLUMN_BLOCK_TYPE } from '../../block-types/column/column.type'
+import { COLUMN_LIST_BLOCK_TYPE } from '../../block-types/column-list/columnList.type'
 import { DIVIDER_BLOCK_TYPE } from '../../block-types/divider/divider.type'
 import { FILE_BLOCK_TYPE } from '../../block-types/file/file.type'
 import { HEADING_BLOCK_TYPE } from '../../block-types/heading/heading.type'
@@ -30,6 +32,8 @@ export type SduiDocumentBlockType =
   | typeof IMAGE_BLOCK_TYPE
   | typeof FILE_BLOCK_TYPE
   | typeof LINK_BLOCK_TYPE
+  | typeof COLUMN_LIST_BLOCK_TYPE
+  | typeof COLUMN_BLOCK_TYPE
 
 export type SduiDocumentBlock = {
   id: SduiDocumentBlockId

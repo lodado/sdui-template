@@ -6,6 +6,7 @@ import {
   clearBlockSelection,
   createBlockId,
   createBlockSelection,
+  createColumnResizePatches,
   createDefaultBlock,
   extendBlockSelection,
   findBlockById,
@@ -432,6 +433,18 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
           selection: clearBlockSelection(),
           focus: { blockId: newId, caret: 'start', session: (previous?.session ?? 0) + 1, openBlockMenu: true },
         })
+      },
+
+      resizeColumnPair: (leftColumnId, rightColumnId, deltaFraction) => {
+        const patches = createColumnResizePatches({
+          content: docRef.current,
+          leftColumnId,
+          rightColumnId,
+          deltaFraction,
+        })
+        if (patches) {
+          latest.current.applyPatches(patches)
+        }
       },
     }
 

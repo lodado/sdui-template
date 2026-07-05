@@ -9,6 +9,8 @@ export {
   type ChecklistBlockState,
 } from '../../block-types/checklist/checklist'
 export { isChecklistBlock } from '../../block-types/checklist/checklist'
+export { COLUMN_BLOCK_TYPE, type ColumnBlockAttributes, isColumnBlock } from '../../block-types/column/column'
+export { COLUMN_LIST_BLOCK_TYPE, isColumnListBlock } from '../../block-types/column-list/columnList'
 export { DIVIDER_BLOCK_TYPE, type DividerBlock } from '../../block-types/divider/divider'
 export { isDividerBlock } from '../../block-types/divider/divider'
 export { FILE_BLOCK_TYPE, type FileBlock, type FileBlockAttributes } from '../../block-types/file/file'

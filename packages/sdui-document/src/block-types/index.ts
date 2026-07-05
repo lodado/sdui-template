@@ -2,6 +2,8 @@
 import type { SduiDocumentBlock } from '../blocks/schema/block'
 import { calloutBlockModule } from './callout/callout'
 import { checklistBlockModule } from './checklist/checklist'
+import { columnBlockModule } from './column/column'
+import { columnListBlockModule } from './column-list/columnList'
 import { dividerBlockModule } from './divider/divider'
 import { fileBlockModule } from './file/file'
 import { headingBlockModule } from './heading/heading'
@@ -29,6 +31,8 @@ export const BLOCK_TYPE_MODULES: readonly SduiBlockTypeModule[] = [
   imageBlockModule,
   fileBlockModule,
   linkBlockModule,
+  columnListBlockModule,
+  columnBlockModule,
 ]
 
 export const blockModuleByType: Record<string, SduiBlockTypeModule> = BLOCK_TYPE_MODULES.reduce(
@@ -56,6 +60,8 @@ export { paragraphBlockModule }
 // documents/patches without hardcoding magic strings.
 export { CALLOUT_BLOCK_TYPE } from './callout/callout.type'
 export { CHECKLIST_BLOCK_TYPE } from './checklist/checklist.type'
+export { COLUMN_BLOCK_TYPE } from './column/column.type'
+export { COLUMN_LIST_BLOCK_TYPE } from './column-list/columnList.type'
 export { DIVIDER_BLOCK_TYPE } from './divider/divider.type'
 export { FILE_BLOCK_TYPE } from './file/file.type'
 export { HEADING_BLOCK_TYPE } from './heading/heading.type'

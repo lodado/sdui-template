@@ -1,5 +1,7 @@
 export * from './blockGuards'
 export * from './blockPatch'
+export * from './columnResize'
+export * from './columnStructure'
 export * from './documentHistory'
 export * from './errors'
 export * from './patchAnchors'
