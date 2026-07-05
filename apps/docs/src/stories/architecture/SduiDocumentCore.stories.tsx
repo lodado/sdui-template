@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import React from 'react'
 
+import { BLOCK_TYPE_COUNT, BLOCK_TYPE_LABELS, CONTENT_BLOCK_TYPE_LABELS } from './block-types/blockTypeList'
 import {
   BadgeRow,
   Callout,
@@ -58,7 +59,7 @@ const MODULES: ModuleEntry[] = [
   {
     name: 'block-types',
     tag: 'strategy',
-    desc: '타입별 모듈(9종): 도메인 ↔ SDUI 매핑',
+    desc: `타입별 모듈(${BLOCK_TYPE_COUNT}종): 도메인 ↔ SDUI 매핑`,
     file: 'block-types/*/*.ts',
   },
   { name: 'marks', tag: 'inline', desc: 'bold·italic·code·link·highlight 등 마크 정의(7종)', file: 'marks/*/*.ts' },
@@ -229,11 +230,13 @@ const CorePage = () => {
         >
           <div>
             <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--doc-text-subtle)', marginBottom: 8 }}>
-              블록 타입 (9)
+              블록 타입 ({BLOCK_TYPE_COUNT})
             </div>
-            <BadgeRow
-              items={['root', 'paragraph', 'heading', 'checklist', 'callout', 'divider', 'image', 'file', 'link']}
-            />
+            <BadgeRow items={[...BLOCK_TYPE_LABELS]} />
+            <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--doc-text-subtle)', margin: '12px 0 8px' }}>
+              메뉴 삽입 가능 ({CONTENT_BLOCK_TYPE_LABELS.length})
+            </div>
+            <BadgeRow items={[...CONTENT_BLOCK_TYPE_LABELS]} />
           </div>
           <div>
             <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--doc-text-subtle)', marginBottom: 8 }}>

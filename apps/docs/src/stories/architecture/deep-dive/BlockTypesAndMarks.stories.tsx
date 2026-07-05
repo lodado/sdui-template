@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import React from 'react'
 
+import { BLOCK_TYPE_COUNT, BLOCK_TYPE_LABELS, CONTENT_BLOCK_TYPE_LABELS } from '../block-types/blockTypeList'
 import { type DeepDiveConfig, DeepDiveTemplate, type Principle } from '../components'
 import { EditorWithPatchLog } from '../demos/EditorWithPatchLog'
 import { allBlocksContent } from '../demos/sampleContents'
@@ -77,13 +78,26 @@ const config: DeepDiveConfig = {
           kind: 'prose',
           body: (
             <>
-              <strong>블록 타입 (9)</strong>
+              <strong>블록 타입 ({BLOCK_TYPE_COUNT})</strong> — 타입별 상세 문서는 <code>Document/Block Types/*</code>{' '}
+              를 참고하세요.
             </>
           ),
         },
         {
           kind: 'badges',
-          items: ['root', 'paragraph', 'heading', 'checklist', 'callout', 'divider', 'image', 'file', 'link'],
+          items: [...BLOCK_TYPE_LABELS],
+        },
+        {
+          kind: 'prose',
+          body: (
+            <>
+              <strong>메뉴 삽입 가능 ({CONTENT_BLOCK_TYPE_LABELS.length})</strong>
+            </>
+          ),
+        },
+        {
+          kind: 'badges',
+          items: [...CONTENT_BLOCK_TYPE_LABELS],
         },
         {
           kind: 'prose',

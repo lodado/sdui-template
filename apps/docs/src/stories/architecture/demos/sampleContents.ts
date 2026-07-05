@@ -13,8 +13,8 @@ export const overviewContent: SduiDocumentContent = {
         state: {
           content: [{ type: 'text', text: '문서는 도메인 데이터입니다' }],
           text: '문서는 도메인 데이터입니다',
+          level: 1,
         },
-        attributes: { level: 1 },
       }),
       createDocumentBlock({
         id: 'ov-p1',
@@ -34,13 +34,12 @@ export const overviewContent: SduiDocumentContent = {
         id: 'ov-callout',
         type: 'document.callout',
         state: { text: '모든 편집은 불변 패치(insert/update/delete/move/split/merge)로 표현됩니다.' },
-        attributes: { style: 'tip' },
+        attributes: { tone: 'tip' },
       }),
       createDocumentBlock({
         id: 'ov-check',
         type: 'document.checklist',
-        state: { text: '체크박스를 눌러 block.update 패치를 확인하세요' },
-        attributes: { checked: false },
+        state: { text: '체크박스를 눌러 block.update 패치를 확인하세요', checked: false },
       }),
     ],
   }),
@@ -56,8 +55,7 @@ export const allBlocksContent: SduiDocumentContent = {
       createDocumentBlock({
         id: 'ab-h2',
         type: 'document.heading',
-        state: { text: 'document.heading (level 2)' },
-        attributes: { level: 2 },
+        state: { text: 'document.heading (level 2)', level: 2 },
       }),
       createDocumentBlock({
         id: 'ab-p',
@@ -77,34 +75,98 @@ export const allBlocksContent: SduiDocumentContent = {
         },
       }),
       createDocumentBlock({
+        id: 'ab-bullet',
+        type: 'document.bulleted-list',
+        state: { text: 'bulleted-list — 불릿 항목' },
+      }),
+      createDocumentBlock({
+        id: 'ab-numbered',
+        type: 'document.numbered-list',
+        state: { text: 'numbered-list — 번호 항목' },
+      }),
+      createDocumentBlock({
         id: 'ab-check',
         type: 'document.checklist',
-        state: { text: 'checklist — 체크 가능한 항목' },
-        attributes: { checked: true },
+        state: { text: 'checklist — 체크 가능한 항목', checked: true },
       }),
       createDocumentBlock({
         id: 'ab-callout',
         type: 'document.callout',
-        state: { text: 'callout — info / warning / tip / success 톤' },
-        attributes: { style: 'warning' },
+        state: { text: 'callout — info / tip / warning / success 톤' },
+        attributes: { tone: 'warning' },
+      }),
+      createDocumentBlock({
+        id: 'ab-quote',
+        type: 'document.quote',
+        state: { text: 'quote — 인용문' },
+      }),
+      createDocumentBlock({
+        id: 'ab-toggle',
+        type: 'document.toggle',
+        state: { text: 'toggle — 접기/펼치기' },
+        attributes: { collapsed: false },
+        children: [
+          createDocumentBlock({
+            id: 'ab-toggle-child',
+            type: 'document.paragraph',
+            state: { text: '토글 안의 문단' },
+          }),
+        ],
+      }),
+      createDocumentBlock({
+        id: 'ab-code',
+        type: 'document.code',
+        state: { text: 'const x = 1\nconsole.log(x)' },
+        attributes: { language: 'typescript' },
       }),
       createDocumentBlock({ id: 'ab-divider', type: 'document.divider' }),
       createDocumentBlock({
         id: 'ab-image',
         type: 'document.image',
         state: { text: 'image — 캡션은 state.text' },
-        attributes: { src: 'https://picsum.photos/seed/sdui-arch/560/220', alt: 'sample', width: 560 },
+        attributes: { src: 'https://picsum.photos/seed/sdui-arch/560/220', alt: 'sample' },
       }),
       createDocumentBlock({
         id: 'ab-file',
         type: 'document.file',
-        attributes: { url: 'https://example.com/spec.pdf', name: 'architecture-spec.pdf', size: 20480 },
+        state: { text: 'architecture-spec.pdf' },
+        attributes: { title: 'architecture-spec.pdf', size: '20 KB' },
       }),
       createDocumentBlock({
         id: 'ab-link',
         type: 'document.link',
         state: { text: 'link — 북마크 카드' },
-        attributes: { url: 'https://www.getoutline.com' },
+        attributes: { href: 'https://www.getoutline.com' },
+      }),
+      createDocumentBlock({
+        id: 'ab-column-list',
+        type: 'document.columnList',
+        children: [
+          createDocumentBlock({
+            id: 'ab-col-1',
+            type: 'document.column',
+            attributes: { ratio: 1 },
+            children: [
+              createDocumentBlock({
+                id: 'ab-col-1-p',
+                type: 'document.paragraph',
+                state: { text: 'columnList + column — 다단 레이아웃' },
+              }),
+            ],
+          }),
+          createDocumentBlock({
+            id: 'ab-col-2',
+            type: 'document.column',
+            attributes: { ratio: 1 },
+            children: [
+              createDocumentBlock({
+                id: 'ab-col-2-p',
+                type: 'document.paragraph',
+                state: { text: '가로 드래그로 생성' },
+              }),
+            ],
+          }),
+        ],
       }),
     ],
   }),
