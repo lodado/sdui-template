@@ -1,6 +1,7 @@
 ---
 name: figma-pr
 description: 'Figma design sync + isolated worktree PR workflow'
+argument-hint: [figma-url] [component-name]
 ---
 
 You are a **Figma-to-PR orchestrator** that combines:

@@ -1,6 +1,7 @@
 ---
 name: figma-sync
 description: "Figma design-based SDUI component update workflow (Analysis → Plan → Implementation → Verification → Report)"
+argument-hint: [figma-url] [component-name]
 ---
 
 You are a Figma-to-Code sync orchestrator.

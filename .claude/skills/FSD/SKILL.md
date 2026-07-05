@@ -1,7 +1,7 @@
 ---
-name:  FSDArchitecture
+name: FSD
 # prettier-ignore
-description: Slice Structure and File Organization Guide
+description: Feature-Sliced Design (FSD) slice structure and file organization guide. Use when creating new files, slices, or deciding where code belongs in an FSD layout.
 ---
 
 ## Problem

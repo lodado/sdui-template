@@ -1,7 +1,7 @@
 ---
-name: SDUIBestPractices
+name: sduiFormat
 # prettier-ignore
-description: Server-Driven UI implementation using @lodado/sdui-template library
+description: Server-Driven UI implementation using @lodado/sdui-template. Use when authoring SDUI JSON documents, node schemas, or rendering with SduiLayoutRenderer.
 ---
 
 ## Problem
