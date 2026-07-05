@@ -6,7 +6,7 @@
  * to prevent tearing issues in concurrent rendering.
  */
 
-import { screen, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor } from '@testing-library/react'
 import React from 'react'
 import { z } from 'zod'
 
@@ -124,7 +124,7 @@ describe('Subscription System', () => {
 
         // Click the button to update
         const updateButton = screen.getByTestId('update-button')
-        updateButton.click()
+        fireEvent.click(updateButton)
 
         await waitFor(() => {
           // SDUI components - these are the ones we're testing

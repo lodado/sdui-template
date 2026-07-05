@@ -1,7 +1,7 @@
 import type { ComponentFactory } from '@lodado/sdui-template'
 import { SduiLayoutRenderer } from '@lodado/sdui-template'
 import { render, screen, waitFor } from '@testing-library/react'
-import React, { lazy, Suspense } from 'react'
+import React, { type ComponentType, lazy, Suspense } from 'react'
 
 import { Div } from '../Div'
 import { ErrorBoundary } from '../ErrorBoundary'
@@ -464,11 +464,14 @@ describe('Div - Logic Tests', () => {
   describe('as is: Div with Suspense', () => {
     describe('when: child component is lazy loaded', () => {
       it('to be: suspense fallback displayed during loading, should show fallback UI', async () => {
-        // Create async component
-        const LazyComponent = lazy(() =>
-          Promise.resolve({
-            default: () => <div data-testid="lazy-content">Lazy Loaded Content</div>,
-          }),
+        // Deferred module resolution — keeps the component pending until we resolve,
+        // so the fallback assertion cannot race the lazy load
+        let resolveModule!: (module: { default: ComponentType }) => void
+        const LazyComponent = lazy(
+          () =>
+            new Promise<{ default: ComponentType }>((resolve) => {
+              resolveModule = resolve
+            }),
         )
 
         const lazyComponentFactory: ComponentFactory = () => (
@@ -502,6 +505,9 @@ describe('Div - Logic Tests', () => {
         expect(screen.getByText('Loading...')).toBeInTheDocument()
 
         // Content should be displayed after async component loads
+        resolveModule({
+          default: () => <div data-testid="lazy-content">Lazy Loaded Content</div>,
+        })
         await waitFor(() => {
           expect(screen.getByTestId('lazy-content')).toBeInTheDocument()
         })
@@ -512,10 +518,13 @@ describe('Div - Logic Tests', () => {
 
     describe('when: Div has custom suspenseFallback prop', () => {
       it('to be: custom suspense fallback displayed, should show custom loading message', async () => {
-        const LazyComponent = lazy(() =>
-          Promise.resolve({
-            default: () => <div data-testid="lazy-content">Lazy Content</div>,
-          }),
+        // Deferred module resolution — see the lazy-loaded test above
+        let resolveModule!: (module: { default: ComponentType }) => void
+        const LazyComponent = lazy(
+          () =>
+            new Promise<{ default: ComponentType }>((resolve) => {
+              resolveModule = resolve
+            }),
         )
 
         const lazyComponentFactory: ComponentFactory = () => <LazyComponent />
@@ -552,6 +561,9 @@ describe('Div - Logic Tests', () => {
         expect(screen.getByText('Custom Loading...')).toBeInTheDocument()
 
         // Content should be displayed after async component loads
+        resolveModule({
+          default: () => <div data-testid="lazy-content">Lazy Content</div>,
+        })
         await waitFor(() => {
           expect(screen.getByTestId('lazy-content')).toBeInTheDocument()
         })
