@@ -4,19 +4,20 @@ import { TextSelection } from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
 
-import type { BlockMenuAnchorRect } from '../editor/block-menu/BlockMenu'
 import { BlockMenu } from '../editor/block-menu/BlockMenu'
 import type { BlockMenuItem } from '../editor/block-menu/blockMenuItems'
 import { filterBlockMenuItems } from '../editor/block-menu/blockMenuItems'
-import { safeHref } from '../inline/safeHref'
 import type { SelectionSnapshot } from '../selection-toolbar/selectionSnapshot'
 import { buildSelectionSnapshot, selectionSnapshotsEqual } from '../selection-toolbar/selectionSnapshot'
 import { SelectionToolbar } from '../selection-toolbar/SelectionToolbar'
+import { resolveCaretOffset } from './caret'
+import { normalizeLinkHref } from './linkHref'
 import { handleMultilinePaste, insertLineBreaksBetweenBlocks } from './pm/clipboard'
 import { createFocusedBlockEditorState, editorStateToInline } from './pm/editorState'
 import type { FocusedBlockCallbacks } from './pm/keymapDelegation'
 import { focusedBlockSchema } from './pm/schema'
 import { getSlashRange } from './pm/slashMenuPlugin'
+import { useBlockMenuState } from './useBlockMenuState'
 
 export type FocusedBlockCommit = {
   content: SduiInlineContent
@@ -41,35 +42,6 @@ export type FocusedBlockEditorProps = Omit<
   // eslint-disable-next-line react/no-unused-prop-types -- consumed via latestProps ref
   autoOpenBlockMenu?: boolean
   className?: string
-}
-
-/** Slash/plus menu UI state — owned here, keyboard-driven via PM delegation. */
-type BlockMenuState = {
-  anchor: BlockMenuAnchorRect
-  query: string
-  activeIndex: number
-  view: 'menu' | 'link'
-  /** Set while the link URL input is open — the item to delegate on submit. */
-  pendingLinkItem?: BlockMenuItem
-}
-
-function resolveCaretOffset(autoFocus: FocusedBlockEditorProps['autoFocus'], docSize: number): number {
-  if (autoFocus === 'start' || autoFocus === undefined) {
-    return 0
-  }
-
-  if (autoFocus === 'end') {
-    return docSize
-  }
-
-  return Math.max(0, Math.min(autoFocus, docSize))
-}
-
-/** Normalizes toolbar link input: bare domains get https://, unsafe schemes are rejected. */
-function normalizeLinkHref(input: string): string | null {
-  const candidate = /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(input) ? input : `https://${input}`
-
-  return safeHref(candidate) ?? null
 }
 
 /**
@@ -101,14 +73,7 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
   const [snapshot, setSnapshot] = useState<SelectionSnapshot | null>(null)
   const [isSelectingText, setIsSelectingText] = useState(false)
 
-  const [menu, setMenu] = useState<BlockMenuState | null>(null)
-  // Plugin callbacks (isSlashMenuOpen, onSlashMenuKey) run synchronously inside
-  // PM event handling — they read the ref, never the async state.
-  const menuRef = useRef<BlockMenuState | null>(null)
-  const updateMenu = useCallback((next: BlockMenuState | null) => {
-    menuRef.current = next
-    setMenu(next)
-  }, [])
+  const { menu, menuRef, updateMenu } = useBlockMenuState()
   // Select/submit need commitNow/retired from the mount effect — bridged via refs.
   const selectItemRef = useRef<(item: BlockMenuItem) => void>()
   const submitLinkRef = useRef<(url: string) => void>()
