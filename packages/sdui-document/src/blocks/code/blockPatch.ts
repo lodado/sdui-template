@@ -20,9 +20,9 @@ import type {
   SduiDocumentPatch,
   SduiInlineContent,
 } from '../schema'
+import { createDocumentBlock } from '../schema'
 import type { BlockOrigin } from '../schema/block'
 import type { BlockPlacementAnchor } from '../schema/patch'
-import { createDocumentBlock } from '../schema'
 import {
   BlockNotFoundError,
   DuplicateBlockIdError,

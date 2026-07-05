@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+import { BLOCK_TYPE_MODULES } from '../../block-types'
 import { inlineMarkSchema } from '../../marks'
 import type { SduiDocument, SduiDocumentBlock, SduiDocumentContent, SduiDocumentPatch } from './index'
 import type { SduiInlineContent } from './inline'
@@ -15,18 +16,13 @@ const inlineNodeSchema = z.union([
 
 const inlineContentSchema = z.array(inlineNodeSchema)
 
+// Known block types are enumerated by the block-type registry, so adding a
+// block folder auto-registers its type here. The trailing z.string() keeps
+// validation intentionally open to custom/unknown types (behavior preserved).
 const blockTypeSchema = z.union([
-  z.literal('document.root'),
-  z.literal('document.paragraph'),
-  z.literal('document.heading'),
-  z.literal('document.checklist'),
-  z.literal('document.divider'),
-  z.literal('document.callout'),
-  z.literal('document.image'),
-  z.literal('document.file'),
-  z.literal('document.link'),
   z.string(),
-])
+  ...BLOCK_TYPE_MODULES.map((blockModule) => z.literal(blockModule.type)),
+] as unknown as [z.ZodTypeAny, z.ZodTypeAny, ...z.ZodTypeAny[]])
 
 const blockOriginSchema = z.object({
   clientId: z.string().min(1),

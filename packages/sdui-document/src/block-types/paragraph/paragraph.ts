@@ -2,16 +2,21 @@
 import type { SduiDocumentBlock } from '../../blocks/schema/block'
 import { blockText, stateText, stripKeys } from '../shared'
 import type { SduiBlockTypeModule } from '../types'
+import { createDefaultParagraph } from './paragraph.default'
+import { paragraphToMarkdown } from './paragraph.markdown'
+import { type ParagraphBlockState, paragraphStateSchema } from './paragraph.schema'
+import { PARAGRAPH_BLOCK_TYPE } from './paragraph.type'
 
-export type ParagraphBlockState = { text?: string }
+export type { ParagraphBlockState } from './paragraph.schema'
+export { PARAGRAPH_BLOCK_TYPE } from './paragraph.type'
 
 export type ParagraphBlock = SduiDocumentBlock & {
-  type: 'document.paragraph'
+  type: typeof PARAGRAPH_BLOCK_TYPE
   state: ParagraphBlockState
 }
 
 export function isParagraphBlock(block: SduiDocumentBlock): block is ParagraphBlock {
-  return block.type === 'document.paragraph'
+  return block.type === PARAGRAPH_BLOCK_TYPE
 }
 
 /**
@@ -19,7 +24,7 @@ export function isParagraphBlock(block: SduiDocumentBlock): block is ParagraphBl
  * matching the old switch `default` cases (toSduiLayout/fromSduiLayout).
  */
 export const paragraphBlockModule: SduiBlockTypeModule = {
-  type: 'document.paragraph',
+  type: PARAGRAPH_BLOCK_TYPE,
   toSduiNode(block, { theme }) {
     return {
       id: block.id,
@@ -33,7 +38,7 @@ export const paragraphBlockModule: SduiBlockTypeModule = {
     }
   },
   fromSduiNode(node, { id, children }) {
-    const blockType = String(node.attributes?.['data-block-type'] ?? 'document.paragraph')
+    const blockType = String(node.attributes?.['data-block-type'] ?? PARAGRAPH_BLOCK_TYPE)
     const restAttribs = stripKeys(node.attributes ?? {}, 'data-block-type', 'className')
     return {
       id,
@@ -43,4 +48,7 @@ export const paragraphBlockModule: SduiBlockTypeModule = {
       children,
     }
   },
+  createDefault: createDefaultParagraph,
+  stateSchema: paragraphStateSchema,
+  toMarkdown: paragraphToMarkdown,
 }

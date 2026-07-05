@@ -1,12 +1,14 @@
+import type { Token } from 'marked'
 import { z } from 'zod'
 
+import type { SduiInlineNode } from '../blocks/schema/inline'
 import { type BoldMark, boldMark } from './bold/bold'
 import { type CodeMark, codeMark } from './code/code'
 import { type HighlightMark, highlightMark } from './highlight/highlight'
 import { type ItalicMark, italicMark } from './italic/italic'
 import { type LinkMark, linkMark } from './link/link'
 import { type StrikethroughMark, strikethroughMark } from './strikethrough/strikethrough'
-import type { SduiMarkModule } from './types'
+import type { MarkFromMarkdownContext, SduiMarkModule } from './types'
 import { type UnderlineMark, underlineMark } from './underline/underline'
 
 export type SduiInlineMark =
@@ -77,7 +79,37 @@ export function marksEqual(a: SduiInlineMark[] = [], b: SduiInlineMark[] = []): 
   })
 }
 
+/** Wrap inner text in a single mark's markdown syntax (identity if the mark has none). */
+export function applyMarkMarkdown(mark: SduiInlineMark, inner: string): string {
+  // TS cannot correlate mark.type with the registry entry; the registry map above guarantees the match.
+  const markModule = markModuleByName[mark.type] as unknown as SduiMarkModule<SduiInlineMark>
+  return markModule.toMarkdown ? markModule.toMarkdown(inner, mark) : inner
+}
+
+// marked inline token type -> the mark that parses it (strong -> bold, codespan -> code, …)
+const markModuleByMarkdownToken: Record<string, SduiMarkModule<SduiInlineMark>> = MARK_MODULES.reduce(
+  (byToken, markModule) =>
+    markModule.markdownToken
+      ? { ...byToken, [markModule.markdownToken]: markModule as unknown as SduiMarkModule<SduiInlineMark> }
+      : byToken,
+  {},
+)
+
+/**
+ * Map a marked inline token to nodes via its owning mark's handler.
+ * Returns undefined when no mark claims the token type (structural tokens like
+ * text/br/image are handled by the caller).
+ */
+export function inlineMarkFromToken(
+  token: Token,
+  marks: SduiInlineMark[],
+  ctx: MarkFromMarkdownContext,
+): SduiInlineNode[] | undefined {
+  const markModule = markModuleByMarkdownToken[token.type]
+  return markModule?.fromMarkdown ? markModule.fromMarkdown(token, marks, ctx) : undefined
+}
+
 export type { BoldMark, CodeMark, HighlightMark, ItalicMark, LinkMark, StrikethroughMark, UnderlineMark }
 export { boldMark, codeMark, highlightMark, italicMark, linkMark, strikethroughMark, underlineMark }
 export { HIGHLIGHT_COLOR_PATTERN, isValidHighlightColor } from './highlight/highlight'
-export type { SduiMarkModule } from './types'
+export type { MarkFromMarkdownContext, SduiMarkModule } from './types'

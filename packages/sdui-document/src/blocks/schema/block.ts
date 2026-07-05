@@ -1,3 +1,12 @@
+import { CALLOUT_BLOCK_TYPE } from '../../block-types/callout/callout.type'
+import { CHECKLIST_BLOCK_TYPE } from '../../block-types/checklist/checklist.type'
+import { DIVIDER_BLOCK_TYPE } from '../../block-types/divider/divider.type'
+import { FILE_BLOCK_TYPE } from '../../block-types/file/file.type'
+import { HEADING_BLOCK_TYPE } from '../../block-types/heading/heading.type'
+import { IMAGE_BLOCK_TYPE } from '../../block-types/image/image.type'
+import { LINK_BLOCK_TYPE } from '../../block-types/link/link.type'
+import { PARAGRAPH_BLOCK_TYPE } from '../../block-types/paragraph/paragraph.type'
+import { ROOT_BLOCK_TYPE } from '../../block-types/root/root.type'
 import { createBlockId, type SduiDocumentBlockId } from './ids'
 
 /** Tie-break metadata for deterministic sibling ordering when fractional keys collide. */
@@ -6,16 +15,21 @@ export type BlockOrigin = {
   opId: string
 }
 
+/**
+ * Union of built-in block types, derived from the per-folder type constants
+ * (`block-types/<name>/<name>.type.ts`) — the single source of truth. Adding a
+ * block folder's constant here is the only central edit needed for the type.
+ */
 export type SduiDocumentBlockType =
-  | 'document.root'
-  | 'document.paragraph'
-  | 'document.heading'
-  | 'document.checklist'
-  | 'document.divider'
-  | 'document.callout'
-  | 'document.image'
-  | 'document.file'
-  | 'document.link'
+  | typeof ROOT_BLOCK_TYPE
+  | typeof PARAGRAPH_BLOCK_TYPE
+  | typeof HEADING_BLOCK_TYPE
+  | typeof CHECKLIST_BLOCK_TYPE
+  | typeof DIVIDER_BLOCK_TYPE
+  | typeof CALLOUT_BLOCK_TYPE
+  | typeof IMAGE_BLOCK_TYPE
+  | typeof FILE_BLOCK_TYPE
+  | typeof LINK_BLOCK_TYPE
 
 export type SduiDocumentBlock = {
   id: SduiDocumentBlockId

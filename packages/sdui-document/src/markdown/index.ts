@@ -1,2 +1,4 @@
 export { markdownToSduiDocumentContent } from './fromMarkdown'
+export { inlineContentToMarkdown } from './inlineToMarkdown'
+export { sduiDocumentContentToMarkdown, sduiDocumentToMarkdown } from './toMarkdown'
 export type { MarkdownImportOptions, MarkdownUnsupportedPolicy } from './types'

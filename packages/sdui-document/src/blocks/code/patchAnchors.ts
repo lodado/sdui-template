@@ -1,7 +1,7 @@
+import { sortBlocksByPosition } from '../../ordering/sortChildren'
 import type { SduiDocumentBlock } from '../schema/block'
 import type { SduiDocumentContent } from '../schema/document'
 import type { BlockPlacementAnchor } from '../schema/patch'
-import { sortBlocksByPosition } from '../../ordering/sortChildren'
 
 function findBlock(block: SduiDocumentBlock, blockId: string): SduiDocumentBlock | undefined {
   if (block.id === blockId) {

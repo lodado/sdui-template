@@ -2,6 +2,7 @@ import type { Token } from 'marked'
 
 import type { SduiInlineContent, SduiInlineMark, SduiInlineNode } from '../blocks/schema/inline'
 import { mergeInlineContent } from '../content/inlineContent'
+import { inlineMarkFromToken, type MarkFromMarkdownContext } from '../marks'
 import type { MarkdownUnsupportedPolicy } from './types'
 
 function textNode(text: string, marks: SduiInlineMark[]): SduiInlineNode {
@@ -9,6 +10,17 @@ function textNode(text: string, marks: SduiInlineMark[]): SduiInlineNode {
 }
 
 function tokenNodes(token: Token, marks: SduiInlineMark[], onUnsupported: MarkdownUnsupportedPolicy): SduiInlineNode[] {
+  // marks own their own marked-token mappings (strong -> bold, codespan -> code, …)
+  const markCtx: MarkFromMarkdownContext = {
+    // eslint-disable-next-line no-use-before-define
+    collect: (nestedTokens, nestedMarks) => collect(nestedTokens, nestedMarks, onUnsupported),
+    textNode,
+  }
+  const markNodes = inlineMarkFromToken(token, marks, markCtx)
+  if (markNodes) {
+    return markNodes
+  }
+
   switch (token.type) {
     case 'text':
       // list-item text containers nest their own inline tokens
@@ -20,25 +32,6 @@ function tokenNodes(token: Token, marks: SduiInlineMark[], onUnsupported: Markdo
 
     case 'escape':
       return [textNode(token.text, marks)]
-
-    case 'strong':
-      // eslint-disable-next-line no-use-before-define
-      return collect(token.tokens ?? [], [...marks, { type: 'bold' }], onUnsupported)
-
-    case 'em':
-      // eslint-disable-next-line no-use-before-define
-      return collect(token.tokens ?? [], [...marks, { type: 'italic' }], onUnsupported)
-
-    case 'del':
-      // eslint-disable-next-line no-use-before-define
-      return collect(token.tokens ?? [], [...marks, { type: 'strikethrough' }], onUnsupported)
-
-    case 'codespan':
-      return [textNode(token.text, [...marks, { type: 'code' }])]
-
-    case 'link':
-      // eslint-disable-next-line no-use-before-define
-      return collect(token.tokens ?? [], [...marks, { type: 'link', attrs: { href: token.href } }], onUnsupported)
 
     case 'br':
       return [{ type: 'hard_break' }]
