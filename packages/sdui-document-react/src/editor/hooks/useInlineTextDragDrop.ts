@@ -9,6 +9,7 @@ import {
   resolveCaretFromPoint,
 } from '../../inline/domInlineOffsets'
 import { positionDropCaretOverlay } from './dropCaretOverlay'
+import { findInlineRoot, parseInlineDragSource } from './inlineDragDom'
 
 /** dataTransfer type carrying the inline drag source across editor instances. */
 export const INLINE_DRAG_MIME = 'application/x-sdui-inline'
@@ -29,12 +30,6 @@ export type UseInlineTextDragDropInput = {
    */
   onDragStart?(): void
   readOnly?: boolean
-}
-
-function findInlineRoot(node: Node | null): HTMLElement | null {
-  const element = node instanceof Element ? node : node?.parentElement
-
-  return element?.closest<HTMLElement>('[data-inline-root]') ?? null
 }
 
 /**
@@ -189,26 +184,8 @@ export function useInlineTextDragDrop(input: UseInlineTextDragDropInput): void {
       }
 
       const raw = event.dataTransfer?.getData(INLINE_DRAG_MIME)
-      if (!raw) {
-        return null
-      }
 
-      try {
-        const parsed: unknown = JSON.parse(raw)
-        if (
-          typeof parsed === 'object' &&
-          parsed !== null &&
-          typeof (parsed as InlineDragSource).blockId === 'string' &&
-          typeof (parsed as InlineDragSource).from === 'number' &&
-          typeof (parsed as InlineDragSource).to === 'number'
-        ) {
-          return parsed as InlineDragSource
-        }
-      } catch {
-        return null
-      }
-
-      return null
+      return raw ? parseInlineDragSource(raw) : null
     }
 
     const handleDrop = (event: DragEvent) => {
