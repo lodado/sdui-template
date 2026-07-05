@@ -2,6 +2,8 @@ import {
   applyDocumentPatches,
   applyDocumentPatchesWithInverse,
   applyDocumentPatchWithInverse,
+  applyPatchesToDocument,
+  applyPatchesToDocumentWithInverse,
   applyPatchToDocumentWithInverse,
   createDocumentBlock,
   ensureFractionalContent,
@@ -186,6 +188,64 @@ describe('applyPatchToDocumentWithInverse', () => {
         const restored = inverse.reduce((doc, patch) => applyPatchToDocumentWithInverse(doc, patch).document, next)
         expect(restored.content).toEqual(ensureFractionalContent(baseDocument.content))
       })
+    })
+  })
+})
+
+describe('applyPatchesToDocumentWithInverse', () => {
+  const baseDocument: SduiDocument = {
+    id: 'doc-1',
+    workspaceId: 'ws-1',
+    title: 'Original title',
+    state: 'draft',
+    content: createContent(),
+    version: 1,
+    createdAt: '2026-07-04T00:00:00.000Z',
+    updatedAt: '2026-07-04T00:00:00.000Z',
+  }
+
+  describe('as is: a mixed batch of setTitle + block patches', () => {
+    describe('when the combined inverse is applied in array order', () => {
+      it('to be: title AND content both restored', () => {
+        const batch: SduiDocumentPatch[] = [
+          { type: 'document.setTitle', title: 'New title' },
+          { type: 'block.update', blockId: 'para-1', state: { text: 'Changed' } },
+          { type: 'block.delete', blockId: 'para-2' },
+        ]
+
+        const { document: next, inverse } = applyPatchesToDocumentWithInverse(baseDocument, batch)
+
+        expect(next.title).toBe('New title')
+        expect(findBlockById(next.content, 'para-1')?.state?.text).toBe('Changed')
+        expect(findBlockById(next.content, 'para-2')).toBeUndefined()
+
+        const restored = applyPatchesToDocument(next, inverse)
+        expect(restored.title).toBe('Original title')
+        expect(restored.content).toEqual(ensureFractionalContent(baseDocument.content))
+      })
+    })
+  })
+
+  describe('as is: an empty batch (BVA: nothing to apply)', () => {
+    it('to be: document unchanged aside from position migration, inverse empty', () => {
+      const { document: next, inverse } = applyPatchesToDocumentWithInverse(baseDocument, [])
+
+      expect(next.title).toBe('Original title')
+      expect(inverse).toEqual([])
+    })
+  })
+
+  describe('as is: two sequential setTitle patches', () => {
+    it('to be: inverse rolls back to the ORIGINAL title, not the intermediate one', () => {
+      const { document: next, inverse } = applyPatchesToDocumentWithInverse(baseDocument, [
+        { type: 'document.setTitle', title: 'Intermediate' },
+        { type: 'document.setTitle', title: 'Final' },
+      ])
+
+      expect(next.title).toBe('Final')
+
+      const restored = applyPatchesToDocument(next, inverse)
+      expect(restored.title).toBe('Original title')
     })
   })
 })

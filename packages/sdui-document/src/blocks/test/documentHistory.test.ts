@@ -4,8 +4,10 @@ import {
   createBlockId,
   createDocumentBlock,
   createDocumentHistory,
+  createHistory,
   type DocumentHistoryEntry,
   ensureFractionalContent,
+  type HistoryEntry,
   recordHistoryEntry,
   redoHistory,
   type SduiDocumentContent,
@@ -82,6 +84,26 @@ describe('document history (two-stack undo/redo)', () => {
       const redone = redoHistory(undone!.history)
       expect(redone?.entry).toEqual(entryOf('a'))
       expect(redone?.history.undoStack).toHaveLength(1)
+      expect(redone?.history.redoStack).toHaveLength(0)
+    })
+  })
+
+  describe('createHistory (generic entry payloads)', () => {
+    type TreeMoveOp = { documentId: string; targetParentDocumentId?: string }
+
+    it('round-trips non-patch entries through the same two-stack semantics', () => {
+      const entry: HistoryEntry<TreeMoveOp> = {
+        undo: { documentId: 'doc-1', targetParentDocumentId: 'old-parent' },
+        redo: { documentId: 'doc-1', targetParentDocumentId: 'new-parent' },
+      }
+
+      const recorded = recordHistoryEntry(createHistory<TreeMoveOp>(), entry)
+
+      const undone = undoHistory(recorded)
+      expect(undone?.entry.undo.targetParentDocumentId).toBe('old-parent')
+
+      const redone = redoHistory(undone!.history)
+      expect(redone?.entry.redo.targetParentDocumentId).toBe('new-parent')
       expect(redone?.history.redoStack).toHaveLength(0)
     })
   })

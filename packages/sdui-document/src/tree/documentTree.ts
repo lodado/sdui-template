@@ -6,6 +6,11 @@ export type DocumentTreeResult = {
   events: SduiDocumentEvent[]
 }
 
+/** Injectable clock for deterministic `updatedAt`/`occurredAt` stamps. */
+export type DocumentTreeClock = () => string
+
+const defaultClock: DocumentTreeClock = () => new Date().toISOString()
+
 export type MoveDocumentInput = {
   documents: SduiDocument[]
   documentId: SduiDocumentId
@@ -51,15 +56,19 @@ export function getDocumentDescendantIds(documents: SduiDocument[], documentId: 
   )
 }
 
-function createEvent(type: SduiDocumentEvent['type'], documentId: SduiDocumentId): SduiDocumentEvent {
+function createEvent(
+  type: SduiDocumentEvent['type'],
+  documentId: SduiDocumentId,
+  occurredAt: string,
+): SduiDocumentEvent {
   return {
     type,
     documentId,
-    occurredAt: new Date().toISOString(),
+    occurredAt,
   }
 }
 
-export function moveDocument(input: MoveDocumentInput): DocumentTreeResult {
+export function moveDocument(input: MoveDocumentInput, now: DocumentTreeClock = defaultClock): DocumentTreeResult {
   const documents = cloneDocuments(input.documents)
   const source = requireDocument(documents, input.documentId)
   const targetParent = input.targetParentDocumentId
@@ -79,6 +88,7 @@ export function moveDocument(input: MoveDocumentInput): DocumentTreeResult {
     throw new InvalidDocumentDestinationError('Published documents must belong to a collection')
   }
 
+  const occurredAt = now()
   const affectedIds = new Set([source.id, ...descendantIds])
   const nextDocuments = documents.map((document) => {
     if (document.id === source.id) {
@@ -87,7 +97,7 @@ export function moveDocument(input: MoveDocumentInput): DocumentTreeResult {
         collectionId: targetCollectionId,
         parentDocumentId: input.targetParentDocumentId,
         sortIndex: input.targetIndex,
-        updatedAt: new Date().toISOString(),
+        updatedAt: occurredAt,
       }
     }
 
@@ -95,7 +105,7 @@ export function moveDocument(input: MoveDocumentInput): DocumentTreeResult {
       return {
         ...document,
         collectionId: targetCollectionId,
-        updatedAt: new Date().toISOString(),
+        updatedAt: occurredAt,
       }
     }
 
@@ -104,38 +114,82 @@ export function moveDocument(input: MoveDocumentInput): DocumentTreeResult {
 
   return {
     documents: nextDocuments,
-    events: [createEvent('document.moved', source.id)],
+    events: [createEvent('document.moved', source.id, occurredAt)],
   }
+}
+
+/** Move input minus the documents array — feed back into moveDocument to roll back. */
+export type MoveDocumentInverseInput = Omit<MoveDocumentInput, 'documents'>
+
+export type MoveDocumentWithInverseResult = DocumentTreeResult & {
+  inverse: MoveDocumentInverseInput
+}
+
+/**
+ * Applies a move and returns the inverse move input that undoes it.
+ *
+ * Policies:
+ * - the inverse is captured against the pre-move document (snapshot semantics)
+ * - the inverse only round-trips against the exact state the move produced;
+ *   if the original parent has since disappeared, applying it throws
+ *   DocumentNotFoundError and the caller decides whether to drop the entry
+ * - `updatedAt` is not restored — undoing is itself an edit
+ * - limitation: a document that had no collection AND no parent cannot have
+ *   its absent collectionId restored (moveDocument falls back to the current
+ *   collection); irrelevant while published documents require a collection
+ */
+export function moveDocumentWithInverse(
+  input: MoveDocumentInput,
+  now: DocumentTreeClock = defaultClock,
+): MoveDocumentWithInverseResult {
+  const source = requireDocument(input.documents, input.documentId)
+
+  const inverse: MoveDocumentInverseInput = {
+    documentId: input.documentId,
+    targetCollectionId: source.collectionId,
+    targetParentDocumentId: source.parentDocumentId,
+    targetIndex: source.sortIndex,
+  }
+
+  return { ...moveDocument(input, now), inverse }
 }
 
 function setSubtreeState(
   input: DocumentSubtreeInput,
   state: SduiDocument['state'],
   eventType: SduiDocumentEvent['type'],
+  now: DocumentTreeClock,
 ): DocumentTreeResult {
   requireDocument(input.documents, input.documentId)
 
+  const occurredAt = now()
   const affectedIds = new Set([input.documentId, ...getDocumentDescendantIds(input.documents, input.documentId)])
   const documents = input.documents.map((document) =>
     affectedIds.has(document.id)
       ? {
           ...document,
           state,
-          updatedAt: new Date().toISOString(),
+          updatedAt: occurredAt,
         }
       : { ...document },
   )
 
   return {
     documents,
-    events: [createEvent(eventType, input.documentId)],
+    events: [createEvent(eventType, input.documentId, occurredAt)],
   }
 }
 
-export function archiveDocumentSubtree(input: DocumentSubtreeInput): DocumentTreeResult {
-  return setSubtreeState(input, 'archived', 'document.archived')
+export function archiveDocumentSubtree(
+  input: DocumentSubtreeInput,
+  now: DocumentTreeClock = defaultClock,
+): DocumentTreeResult {
+  return setSubtreeState(input, 'archived', 'document.archived', now)
 }
 
-export function restoreDocumentSubtree(input: DocumentSubtreeInput): DocumentTreeResult {
-  return setSubtreeState(input, 'published', 'document.restored')
+export function restoreDocumentSubtree(
+  input: DocumentSubtreeInput,
+  now: DocumentTreeClock = defaultClock,
+): DocumentTreeResult {
+  return setSubtreeState(input, 'published', 'document.restored', now)
 }
