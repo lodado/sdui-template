@@ -1,4 +1,18 @@
 export * from './autosave'
+export {
+  bulletedList,
+  type BulletedListBuilderOptions,
+  divider,
+  type DividerBuilderOptions,
+  heading,
+  type HeadingBuilderOptions,
+  image,
+  type ImageBuilderOptions,
+  nextBlockId,
+  paragraph,
+  type ParagraphBuilderOptions,
+  resetBlockIds,
+} from './block-types'
 export { createDefaultBlock } from './block-types/createDefaultBlock'
 export { type BlockAlign, blockAlignSchema, resolveBlockAlign } from './block-types/shared/align'
 export * from './blocks/code'

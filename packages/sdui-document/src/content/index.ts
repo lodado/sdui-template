@@ -1,4 +1,5 @@
 export * from './errors'
+export * from './inlineBuilders'
 export * from './inlineContent'
 export * from './inlineRange'
 export * from './links'

@@ -436,15 +436,55 @@
   max-width: 100%;
 }
 
-/* image size/position controls — inline bar shown only in editable mode */
+/* wraps the <img> so the hover trigger positions against the image, not the
+   full-width block; inline-block collapses to the intrinsic image box */
+[data-sdui-document-editor] .image-frame {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+}
+
+/* Notion-style trigger — hidden until the image is hovered/focused or the
+   popover is open (editable mode only) */
+[data-sdui-document-editor] .image-controls-trigger {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 120ms ease;
+  background: var(--sdui-doc-menu-background);
+  box-shadow: var(--sdui-doc-menu-shadow);
+  color: var(--sdui-doc-text);
+  line-height: 1;
+}
+
+[data-sdui-document-editor] .image-frame:hover .image-controls-trigger,
+[data-sdui-document-editor] .image-controls-trigger:focus-visible,
+[data-sdui-document-editor] .image-controls-trigger[data-state='open'] {
+  opacity: 1;
+}
+
+/* popover surface + the alignment/width control group inside it */
+[data-sdui-document-editor] .image-controls-popover {
+  border-radius: 8px;
+  padding: 4px;
+  background: var(--sdui-doc-menu-background);
+  box-shadow: var(--sdui-doc-menu-shadow);
+  z-index: 40;
+}
+
 [data-sdui-document-editor] .image-controls {
   display: inline-flex;
   gap: 2px;
   align-items: center;
-  margin-top: 6px;
-  padding: 2px;
-  border-radius: 6px;
-  background: var(--sdui-doc-background-secondary);
   font-size: 13px;
 }
 

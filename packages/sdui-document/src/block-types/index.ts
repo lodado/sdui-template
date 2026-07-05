@@ -99,3 +99,11 @@ export type {
   SduiLayoutLikeDocument,
   SduiLayoutLikeNode,
 } from './types'
+
+// Authoring builders — terse helpers for hand-writing documents (colocated per block folder).
+export { nextBlockId, resetBlockIds } from './authoring/blockId'
+export { bulletedList, type BulletedListBuilderOptions } from './bulleted-list/bulletedList.builder'
+export { divider, type DividerBuilderOptions } from './divider/divider.builder'
+export { heading, type HeadingBuilderOptions } from './heading/heading.builder'
+export { image, type ImageBuilderOptions } from './image/image.builder'
+export { paragraph, type ParagraphBuilderOptions } from './paragraph/paragraph.builder'

@@ -170,7 +170,7 @@ describe('BlockChrome', () => {
     })
 
     describe('when onSetImageLayout is provided (EP: editable partition)', () => {
-      it('to be: layout controls render and align clicks emit patches', async () => {
+      it('to be: hover trigger opens a popover whose align clicks emit patches', async () => {
         const user = userEvent.setup()
         const onSetImageLayout = jest.fn()
         render(
@@ -179,6 +179,10 @@ describe('BlockChrome', () => {
             onSetImageLayout={onSetImageLayout}
           />,
         )
+
+        // controls live inside a closed popover — open it via the hover trigger
+        expect(screen.queryByLabelText('Align image left')).toBeNull()
+        await user.click(screen.getByLabelText('Image layout options'))
 
         // clicking a different alignment sets it
         await user.click(screen.getByLabelText('Align image left'))
@@ -192,10 +196,10 @@ describe('BlockChrome', () => {
     })
 
     describe('when onSetImageLayout is omitted (EP: readOnly partition)', () => {
-      it('to be: no layout controls rendered', () => {
+      it('to be: no layout trigger rendered', () => {
         render(<BlockChrome block={block('document.image', { src: 'https://example.com/a.png' })} />)
 
-        expect(screen.queryByLabelText('Align image left')).toBeNull()
+        expect(screen.queryByLabelText('Image layout options')).toBeNull()
       })
     })
   })
