@@ -1,3 +1,4 @@
+import { BULLETED_LIST_BLOCK_TYPE } from '../../block-types/bulleted-list/bulletedList.type'
 import { CALLOUT_BLOCK_TYPE } from '../../block-types/callout/callout.type'
 import { CHECKLIST_BLOCK_TYPE } from '../../block-types/checklist/checklist.type'
 import { COLUMN_BLOCK_TYPE } from '../../block-types/column/column.type'
@@ -26,6 +27,7 @@ export type SduiDocumentBlockType =
   | typeof ROOT_BLOCK_TYPE
   | typeof PARAGRAPH_BLOCK_TYPE
   | typeof HEADING_BLOCK_TYPE
+  | typeof BULLETED_LIST_BLOCK_TYPE
   | typeof CHECKLIST_BLOCK_TYPE
   | typeof DIVIDER_BLOCK_TYPE
   | typeof CALLOUT_BLOCK_TYPE

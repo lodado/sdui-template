@@ -1,5 +1,6 @@
 // packages/sdui-document/src/block-types/index.ts
 import type { SduiDocumentBlock } from '../blocks/schema/block'
+import { bulletedListBlockModule } from './bulleted-list/bulletedList'
 import { calloutBlockModule } from './callout/callout'
 import { checklistBlockModule } from './checklist/checklist'
 import { columnBlockModule } from './column/column'
@@ -25,6 +26,7 @@ export const BLOCK_TYPE_MODULES: readonly SduiBlockTypeModule[] = [
   rootBlockModule,
   paragraphBlockModule,
   headingBlockModule,
+  bulletedListBlockModule,
   checklistBlockModule,
   dividerBlockModule,
   calloutBlockModule,
@@ -58,6 +60,7 @@ export function blockToPlainText(block: SduiDocumentBlock): string | undefined {
 export { paragraphBlockModule }
 // Per-folder block-type identity constants — public so consumers can build
 // documents/patches without hardcoding magic strings.
+export { BULLETED_LIST_BLOCK_TYPE } from './bulleted-list/bulletedList.type'
 export { CALLOUT_BLOCK_TYPE } from './callout/callout.type'
 export { CHECKLIST_BLOCK_TYPE } from './checklist/checklist.type'
 export { COLUMN_BLOCK_TYPE } from './column/column.type'

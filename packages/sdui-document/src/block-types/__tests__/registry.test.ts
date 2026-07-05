@@ -1,6 +1,7 @@
 import { createDocumentBlock } from '../../blocks/schema'
 import {
   BLOCK_TYPE_MODULES,
+  BULLETED_LIST_BLOCK_TYPE,
   CALLOUT_BLOCK_TYPE,
   canHostInlineText,
   CHECKLIST_BLOCK_TYPE,
@@ -24,6 +25,7 @@ describe('block-type constants', () => {
       ROOT_BLOCK_TYPE,
       PARAGRAPH_BLOCK_TYPE,
       HEADING_BLOCK_TYPE,
+      BULLETED_LIST_BLOCK_TYPE,
       CHECKLIST_BLOCK_TYPE,
       DIVIDER_BLOCK_TYPE,
       CALLOUT_BLOCK_TYPE,
