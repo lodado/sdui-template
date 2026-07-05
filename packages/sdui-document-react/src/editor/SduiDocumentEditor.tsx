@@ -3,7 +3,7 @@ import type { SduiDocumentContent, SduiDocumentPatch } from '@lodado/sdui-docume
 import { clearBlockSelection, isEmptyDocument } from '@lodado/sdui-document'
 import { useMemo, useRef } from 'react'
 
-import { defaultGenerateBlockId } from './blockContent'
+import { defaultGenerateBlockId, numberedListOrdinals } from './blockContent'
 import { BlockNode } from './BlockNode'
 import { collisionDetection, DRAG_INDENT_WIDTH, POINTER_SENSOR_OPTIONS } from './editorConstants'
 import { type EditorRuntime, EditorRuntimeContext, useEditorRuntime } from './EditorRuntimeContext'
@@ -146,9 +146,18 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
           onKeyDown={handleSelectionKeyDown}
           style={{ outline: 'none', position: 'relative' }}
         >
-          {doc.root.children?.map((child) => (
-            <BlockNode key={child.id} block={child} depth={1} readOnly={readOnly} />
-          ))}
+          {(() => {
+            const ordinals = numberedListOrdinals(doc.root.children ?? [])
+            return doc.root.children?.map((child) => (
+              <BlockNode
+                key={child.id}
+                block={child}
+                depth={1}
+                readOnly={readOnly}
+                listOrdinal={ordinals.get(child.id)}
+              />
+            ))
+          })()}
           {!readOnly && (
             // Outline ClickablePadding: a text-cursor strip below the last
             // block; keyboard users reach the same spot via ArrowDown.

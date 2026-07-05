@@ -1,6 +1,7 @@
 import type { SduiDocumentBlock } from '@lodado/sdui-document'
 import React from 'react'
 
+import { BulletedListBlock } from './bulleted-list/BulletedListBlock'
 import { CalloutBlock } from './callout/CalloutBlock'
 import { ChecklistBlock } from './checklist/ChecklistBlock'
 import { DividerBlock } from './divider/DividerBlock'
@@ -8,10 +9,16 @@ import { FileBlock } from './file/FileBlock'
 import { HeadingBlock } from './heading/HeadingBlock'
 import { ImageBlock } from './image/ImageBlock'
 import { LinkBlock } from './link/LinkBlock'
+import { NumberedListBlock } from './numbered-list/NumberedListBlock'
 import { ParagraphBlock } from './paragraph/ParagraphBlock'
+import { QuoteBlock } from './quote/QuoteBlock'
 
 export type BlockChromeProps = {
   block: SduiDocumentBlock
+  /** Tree depth (1 = top level) — drives the bulleted marker cycle. */
+  depth?: number
+  /** Render-time ordinal for numbered list items (computed from siblings, never stored). */
+  listOrdinal?: number
   /** Checklist checkbox toggle — omitted (readOnly) renders a non-interactive box. */
   onToggleChecked?(blockId: string, checked: boolean): void
   /** Inline content: static InlineContentView or the focused ProseMirror editor. */
@@ -32,7 +39,7 @@ export type BlockChromeProps = {
  * - image src and file/link hrefs are scheme-whitelisted via safeHref;
  *   unsafe URLs render without the attribute (span fallback for anchors)
  */
-export const BlockChrome = ({ block, onToggleChecked, children }: BlockChromeProps) => {
+export const BlockChrome = ({ block, depth, listOrdinal, onToggleChecked, children }: BlockChromeProps) => {
   switch (block.type) {
     case 'document.heading':
       return <HeadingBlock block={block}>{children}</HeadingBlock>
@@ -43,6 +50,23 @@ export const BlockChrome = ({ block, onToggleChecked, children }: BlockChromePro
           {children}
         </ChecklistBlock>
       )
+
+    case 'document.bulleted-list':
+      return (
+        <BulletedListBlock block={block} depth={depth}>
+          {children}
+        </BulletedListBlock>
+      )
+
+    case 'document.numbered-list':
+      return (
+        <NumberedListBlock block={block} listOrdinal={listOrdinal}>
+          {children}
+        </NumberedListBlock>
+      )
+
+    case 'document.quote':
+      return <QuoteBlock block={block}>{children}</QuoteBlock>
 
     case 'document.callout':
       return <CalloutBlock block={block}>{children}</CalloutBlock>

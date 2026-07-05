@@ -870,3 +870,42 @@
   color: var(--sdui-doc-danger, #d33);
   border-color: currentcolor;
 }
+
+/* ---- Notion list items ---- */
+.list-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 3px 2px;
+}
+.list-item > .list-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  min-width: 24px;
+  font-size: 1.5em;
+  line-height: 1;
+  margin-top: 0.1em;
+  user-select: none;
+}
+.list-item > .list-marker.list-marker-number {
+  font-size: 1em;
+  line-height: 1.5;
+  margin-top: 0;
+  justify-content: flex-start;
+  padding-left: 2px;
+}
+.list-item > .content {
+  flex: 1 1 0;
+  min-width: 0;
+  line-height: 1.5;
+}
+
+/* ---- Notion quote ---- */
+blockquote.quote-block {
+  margin: 4px 0;
+  padding: 3px 0 3px 14px;
+  border-left: 3px solid currentcolor;
+  font-size: 1em;
+  line-height: 1.5;
+}

@@ -6,7 +6,7 @@ import React from 'react'
 import { BlockChrome } from '../block-types/BlockChrome'
 import { FocusedBlockEditor } from '../focused-block/FocusedBlockEditor'
 import { InlineContentView } from '../inline/InlineContentView'
-import { blockInlineContent, isTextBlock } from './blockContent'
+import { blockInlineContent, isTextBlock, numberedListOrdinals } from './blockContent'
 import { DRAG_INDENT_WIDTH } from './editorConstants'
 import { useEditorRuntime } from './EditorRuntimeContext'
 import { useEditorUISelector } from './uiStore'
@@ -15,6 +15,8 @@ type BlockNodeProps = {
   block: SduiDocumentBlock
   depth: number
   readOnly: boolean
+  /** Render-time ordinal for numbered list items — computed by the parent's children map. */
+  listOrdinal?: number
 }
 
 function columnRatio(block: SduiDocumentBlock): number | undefined {
@@ -94,7 +96,7 @@ const ColumnResizeGutter = ({ leftId, rightId }: { leftId: string; rightId: stri
  * interactive. Column children do NOT get the [data-block-nested] indent —
  * horizontal layout replaces vertical indentation at this level.
  */
-const ColumnContainers = ({ block, depth, readOnly }: BlockNodeProps) => {
+const ColumnContainers = ({ block, depth, readOnly }: Omit<BlockNodeProps, 'listOrdinal'>) => {
   if (block.type === COLUMN_LIST_BLOCK_TYPE) {
     const columns = block.children ?? []
 
@@ -112,12 +114,19 @@ const ColumnContainers = ({ block, depth, readOnly }: BlockNodeProps) => {
   }
 
   const ratio = columnRatio(block)
+  const ordinals = numberedListOrdinals(block.children ?? [])
 
   return (
     <div data-block-id={block.id} data-column style={ratio !== undefined ? { flexGrow: ratio } : undefined}>
       {block.children?.map((child) => (
         // eslint-disable-next-line no-use-before-define -- mutual recursion: containers render nested BlockNodes
-        <BlockNode key={child.id} block={child} depth={depth} readOnly={readOnly} />
+        <BlockNode
+          key={child.id}
+          block={child}
+          depth={depth}
+          readOnly={readOnly}
+          listOrdinal={ordinals.get(child.id)}
+        />
       ))}
     </div>
   )
@@ -129,17 +138,17 @@ const ColumnContainers = ({ block, depth, readOnly }: BlockNodeProps) => {
  * focus/selection slice, or dnd state for this row changes. Focus, selection
  * and the drop indicator are NOT props, so sibling rows stay untouched.
  */
-export const BlockNode = React.memo(({ block, depth, readOnly }: BlockNodeProps) => {
+export const BlockNode = React.memo(({ block, depth, readOnly, listOrdinal }: BlockNodeProps) => {
   if (block.type === COLUMN_LIST_BLOCK_TYPE || block.type === COLUMN_BLOCK_TYPE) {
     return <ColumnContainers block={block} depth={depth} readOnly={readOnly} />
   }
 
   // eslint-disable-next-line no-use-before-define -- mutual recursion: rows render nested BlockNodes
-  return <BlockRow block={block} depth={depth} readOnly={readOnly} />
+  return <BlockRow block={block} depth={depth} readOnly={readOnly} listOrdinal={listOrdinal} />
 })
 BlockNode.displayName = 'BlockNode'
 
-const BlockRow = React.memo(({ block, depth, readOnly }: BlockNodeProps) => {
+const BlockRow = React.memo(({ block, depth, readOnly, listOrdinal }: BlockNodeProps) => {
   const { store, handlers } = useEditorRuntime()
   const isSelected = useEditorUISelector(store, (state) => state.selection.selectedIds.includes(block.id))
   const focus = useEditorUISelector(store, (state) => (state.focus?.blockId === block.id ? state.focus : null))
@@ -216,7 +225,12 @@ const BlockRow = React.memo(({ block, depth, readOnly }: BlockNodeProps) => {
           />
         )}
         <div data-block-content>
-          <BlockChrome block={block} onToggleChecked={readOnly ? undefined : handlers.toggleChecked}>
+          <BlockChrome
+            block={block}
+            depth={depth}
+            listOrdinal={listOrdinal}
+            onToggleChecked={readOnly ? undefined : handlers.toggleChecked}
+          >
             {isTextBlock(block) &&
               (isFocused && focus ? (
                 <FocusedBlockEditor
@@ -246,9 +260,18 @@ const BlockRow = React.memo(({ block, depth, readOnly }: BlockNodeProps) => {
         // one visual indent level per tree level — same unit the drag depth
         // projection uses, so the drop indicator lines up with real indents
         <div data-block-nested style={{ paddingLeft: DRAG_INDENT_WIDTH }}>
-          {block.children.map((child) => (
-            <BlockNode key={child.id} block={child} depth={depth + 1} readOnly={readOnly} />
-          ))}
+          {(() => {
+            const ordinals = numberedListOrdinals(block.children)
+            return block.children.map((child) => (
+              <BlockNode
+                key={child.id}
+                block={child}
+                depth={depth + 1}
+                readOnly={readOnly}
+                listOrdinal={ordinals.get(child.id)}
+              />
+            ))
+          })()}
         </div>
       ) : null}
     </div>

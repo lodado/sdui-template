@@ -21,6 +21,25 @@ export function isTextBlock(block: SduiDocumentBlock): boolean {
   return !NON_TEXT_BLOCK_TYPES.has(block.type)
 }
 
+/**
+ * Render-time ordinals for numbered list items. Consecutive
+ * `document.numbered-list` siblings form one run; any other type resets the
+ * counter (Notion behavior). Never stored — recomputed from the sibling array.
+ */
+export function numberedListOrdinals(children: SduiDocumentBlock[]): Map<string, number> {
+  const ordinals = new Map<string, number>()
+  let run = 0
+  children.forEach((child) => {
+    if (child.type === 'document.numbered-list') {
+      run += 1
+      ordinals.set(child.id, run)
+    } else {
+      run = 0
+    }
+  })
+  return ordinals
+}
+
 export function blockInlineContent(block: SduiDocumentBlock | undefined): SduiInlineContent {
   const content = block?.state?.content
   if (Array.isArray(content)) {
