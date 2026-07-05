@@ -41,6 +41,9 @@ export type FocusedBlockEditorProps = Omit<
   /** '+' button flow: insert '/' on mount so the slash plugin opens the menu. */
   // eslint-disable-next-line react/no-unused-prop-types -- consumed via latestProps ref
   autoOpenBlockMenu?: boolean
+  /** Code blocks: Enter inserts a newline, Tab inserts two spaces (no split/indent). */
+  // eslint-disable-next-line react/no-unused-prop-types -- consumed via latestProps ref
+  rawTextMode?: boolean
   className?: string
 }
 
@@ -290,7 +293,9 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
       latestProps.current.onBlockMenuSelect(item, { url: normalized })
     }
 
-    const initialState = createFocusedBlockEditorState(content, callbacks)
+    const initialState = createFocusedBlockEditorState(content, callbacks, {
+      rawTextMode: latestProps.current.rawTextMode,
+    })
     const caret = resolveCaretOffset(autoFocus, initialState.doc.content.size)
     const stateWithCaret = initialState.apply(
       initialState.tr.setSelection(TextSelection.create(initialState.doc, caret)),

@@ -8,7 +8,7 @@ import { EditorState } from 'prosemirror-state'
 
 import { MARK_DEFINITIONS } from '../../marks'
 import { buildBlockTypeInputRules, buildMarkInputRules } from './inputRules'
-import type { FocusedBlockCallbacks } from './keymapDelegation'
+import type { FocusedBlockCallbacks, FocusedBlockKeymapOptions } from './keymapDelegation'
 import { buildFocusedBlockKeymap } from './keymapDelegation'
 import { focusedBlockSchema } from './schema'
 import { inlineContentToPmDoc, pmDocToInlineContent } from './serialization'
@@ -41,12 +41,13 @@ const insertHardBreak: Command = (state, dispatch) => {
 export function createFocusedBlockEditorState(
   content: SduiInlineContent,
   callbacks: FocusedBlockCallbacks,
+  options: FocusedBlockKeymapOptions = {},
 ): EditorState {
   return EditorState.create({
     doc: inlineContentToPmDoc(content),
     plugins: [
       buildSlashMenuPlugin(callbacks),
-      buildFocusedBlockKeymap(callbacks),
+      buildFocusedBlockKeymap(callbacks, options),
       buildBlockTypeInputRules(callbacks),
       buildMarkInputRules(),
       history(),

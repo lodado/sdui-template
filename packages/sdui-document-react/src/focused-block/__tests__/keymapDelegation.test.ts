@@ -1,7 +1,8 @@
+import type { Transaction } from 'prosemirror-state'
 import { TextSelection } from 'prosemirror-state'
 
 import { createFocusedBlockEditorState, editorStateToInline } from '../pm/editorState'
-import type { FocusedBlockCallbacks } from '../pm/keymapDelegation'
+import type { FocusedBlockCallbacks, FocusedBlockKeymapOptions } from '../pm/keymapDelegation'
 
 function createCallbacks(): jest.Mocked<FocusedBlockCallbacks> {
   return {
@@ -29,14 +30,22 @@ type ChordModifiers = { shift?: boolean; ctrl?: boolean; alt?: boolean; meta?: b
  * offset without an EditorView (state-level dispatch; view-dependent paths
  * fall back to offset checks). jsdom is non-mac, so Mod- resolves to Ctrl.
  */
+type PressChordExtras = {
+  /** Forwarded to createFocusedBlockEditorState (e.g. { rawTextMode: true }). */
+  options?: FocusedBlockKeymapOptions
+  /** Captures transactions the keymap dispatches itself (rawTextMode paths). */
+  onDispatch?(tr: Transaction): void
+}
+
 function pressChord(
   callbacks: FocusedBlockCallbacks,
   text: string,
   offset: number,
   key: string,
   modifiers: ChordModifiers = {},
+  extras: PressChordExtras = {},
 ): boolean {
-  const base = createFocusedBlockEditorState(text.length > 0 ? [{ type: 'text', text }] : [], callbacks)
+  const base = createFocusedBlockEditorState(text.length > 0 ? [{ type: 'text', text }] : [], callbacks, extras.options)
   const withCaret = base.apply(base.tr.setSelection(TextSelection.create(base.doc, offset)))
 
   type KeyDownHandler = (
@@ -67,7 +76,11 @@ function pressChord(
     preventDefault: () => undefined,
   } as unknown as KeyboardEvent
 
-  const mockView = { state: withCaret, dispatch: () => undefined, composing: false }
+  const mockView = {
+    state: withCaret,
+    dispatch: (tr: unknown) => extras.onDispatch?.(tr as Transaction),
+    composing: false,
+  }
 
   // Try slashMenu first (returns false when closed), then delegation keymap.
   return ownedPlugins.some((plugin) => {
@@ -269,6 +282,62 @@ describe('editorStateToInline', () => {
           text: 'Hello world',
         })
       })
+    })
+  })
+})
+
+describe('rawTextMode (code block)', () => {
+  describe('when Enter is pressed mid-text', () => {
+    it('to be: a hard_break is inserted instead of delegating onSplit', () => {
+      const callbacks = createCallbacks()
+      const dispatched: Transaction[] = []
+
+      const consumed = pressChord(callbacks, 'ab', 1, 'Enter', {}, {
+        options: { rawTextMode: true },
+        onDispatch: (tr) => dispatched.push(tr),
+      })
+
+      expect(consumed).toBe(true)
+      expect(callbacks.onSplit).not.toHaveBeenCalled()
+      expect(dispatched).toHaveLength(1)
+      expect(JSON.stringify(dispatched[0].doc.toJSON())).toContain('hard_break')
+    })
+  })
+
+  describe('when Tab is pressed', () => {
+    it('to be: two spaces inserted instead of delegating onIndent', () => {
+      const callbacks = createCallbacks()
+      const dispatched: Transaction[] = []
+
+      const consumed = pressChord(callbacks, 'ab', 1, 'Tab', {}, {
+        options: { rawTextMode: true },
+        onDispatch: (tr) => dispatched.push(tr),
+      })
+
+      expect(consumed).toBe(true)
+      expect(callbacks.onIndent).not.toHaveBeenCalled()
+      expect(dispatched[0]?.doc.textContent).toBe('a  b')
+    })
+  })
+
+  describe('when Shift-Tab is pressed', () => {
+    it('to be: consumed as a no-op (no onOutdent)', () => {
+      const callbacks = createCallbacks()
+
+      const consumed = pressChord(callbacks, 'ab', 1, 'Tab', { shift: true }, { options: { rawTextMode: true } })
+
+      expect(consumed).toBe(true)
+      expect(callbacks.onOutdent).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('when Backspace is pressed at offset 0 (boundary still delegates)', () => {
+    it('to be: onMergeBackward called even in rawTextMode', () => {
+      const callbacks = createCallbacks()
+
+      pressChord(callbacks, 'ab', 0, 'Backspace', {}, { options: { rawTextMode: true } })
+
+      expect(callbacks.onMergeBackward).toHaveBeenCalled()
     })
   })
 })

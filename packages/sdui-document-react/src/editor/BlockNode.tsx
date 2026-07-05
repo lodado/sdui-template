@@ -245,6 +245,7 @@ const BlockRow = React.memo(({ block, depth, readOnly, listOrdinal }: BlockNodeP
                   content={blockInlineContent(block)}
                   autoFocus={focus.caret}
                   autoOpenBlockMenu={focus.openBlockMenu === true}
+                  rawTextMode={block.type === 'document.code'}
                   onCommit={(commit) => handlers.commit(block.id, commit)}
                   onSplit={(offset) => handlers.split(block.id, offset)}
                   onMergeBackward={() => handlers.mergeBackward(block.id)}

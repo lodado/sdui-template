@@ -26,3 +26,14 @@ export const NON_TEXT_BLOCK_TYPES = new Set([
   'document.file',
   'document.link',
 ])
+
+/** Blocks with Notion list semantics: empty+Enter → paragraph, Backspace-at-start → paragraph. */
+export const LIST_LIKE_BLOCK_TYPES = new Set([
+  'document.bulleted-list',
+  'document.numbered-list',
+  'document.checklist',
+  'document.toggle',
+])
+
+/** Enter never continues these — the continuation block becomes a paragraph. */
+export const SPLIT_TO_PARAGRAPH_BLOCK_TYPES = new Set(['document.heading', 'document.quote', 'document.toggle'])

@@ -17,7 +17,7 @@ import React, { useMemo, useRef } from 'react'
 
 import type { BlockMenuItem } from '../block-menu/blockMenuItems'
 import { blockInlineContent, isSameCommit, isTextBlock } from '../blockContent'
-import { NON_TEXT_BLOCK_TYPES } from '../editorConstants'
+import { LIST_LIKE_BLOCK_TYPES, NON_TEXT_BLOCK_TYPES, SPLIT_TO_PARAGRAPH_BLOCK_TYPES } from '../editorConstants'
 import type { EditorHandlers } from '../EditorRuntimeContext'
 import type { EditorUIStore, FocusTarget } from '../uiStore'
 
@@ -180,16 +180,32 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
       },
 
       split: (blockId, offset) => {
-        const newBlockId = latest.current.generateBlockId()
         const source = findBlockById(docRef.current, blockId)
+
+        // Notion: Enter on an EMPTY list-like block converts it to a paragraph in place
+        if (
+          source &&
+          LIST_LIKE_BLOCK_TYPES.has(source.type) &&
+          getInlineContentLength(blockInlineContent(source)) === 0
+        ) {
+          latest.current.applyPatches([
+            { type: 'block.setType', blockId: createBlockId(blockId), blockType: 'document.paragraph' },
+          ])
+          refocus(blockId, 'start')
+
+          return
+        }
+
+        const newBlockId = latest.current.generateBlockId()
         const patches: SduiDocumentPatch[] = [
           { type: 'block.split', blockId: createBlockId(blockId), offset, newBlockId: createBlockId(newBlockId) },
         ]
 
-        // Notion split policy: Enter never continues a heading — the
+        // Notion split policy: heading/quote/toggle never continue — the
         // continuation block becomes body text (setType with no attributes
-        // also clears the inherited heading level).
-        if (source?.type === 'document.heading') {
+        // also clears inherited attributes like heading level). List blocks
+        // continue: block.split copies the type.
+        if (source && SPLIT_TO_PARAGRAPH_BLOCK_TYPES.has(source.type)) {
           patches.push({ type: 'block.setType', blockId: createBlockId(newBlockId), blockType: 'document.paragraph' })
         }
 
@@ -198,6 +214,19 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
       },
 
       mergeBackward: (blockId) => {
+        const source = findBlockById(docRef.current, blockId)
+
+        // Notion: Backspace at the start of a list-like or quote block first
+        // strips the type; only the SECOND Backspace (now a paragraph) merges.
+        if (source && (LIST_LIKE_BLOCK_TYPES.has(source.type) || source.type === 'document.quote')) {
+          latest.current.applyPatches([
+            { type: 'block.setType', blockId: createBlockId(blockId), blockType: 'document.paragraph' },
+          ])
+          refocus(blockId, 'start')
+
+          return
+        }
+
         const ordered = orderedTextBlocks()
         const index = ordered.findIndex((item) => item.id === blockId)
         const previous = index > 0 ? ordered[index - 1] : undefined

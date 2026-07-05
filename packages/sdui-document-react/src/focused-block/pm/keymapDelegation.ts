@@ -89,10 +89,23 @@ function buildTurnIntoBindings(callbacks: FocusedBlockCallbacks): Record<string,
  * - Mod-Enter runs the block's contextual action; on a link mark it opens
  *   the link instead (Link.tsx behavior, http/https only via safeHref)
  */
-export function buildFocusedBlockKeymap(callbacks: FocusedBlockCallbacks): Plugin {
+export type FocusedBlockKeymapOptions = {
+  /** Code blocks: Enter = hard_break, Tab = two spaces, Shift-Tab = no-op. */
+  rawTextMode?: boolean
+}
+
+export function buildFocusedBlockKeymap(
+  callbacks: FocusedBlockCallbacks,
+  options: FocusedBlockKeymapOptions = {},
+): Plugin {
   return keymap({
     ...buildTurnIntoBindings(callbacks),
-    Enter: (state) => {
+    Enter: (state, dispatch) => {
+      if (options.rawTextMode) {
+        dispatch?.(state.tr.replaceSelectionWith(focusedBlockSchema.nodes.hard_break.create()).scrollIntoView())
+        return true
+      }
+
       callbacks.onSplit(state.selection.from)
       return true
     },
@@ -104,11 +117,20 @@ export function buildFocusedBlockKeymap(callbacks: FocusedBlockCallbacks): Plugi
 
       return false
     },
-    Tab: () => {
+    Tab: (state, dispatch) => {
+      if (options.rawTextMode) {
+        dispatch?.(state.tr.insertText('  ').scrollIntoView())
+        return true
+      }
+
       callbacks.onIndent()
       return true
     },
     'Shift-Tab': () => {
+      if (options.rawTextMode) {
+        return true
+      }
+
       callbacks.onOutdent()
       return true
     },
