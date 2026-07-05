@@ -20,7 +20,7 @@ import {
   getInlineContentLength,
   isEmptyDocument,
 } from '@lodado/sdui-document'
-import React, { useContext, useMemo, useRef } from 'react'
+import React, { useMemo, useRef } from 'react'
 
 import { BlockChrome } from '../block-types/BlockChrome'
 import type { FocusedBlockCommit } from '../focused-block/FocusedBlockEditor'
@@ -35,6 +35,7 @@ import {
   isTextBlock,
 } from './blockContent'
 import { collisionDetection, DRAG_INDENT_WIDTH, NON_TEXT_BLOCK_TYPES, POINTER_SENSOR_OPTIONS } from './editorConstants'
+import { type EditorHandlers, type EditorRuntime, EditorRuntimeContext, useEditorRuntime } from './EditorRuntimeContext'
 import { useDocumentPatches } from './hooks/useDocumentPatches'
 import { useInlineTextDragDrop } from './hooks/useInlineTextDragDrop'
 import { useNestedBlockDragDrop } from './hooks/useNestedBlockDragDrop'
@@ -58,46 +59,6 @@ export type SduiDocumentEditorProps = {
   /** Injectable for deterministic tests; defaults to a random id. */
   generateBlockId?(): string
   className?: string
-}
-
-/**
- * Per-block interaction handlers. Created ONCE per editor instance (stable
- * identities) — they read live state through refs/store, never through
- * closures over render-scoped values, so memoized rows keep bailing out.
- */
-type EditorHandlers = {
-  handleClick(blockId: string, shiftKey: boolean): void
-  toggleChecked(blockId: string, checked: boolean): void
-  focusBlock(blockId: string, caret: FocusTarget['caret']): void
-  commit(blockId: string, commit: FocusedBlockCommit): void
-  split(blockId: string, offset: number): void
-  mergeBackward(blockId: string): void
-  indent(blockId: string): void
-  outdent(blockId: string): void
-  navigate(blockId: string, direction: 'up' | 'down'): void
-  escape(blockId: string): void
-  turnInto(blockId: string, type: string, attrs?: Record<string, unknown>): void
-  moveBlock(blockId: string, direction: 'up' | 'down'): void
-  blockAction(blockId: string): void
-  blockMenuSelect(blockId: string, item: BlockMenuItem, extraAttributes?: Record<string, unknown>): void
-  blockMenuFilePicked(file: File): void
-  insertBlockBelow(blockId: string): void
-}
-
-type EditorRuntime = {
-  store: EditorUIStore
-  handlers: EditorHandlers
-}
-
-const EditorRuntimeContext = React.createContext<EditorRuntime | null>(null)
-
-function useEditorRuntime(): EditorRuntime {
-  const runtime = useContext(EditorRuntimeContext)
-  if (!runtime) {
-    throw new Error('BlockNode must be rendered inside SduiDocumentEditor')
-  }
-
-  return runtime
 }
 
 type BlockNodeProps = {
