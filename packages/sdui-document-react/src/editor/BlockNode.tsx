@@ -1,6 +1,6 @@
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 import type { SduiDocumentBlock } from '@lodado/sdui-document'
-import { COLUMN_BLOCK_TYPE, COLUMN_LIST_BLOCK_TYPE } from '@lodado/sdui-document'
+import { COLUMN_BLOCK_TYPE, COLUMN_LIST_BLOCK_TYPE, resizeColumnPair, resolveBlockAlign } from '@lodado/sdui-document'
 import React from 'react'
 
 import { BlockChrome } from '../block-types/BlockChrome'
@@ -31,11 +31,26 @@ function escapeAttributeValue(value: string): string {
   return value.replace(/["\\]/g, '\\$&')
 }
 
+/** Reads a column's current grow weight from its inline style; absent = the equal-split default (1). */
+function currentColumnRatio(element: HTMLElement | null): number | undefined {
+  const value = element?.style.flexGrow
+  if (!value) {
+    return undefined
+  }
+  const parsed = Number.parseFloat(value)
+  return Number.isFinite(parsed) ? parsed : undefined
+}
+
 /**
  * Draggable/keyboard-operable divider between two sibling columns. Commits a
  * ratio update on pointerup (drag) or per arrow press — the patch pair is one
  * undo step. Pointer travel is measured against the two columns' current
  * rendered widths so a 10% drag is a 10% visual change.
+ *
+ * While dragging, the two columns' flex-grow is repainted live on every
+ * pointermove (inline style, no patch/re-render) using the same clamped math as
+ * the commit; the preview is torn down on pointerup or Escape, then the final
+ * position is committed as one undo step. Escape cancels without committing.
  */
 const ColumnResizeGutter = ({ leftId, rightId }: { leftId: string; rightId: string }) => {
   const { handlers } = useEditorRuntime()
@@ -69,22 +84,59 @@ const ColumnResizeGutter = ({ leftId, rightId }: { leftId: string; rightId: stri
         // a drag, not a click — keep the gesture out of text selection
         event.preventDefault()
         const list = event.currentTarget.parentElement
+        const leftEl = list?.querySelector<HTMLElement>(`[data-block-id="${escapeAttributeValue(leftId)}"]`) ?? null
+        const rightEl = list?.querySelector<HTMLElement>(`[data-block-id="${escapeAttributeValue(rightId)}"]`) ?? null
         const startX = event.clientX
-        const pairWidth =
-          (list?.querySelector(`[data-block-id="${escapeAttributeValue(leftId)}"]`)?.getBoundingClientRect().width ??
-            0) +
-          (list?.querySelector(`[data-block-id="${escapeAttributeValue(rightId)}"]`)?.getBoundingClientRect().width ??
-            0)
+        const pairWidth = (leftEl?.getBoundingClientRect().width ?? 0) + (rightEl?.getBoundingClientRect().width ?? 0)
+        const leftRatio = currentColumnRatio(leftEl)
+        const rightRatio = currentColumnRatio(rightEl)
+        // restore exactly what React had rendered so a cancelled/committed drag leaves no orphan inline style
+        const restoreLeft = leftEl?.style.flexGrow ?? ''
+        const restoreRight = rightEl?.style.flexGrow ?? ''
 
-        const onPointerUp = (up: PointerEvent) => {
-          window.removeEventListener('pointerup', onPointerUp)
-          const deltaX = up.clientX - startX
-          if (deltaX !== 0 && pairWidth > 0) {
-            handlers.resizeColumnPair(leftId, rightId, deltaX / pairWidth)
-          }
+        const deltaFractionAt = (clientX: number) => (pairWidth > 0 ? (clientX - startX) / pairWidth : 0)
+
+        const controller = new AbortController()
+        const { signal } = controller
+        const teardown = () => {
+          controller.abort()
+          if (leftEl) leftEl.style.flexGrow = restoreLeft
+          if (rightEl) rightEl.style.flexGrow = restoreRight
         }
 
-        window.addEventListener('pointerup', onPointerUp)
+        window.addEventListener(
+          'pointermove',
+          (move: PointerEvent) => {
+            const delta = deltaFractionAt(move.clientX)
+            if (delta === 0) {
+              return
+            }
+            const preview = resizeColumnPair({ leftRatio, rightRatio, deltaFraction: delta })
+            if (leftEl) leftEl.style.flexGrow = String(preview.leftRatio)
+            if (rightEl) rightEl.style.flexGrow = String(preview.rightRatio)
+          },
+          { signal },
+        )
+        window.addEventListener(
+          'pointerup',
+          (up: PointerEvent) => {
+            const delta = deltaFractionAt(up.clientX)
+            teardown()
+            if (delta !== 0) {
+              handlers.resizeColumnPair(leftId, rightId, delta)
+            }
+          },
+          { signal },
+        )
+        window.addEventListener(
+          'keydown',
+          (key: KeyboardEvent) => {
+            if (key.key === 'Escape') {
+              teardown()
+            }
+          },
+          { signal },
+        )
       }}
     />
   )
@@ -229,7 +281,7 @@ const BlockRow = React.memo(({ block, depth, readOnly, listOrdinal }: BlockNodeP
             {...listeners}
           />
         )}
-        <div data-block-content>
+        <div data-block-content data-align={resolveBlockAlign(block.attributes?.align)}>
           <BlockChrome
             block={block}
             depth={depth}
@@ -237,6 +289,7 @@ const BlockRow = React.memo(({ block, depth, readOnly, listOrdinal }: BlockNodeP
             onToggleChecked={readOnly ? undefined : handlers.toggleChecked}
             onToggleCollapsed={readOnly ? undefined : handlers.toggleCollapsed}
             onSetCodeLanguage={readOnly ? undefined : handlers.setCodeLanguage}
+            onSetImageLayout={readOnly ? undefined : handlers.setImageLayout}
           >
             {isTextBlock(block) &&
               (isFocused && focus ? (
@@ -246,6 +299,8 @@ const BlockRow = React.memo(({ block, depth, readOnly, listOrdinal }: BlockNodeP
                   autoFocus={focus.caret}
                   autoOpenBlockMenu={focus.openBlockMenu === true}
                   rawTextMode={block.type === 'document.code'}
+                  blockAlign={resolveBlockAlign(block.attributes?.align) ?? null}
+                  onSetAlign={(align) => handlers.setBlockAlign(block.id, align)}
                   onCommit={(commit) => handlers.commit(block.id, commit)}
                   onSplit={(offset) => handlers.split(block.id, offset)}
                   onMergeBackward={() => handlers.mergeBackward(block.id)}

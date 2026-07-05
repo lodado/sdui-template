@@ -135,5 +135,60 @@ describe('column resize gutter', () => {
         expect((container.querySelector('[data-block-id="col-b"]') as HTMLElement).style.flexGrow).toBe('')
       })
     })
+
+    describe('when the gutter is dragged from the equal split without releasing (live preview)', () => {
+      it('to be: both columns repaint flex-grow on pointermove, before any commit', () => {
+        const { container } = render(<SduiDocumentEditor content={createSplitContent()} />)
+        stubColumnWidths(container)
+
+        const gutter = container.querySelectorAll('[data-column-resize]')[0]
+        fireEvent(gutter, new MouseEvent('pointerdown', { bubbles: true, clientX: 100, button: 0 }))
+        // move only — no pointerup yet: preview is a direct DOM paint, not a patch
+        fireEvent(window, new MouseEvent('pointermove', { clientX: 140 }))
+
+        // equal split (grow 1 / 1, pair 400px) + 40px → 10% shift
+        expect((container.querySelector('[data-block-id="col-a"]') as HTMLElement).style.flexGrow).toBe('1.2')
+        expect((container.querySelector('[data-block-id="col-b"]') as HTMLElement).style.flexGrow).toBe('0.8')
+      })
+    })
+
+    describe('when a live-preview drag is cancelled with Escape', () => {
+      it('to be: the equal split is restored and nothing is committed', () => {
+        const { container } = render(<SduiDocumentEditor content={createSplitContent()} />)
+        stubColumnWidths(container)
+
+        const gutter = container.querySelectorAll('[data-column-resize]')[0]
+        fireEvent(gutter, new MouseEvent('pointerdown', { bubbles: true, clientX: 100, button: 0 }))
+        fireEvent(window, new MouseEvent('pointermove', { clientX: 140 }))
+        fireEvent(window, new KeyboardEvent('keydown', { key: 'Escape' }))
+
+        // back to the equal-split baseline (no inline grow)
+        expect((container.querySelector('[data-block-id="col-a"]') as HTMLElement).style.flexGrow).toBe('')
+        expect((container.querySelector('[data-block-id="col-b"]') as HTMLElement).style.flexGrow).toBe('')
+
+        // and a later pointerup after cancel must not commit anything
+        fireEvent(window, new MouseEvent('pointerup', { clientX: 140 }))
+        expect((container.querySelector('[data-block-id="col-a"]') as HTMLElement).style.flexGrow).toBe('')
+        expect((container.querySelector('[data-block-id="col-b"]') as HTMLElement).style.flexGrow).toBe('')
+      })
+    })
+
+    describe('when dragged far past the edge from the equal split (BVA: min-ratio clamp)', () => {
+      it('to be: the shrinking column stops at the minimum and the pair sum stays 2', () => {
+        const { container } = render(<SduiDocumentEditor content={createSplitContent()} />)
+        stubColumnWidths(container)
+
+        const gutter = container.querySelectorAll('[data-column-resize]')[0]
+        fireEvent(gutter, new MouseEvent('pointerdown', { bubbles: true, clientX: 100, button: 0 }))
+        // yank 500px right across a 400px pair — well past the far edge
+        fireEvent(window, new MouseEvent('pointerup', { clientX: 600 }))
+
+        const left = (container.querySelector('[data-block-id="col-a"]') as HTMLElement).style.flexGrow
+        const right = (container.querySelector('[data-block-id="col-b"]') as HTMLElement).style.flexGrow
+        // total preserved at 2; right clamped to MIN_COLUMN_RATIO (0.2), left takes the rest
+        expect(left).toBe('1.8')
+        expect(right).toBe('0.2')
+      })
+    })
   })
 })
