@@ -8,12 +8,35 @@ describe('blockMenuItems', () => {
       'heading-2',
       'heading-3',
       'checklist',
+      'bulleted-list',
+      'numbered-list',
+      'toggle',
+      'quote',
       'callout',
       'divider',
+      'code',
       'image',
       'file',
       'link',
     ])
+  })
+
+  test.each([
+    ['bulleted', 'document.bulleted-list'],
+    ['numbered', 'document.numbered-list'],
+    ['toggle', 'document.toggle'],
+    ['quote', 'document.quote'],
+    ['code', 'document.code'],
+  ])('query "%s" surfaces %s', (query, expectedType) => {
+    expect(filterBlockMenuItems(query).map((item) => item.type)).toContain(expectedType)
+  })
+
+  test('korean keywords surface the new items', () => {
+    expect(filterBlockMenuItems('글머리').map((item) => item.type)).toContain('document.bulleted-list')
+    expect(filterBlockMenuItems('번호').map((item) => item.type)).toContain('document.numbered-list')
+    expect(filterBlockMenuItems('토글').map((item) => item.type)).toContain('document.toggle')
+    expect(filterBlockMenuItems('인용').map((item) => item.type)).toContain('document.quote')
+    expect(filterBlockMenuItems('코드').map((item) => item.type)).toContain('document.code')
   })
 
   test('empty query returns everything', () => {

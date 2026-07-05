@@ -8,8 +8,6 @@
  *   layer via onTurnInto (patch territory — PM never changes block structure)
  * - `inputRules` match a typed prefix at block start; the prefix is deleted
  *   from the PM doc and the type change is delegated the same way
- * - keys reserved for not-yet-implemented block types (Shift-Ctrl-8/9 lists,
- *   Shift-Ctrl-c code fence) must stay unbound until those types exist
  */
 
 export type BlockTurnIntoShortcut = {
@@ -64,9 +62,32 @@ export const BLOCK_TURN_INTO_DEFINITIONS: readonly BlockTurnIntoDefinition[] = [
     ],
   },
   {
-    // Outline Blockquote "> " mapped to our callout block (no quote type yet)
-    type: 'document.callout',
+    // Notion: "> " creates a toggle; callout moved to slash-menu only
+    type: 'document.toggle',
     inputRules: [{ pattern: /^>\s$/ }],
+  },
+  {
+    // Notion: '" ' creates a quote
+    type: 'document.quote',
+    inputRules: [{ pattern: /^"\s$/ }],
+  },
+  {
+    // Notion: "-", "*", "+" prefixes; Outline BulletList Shift-Ctrl-8
+    type: 'document.bulleted-list',
+    shortcuts: [{ key: 'Shift-Ctrl-8' }],
+    inputRules: [{ pattern: /^[-*+]\s$/ }],
+  },
+  {
+    // Notion: "1." / "1)" prefixes; Outline OrderedList Shift-Ctrl-9
+    type: 'document.numbered-list',
+    shortcuts: [{ key: 'Shift-Ctrl-9' }],
+    inputRules: [{ pattern: /^\d+[.)]\s$/ }],
+  },
+  {
+    // Notion/Outline: ``` fence; Outline CodeFence Shift-Ctrl-c
+    type: 'document.code',
+    shortcuts: [{ key: 'Shift-Ctrl-c' }],
+    inputRules: [{ pattern: /^```$/ }],
   },
   {
     // Outline nodes/HorizontalRule.tsx — "---" hr, "*** " page break markup

@@ -21,7 +21,7 @@ describe('turn-into registry', () => {
       expect(byKey['Shift-Ctrl-7']).toEqual({ type: 'document.checklist', attrs: undefined })
     })
 
-    it('to be: markdown prefixes cover heading/checklist/callout/divider', () => {
+    it('to be: markdown prefixes cover heading/checklist/divider', () => {
       const patterns = turnIntoInputRuleEntries().map((entry) => ({
         source: entry.pattern.source,
         type: entry.type,
@@ -33,7 +33,6 @@ describe('turn-into registry', () => {
           { source: '^####\\s$', type: 'document.heading' },
           { source: '^\\[\\]\\s$', type: 'document.checklist' },
           { source: '^\\[x\\]\\s$', type: 'document.checklist' },
-          { source: '^>\\s$', type: 'document.callout' },
           { source: '^---$', type: 'document.divider' },
         ]),
       )
@@ -45,11 +44,35 @@ describe('turn-into registry', () => {
       expect(checked?.attrs).toEqual({ checked: true })
     })
 
-    it('to be: list/code-fence keys stay unbound until those block types exist', () => {
-      const keys = turnIntoShortcutEntries().map((entry) => entry.key)
+    it('to be: notion input rule triggers map to the new block types', () => {
+      const rules = turnIntoInputRuleEntries()
+      const match = (text: string) => rules.find((rule) => rule.pattern.test(text))
 
-      expect(keys).not.toContain('Shift-Ctrl-8')
-      expect(keys).not.toContain('Shift-Ctrl-9')
+      expect(match('- ')?.type).toBe('document.bulleted-list')
+      expect(match('* ')?.type).toBe('document.bulleted-list')
+      expect(match('+ ')?.type).toBe('document.bulleted-list')
+      expect(match('1. ')?.type).toBe('document.numbered-list')
+      expect(match('2) ')?.type).toBe('document.numbered-list')
+      expect(match('> ')?.type).toBe('document.toggle')
+      expect(match('" ')?.type).toBe('document.quote')
+      expect(match('```')?.type).toBe('document.code')
+    })
+
+    it('to be: callout no longer owns an input rule ("> " belongs to toggle)', () => {
+      const calloutRules = turnIntoInputRuleEntries().filter((entry) => entry.type === 'document.callout')
+
+      expect(calloutRules).toEqual([])
+    })
+
+    it('to be: list/code shortcuts are bound (Shift-Ctrl-8/9/c)', () => {
+      const byKey = turnIntoShortcutEntries().reduce<Record<string, string>>(
+        (map, entry) => ({ ...map, [entry.key]: entry.type }),
+        {},
+      )
+
+      expect(byKey['Shift-Ctrl-8']).toBe('document.bulleted-list')
+      expect(byKey['Shift-Ctrl-9']).toBe('document.numbered-list')
+      expect(byKey['Shift-Ctrl-c']).toBe('document.code')
     })
   })
 
