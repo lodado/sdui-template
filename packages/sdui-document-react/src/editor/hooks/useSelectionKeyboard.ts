@@ -27,6 +27,12 @@ export type UseSelectionKeyboardInput = {
 export type UseSelectionKeyboardResult = {
   handleSelectionKeyDown: (event: React.KeyboardEvent) => void
   handlePaddingClick: () => void
+  /**
+   * Document-level undo/redo with caret landing. Exposed so a focused block
+   * can delegate here when its own PM inline history is empty (the container
+   * keydown path can't fire while PM owns Mod-Z).
+   */
+  historyStep: (direction: 'undo' | 'redo') => void
 }
 
 /**
@@ -219,5 +225,5 @@ export function useSelectionKeyboard(input: UseSelectionKeyboardInput): UseSelec
     }
   }
 
-  return { handleSelectionKeyDown, handlePaddingClick }
+  return { handleSelectionKeyDown, handlePaddingClick, historyStep: handleHistoryStep }
 }

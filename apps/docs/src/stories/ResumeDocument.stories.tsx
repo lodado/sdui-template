@@ -2,6 +2,8 @@ import {
   bold,
   bulletedList,
   colored,
+  column,
+  columnList,
   createDocumentBlock,
   divider,
   hardBreak,
@@ -19,10 +21,16 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import profilePhoto from './assets/resume-profile.jpg'
 
-/** Accent for the date chips (light background). */
-const CHIP_ACCENT = '#E3EAFD'
-/** Secondary text color (gray) for role periods. */
-const META_GRAY = '#66778F'
+// Colors from the built-in Notion palette (marks/color/notionColors).
+/** Notion Purple — section-heading accent (matches the Notion original). */
+const PURPLE = '#9065B0'
+/** Notion Gray — secondary/meta text (role periods). */
+const META_GRAY = '#787774'
+/** Notion Blue — date-chip highlight (rendered as a 40% background). */
+const CHIP_ACCENT = '#337EA9'
+
+/** Section heading (H2) with the purple accent, like the Notion resume. */
+const section = (title: string) => heading([colored(title, PURPLE)], 2)
 
 /* -------------------------------------------------------------------------- */
 /* Resume document — 이충헌 이력서 authored with the library block/inline builders */
@@ -39,17 +47,22 @@ const resumeContent: SduiDocumentContent = {
     type: 'document.root',
     children: [
       heading('이충헌 이력서', 1),
-      image({ src: profilePhoto, alt: '이충헌 프로필 사진', width: 220 }),
 
-      // Contact
-      heading('Contact', 2),
-      paragraph('📞 Call | 010-3343-0276'),
-      paragraph('📌 Email | ycp998@naver.com'),
-
-      // 블로그 & 깃허브
-      heading('블로그 & 깃허브', 2),
-      paragraph([text('💻 Blog | '), link('https://lodado.tistory.com/', 'https://lodado.tistory.com/')]),
-      paragraph([text('🏠 Github | '), link('https://github.com/lodado', 'https://github.com/lodado')]),
+      // Header — two columns: profile photo (left) beside Contact + 블로그&깃허브 (right)
+      columnList([
+        column([image({ src: profilePhoto, alt: '이충헌 프로필 사진', width: 220 })], { ratio: 1 }),
+        column(
+          [
+            section('Contact'),
+            paragraph('📞 Call | 010-3343-0276'),
+            paragraph('📌 Email | ycp998@naver.com'),
+            section('블로그 & 깃허브'),
+            paragraph([text('💻 Blog | '), link('https://lodado.tistory.com/', 'https://lodado.tistory.com/')]),
+            paragraph([text('🏠 Github | '), link('https://github.com/lodado', 'https://github.com/lodado')]),
+          ],
+          { ratio: 2 },
+        ),
+      ]),
 
       // Intro
       bulletedList(
@@ -66,7 +79,7 @@ const resumeContent: SduiDocumentContent = {
       ),
 
       // Skill
-      heading('Skill', 2),
+      section('Skill'),
       paragraph([bold('LANGUAGE')]),
       paragraph('TypeScript | JavaScript'),
       paragraph([bold('FRONT-END')]),
@@ -79,7 +92,7 @@ const resumeContent: SduiDocumentContent = {
       paragraph('Git | Github Actions | husky | turbo repo | Jira | JScodeshift | spec-kit(SDD) | MCP | n8n'),
 
       // Work Experience
-      heading('Work Experience', 2),
+      section('Work Experience'),
 
       heading('한국딥러닝 - Global AI SaaS 개발 (Next.js, next-intl, Vercel)', 3),
       paragraph([colored('2026.02 – Present', META_GRAY)]),
@@ -133,7 +146,7 @@ const resumeContent: SduiDocumentContent = {
       bulletedList('storybook 문서 기반 온보딩으로 C++만 배운 신입도 2–3개월 내 실서비스 투입 가능'),
 
       // Side Projects
-      heading('Side Projects', 2),
+      section('Side Projects'),
       heading('Simmey (Web Service)', 3),
       paragraph([
         text('깃허브 주소 : '),
@@ -146,11 +159,11 @@ const resumeContent: SduiDocumentContent = {
       divider(),
 
       // 자격증
-      heading('자격증', 2),
+      section('자격증'),
       paragraph([highlighted('2021. 06', CHIP_ACCENT), text(' 정보처리기사')]),
 
       // Education
-      heading('Education', 2),
+      section('Education'),
       paragraph([highlighted('2015', CHIP_ACCENT), text(' 전남대학교 전자컴퓨터공학부 입학')]),
       paragraph([highlighted('2016', CHIP_ACCENT), text(' 전남대학교 소프트웨어전공 선택')]),
       paragraph([

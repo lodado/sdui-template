@@ -13,6 +13,7 @@ const noopCallbacks: FocusedBlockCallbacks = {
   onTurnInto: () => {},
   onEscape: () => {},
   onMoveBlock: () => {},
+  onHistory: () => {},
   onBlockAction: () => {},
   onSlashMenuOpen: () => {},
   onSlashMenuQueryChange: () => {},

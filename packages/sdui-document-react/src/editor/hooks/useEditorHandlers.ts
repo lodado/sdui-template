@@ -27,6 +27,8 @@ export type UseEditorHandlersInput = {
   containerRef: React.RefObject<HTMLDivElement>
   applyPatches: (patches: SduiDocumentPatch[]) => void
   generateBlockId: () => string
+  /** Delegated document-level undo/redo (from a focused block's empty PM history). */
+  onHistory: (direction: 'undo' | 'redo') => void
   onTurnInto?: (blockId: string, type: string, attrs?: Record<string, unknown>) => void
   onUploadFile?: (file: File) => Promise<{ url: string }>
 }
@@ -43,11 +45,11 @@ export type UseEditorHandlersResult = {
  * stay stable and memoized rows keep bailing out of re-render.
  */
 export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandlersResult {
-  const { store, docRef, containerRef, applyPatches, generateBlockId, onTurnInto, onUploadFile } = input
+  const { store, docRef, containerRef, applyPatches, generateBlockId, onHistory, onTurnInto, onUploadFile } = input
 
   // Live values behind a ref so the once-created handlers never go stale.
-  const latest = useRef({ applyPatches, generateBlockId, onTurnInto, onUploadFile })
-  latest.current = { applyPatches, generateBlockId, onTurnInto, onUploadFile }
+  const latest = useRef({ applyPatches, generateBlockId, onHistory, onTurnInto, onUploadFile })
+  latest.current = { applyPatches, generateBlockId, onHistory, onTurnInto, onUploadFile }
 
   // Block-menu file picking: the hidden input is clicked for image/file items,
   // and the target block/item wait here until the user chooses a file.
@@ -371,6 +373,10 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
               : anchorAfterBlock(docRef.current, item.parentId, neighbor.id)),
           },
         ])
+      },
+
+      history: (direction) => {
+        latest.current.onHistory(direction)
       },
 
       blockAction: (blockId) => {

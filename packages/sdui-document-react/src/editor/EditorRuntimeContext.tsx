@@ -34,6 +34,8 @@ export type EditorHandlers = {
   escape(blockId: string): void
   turnInto(blockId: string, type: string, attrs?: Record<string, unknown>): void
   moveBlock(blockId: string, direction: 'up' | 'down'): void
+  /** Delegated document-level undo/redo from a focused block's empty PM history. */
+  history(direction: 'undo' | 'redo'): void
   blockAction(blockId: string): void
   blockMenuSelect(blockId: string, item: BlockMenuItem, extraAttributes?: Record<string, unknown>): void
   blockMenuFilePicked(file: File): void

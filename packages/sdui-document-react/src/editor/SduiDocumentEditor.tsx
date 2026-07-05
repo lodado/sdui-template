@@ -75,12 +75,18 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
   }
   const store = storeRef.current
 
+  // useEditorHandlers is built before useSelectionKeyboard (which owns the
+  // history step with caret landing), so a focused block's Mod-Z delegation
+  // reaches it through this ref, assigned once the keyboard hook exists below.
+  const historyStepRef = useRef<(direction: 'undo' | 'redo') => void>(() => {})
+
   const { handlers, fileInputRef } = useEditorHandlers({
     store,
     docRef,
     containerRef,
     applyPatches,
     generateBlockId,
+    onHistory: (direction) => historyStepRef.current(direction),
     onTurnInto,
     onUploadFile,
   })
@@ -112,7 +118,7 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     },
   })
 
-  const { handleSelectionKeyDown, handlePaddingClick } = useSelectionKeyboard({
+  const { handleSelectionKeyDown, handlePaddingClick, historyStep } = useSelectionKeyboard({
     store,
     docRef,
     readOnly,
@@ -122,6 +128,7 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     generateBlockId,
     focusBlock: runtime.handlers.focusBlock,
   })
+  historyStepRef.current = historyStep
 
   const sensors = useSensors(useSensor(PointerSensor, POINTER_SENSOR_OPTIONS))
 

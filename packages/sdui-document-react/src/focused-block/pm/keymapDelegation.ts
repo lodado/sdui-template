@@ -30,6 +30,11 @@ export type FocusedBlockCallbacks = {
   onEscape(): void
   /** Mod-Alt-Arrow — swap the block with its previous/next sibling. */
   onMoveBlock(direction: 'up' | 'down'): void
+  /**
+   * Mod-Z / Mod-Y / Mod-Shift-Z when PM's own inline history is empty —
+   * delegate to the block-level (document patch) undo/redo stack.
+   */
+  onHistory(direction: 'undo' | 'redo'): void
   /** Mod-Enter — type-specific action (checklist toggle, …) resolved by the block layer. */
   onBlockAction(): void
   /** '/' detected at block start or after whitespace — menu should open. */

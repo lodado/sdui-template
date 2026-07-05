@@ -1,4 +1,6 @@
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
+import { TextSelection } from 'prosemirror-state'
+import type { EditorView } from 'prosemirror-view'
 import React from 'react'
 
 import type { FocusedBlockEditorProps } from '../FocusedBlockEditor'
@@ -16,6 +18,7 @@ function createProps(overrides?: Partial<FocusedBlockEditorProps>): FocusedBlock
     onTurnInto: jest.fn(),
     onEscape: jest.fn(),
     onMoveBlock: jest.fn(),
+    onHistory: jest.fn(),
     onBlockAction: jest.fn(),
     onSlashMenuOpen: jest.fn(),
     onSlashMenuQueryChange: jest.fn(),
@@ -66,6 +69,68 @@ describe('FocusedBlockEditor', () => {
         unmount()
 
         expect(props.onCommit).toHaveBeenCalledWith({ content: [], text: '' })
+      })
+    })
+  })
+
+  describe('as is: selection toolbar visibility on drag-select', () => {
+    // jsdom lacks the layout APIs ProseMirror's mousedown handler touches.
+    const originalElementFromPoint = document.elementFromPoint
+    const rangeProto = Range.prototype as unknown as {
+      getClientRects?: () => DOMRectList
+      getBoundingClientRect?: () => DOMRect
+    }
+    const originalGetClientRects = rangeProto.getClientRects
+    const originalGetBoundingClientRect = rangeProto.getBoundingClientRect
+    const emptyRect = { x: 0, y: 0, top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0, toJSON() {} } as DOMRect
+    beforeAll(() => {
+      document.elementFromPoint = () => document.body
+      rangeProto.getClientRects = () => Object.assign([], { item: () => null }) as unknown as DOMRectList
+      rangeProto.getBoundingClientRect = () => emptyRect
+    })
+    afterAll(() => {
+      document.elementFromPoint = originalElementFromPoint
+      rangeProto.getClientRects = originalGetClientRects
+      rangeProto.getBoundingClientRect = originalGetBoundingClientRect
+    })
+
+    const selectAll = (host: HTMLElement) => {
+      const view = (host as HTMLElement & { pmView?: EditorView }).pmView
+      if (!view) throw new Error('pmView missing')
+      act(() => {
+        view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, 1, view.state.doc.content.size)))
+      })
+    }
+    const toolbar = () => screen.queryByRole('toolbar', { name: 'Text formatting' })
+
+    describe('when a selection is dragged out (mousedown → extend → mouseup)', () => {
+      it('to be: hidden while selecting, shown on release', () => {
+        render(<FocusedBlockEditor {...createProps({ content: [{ type: 'text', text: 'Hello world' }] })} />)
+        const host = screen.getByTestId('focused-block-editor')
+
+        // press-and-drag begins: toolbar suppressed even as the range grows
+        act(() => host.dispatchEvent(new MouseEvent('mousedown', { bubbles: true })))
+        selectAll(host)
+        expect(toolbar()).toBeNull()
+
+        // release: toolbar appears for the finalized selection
+        act(() => document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true })))
+        expect(toolbar()).toBeInTheDocument()
+      })
+    })
+
+    describe('when the release mouseup is stopped from bubbling (regression: stuck isSelectingText)', () => {
+      it('to be: still shown because the listener is capture-phase', () => {
+        render(<FocusedBlockEditor {...createProps({ content: [{ type: 'text', text: 'Hello world' }] })} />)
+        const host = screen.getByTestId('focused-block-editor')
+        // a descendant that swallows the bubbling mouseup (mimics inline drag / menus)
+        host.addEventListener('mouseup', (event) => event.stopPropagation())
+
+        act(() => host.dispatchEvent(new MouseEvent('mousedown', { bubbles: true })))
+        selectAll(host)
+        act(() => host.dispatchEvent(new MouseEvent('mouseup', { bubbles: true })))
+
+        expect(toolbar()).toBeInTheDocument()
       })
     })
   })

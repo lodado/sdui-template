@@ -3,6 +3,8 @@ import { parseSduiDocumentContent } from '../../blocks/schema/validate'
 import { bold, colored, hardBreak, inlineState, link, text } from '../../content/inlineBuilders'
 import { nextBlockId, resetBlockIds } from '../authoring/blockId'
 import { bulletedList } from '../bulleted-list/bulletedList.builder'
+import { column } from '../column/column.builder'
+import { columnList } from '../column-list/columnList.builder'
 import { divider } from '../divider/divider.builder'
 import { heading } from '../heading/heading.builder'
 import { image } from '../image/image.builder'
@@ -75,6 +77,16 @@ describe('block builders', () => {
     }
 
     expect(() => parseSduiDocumentContent(content)).not.toThrow()
+  })
+
+  test('columnList/column build a horizontal split with ratio', () => {
+    const list = columnList([
+      column([paragraph('left', { id: 'l' })], { id: 'colA', ratio: 1 }),
+      column([paragraph('right', { id: 'r' })], { id: 'colB', ratio: 2 }),
+    ])
+    expect(list).toMatchObject({ type: 'document.columnList' })
+    expect(list.children).toHaveLength(2)
+    expect(list.children?.[1]).toMatchObject({ type: 'document.column', attributes: { ratio: 2 } })
   })
 
   test('nextBlockId hint prefixes the counter', () => {

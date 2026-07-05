@@ -309,6 +309,7 @@ const BlockRow = React.memo(({ block, depth, readOnly, listOrdinal }: BlockNodeP
                   onNavigate={(direction) => handlers.navigate(block.id, direction)}
                   onTurnInto={(type, attrs) => handlers.turnInto(block.id, type, attrs)}
                   onMoveBlock={(direction) => handlers.moveBlock(block.id, direction)}
+                  onHistory={(direction) => handlers.history(direction)}
                   onBlockAction={() => handlers.blockAction(block.id)}
                   onEscape={() => handlers.escape(block.id)}
                   onBlockMenuSelect={(item, extra) => handlers.blockMenuSelect(block.id, item, extra)}

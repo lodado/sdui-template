@@ -1,21 +1,16 @@
 /**
- * Highlight preset palette — ported verbatim from Outline
- * (shared/utils/color.ts:75-82). Background is painted at 40% opacity
- * (Outline marks/Highlight.ts:12), keeping stored attrs a pure hex.
+ * Highlight (background) preset palette — Notion's colors (see notionColors.ts).
+ * The stored attr is the pure base hex; the background is painted at 40% opacity
+ * so the light tint reads like Notion's background colors.
  */
+import { NOTION_COLORS } from '../color/notionColors'
+
 export type HighlightPreset = {
   hex: string
   name: string
 }
 
-export const HIGHLIGHT_PALETTE: readonly HighlightPreset[] = [
-  { hex: '#FDEA9B', name: 'Coral' },
-  { hex: '#FED46A', name: 'Apricot' },
-  { hex: '#FA551E', name: 'Sunset' },
-  { hex: '#B4DC19', name: 'Smoothie' },
-  { hex: '#C8AFF0', name: 'Bubblegum' },
-  { hex: '#3CBEFC', name: 'Neon' },
-]
+export const HIGHLIGHT_PALETTE: readonly HighlightPreset[] = NOTION_COLORS
 
 export const HIGHLIGHT_OPACITY = 0.4
 

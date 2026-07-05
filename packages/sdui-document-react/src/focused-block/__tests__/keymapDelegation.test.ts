@@ -14,6 +14,7 @@ function createCallbacks(): jest.Mocked<FocusedBlockCallbacks> {
     onTurnInto: jest.fn(),
     onEscape: jest.fn(),
     onMoveBlock: jest.fn(),
+    onHistory: jest.fn(),
     onBlockAction: jest.fn(),
     onSlashMenuOpen: jest.fn(),
     onSlashMenuQueryChange: jest.fn(),

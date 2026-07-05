@@ -239,13 +239,14 @@ describe('BlockChrome', () => {
 
   describe('as is: link block (EP: safe vs unsafe url partitions)', () => {
     describe('when url is https and state.text is the title', () => {
-      it('to be: a.embed with rel noopener', () => {
+      it('to be: a.sdui-doc-link with rel noopener and target _blank', () => {
         render(<BlockChrome block={block('document.link', { url: 'https://example.com' }, 'Example')} />)
 
         const anchor = screen.getByText('Example')
         expect(anchor.tagName).toBe('A')
-        expect(anchor).toHaveClass('embed')
+        expect(anchor).toHaveClass('sdui-doc-link')
         expect(anchor).toHaveAttribute('rel', 'noopener noreferrer nofollow')
+        expect(anchor).toHaveAttribute('target', '_blank')
       })
     })
 
@@ -274,7 +275,7 @@ describe('BlockChrome', () => {
       expect(screen.getByText('f.pdf')).toHaveAttribute('draggable', 'false')
     })
 
-    it('to be: link embed anchor is not draggable', () => {
+    it('to be: link anchor is not draggable', () => {
       render(<BlockChrome block={block('document.link', { url: 'https://example.com' }, 'Example')} />)
 
       expect(screen.getByText('Example')).toHaveAttribute('draggable', 'false')

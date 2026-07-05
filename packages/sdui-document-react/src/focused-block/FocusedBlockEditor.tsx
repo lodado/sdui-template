@@ -199,6 +199,14 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
         commitNow()
         latestProps.current.onMoveBlock(direction)
       },
+      onHistory: (direction) => {
+        // PM inline history is empty (chain fell through). Commit any pending
+        // text, retire this editor — the block-level step re-focuses the block
+        // it lands on — then delegate to the document undo/redo stack.
+        commitNow()
+        retired.current = true
+        latestProps.current.onHistory(direction)
+      },
       onBlockAction: () => {
         commitNow()
         latestProps.current.onBlockAction()
@@ -348,13 +356,25 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
 
     // Outline's isSelectingText: hide the toolbar while the mouse is dragging
     // out a selection, show it on release.
+    let pendingSelectionFrame = 0
     const handleMouseDown = () => setIsSelectingText(true)
     const handleMouseUp = () => {
       setIsSelectingText(false)
       refreshSnapshot()
+      // ProseMirror's DOM observer can finalize the drag selection a tick after
+      // this native mouseup, so a synchronous read may still see the pre-release
+      // (or empty) range. Re-read next frame so the toolbar reliably sees the
+      // full selection and appears. Without this the popover is flaky on drag.
+      if (typeof requestAnimationFrame === 'function') {
+        cancelAnimationFrame(pendingSelectionFrame)
+        pendingSelectionFrame = requestAnimationFrame(() => refreshSnapshot())
+      }
     }
     container.addEventListener('mousedown', handleMouseDown)
-    document.addEventListener('mouseup', handleMouseUp)
+    // Capture phase: fire even if a descendant (inline drag/menu) stops the
+    // bubbling mouseup, otherwise isSelectingText could stay stuck true and the
+    // toolbar would never re-appear.
+    document.addEventListener('mouseup', handleMouseUp, true)
 
     view.focus()
 
@@ -365,8 +385,9 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
     }
 
     return () => {
+      cancelAnimationFrame(pendingSelectionFrame)
       container.removeEventListener('mousedown', handleMouseDown)
-      document.removeEventListener('mouseup', handleMouseUp)
+      document.removeEventListener('mouseup', handleMouseUp, true)
       delete (container as HTMLElement & { pmView?: EditorView }).pmView
       const finalCommit = retired.current ? undefined : editorStateToInline(view.state)
       viewRef.current = undefined

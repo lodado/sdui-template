@@ -19,6 +19,7 @@ function createProps(overrides?: Partial<FocusedBlockEditorProps>): FocusedBlock
     onTurnInto: jest.fn(),
     onEscape: jest.fn(),
     onMoveBlock: jest.fn(),
+    onHistory: jest.fn(),
     onBlockAction: jest.fn(),
     onBlockMenuSelect: jest.fn(),
     ...overrides,

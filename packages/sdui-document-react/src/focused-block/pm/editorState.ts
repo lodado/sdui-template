@@ -1,6 +1,6 @@
 import type { SduiInlineContent } from '@lodado/sdui-document'
 import { inlineContentToPlainText } from '@lodado/sdui-document'
-import { baseKeymap } from 'prosemirror-commands'
+import { baseKeymap, chainCommands } from 'prosemirror-commands'
 import { history, redo, undo } from 'prosemirror-history'
 import { keymap } from 'prosemirror-keymap'
 import type { Command } from 'prosemirror-state'
@@ -52,9 +52,24 @@ export function createFocusedBlockEditorState(
       buildMarkInputRules(),
       history(),
       keymap({
-        'Mod-z': undo,
-        'Mod-y': redo,
-        'Mod-Shift-z': redo,
+        // Two-tier history: PM's inline undo/redo runs first; when it has
+        // nothing (returns false) the chain delegates to the block-level
+        // stack. This must be an explicit fallback, not a bubble — PM always
+        // preventDefaults Mod-Z/Y (suppressing the browser's native
+        // contentEditable undo), so the block layer can never detect an
+        // "unhandled" key via defaultPrevented while a block is focused.
+        'Mod-z': chainCommands(undo, () => {
+          callbacks.onHistory('undo')
+          return true
+        }),
+        'Mod-y': chainCommands(redo, () => {
+          callbacks.onHistory('redo')
+          return true
+        }),
+        'Mod-Shift-z': chainCommands(redo, () => {
+          callbacks.onHistory('redo')
+          return true
+        }),
         'Shift-Enter': insertHardBreak,
         ...buildMarkKeymap(),
       }),

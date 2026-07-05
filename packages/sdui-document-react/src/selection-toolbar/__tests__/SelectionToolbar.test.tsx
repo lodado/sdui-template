@@ -16,10 +16,12 @@ function makeSnapshot(overrides: Partial<SelectionSnapshot> = {}): SelectionSnap
       strikethrough: false,
       underline: false,
       highlight: false,
+      color: false,
       code: false,
       link: false,
     },
     highlightColor: null,
+    textColor: null,
     linkHref: null,
     anchorRect: { left: 10, top: 100, width: 40, height: 20 },
     ...overrides,
@@ -29,17 +31,19 @@ function makeSnapshot(overrides: Partial<SelectionSnapshot> = {}): SelectionSnap
 function renderToolbar(snapshot: SelectionSnapshot) {
   const onToggleMark = jest.fn()
   const onSetHighlight = jest.fn()
+  const onSetColor = jest.fn()
   const onSetLink = jest.fn()
   render(
     <SelectionToolbar
       snapshot={snapshot}
       onToggleMark={onToggleMark}
       onSetHighlight={onSetHighlight}
+      onSetColor={onSetColor}
       onSetLink={onSetLink}
     />,
   )
 
-  return { onToggleMark, onSetHighlight, onSetLink }
+  return { onToggleMark, onSetHighlight, onSetColor, onSetLink }
 }
 
 describe('SelectionToolbar', () => {
@@ -54,7 +58,7 @@ describe('SelectionToolbar', () => {
         expect(screen.getByRole('button', { name: 'Italic' })).toBeInTheDocument()
         expect(screen.getByRole('button', { name: 'Strikethrough' })).toBeInTheDocument()
         expect(screen.getByRole('button', { name: 'Code' })).toBeInTheDocument()
-        expect(screen.getByRole('button', { name: 'Highlight' })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'Color' })).toBeInTheDocument()
         expect(screen.getByRole('button', { name: 'Link' })).toBeInTheDocument()
       })
     })
@@ -100,27 +104,43 @@ describe('SelectionToolbar', () => {
     })
   })
 
-  describe('as is: the highlight submenu', () => {
-    describe('when Highlight is clicked and Coral picked (keyboard-reachable flow)', () => {
-      it('to be: onSetHighlight fires with the Outline Coral hex', async () => {
+  describe('as is: the unified color menu (text color + background color)', () => {
+    describe('when Color is clicked and a text swatch picked', () => {
+      it('to be: onSetColor fires with the Notion hex', async () => {
         const user = userEvent.setup()
-        const { onSetHighlight } = renderToolbar(makeSnapshot())
+        const { onSetColor } = renderToolbar(makeSnapshot())
 
-        await user.click(screen.getByRole('button', { name: 'Highlight' }))
-        await user.click(screen.getByRole('button', { name: 'Highlight Coral' }))
+        await user.click(screen.getByRole('button', { name: 'Color' }))
+        await user.click(screen.getByRole('button', { name: 'Text Purple' }))
 
-        expect(onSetHighlight).toHaveBeenCalledWith('#FDEA9B')
+        expect(onSetColor).toHaveBeenCalledWith('#9065B0')
       })
     })
 
-    describe('when "Remove highlight" is picked (EP: clear partition)', () => {
-      it('to be: onSetHighlight fires with null', async () => {
+    describe('when Color is clicked and a background swatch picked', () => {
+      it('to be: onSetHighlight fires with the Notion hex', async () => {
         const user = userEvent.setup()
-        const { onSetHighlight } = renderToolbar(makeSnapshot({ highlightColor: '#FDEA9B' }))
+        const { onSetHighlight } = renderToolbar(makeSnapshot())
 
-        await user.click(screen.getByRole('button', { name: 'Highlight' }))
-        await user.click(screen.getByRole('button', { name: 'Remove highlight' }))
+        await user.click(screen.getByRole('button', { name: 'Color' }))
+        await user.click(screen.getByRole('button', { name: 'Background Yellow' }))
 
+        expect(onSetHighlight).toHaveBeenCalledWith('#CB912F')
+      })
+    })
+
+    describe('when the reset swatches are picked (EP: clear partitions)', () => {
+      it('to be: text/background reset to null', async () => {
+        const user = userEvent.setup()
+        const { onSetColor, onSetHighlight } = renderToolbar(
+          makeSnapshot({ textColor: '#9065B0', highlightColor: '#CB912F' }),
+        )
+
+        await user.click(screen.getByRole('button', { name: 'Color' }))
+        await user.click(screen.getByRole('button', { name: 'Default text color' }))
+        await user.click(screen.getByRole('button', { name: 'Default background' }))
+
+        expect(onSetColor).toHaveBeenCalledWith(null)
         expect(onSetHighlight).toHaveBeenCalledWith(null)
       })
     })

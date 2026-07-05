@@ -2,6 +2,10 @@ export * from './autosave'
 export {
   bulletedList,
   type BulletedListBuilderOptions,
+  column,
+  type ColumnBuilderOptions,
+  columnList,
+  type ColumnListBuilderOptions,
   divider,
   type DividerBuilderOptions,
   heading,

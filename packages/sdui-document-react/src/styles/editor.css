@@ -603,24 +603,30 @@
   color: var(--sdui-doc-code-keyword);
 }
 
-/* Outline Styles.ts link rule — theme.link color, lightened underline */
-[data-sdui-document-editor] p a,
-[data-sdui-document-editor] .heading-content a {
+/* Inline hyperlinks — standard blue + underline in every block context */
+[data-sdui-document-editor] a.sdui-doc-link {
   color: var(--sdui-doc-link);
   text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--sdui-doc-text) 50%, transparent);
+  text-decoration-color: var(--sdui-doc-link);
   text-decoration-thickness: 1px;
   text-underline-offset: 0.15em;
-  font-weight: 500;
+  font-weight: inherit;
+  cursor: pointer;
 }
 
-[data-sdui-document-editor] .heading-content a {
+[data-sdui-document-editor] .heading-content a.sdui-doc-link {
   font-weight: inherit;
 }
 
-[data-sdui-document-editor] p a:hover,
-[data-sdui-document-editor] .heading-content a:hover {
-  text-decoration-color: var(--sdui-doc-text);
+[data-sdui-document-editor] a.sdui-doc-link:hover,
+[data-sdui-document-editor] a.sdui-doc-link:focus-visible {
+  text-decoration-thickness: 1.5px;
+}
+
+[data-sdui-document-editor] a.sdui-doc-link:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--sdui-doc-link) 40%, transparent);
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 
 /* ------------------------------------------- empty document / trailing */
@@ -857,9 +863,62 @@
   outline-offset: 1px;
 }
 
-/* text-color toolbar button glyph — the "A" tints to the active color */
+/* color toolbar button glyph — the "A" tints to the active text/bg color */
 .sdui-doc-toolbar-color-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
   font-weight: 700;
+}
+
+/* Notion-style unified color menu (text color + background color sections) */
+.sdui-doc-color-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 2px;
+  min-width: 200px;
+}
+
+.sdui-doc-color-heading {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sdui-doc-text-tertiary);
+}
+
+.sdui-doc-color-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.sdui-doc-color-swatch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--sdui-doc-divider);
+  border-radius: 6px;
+  cursor: pointer;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.sdui-doc-color-swatch[data-none] {
+  color: var(--sdui-doc-text-secondary);
+}
+
+.sdui-doc-color-swatch[data-active] {
+  outline: 2px solid var(--sdui-doc-accent);
+  outline-offset: 1px;
 }
 
 .sdui-doc-toolbar-link-input {
@@ -973,9 +1032,12 @@
   justify-content: center;
   width: 24px;
   min-width: 24px;
+  /* pin the marker box to the first text line (24px) so it stays on line 1 of
+     wrapped/multiline items instead of centering across the whole block —
+     matches the checkbox alignment */
+  height: 24px;
   font-size: 1.5em;
   line-height: 1;
-  margin-top: 0.1em;
   user-select: none;
 }
 .list-item > .list-marker.list-marker-number {

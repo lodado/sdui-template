@@ -2,8 +2,8 @@ import type { BlockAlign } from '@lodado/sdui-document'
 import * as Popover from '@radix-ui/react-popover'
 import React, { useEffect, useRef, useState } from 'react'
 
-import { ColorPalette } from './ColorPalette'
-import { HighlightPalette } from './HighlightPalette'
+import { highlightBackground } from '../marks'
+import { ColorMenu } from './ColorMenu'
 import { LinkEditor } from './LinkEditor'
 import type { SelectionSnapshot } from './selectionSnapshot'
 import { ToolbarButton } from './ToolbarButton'
@@ -26,7 +26,7 @@ const ALIGN_OPTIONS: ReadonlyArray<{ value: BlockAlign; label: string; glyph: st
   { value: 'right', label: 'Align right', glyph: '⇥' },
 ]
 
-type ToolbarView = 'menu' | 'highlight' | 'color' | 'link'
+type ToolbarView = 'menu' | 'color' | 'link'
 
 /**
  * Floating formatting toolbar over the current text selection.
@@ -107,17 +107,17 @@ export const SelectionToolbar = ({
               </ToolbarButton>
               <span className="sdui-doc-toolbar-separator" />
               <ToolbarButton
-                label="Highlight"
-                active={snapshot.activeMarks.highlight}
-                onClick={() => setView('highlight')}
+                label="Color"
+                active={snapshot.activeMarks.color || snapshot.activeMarks.highlight}
+                onClick={() => setView('color')}
               >
                 <span
-                  className="sdui-doc-toolbar-highlight-dot"
-                  style={snapshot.highlightColor ? { backgroundColor: snapshot.highlightColor } : undefined}
-                />
-              </ToolbarButton>
-              <ToolbarButton label="Text color" active={snapshot.activeMarks.color} onClick={() => setView('color')}>
-                <span className="sdui-doc-toolbar-color-dot" style={{ color: snapshot.textColor ?? undefined }}>
+                  className="sdui-doc-toolbar-color-dot"
+                  style={{
+                    color: snapshot.textColor ?? undefined,
+                    backgroundColor: snapshot.highlightColor ? highlightBackground(snapshot.highlightColor) : undefined,
+                  }}
+                >
                   A
                 </span>
               </ToolbarButton>
@@ -141,22 +141,12 @@ export const SelectionToolbar = ({
               )}
             </div>
           )}
-          {view === 'highlight' && (
-            <HighlightPalette
-              activeColor={snapshot.highlightColor}
-              onSelect={(color) => {
-                onSetHighlight(color)
-                setView('menu')
-              }}
-            />
-          )}
           {view === 'color' && (
-            <ColorPalette
-              activeColor={snapshot.textColor}
-              onSelect={(color) => {
-                onSetColor(color)
-                setView('menu')
-              }}
+            <ColorMenu
+              activeTextColor={snapshot.textColor}
+              activeHighlight={snapshot.highlightColor}
+              onSetColor={(color) => onSetColor(color)}
+              onSetHighlight={(color) => onSetHighlight(color)}
             />
           )}
           {view === 'link' && (
