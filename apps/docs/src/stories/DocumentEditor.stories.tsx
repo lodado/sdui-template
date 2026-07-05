@@ -3,6 +3,8 @@ import { SduiDocumentEditor } from '@lodado/sdui-document-react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import React, { useState } from 'react'
 
+import { EditorWithStateInspector } from './architecture/demos/EditorWithStateInspector'
+
 const meta: Meta<typeof SduiDocumentEditor> = {
   title: 'Document/Document Editor (Hybrid PM)',
   component: SduiDocumentEditor,
@@ -100,6 +102,19 @@ const EditorWithPatchLog = () => {
 
 export const Editable: Story = {
   render: () => <EditorWithPatchLog />,
+}
+
+export const EditableWithLayoutState: Story = {
+  render: () => <EditorWithStateInspector content={sampleContent} />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Same hybrid editor with a live JSON panel: SduiDocumentContent (domain) plus sdui-template layout state ' +
+          'derived via toSduiLayoutDocument after each patch. See also Debug/SDUI Layout State Inspector.',
+      },
+    },
+  },
 }
 
 export const ReadOnly: Story = {
