@@ -12,6 +12,7 @@ import { NUMBERED_LIST_BLOCK_TYPE } from '../../block-types/numbered-list/number
 import { PARAGRAPH_BLOCK_TYPE } from '../../block-types/paragraph/paragraph.type'
 import { QUOTE_BLOCK_TYPE } from '../../block-types/quote/quote.type'
 import { ROOT_BLOCK_TYPE } from '../../block-types/root/root.type'
+import { TOGGLE_BLOCK_TYPE } from '../../block-types/toggle/toggle.type'
 import { createBlockId, type SduiDocumentBlockId } from './ids'
 
 /** Tie-break metadata for deterministic sibling ordering when fractional keys collide. */
@@ -38,6 +39,7 @@ export type SduiDocumentBlockType =
   | typeof FILE_BLOCK_TYPE
   | typeof LINK_BLOCK_TYPE
   | typeof QUOTE_BLOCK_TYPE
+  | typeof TOGGLE_BLOCK_TYPE
   | typeof COLUMN_LIST_BLOCK_TYPE
   | typeof COLUMN_BLOCK_TYPE
 

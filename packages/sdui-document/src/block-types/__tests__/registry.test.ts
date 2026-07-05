@@ -17,6 +17,7 @@ import {
   PARAGRAPH_BLOCK_TYPE,
   QUOTE_BLOCK_TYPE,
   ROOT_BLOCK_TYPE,
+  TOGGLE_BLOCK_TYPE,
 } from '../index'
 
 const make = (type: string, attributes?: Record<string, unknown>) => createDocumentBlock({ id: 'b', type, attributes })
@@ -33,6 +34,7 @@ describe('block-type constants', () => {
       DIVIDER_BLOCK_TYPE,
       CALLOUT_BLOCK_TYPE,
       QUOTE_BLOCK_TYPE,
+      TOGGLE_BLOCK_TYPE,
       IMAGE_BLOCK_TYPE,
       FILE_BLOCK_TYPE,
       LINK_BLOCK_TYPE,

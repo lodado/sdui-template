@@ -14,6 +14,7 @@ import { numberedListBlockModule } from './numbered-list/numberedList'
 import { paragraphBlockModule } from './paragraph/paragraph'
 import { quoteBlockModule } from './quote/quote'
 import { rootBlockModule } from './root/root'
+import { toggleBlockModule } from './toggle/toggle'
 import type { BlockLinkRef, SduiBlockTypeModule } from './types'
 
 /**
@@ -34,6 +35,7 @@ export const BLOCK_TYPE_MODULES: readonly SduiBlockTypeModule[] = [
   dividerBlockModule,
   calloutBlockModule,
   quoteBlockModule,
+  toggleBlockModule,
   imageBlockModule,
   fileBlockModule,
   linkBlockModule,
@@ -78,6 +80,7 @@ export { NUMBERED_LIST_BLOCK_TYPE } from './numbered-list/numberedList.type'
 export { PARAGRAPH_BLOCK_TYPE } from './paragraph/paragraph.type'
 export { QUOTE_BLOCK_TYPE } from './quote/quote.type'
 export { ROOT_BLOCK_TYPE } from './root/root.type'
+export { TOGGLE_BLOCK_TYPE } from './toggle/toggle.type'
 export type {
   BlockFromMarkdownContext,
   BlockLinkRef,
