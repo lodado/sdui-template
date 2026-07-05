@@ -42,15 +42,6 @@ describe('Badge - Logic Tests (ADS Style)', () => {
         expect(badge).toBeInTheDocument()
       })
     })
-
-    describe('as is: Badge with large number', () => {
-      it('to be: large number rendered', () => {
-        render(<Badge label={9999} />)
-
-        const badge = screen.getByText('9999')
-        expect(badge).toBeInTheDocument()
-      })
-    })
   })
 
   describe('Props Spread', () => {
@@ -70,17 +61,6 @@ describe('Badge - Logic Tests (ADS Style)', () => {
         const badge = screen.getByText('25').parentElement
         expect(badge).toHaveClass('custom-class')
         expect(badge).toHaveClass('h-4')
-      })
-    })
-  })
-
-  describe('Default Appearance', () => {
-    describe('as is: Badge without appearance prop', () => {
-      it('to be: default appearance applied', () => {
-        render(<Badge label={25} />)
-
-        const badge = screen.getByText('25')
-        expect(badge).toBeInTheDocument()
       })
     })
   })

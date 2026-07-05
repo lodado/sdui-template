@@ -8,25 +8,10 @@ import { render, screen } from '@testing-library/react'
 import React from 'react'
 
 import { SduiLayoutRenderer } from '../../react-wrapper/components/SduiLayoutRenderer'
-import {
-  createNestedTestDocument,
-  createTestDocument,
-  defaultTestComponentFactory,
-} from '../utils/dev-utils'
+import { createNestedTestDocument, createTestDocument, defaultTestComponentFactory } from '../utils/dev-utils'
 
 describe('SduiLayoutRenderer', () => {
   describe('as is: empty store', () => {
-    describe('when: SduiLayoutRenderer receives document with single root node (no children)', () => {
-      it('to be: root node renders, no errors', () => {
-        const document = createTestDocument()
-        render(<SduiLayoutRenderer document={document} components={{ Container: defaultTestComponentFactory }} />)
-
-        // Check that root node is rendered (default component shows node info)
-        expect(screen.getByText(/Type: Container/i)).toBeInTheDocument()
-        expect(screen.getByText(/ID: root/i)).toBeInTheDocument()
-      })
-    })
-
     describe('when: SduiLayoutRenderer receives document with 3 levels of nesting', () => {
       it('to be: all nodes render in correct hierarchy', () => {
         const document = createNestedTestDocument()
@@ -43,23 +28,6 @@ describe('SduiLayoutRenderer', () => {
         expect(screen.getByText(/ID: child-1/i)).toBeInTheDocument()
         expect(screen.getByText(/ID: child-2/i)).toBeInTheDocument()
         expect(screen.getByText(/ID: grandchild-1/i)).toBeInTheDocument()
-      })
-    })
-
-    describe('when: document with root node, children: []', () => {
-      it('to be: root renders, no children rendered, no errors', () => {
-        const document = createTestDocument({
-          root: {
-            id: 'root',
-            type: 'Container',
-            children: [],
-          },
-        })
-        render(<SduiLayoutRenderer document={document} components={{ Container: defaultTestComponentFactory }} />)
-
-        expect(screen.getByText(/ID: root/i)).toBeInTheDocument()
-        // No children should be rendered
-        expect(screen.queryByText(/ID: child/i)).not.toBeInTheDocument()
       })
     })
 

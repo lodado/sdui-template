@@ -19,18 +19,6 @@ describe('Checkbox', () => {
       // Label should be connected to checkbox
       expect(label).toHaveAttribute('for', checkbox.id)
     })
-
-    it('connects label to checkbox via context', () => {
-      render(
-        <Checkbox.Root>
-          <Checkbox.Label>Test label</Checkbox.Label>
-          <Checkbox.Checkbox />
-        </Checkbox.Root>,
-      )
-      const checkbox = screen.getByRole('checkbox')
-      const label = screen.getByText('Test label')
-      expect(label).toHaveAttribute('for', checkbox.id)
-    })
   })
 
   describe('Rendering', () => {

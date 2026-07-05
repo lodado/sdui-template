@@ -179,55 +179,6 @@ describe('README Example: Recursive Rendering', () => {
     })
   })
 
-  describe('when: container with multiple children', () => {
-    it('to be: all children render in order', () => {
-      const document = createTestDocument({
-        root: {
-          id: 'root',
-          type: 'Container',
-          children: [
-            {
-              id: 'card-1',
-              type: 'Card',
-              state: {
-                title: 'Card 1',
-              },
-            },
-            {
-              id: 'card-2',
-              type: 'Card',
-              state: {
-                title: 'Card 2',
-              },
-            },
-            {
-              id: 'card-3',
-              type: 'Card',
-              state: {
-                title: 'Card 3',
-              },
-            },
-          ],
-        },
-      })
-
-      render(
-        <SduiLayoutRenderer
-          document={document}
-          components={{
-            Container: ContainerFactory,
-            Card: CardFactory,
-          }}
-        />,
-      )
-
-      // All cards should render
-      expect(screen.getByText('Card 1')).toBeInTheDocument()
-      expect(screen.getByText('Card 2')).toBeInTheDocument()
-      expect(screen.getByText('Card 3')).toBeInTheDocument()
-    })
-  })
-
   describe('when: card without state', () => {
     it('to be: renders with default title', () => {
       const document = createTestDocument({

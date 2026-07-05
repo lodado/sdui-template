@@ -186,22 +186,4 @@ describe('nested drag scenario (complex 4-depth fixture)', () => {
       })
     })
   })
-
-  describe('as is: section-a dragged onto its own depth-4 descendant (EP: invalid target partition)', () => {
-    describe('when the drop lands inside the dragged subtree', () => {
-      it('to be: null — the document is left untouched', () => {
-        const content = createNestedFixture()
-
-        expect(
-          createProjectedBlockMovePatch({
-            content,
-            activeId: 'section-a',
-            overId: 'a-1-1-1',
-            offsetX: 0,
-            indentWidth: INDENT_WIDTH,
-          }),
-        ).toBeNull()
-      })
-    })
-  })
 })

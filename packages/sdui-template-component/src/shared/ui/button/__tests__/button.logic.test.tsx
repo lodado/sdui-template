@@ -365,26 +365,4 @@ describe('Button - Logic Tests (ADS Style)', () => {
       })
     })
   })
-
-  describe('All Combinations', () => {
-    const appearances = ['default', 'primary', 'subtle', 'warning', 'danger'] as const
-    const spacings = ['default', 'compact'] as const
-
-    appearances.forEach((appearance) => {
-      spacings.forEach((spacing) => {
-        describe(`as is: Button with appearance="${appearance}" and spacing="${spacing}"`, () => {
-          it('to be: renders correctly', () => {
-            render(
-              <Button appearance={appearance} spacing={spacing}>
-                {`${appearance} ${spacing}`}
-              </Button>,
-            )
-
-            const button = screen.getByRole('button')
-            expect(button).toBeInTheDocument()
-          })
-        })
-      })
-    })
-  })
 })

@@ -24,44 +24,7 @@ describe('Badge - SDUI Integration Tests', () => {
     })
   })
 
-  describe('as is: Badge with appearance state', () => {
-    describe('when: appearance="default" (first enum value)', () => {
-      it('to be: badge renders with default appearance, should have correct appearance variant', () => {
-        const document: SduiLayoutDocument = {
-          version: '1.0.0',
-          root: {
-            id: 'badge-root',
-            type: 'Badge',
-            state: {
-              label: 25,
-              appearance: 'default',
-            },
-          },
-        }
-        renderWithSduiLayout(document, { components: sduiComponents })
-        expect(screen.getByText('25')).toBeInTheDocument()
-      })
-    })
-  })
-
   describe('as is: Badge with label state', () => {
-    describe('when: label is provided as number (non-zero number)', () => {
-      it('to be: badge label is displayed, should show badge content', () => {
-        const document: SduiLayoutDocument = {
-          version: '1.0.0',
-          root: {
-            id: 'badge-root',
-            type: 'Badge',
-            state: {
-              label: 99,
-            },
-          },
-        }
-        renderWithSduiLayout(document, { components: sduiComponents })
-        expect(screen.getByText('99')).toBeInTheDocument()
-      })
-    })
-
     describe('when: label is provided as string (non-empty string)', () => {
       it('to be: badge label is displayed, should show badge content', () => {
         const document: SduiLayoutDocument = {

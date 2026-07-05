@@ -33,18 +33,13 @@ describe('migrateToFractionalPositions', () => {
     const migrated = migrateToFractionalPositions(createLegacyContent())
     expect(migrated.root.children?.map((block) => block.id)).toEqual(['a', 'b'])
     expect(migrated.root.children?.[1].children?.map((block) => block.id)).toEqual(['b1', 'b2'])
+    expect(sortBlocksByPosition(migrated.root.children ?? []).map((block) => block.id)).toEqual(['a', 'b'])
   })
 
   it('assigns position keys and bumps schemaVersion', () => {
     const migrated = migrateToFractionalPositions(createLegacyContent())
     expect(migrated.schemaVersion).toBe('1.1')
     expect(migrated.root.children?.every((child) => typeof child.position === 'string')).toBe(true)
-  })
-
-  it('sorts children on write during migration', () => {
-    const migrated = migrateToFractionalPositions(createLegacyContent())
-    const sorted = sortBlocksByPosition(migrated.root.children ?? [])
-    expect(sorted.map((block) => block.id)).toEqual(['a', 'b'])
   })
 })
 

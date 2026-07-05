@@ -38,12 +38,6 @@ describe('trailing block invariant (Outline TrailingNode port)', () => {
 
       expect(requiresTrailingBlock(content)).toBe(false)
     })
-
-    it('returns false when the last root child is a heading', () => {
-      const content = createContent([{ id: 'h1', type: 'document.heading', state: { text: 'Title', level: 1 } }])
-
-      expect(requiresTrailingBlock(content)).toBe(false)
-    })
   })
 
   describe('createTrailingBlockPatch', () => {

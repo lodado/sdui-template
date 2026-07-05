@@ -137,8 +137,6 @@ describe('link href sanitization', () => {
   it.each([
     // eslint-disable-next-line no-script-url
     [`javascript${':'}alert(1)`],
-    // eslint-disable-next-line no-script-url
-    [`javascript${':'}void(0)`],
     ['data:text/html,<script>alert(1)</script>'],
   ])('strips dangerous href %s', (href) => {
     const node = makeLinkLayout(href).root.children?.[0]

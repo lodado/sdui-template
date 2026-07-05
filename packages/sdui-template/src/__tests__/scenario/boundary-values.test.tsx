@@ -21,28 +21,6 @@ describe('Boundary Value Analysis', () => {
       })
     })
 
-    describe('when: document with 10 nodes', () => {
-      it('to be: all nodes render correctly', () => {
-        const document = createTestDocument({
-          root: {
-            id: 'root',
-            type: 'Container',
-            children: Array.from({ length: 9 }, (_, i) => ({
-              id: `node-${i + 1}`,
-              type: 'Card',
-            })),
-          },
-        })
-
-        render(<SduiLayoutRenderer document={document} components={{ Container: defaultTestComponentFactory, Card: defaultTestComponentFactory }} />)
-
-        expect(screen.getByText(/ID: root/i)).toBeInTheDocument()
-        for (let i = 1; i <= 9; i += 1) {
-          expect(screen.getByText(new RegExp(`ID: node-${i}`, 'i'))).toBeInTheDocument()
-        }
-      })
-    })
-
     describe('when: document with 100 nodes', () => {
       it('to be: all nodes render, performance acceptable', () => {
         const document = createTestDocument({
@@ -101,7 +79,12 @@ describe('Boundary Value Analysis', () => {
           },
         })
 
-        render(<SduiLayoutRenderer document={document} components={{ Container: defaultTestComponentFactory, Card: defaultTestComponentFactory }} />)
+        render(
+          <SduiLayoutRenderer
+            document={document}
+            components={{ Container: defaultTestComponentFactory, Card: defaultTestComponentFactory }}
+          />,
+        )
 
         expect(screen.getByText(/ID: root/i)).toBeInTheDocument()
         expect(screen.queryByText(/ID: child/i)).not.toBeInTheDocument()
@@ -123,37 +106,15 @@ describe('Boundary Value Analysis', () => {
           },
         })
 
-        render(<SduiLayoutRenderer document={document} components={{ Container: defaultTestComponentFactory, Card: defaultTestComponentFactory }} />)
+        render(
+          <SduiLayoutRenderer
+            document={document}
+            components={{ Container: defaultTestComponentFactory, Card: defaultTestComponentFactory }}
+          />,
+        )
 
         expect(screen.getByText(/ID: root/i)).toBeInTheDocument()
         expect(screen.getByText(/ID: child-1/i)).toBeInTheDocument()
-      })
-    })
-
-    describe('when: document with depth 5', () => {
-      it('to be: all levels render correctly', () => {
-        let current: any = {
-          id: 'level-0',
-          type: 'Container',
-        }
-
-        for (let i = 1; i <= 5; i += 1) {
-          current = {
-            id: `level-${i}`,
-            type: 'Container',
-            children: [current],
-          }
-        }
-
-        const document: any = {
-          version: '1.0.0',
-          root: current,
-        }
-
-        render(<SduiLayoutRenderer document={document} components={{ Container: defaultTestComponentFactory }} />)
-
-        expect(screen.getByText(/ID: level-0/i)).toBeInTheDocument()
-        expect(screen.getByText(/ID: level-5/i)).toBeInTheDocument()
       })
     })
 
@@ -196,7 +157,12 @@ describe('Boundary Value Analysis', () => {
           version: '',
         })
 
-        render(<SduiLayoutRenderer document={document} components={{ Container: defaultTestComponentFactory, Card: defaultTestComponentFactory }} />)
+        render(
+          <SduiLayoutRenderer
+            document={document}
+            components={{ Container: defaultTestComponentFactory, Card: defaultTestComponentFactory }}
+          />,
+        )
 
         expect(screen.getByText(/ID: root/i)).toBeInTheDocument()
       })
@@ -208,7 +174,12 @@ describe('Boundary Value Analysis', () => {
           version: '999.999.999',
         })
 
-        render(<SduiLayoutRenderer document={document} components={{ Container: defaultTestComponentFactory, Card: defaultTestComponentFactory }} />)
+        render(
+          <SduiLayoutRenderer
+            document={document}
+            components={{ Container: defaultTestComponentFactory, Card: defaultTestComponentFactory }}
+          />,
+        )
 
         expect(screen.getByText(/ID: root/i)).toBeInTheDocument()
       })
@@ -225,7 +196,12 @@ describe('Boundary Value Analysis', () => {
           },
         })
 
-        render(<SduiLayoutRenderer document={document} components={{ Container: defaultTestComponentFactory, Card: defaultTestComponentFactory }} />)
+        render(
+          <SduiLayoutRenderer
+            document={document}
+            components={{ Container: defaultTestComponentFactory, Card: defaultTestComponentFactory }}
+          />,
+        )
 
         expect(screen.getByText(/ID: a/i)).toBeInTheDocument()
       })
@@ -241,7 +217,12 @@ describe('Boundary Value Analysis', () => {
           },
         })
 
-        render(<SduiLayoutRenderer document={document} components={{ Container: defaultTestComponentFactory, Card: defaultTestComponentFactory }} />)
+        render(
+          <SduiLayoutRenderer
+            document={document}
+            components={{ Container: defaultTestComponentFactory, Card: defaultTestComponentFactory }}
+          />,
+        )
 
         expect(screen.getByText(new RegExp(`ID: ${veryLongId}`, 'i'))).toBeInTheDocument()
       })

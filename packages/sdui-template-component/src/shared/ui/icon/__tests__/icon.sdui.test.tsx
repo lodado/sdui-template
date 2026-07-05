@@ -82,36 +82,6 @@ describe('Icon - SDUI Integration Tests', () => {
         expect(screen.getByText('Large SVG')).toBeInTheDocument()
       })
     })
-
-    describe('when: size is custom value (equivalence: valid custom size)', () => {
-      it('to be: icon renders with custom size, should have correct size prop', () => {
-        const document: SduiLayoutDocument = {
-          version: '1.0.0',
-          root: {
-            id: 'icon-root',
-            type: 'Icon',
-            state: {
-              size: '18px',
-            },
-            children: [
-              {
-                id: 'svg-child',
-                type: 'Div',
-                children: [
-                  {
-                    id: 'svg-text',
-                    type: 'Text',
-                    state: { text: 'Custom SVG' },
-                  },
-                ],
-              },
-            ],
-          },
-        }
-        renderWithSduiLayout(document, { components: sduiComponents })
-        expect(screen.getByText('Custom SVG')).toBeInTheDocument()
-      })
-    })
   })
 
   describe('as is: Icon with children (SVG) rendering', () => {

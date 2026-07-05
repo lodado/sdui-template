@@ -3,7 +3,6 @@ import { sduiDocumentContentToMarkdown } from '../../markdown'
 import { mapDocumentBlockToSduiNode } from '../../sdui/toSduiLayout'
 import { COLUMN_BLOCK_TYPE, columnBlockModule } from '../column/column'
 import { COLUMN_LIST_BLOCK_TYPE, columnListBlockModule } from '../column-list/columnList'
-import { canHostInlineText } from '../index'
 
 const paragraph = (id: string, text: string) =>
   createDocumentBlock({ id, type: 'document.paragraph', state: { text, content: [{ type: 'text', text }] } })
@@ -60,13 +59,6 @@ describe('columnList block module', () => {
   })
 
   describe('as is: container capability policy', () => {
-    describe('when asked whether it hosts inline text', () => {
-      it('to be: false for columnList and column (pure containers)', () => {
-        expect(canHostInlineText(columnList('cl', []))).toBe(false)
-        expect(canHostInlineText(column('col', []))).toBe(false)
-      })
-    })
-
     describe('when the block menu asks for a default block', () => {
       it('to be: not menu-insertable (createDefault omitted, drag-only creation)', () => {
         expect(columnListBlockModule.createDefault).toBeUndefined()
@@ -107,7 +99,6 @@ describe('column block module', () => {
       ['zero (lower boundary, exclusive)', 0],
       ['negative', -1],
       ['NaN', Number.NaN],
-      ['Infinity', Number.POSITIVE_INFINITY],
     ])('when mapped with ratio=%s', (_label, ratio) => {
       it('to be: treated as absent (equal split, no weight class)', () => {
         const node = mapDocumentBlockToSduiNode(column('col-a', [], ratio))

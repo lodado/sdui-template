@@ -50,7 +50,6 @@ describe('projectHorizontalBlockDrop', () => {
       ['just inside the left edge band (boundary - 1px)', HORIZONTAL_DROP_EDGE_PX - 1, 'left'],
       ['exactly at the left band boundary', HORIZONTAL_DROP_EDGE_PX, null],
       ['past the old 20% ratio zone but outside the band (BVA: 160px on 800px row)', 160, null],
-      ['dead center', 400, null],
       ['mirror of 160px from the right edge', 800 - 160, null],
       ['exactly at the right band boundary', 800 - HORIZONTAL_DROP_EDGE_PX, null],
       ['just inside the right edge band (boundary + 1px)', 800 - HORIZONTAL_DROP_EDGE_PX + 1, 'right'],

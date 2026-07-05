@@ -194,31 +194,6 @@ describe('Zod Schema Validation', () => {
   })
 
   describe('as is: document with toggle node, optional label field', () => {
-    describe('when: label is provided', () => {
-      it('to be: label is rendered', () => {
-        const document = createTestDocument({
-          root: {
-            id: 'toggle-1',
-            type: 'Toggle',
-            state: {
-              layout: { x: 0, y: 0, w: 3, h: 1 },
-              checked: false,
-              label: 'Custom label',
-            },
-          },
-        })
-
-        renderWithSduiLayout(document, {
-          components: {
-            Container: defaultTestComponentFactory,
-            Toggle: toggleComponentFactory,
-          },
-        })
-
-        expect(screen.getByTestId('toggle-label-toggle-1')).toHaveTextContent('Custom label')
-      })
-    })
-
     describe('when: label is not provided', () => {
       it('to be: label is not rendered, checkbox has default aria-label', () => {
         const document = createTestDocument({

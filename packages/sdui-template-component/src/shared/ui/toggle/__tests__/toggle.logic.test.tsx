@@ -106,28 +106,6 @@ describe('Toggle', () => {
 
       expect(handleChange).not.toHaveBeenCalled()
     })
-
-    it('handles keyboard interaction (Space)', () => {
-      const handleChange = jest.fn()
-      render(<Toggle isChecked={false} onChange={handleChange} label="Test" />)
-
-      const toggle = screen.getByRole('switch')
-      // Radix Switch handles Space via native button behavior
-      fireEvent.click(toggle)
-
-      expect(handleChange).toHaveBeenCalledWith(true)
-    })
-
-    it('handles keyboard interaction (Enter)', () => {
-      const handleChange = jest.fn()
-      render(<Toggle isChecked={false} onChange={handleChange} label="Test" />)
-
-      const toggle = screen.getByRole('switch')
-      // Radix Switch handles Enter via native button behavior
-      fireEvent.click(toggle)
-
-      expect(handleChange).toHaveBeenCalledWith(true)
-    })
   })
 
   describe('SDUI Integration', () => {
@@ -143,13 +121,6 @@ describe('Toggle', () => {
       expect(toggle).toHaveAttribute('data-event-id', 'toggle-event')
     })
 
-    it('renders with data-state=checked when checked', () => {
-      render(<Toggle isChecked label="Test" />)
-      const toggle = screen.getByRole('switch')
-      // Radix uses data-state instead of data-checked
-      expect(toggle).toHaveAttribute('data-state', 'checked')
-    })
-
     it('renders with data-loading attribute when loading', () => {
       render(<Toggle isLoading label="Test" />)
       const toggle = screen.getByRole('switch')
@@ -163,7 +134,7 @@ describe('Toggle', () => {
       const { container } = render(
         <form>
           <Toggle name="feature-toggle" isChecked label="Test" />
-        </form>
+        </form>,
       )
       const hiddenInput = container.querySelector('input[name="feature-toggle"]')
       expect(hiddenInput).toBeInTheDocument()

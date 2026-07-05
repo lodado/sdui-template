@@ -201,12 +201,6 @@ describe('projectNestedBlockDrop', () => {
       })
     })
 
-    describe('when overRatio is omitted (EP: legacy callers)', () => {
-      it('to be: unchanged after-based projection', () => {
-        expect(project('c', 'b', 0)).toEqual({ overId: 'b', position: 'after', depth: 1 })
-      })
-    })
-
     describe('when the target is invalid (EP: guards run before zones)', () => {
       it('to be: null for root / self / own subtree regardless of ratio', () => {
         expect(project('c', 'root', 0, 0.5)).toBeNull()

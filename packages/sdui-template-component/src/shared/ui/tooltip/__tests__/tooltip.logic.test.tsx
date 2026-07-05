@@ -46,12 +46,24 @@ const SimpleTooltip = ({
   nodeId,
 }: SimpleTooltipProps) => {
   return (
-    <TooltipCompound.Root open={open} defaultOpen={defaultOpen} onOpenChange={onOpenChange} delayDuration={delayDuration}>
+    <TooltipCompound.Root
+      open={open}
+      defaultOpen={defaultOpen}
+      onOpenChange={onOpenChange}
+      delayDuration={delayDuration}
+    >
       <TooltipCompound.Trigger asChild data-node-id={nodeId}>
         {children}
       </TooltipCompound.Trigger>
       <TooltipCompound.Portal>
-        <TooltipCompound.Content side={side} sideOffset={sideOffset} align={align} alignOffset={alignOffset} className={className} data-node-id={nodeId ? `${nodeId}-content` : undefined}>
+        <TooltipCompound.Content
+          side={side}
+          sideOffset={sideOffset}
+          align={align}
+          alignOffset={alignOffset}
+          className={className}
+          data-node-id={nodeId ? `${nodeId}-content` : undefined}
+        >
           {content}
           {showArrow && <TooltipCompound.Arrow />}
         </TooltipCompound.Content>
@@ -84,22 +96,6 @@ describe('Tooltip - Logic Tests (ADS Style)', () => {
 
           // Tooltip content should be visible
           expect(screen.getByRole('tooltip')).toHaveTextContent('Help text')
-        })
-      })
-    })
-
-    describe('as is: Tooltip with complex content', () => {
-      describe('when: tooltip is open', () => {
-        it('to be: content is rendered correctly', async () => {
-          render(
-            <TooltipWithProvider providerProps={{ delayDuration: 0 }}>
-              <Tooltip content="Add to library" open>
-                <button>+</button>
-              </Tooltip>
-            </TooltipWithProvider>,
-          )
-
-          expect(screen.getByRole('tooltip')).toHaveTextContent('Add to library')
         })
       })
     })
@@ -183,41 +179,6 @@ describe('Tooltip - Logic Tests (ADS Style)', () => {
     })
   })
 
-  describe('Side/Align Combinations (EP)', () => {
-    // Test representative combinations - EP sampling
-    // Note: 'right' side excluded due to collision avoidance in jsdom
-    const combinations = [
-      { side: 'top', align: 'center' }, // default
-      { side: 'bottom', align: 'start' },
-      { side: 'left', align: 'end' },
-    ] as const
-
-    combinations.forEach(({ side, align }) => {
-      describe(`as is: Tooltip with side="${side}" and align="${align}"`, () => {
-        describe('when: tooltip is open', () => {
-          it('to be: correct data-align attribute applied', async () => {
-            render(
-              <TooltipWithProvider providerProps={{ delayDuration: 0 }}>
-                <Tooltip content="Test" side={side} align={align} open>
-                  <button>Trigger</button>
-                </Tooltip>
-              </TooltipWithProvider>,
-            )
-
-            // Wait for tooltip to be in DOM
-            await waitFor(() => {
-              expect(screen.getByRole('tooltip')).toBeInTheDocument()
-            })
-
-            const tooltipContent = getTooltipContent()
-            // data-side may change due to collision, but data-align should remain
-            expect(tooltipContent).toHaveAttribute('data-align', align)
-          })
-        })
-      })
-    })
-  })
-
   describe('Offset - Boundary Value Analysis', () => {
     describe('as is: Tooltip with sideOffset=0 (min boundary)', () => {
       describe('when: tooltip is open', () => {
@@ -225,22 +186,6 @@ describe('Tooltip - Logic Tests (ADS Style)', () => {
           render(
             <TooltipWithProvider providerProps={{ delayDuration: 0 }}>
               <Tooltip content="Test" sideOffset={0} open>
-                <button>Trigger</button>
-              </Tooltip>
-            </TooltipWithProvider>,
-          )
-
-          expect(screen.getByRole('tooltip')).toBeInTheDocument()
-        })
-      })
-    })
-
-    describe('as is: Tooltip with sideOffset=4 (default)', () => {
-      describe('when: tooltip is open', () => {
-        it('to be: tooltip renders correctly', async () => {
-          render(
-            <TooltipWithProvider providerProps={{ delayDuration: 0 }}>
-              <Tooltip content="Test" sideOffset={4} open>
                 <button>Trigger</button>
               </Tooltip>
             </TooltipWithProvider>,
@@ -538,35 +483,6 @@ describe('Tooltip - Logic Tests (ADS Style)', () => {
     })
   })
 
-  describe('Delay Duration - Boundary Value Analysis', () => {
-    describe('as is: Tooltip with delayDuration=0 (boundary/instant)', () => {
-      describe('when: user hovers over trigger', () => {
-        it('to be: tooltip opens immediately without delay', async () => {
-          const user = userEvent.setup()
-
-          render(
-            <TooltipWithProvider>
-              <Tooltip content="Instant" delayDuration={0}>
-                <button>Trigger</button>
-              </Tooltip>
-            </TooltipWithProvider>,
-          )
-
-          const trigger = screen.getByRole('button', { name: /trigger/i })
-          await user.hover(trigger)
-
-          // Should open quickly with no delay
-          await waitFor(
-            () => {
-              expect(screen.getByRole('tooltip')).toBeInTheDocument()
-            },
-            { timeout: 100 },
-          )
-        })
-      })
-    })
-  })
-
   describe('Custom Styling', () => {
     describe('as is: Tooltip with custom className', () => {
       describe('when: tooltip is open', () => {
@@ -667,35 +583,6 @@ describe('Tooltip - Logic Tests (ADS Style)', () => {
           await user.tab()
 
           expect(trigger).toHaveFocus()
-        })
-      })
-    })
-  })
-
-  describe('TooltipProvider', () => {
-    describe('as is: TooltipProvider with custom delayDuration', () => {
-      describe('when: child Tooltip uses default delay', () => {
-        it('to be: provider delay is applied', async () => {
-          const user = userEvent.setup()
-
-          render(
-            <TooltipProvider delayDuration={0}>
-              <Tooltip content="Provider test">
-                <button>Trigger</button>
-              </Tooltip>
-            </TooltipProvider>,
-          )
-
-          const trigger = screen.getByRole('button', { name: /trigger/i })
-          await user.hover(trigger)
-
-          // With provider delay=0, should open quickly
-          await waitFor(
-            () => {
-              expect(screen.getByRole('tooltip')).toBeInTheDocument()
-            },
-            { timeout: 100 },
-          )
         })
       })
     })

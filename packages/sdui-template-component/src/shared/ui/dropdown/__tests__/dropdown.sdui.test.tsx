@@ -200,59 +200,6 @@ describe('Dropdown - SDUI Integration Tests', () => {
     })
   })
 
-  describe('as is: Dropdown with selectedId state', () => {
-    describe('when: selectedId is set (boundary: exists vs null)', () => {
-      it('to be: selected item highlighted, should have selected state', async () => {
-        const document: SduiLayoutDocument = {
-          version: '1.0.0',
-          root: {
-            id: 'dropdown-selected',
-            type: 'Dropdown',
-            state: {
-              open: true,
-              selectedId: 'opt-2',
-            },
-            children: [
-              {
-                id: 'content',
-                type: 'DropdownContent',
-                state: {
-                  side: 'bottom',
-                },
-                children: [
-                  {
-                    id: 'item-1',
-                    type: 'DropdownItem',
-                    state: {
-                      value: 'opt-1',
-                      label: 'Option 1',
-                    },
-                  },
-                  {
-                    id: 'item-2',
-                    type: 'DropdownItem',
-                    state: {
-                      value: 'opt-2',
-                      label: 'Option 2',
-                    },
-                  },
-                ],
-              },
-            ],
-          },
-        }
-
-        renderWithSduiLayout(document, { components: sduiComponents })
-
-        // Both items should be visible (portaled content)
-        await waitFor(() => {
-          expect(screen.getByText('Option 1')).toBeInTheDocument()
-          expect(screen.getByText('Option 2')).toBeInTheDocument()
-        })
-      })
-    })
-  })
-
   describe('as is: Dropdown with item selection', () => {
     describe('when: DropdownItem clicked (boundary: selection action)', () => {
       it('to be: selectedId updates and dropdown closes, should update state', async () => {

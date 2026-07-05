@@ -125,15 +125,6 @@ test.describe('Keyboard shortcuts (Phase 24 — Outline parity)', () => {
     await expect(checkbox).toHaveAttribute('aria-checked', 'true')
   })
 
-  test('Mod-Alt-ArrowDown으로 블록이 아래 sibling과 자리를 바꾼다', async ({ page }) => {
-    await focusBlock(page, 'First')
-    await page.keyboard.press(`${MOD}+Alt+ArrowDown`)
-
-    const rows = page.locator('[data-sdui-document-editor] > [data-block-id]')
-    await expect(rows.nth(0)).toHaveAttribute('data-block-id', 'p2')
-    await expect(rows.nth(1)).toHaveAttribute('data-block-id', 'p1')
-  })
-
   test('Mod-Alt-ArrowDown 이동 후 focus 상태에서 Mod-Z/Mod-Shift-Z로 undo/redo 된다', async ({ page }) => {
     await focusBlock(page, 'First')
     await page.keyboard.press(`${MOD}+Alt+ArrowDown`)

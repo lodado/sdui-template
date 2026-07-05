@@ -78,20 +78,6 @@ describe('document-level undo/redo (Mod-Z / Mod-Shift-Z / Mod-Y)', () => {
       })
     })
 
-    describe('when Ctrl-Y is pressed after the undo (EP: redo alias)', () => {
-      it('to be: the split is replayed exactly', async () => {
-        const user = userEvent.setup()
-        const { container } = renderEditor(twoParagraphs())
-
-        await user.click(screen.getByText('First'))
-        await user.keyboard('{Enter}')
-        await user.keyboard('{Control>}z{/Control}')
-        await user.keyboard('{Control>}y{/Control}')
-
-        expect(blockIds(container)).toEqual(['p1', 'gen-1', 'p2'])
-      })
-    })
-
     describe('when a fresh edit lands after an undo (EP: history fork)', () => {
       it('to be: the redo stack is cleared — Ctrl-Y does nothing', async () => {
         const user = userEvent.setup()

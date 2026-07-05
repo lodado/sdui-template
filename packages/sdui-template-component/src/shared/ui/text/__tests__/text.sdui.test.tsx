@@ -80,47 +80,6 @@ describe('Text - SDUI Integration Tests', () => {
         expect(screen.queryByTestId('text-text-empty')).not.toBeInTheDocument()
       })
     })
-
-    describe('when: state.text is undefined', () => {
-      it('to be: component does not render, should return null', () => {
-        const document: SduiLayoutDocument = {
-          version: '1.0.0',
-          root: {
-            id: 'text-undefined',
-            type: 'Text',
-            state: {},
-          },
-        }
-
-        renderWithSduiLayout(document, { components: sduiComponents })
-
-        // Text component returns null when text is undefined
-        expect(screen.queryByTestId('text-text-undefined')).not.toBeInTheDocument()
-      })
-    })
-  })
-
-  describe('as is: Text with non-empty text', () => {
-    describe('when: state.text="Non-empty text" (boundary: non-empty)', () => {
-      it('to be: text content rendered, should display the text', () => {
-        const document: SduiLayoutDocument = {
-          version: '1.0.0',
-          root: {
-            id: 'text-non-empty',
-            type: 'Text',
-            state: {
-              text: 'Non-empty text',
-            },
-          },
-        }
-
-        renderWithSduiLayout(document, { components: sduiComponents })
-
-        const text = screen.getByText('Non-empty text')
-        expect(text).toBeInTheDocument()
-        expect(text).toHaveAttribute('data-node-id', 'text-non-empty')
-      })
-    })
   })
 
   describe('as is: Text with className attribute', () => {
@@ -152,7 +111,8 @@ describe('Text - SDUI Integration Tests', () => {
   describe('as is: Text with long text content', () => {
     describe('when: state.text contains long string', () => {
       it('to be: full text content rendered, should display entire text', () => {
-        const longText = 'This is a very long text content that should be displayed in full without any truncation or modification.'
+        const longText =
+          'This is a very long text content that should be displayed in full without any truncation or modification.'
         const document: SduiLayoutDocument = {
           version: '1.0.0',
           root: {

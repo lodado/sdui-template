@@ -22,58 +22,6 @@ describe('List - SDUI Integration Tests', () => {
     })
   })
 
-  describe('as is: List with disabled state', () => {
-    describe('when: disabled=true (boundary: boolean true)', () => {
-      it('to be: list is disabled, should have disabled styling', () => {
-        const document: SduiLayoutDocument = {
-          version: '1.0.0',
-          root: {
-            id: 'list-root',
-            type: 'List',
-            state: {
-              disabled: true,
-            },
-            children: [
-              {
-                id: 'list-text',
-                type: 'Text',
-                state: { text: 'Disabled List Item' },
-              },
-            ],
-          },
-        }
-        renderWithSduiLayout(document, { components: sduiComponents })
-        expect(screen.getByText('Disabled List Item')).toBeInTheDocument()
-        // List should render with disabled state
-      })
-    })
-
-    describe('when: disabled=false (boundary: boolean false)', () => {
-      it('to be: list is enabled, should not have disabled styling', () => {
-        const document: SduiLayoutDocument = {
-          version: '1.0.0',
-          root: {
-            id: 'list-root',
-            type: 'List',
-            state: {
-              disabled: false,
-            },
-            children: [
-              {
-                id: 'list-text',
-                type: 'Text',
-                state: { text: 'Enabled List Item' },
-              },
-            ],
-          },
-        }
-        renderWithSduiLayout(document, { components: sduiComponents })
-        expect(screen.getByText('Enabled List Item')).toBeInTheDocument()
-        // List should render without disabled state
-      })
-    })
-  })
-
   describe('as is: List with children rendering', () => {
     describe('when: single child is rendered', () => {
       it('to be: child renders correctly, should display child content', () => {

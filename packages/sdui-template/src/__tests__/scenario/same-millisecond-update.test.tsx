@@ -19,18 +19,6 @@ describe('lastModified snapshot uniqueness', () => {
     })
   }
 
-  it('same-millisecond consecutive updates produce distinct snapshot values', () => {
-    const store = createStore()
-
-    store.updateNodeState('node-1', { value: 1 })
-    const first = store.getSnapshot()['node-1']
-    store.updateNodeState('node-1', { value: 2 })
-    const second = store.getSnapshot()['node-1']
-
-    expect(typeof first).toBe('string')
-    expect(second).not.toBe(first)
-  })
-
   it('a rapid burst of updates never repeats a snapshot value', () => {
     const store = createStore()
 

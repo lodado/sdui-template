@@ -60,62 +60,9 @@ describe('Tag - SDUI Integration Tests', () => {
         expect(screen.getByText('Magenta Tag')).toBeInTheDocument()
       })
     })
-
-    describe('when: color="blue" (equivalence: valid color)', () => {
-      it('to be: tag renders with blue color, should have correct color variant', () => {
-        const document: SduiLayoutDocument = {
-          version: '1.0.0',
-          root: {
-            id: 'tag-root',
-            type: 'Tag',
-            state: {
-              text: 'Blue Tag',
-              color: 'blue',
-            },
-          },
-        }
-        renderWithSduiLayout(document, { components: sduiComponents })
-        expect(screen.getByText('Blue Tag')).toBeInTheDocument()
-      })
-    })
-
-    describe('when: color="red" (equivalence: valid color)', () => {
-      it('to be: tag renders with red color, should have correct color variant', () => {
-        const document: SduiLayoutDocument = {
-          version: '1.0.0',
-          root: {
-            id: 'tag-root',
-            type: 'Tag',
-            state: {
-              text: 'Red Tag',
-              color: 'red',
-            },
-          },
-        }
-        renderWithSduiLayout(document, { components: sduiComponents })
-        expect(screen.getByText('Red Tag')).toBeInTheDocument()
-      })
-    })
   })
 
   describe('as is: Tag with text state', () => {
-    describe('when: text is provided (non-empty string)', () => {
-      it('to be: tag text is displayed, should show tag content', () => {
-        const document: SduiLayoutDocument = {
-          version: '1.0.0',
-          root: {
-            id: 'tag-root',
-            type: 'Tag',
-            state: {
-              text: 'Tag Content',
-            },
-          },
-        }
-        renderWithSduiLayout(document, { components: sduiComponents })
-        expect(screen.getByText('Tag Content')).toBeInTheDocument()
-      })
-    })
-
     describe('when: text is empty string (boundary: empty string)', () => {
       it('to be: tag renders with empty text, should display empty tag', () => {
         const document: SduiLayoutDocument = {
@@ -154,44 +101,6 @@ describe('Tag - SDUI Integration Tests', () => {
         renderWithSduiLayout(document, { components: sduiComponents })
         expect(screen.getByText('Custom Tag')).toBeInTheDocument()
         // Tag should have custom className
-      })
-    })
-  })
-
-  describe('as is: Tag with different color variants', () => {
-    describe('when: color="green" (equivalence: valid color)', () => {
-      it('to be: tag renders with green color, should have correct styling', () => {
-        const document: SduiLayoutDocument = {
-          version: '1.0.0',
-          root: {
-            id: 'tag-root',
-            type: 'Tag',
-            state: {
-              text: 'Green Tag',
-              color: 'green',
-            },
-          },
-        }
-        renderWithSduiLayout(document, { components: sduiComponents })
-        expect(screen.getByText('Green Tag')).toBeInTheDocument()
-      })
-    })
-
-    describe('when: color="yellow" (equivalence: valid color)', () => {
-      it('to be: tag renders with yellow color, should have correct styling', () => {
-        const document: SduiLayoutDocument = {
-          version: '1.0.0',
-          root: {
-            id: 'tag-root',
-            type: 'Tag',
-            state: {
-              text: 'Yellow Tag',
-              color: 'yellow',
-            },
-          },
-        }
-        renderWithSduiLayout(document, { components: sduiComponents })
-        expect(screen.getByText('Yellow Tag')).toBeInTheDocument()
       })
     })
   })

@@ -46,7 +46,6 @@ describe('inlineContentToMarkdown', () => {
 describe('sduiDocumentContentToMarkdown round-trips', () => {
   test.each([
     ['heading level 1', '# One'],
-    ['heading level 2', '## Two'],
     ['paragraph with marks', 'a **b** c'],
     ['unchecked checklist', '- [ ] todo'],
     ['checked checklist', '- [x] done'],

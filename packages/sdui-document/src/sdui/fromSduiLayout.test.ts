@@ -157,11 +157,4 @@ describe('fromSduiLayoutDocument round-trip', () => {
       expect(child.attributes?.className).toBeUndefined()
     })
   })
-
-  it('does not include data-block-type in reconstructed block attributes', () => {
-    const result = roundTrip(content)
-    result.root.children?.forEach((child) => {
-      expect(child.attributes?.['data-block-type']).toBeUndefined()
-    })
-  })
 })

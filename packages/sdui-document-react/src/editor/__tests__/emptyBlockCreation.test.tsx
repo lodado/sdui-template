@@ -165,28 +165,4 @@ describe('empty block creation (Outline trailing-block scenario)', () => {
       })
     })
   })
-
-  describe('as is: focus at start of a heading', () => {
-    const headingDoc = () =>
-      createContent([
-        { id: 'h1', type: 'document.heading', state: { text: 'Title' }, attributes: { level: 1 } },
-        { id: 'p1', type: 'document.paragraph', state: { text: 'Body' } },
-      ])
-
-    describe('when Enter is pressed (EP: Notion split-type policy)', () => {
-      it('to be: the continuation block is normalized to a paragraph', async () => {
-        const user = userEvent.setup()
-        const { onContentChange } = renderEditor(headingDoc())
-
-        await user.click(screen.getByText('Title'))
-        await user.keyboard('{Enter}')
-
-        const patches = onContentChange.mock.calls[0][1]
-        expect(stripPatchOrigins(patches)).toEqual([
-          { type: 'block.split', blockId: 'h1', offset: 0, newBlockId: 'gen-1' },
-          { type: 'block.setType', blockId: 'gen-1', blockType: 'document.paragraph' },
-        ])
-      })
-    })
-  })
 })

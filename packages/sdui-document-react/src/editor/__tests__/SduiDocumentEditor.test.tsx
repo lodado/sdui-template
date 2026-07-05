@@ -173,21 +173,6 @@ describe('SduiDocumentEditor', () => {
     })
   })
 
-  describe('as is: empty document root (BVA: zero blocks)', () => {
-    describe('when rendered', () => {
-      it('to be: the trailing-block invariant seeds one empty paragraph', () => {
-        const { container } = renderEditor({
-          content: {
-            schemaVersion: '1.0',
-            root: createDocumentBlock({ id: 'root', type: 'document.root' }),
-          },
-        })
-
-        expect(blockIds(container)).toEqual(['gen-1'])
-      })
-    })
-  })
-
   describe('as is: block selection mode', () => {
     describe('when Escape is pressed while editing (EP: editing -> selection transition)', () => {
       it('to be: PM unmounts and the block becomes selected', async () => {

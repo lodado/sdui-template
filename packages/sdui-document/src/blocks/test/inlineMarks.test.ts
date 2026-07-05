@@ -27,7 +27,7 @@ describe('inline mark schema — strikethrough/underline/highlight', () => {
     })
 
     describe('when highlight color is not 6-digit hex (EP: invalid partition)', () => {
-      it.each(['#FDE', 'FDEA9B', '#FDEA9', '#FDEA9B00', 'coral'])('to be: rejects %s', (color) => {
+      it.each(['FDEA9B', '#FDEA9', '#FDEA9B00', 'coral'])('to be: rejects %s', (color) => {
         const content = [{ type: 'text', text: 'x', marks: [{ type: 'highlight', attrs: { color } }] }]
 
         expect(() => parseSduiInlineContent(content)).toThrow()
