@@ -236,6 +236,7 @@ const BlockRow = React.memo(({ block, depth, readOnly, listOrdinal }: BlockNodeP
             listOrdinal={listOrdinal}
             onToggleChecked={readOnly ? undefined : handlers.toggleChecked}
             onToggleCollapsed={readOnly ? undefined : handlers.toggleCollapsed}
+            onSetCodeLanguage={readOnly ? undefined : handlers.setCodeLanguage}
           >
             {isTextBlock(block) &&
               (isFocused && focus ? (

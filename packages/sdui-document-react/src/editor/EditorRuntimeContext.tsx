@@ -14,6 +14,8 @@ export type EditorHandlers = {
   toggleChecked(blockId: string, checked: boolean): void
   /** Toggle block collapse — block.update on attributes.collapsed. */
   toggleCollapsed(blockId: string, collapsed: boolean): void
+  /** Code block language picker — block.update on attributes.language. */
+  setCodeLanguage(blockId: string, language: string): void
   focusBlock(blockId: string, caret: FocusTarget['caret']): void
   commit(blockId: string, commit: FocusedBlockCommit): void
   split(blockId: string, offset: number): void

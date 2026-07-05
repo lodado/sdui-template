@@ -157,6 +157,12 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
         ])
       },
 
+      setCodeLanguage: (blockId, language) => {
+        latest.current.applyPatches([
+          { type: 'block.update', blockId: createBlockId(blockId), attributes: { language } },
+        ])
+      },
+
       focusBlock: refocus,
 
       commit: (blockId, commit) => {

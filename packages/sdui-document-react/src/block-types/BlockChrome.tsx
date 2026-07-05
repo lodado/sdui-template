@@ -4,6 +4,7 @@ import React from 'react'
 import { BulletedListBlock } from './bulleted-list/BulletedListBlock'
 import { CalloutBlock } from './callout/CalloutBlock'
 import { ChecklistBlock } from './checklist/ChecklistBlock'
+import { CodeBlock } from './code/CodeBlock'
 import { DividerBlock } from './divider/DividerBlock'
 import { FileBlock } from './file/FileBlock'
 import { HeadingBlock } from './heading/HeadingBlock'
@@ -24,6 +25,8 @@ export type BlockChromeProps = {
   onToggleChecked?(blockId: string, checked: boolean): void
   /** Toggle collapse — omitted (readOnly) renders a disabled triangle. */
   onToggleCollapsed?(blockId: string, collapsed: boolean): void
+  /** Code language picker — omitted (readOnly) renders a static label. */
+  onSetCodeLanguage?(blockId: string, language: string): void
   /** Inline content: static InlineContentView or the focused ProseMirror editor. */
   children?: React.ReactNode
 }
@@ -48,6 +51,7 @@ export const BlockChrome = ({
   listOrdinal,
   onToggleChecked,
   onToggleCollapsed,
+  onSetCodeLanguage,
   children,
 }: BlockChromeProps) => {
   switch (block.type) {
@@ -83,6 +87,13 @@ export const BlockChrome = ({
         <ToggleBlock block={block} onToggleCollapsed={onToggleCollapsed}>
           {children}
         </ToggleBlock>
+      )
+
+    case 'document.code':
+      return (
+        <CodeBlock block={block} onSetCodeLanguage={onSetCodeLanguage}>
+          {children}
+        </CodeBlock>
       )
 
     case 'document.callout':
