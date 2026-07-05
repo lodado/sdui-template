@@ -3,6 +3,7 @@ import type { SduiDocumentBlock } from '../blocks/schema/block'
 import { bulletedListBlockModule } from './bulleted-list/bulletedList'
 import { calloutBlockModule } from './callout/callout'
 import { checklistBlockModule } from './checklist/checklist'
+import { codeBlockModule } from './code/code'
 import { columnBlockModule } from './column/column'
 import { columnListBlockModule } from './column-list/columnList'
 import { dividerBlockModule } from './divider/divider'
@@ -36,6 +37,7 @@ export const BLOCK_TYPE_MODULES: readonly SduiBlockTypeModule[] = [
   calloutBlockModule,
   quoteBlockModule,
   toggleBlockModule,
+  codeBlockModule,
   imageBlockModule,
   fileBlockModule,
   linkBlockModule,
@@ -69,6 +71,7 @@ export { paragraphBlockModule }
 export { BULLETED_LIST_BLOCK_TYPE } from './bulleted-list/bulletedList.type'
 export { CALLOUT_BLOCK_TYPE } from './callout/callout.type'
 export { CHECKLIST_BLOCK_TYPE } from './checklist/checklist.type'
+export { CODE_BLOCK_TYPE } from './code/code.type'
 export { COLUMN_BLOCK_TYPE } from './column/column.type'
 export { COLUMN_LIST_BLOCK_TYPE } from './column-list/columnList.type'
 export { DIVIDER_BLOCK_TYPE } from './divider/divider.type'
