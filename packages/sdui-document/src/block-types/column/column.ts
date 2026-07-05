@@ -17,7 +17,7 @@ export function isColumnBlock(block: SduiDocumentBlock): boolean {
  * column's width among siblings (grow factor); invalid or absent ratios fall
  * back to an equal split. Never menu-inserted (no createDefault).
  */
-export const columnBlockModule: SduiBlockTypeModule = {
+export const columnBlockModule = {
   type: COLUMN_BLOCK_TYPE,
   toSduiNode(block, { theme, mapChildren }) {
     const ratio = normalizeColumnRatio(block.attributes?.ratio)
@@ -46,4 +46,4 @@ export const columnBlockModule: SduiBlockTypeModule = {
   attributesSchema: columnAttributesSchema,
   toMarkdown: columnToMarkdown,
   canHostInlineText: false,
-}
+} satisfies SduiBlockTypeModule

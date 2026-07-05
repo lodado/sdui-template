@@ -1,6 +1,6 @@
 import type { SduiDocumentBlock } from '../../blocks/schema/block'
 import { blockText, stateText } from '../shared'
-import type { SduiBlockTypeModule } from '../types'
+import type { ContentBlockTypeModule } from '../types'
 import { createDefaultBulletedList } from './bulletedList.default'
 import { bulletedListToMarkdown } from './bulletedList.markdown'
 import { type BulletedListBlockState, bulletedListStateSchema } from './bulletedList.schema'
@@ -18,7 +18,7 @@ export function isBulletedListBlock(block: SduiDocumentBlock): block is Bulleted
   return block.type === BULLETED_LIST_BLOCK_TYPE
 }
 
-export const bulletedListBlockModule: SduiBlockTypeModule = {
+export const bulletedListBlockModule = {
   type: BULLETED_LIST_BLOCK_TYPE,
   toSduiNode(block, { theme, mapChildren }) {
     return {
@@ -35,4 +35,4 @@ export const bulletedListBlockModule: SduiBlockTypeModule = {
   createDefault: createDefaultBulletedList,
   stateSchema: bulletedListStateSchema,
   toMarkdown: bulletedListToMarkdown,
-}
+} satisfies ContentBlockTypeModule

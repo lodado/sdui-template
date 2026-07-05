@@ -1,6 +1,6 @@
 import type { SduiDocumentBlock } from '../../blocks/schema/block'
 import { blockText, stateText, stripKeys, textChild } from '../shared'
-import type { SduiBlockTypeModule } from '../types'
+import type { ContentBlockTypeModule } from '../types'
 import { createDefaultFile } from './file.default'
 import { fileToMarkdown } from './file.markdown'
 import { fileAttributesSchema, type FileBlockAttributes } from './file.schema'
@@ -18,7 +18,7 @@ export function isFileBlock(block: SduiDocumentBlock): block is FileBlock {
   return block.type === FILE_BLOCK_TYPE
 }
 
-export const fileBlockModule: SduiBlockTypeModule = {
+export const fileBlockModule = {
   type: FILE_BLOCK_TYPE,
   toSduiNode(block, { theme }) {
     const t = theme.file
@@ -56,4 +56,4 @@ export const fileBlockModule: SduiBlockTypeModule = {
   attributesSchema: fileAttributesSchema,
   toMarkdown: fileToMarkdown,
   canHostInlineText: false,
-}
+} satisfies ContentBlockTypeModule

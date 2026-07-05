@@ -1,6 +1,6 @@
 import type { SduiDocumentBlock } from '../../blocks/schema/block'
 import { blockText, sanitizeHref, stateText, stripKeys } from '../shared'
-import type { SduiBlockTypeModule } from '../types'
+import type { ContentBlockTypeModule } from '../types'
 import { createDefaultLink } from './link.default'
 import { linkToMarkdown } from './link.markdown'
 import { linkAttributesSchema, type LinkBlockAttributes } from './link.schema'
@@ -18,7 +18,7 @@ export function isLinkBlock(block: SduiDocumentBlock): block is LinkBlock {
   return block.type === LINK_BLOCK_TYPE
 }
 
-export const linkBlockModule: SduiBlockTypeModule = {
+export const linkBlockModule = {
   type: LINK_BLOCK_TYPE,
   toSduiNode(block, { theme }) {
     const safeHref = sanitizeHref(block.attributes?.href)
@@ -60,4 +60,4 @@ export const linkBlockModule: SduiBlockTypeModule = {
       },
     ]
   },
-}
+} satisfies ContentBlockTypeModule

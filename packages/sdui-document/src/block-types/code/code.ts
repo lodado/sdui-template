@@ -1,6 +1,6 @@
 import type { SduiDocumentBlock } from '../../blocks/schema/block'
 import { blockText, stateText } from '../shared'
-import type { SduiBlockTypeModule } from '../types'
+import type { ContentBlockTypeModule } from '../types'
 import { createDefaultCode } from './code.default'
 import { codeToMarkdown } from './code.markdown'
 import { codeAttributesSchema, type CodeBlockAttributes, type CodeBlockState, codeStateSchema } from './code.schema'
@@ -19,7 +19,7 @@ export function isCodeBlock(block: SduiDocumentBlock): block is CodeBlock {
   return block.type === CODE_BLOCK_TYPE
 }
 
-export const codeBlockModule: SduiBlockTypeModule = {
+export const codeBlockModule = {
   type: CODE_BLOCK_TYPE,
   toSduiNode(block, { theme }) {
     return {
@@ -42,4 +42,4 @@ export const codeBlockModule: SduiBlockTypeModule = {
   stateSchema: codeStateSchema,
   attributesSchema: codeAttributesSchema,
   toMarkdown: codeToMarkdown,
-}
+} satisfies ContentBlockTypeModule

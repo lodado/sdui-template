@@ -2,7 +2,7 @@
 import type { SduiDocumentBlock } from '../../blocks/schema/block'
 import type { BlockMapperTheme } from '../../sdui/theme'
 import { blockText, stateText, textChild } from '../shared'
-import type { SduiBlockTypeModule } from '../types'
+import type { ContentBlockTypeModule } from '../types'
 import { createDefaultHeading } from './heading.default'
 import { headingToMarkdown } from './heading.markdown'
 import { type HeadingBlockState, headingStateSchema } from './heading.schema'
@@ -26,7 +26,7 @@ function resolveHeadingClassName(level: unknown, theme: BlockMapperTheme): strin
   return theme.heading.level3
 }
 
-export const headingBlockModule: SduiBlockTypeModule = {
+export const headingBlockModule = {
   type: HEADING_BLOCK_TYPE,
   toSduiNode(block, { theme }) {
     return {
@@ -48,4 +48,4 @@ export const headingBlockModule: SduiBlockTypeModule = {
   createDefault: createDefaultHeading,
   stateSchema: headingStateSchema,
   toMarkdown: headingToMarkdown,
-}
+} satisfies ContentBlockTypeModule

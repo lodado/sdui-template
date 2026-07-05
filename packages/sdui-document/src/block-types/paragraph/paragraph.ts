@@ -1,7 +1,7 @@
 // packages/sdui-document/src/block-types/paragraph/paragraph.ts
 import type { SduiDocumentBlock } from '../../blocks/schema/block'
 import { blockText, stateText, stripKeys } from '../shared'
-import type { SduiBlockTypeModule } from '../types'
+import type { ContentBlockTypeModule } from '../types'
 import { createDefaultParagraph } from './paragraph.default'
 import { paragraphToMarkdown } from './paragraph.markdown'
 import { type ParagraphBlockState, paragraphStateSchema } from './paragraph.schema'
@@ -23,7 +23,7 @@ export function isParagraphBlock(block: SduiDocumentBlock): block is ParagraphBl
  * Also the fallback module for unknown block types in both directions,
  * matching the old switch `default` cases (toSduiLayout/fromSduiLayout).
  */
-export const paragraphBlockModule: SduiBlockTypeModule = {
+export const paragraphBlockModule = {
   type: PARAGRAPH_BLOCK_TYPE,
   toSduiNode(block, { theme }) {
     return {
@@ -51,4 +51,4 @@ export const paragraphBlockModule: SduiBlockTypeModule = {
   createDefault: createDefaultParagraph,
   stateSchema: paragraphStateSchema,
   toMarkdown: paragraphToMarkdown,
-}
+} satisfies ContentBlockTypeModule

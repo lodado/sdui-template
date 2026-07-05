@@ -1,6 +1,6 @@
 import type { SduiDocumentBlock } from '../../blocks/schema/block'
 import { blockText, stateText } from '../shared'
-import type { SduiBlockTypeModule } from '../types'
+import type { ContentBlockTypeModule } from '../types'
 import { createDefaultNumberedList } from './numberedList.default'
 import { numberedListToMarkdown } from './numberedList.markdown'
 import { type NumberedListBlockState, numberedListStateSchema } from './numberedList.schema'
@@ -18,7 +18,7 @@ export function isNumberedListBlock(block: SduiDocumentBlock): block is Numbered
   return block.type === NUMBERED_LIST_BLOCK_TYPE
 }
 
-export const numberedListBlockModule: SduiBlockTypeModule = {
+export const numberedListBlockModule = {
   type: NUMBERED_LIST_BLOCK_TYPE,
   toSduiNode(block, { theme, mapChildren }) {
     return {
@@ -35,4 +35,4 @@ export const numberedListBlockModule: SduiBlockTypeModule = {
   createDefault: createDefaultNumberedList,
   stateSchema: numberedListStateSchema,
   toMarkdown: numberedListToMarkdown,
-}
+} satisfies ContentBlockTypeModule

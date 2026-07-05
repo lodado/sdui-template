@@ -25,6 +25,9 @@ import type { BlockLinkRef, SduiBlockTypeModule } from './types'
  * NOTE: when adding a block type, add its folder + `<name>.type.ts` constant to
  * the SduiDocumentBlockType union in blocks/schema/block.ts (the only central
  * edit — validation and capabilities derive from this registry automatically).
+ * Declare menu-insertable modules with `satisfies ContentBlockTypeModule`
+ * (root/column containers use `satisfies SduiBlockTypeModule`) so missing
+ * members fail to compile.
  */
 export const BLOCK_TYPE_MODULES: readonly SduiBlockTypeModule[] = [
   rootBlockModule,
@@ -89,6 +92,7 @@ export type {
   BlockLinkRef,
   BlockMapperContext,
   BlockToMarkdownContext,
+  ContentBlockTypeModule,
   FromSduiBase,
   SduiBlockTypeModule,
   SduiLayoutLikeDocument,

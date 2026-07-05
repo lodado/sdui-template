@@ -1,6 +1,6 @@
 import type { SduiDocumentBlock } from '../../blocks/schema/block'
 import { blockText, stateText } from '../shared'
-import type { SduiBlockTypeModule } from '../types'
+import type { ContentBlockTypeModule } from '../types'
 import { createDefaultToggle } from './toggle.default'
 import { toggleToMarkdown } from './toggle.markdown'
 import {
@@ -24,7 +24,7 @@ export function isToggleBlock(block: SduiDocumentBlock): block is ToggleBlock {
   return block.type === TOGGLE_BLOCK_TYPE
 }
 
-export const toggleBlockModule: SduiBlockTypeModule = {
+export const toggleBlockModule = {
   type: TOGGLE_BLOCK_TYPE,
   toSduiNode(block, { theme, mapChildren }) {
     const collapsed = block.attributes?.collapsed === true
@@ -50,4 +50,4 @@ export const toggleBlockModule: SduiBlockTypeModule = {
   stateSchema: toggleStateSchema,
   attributesSchema: toggleAttributesSchema,
   toMarkdown: toggleToMarkdown,
-}
+} satisfies ContentBlockTypeModule

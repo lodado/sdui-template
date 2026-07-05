@@ -1,6 +1,6 @@
 import type { SduiDocumentBlock } from '../../blocks/schema/block'
 import { blockText, stateText, textChild } from '../shared'
-import type { SduiBlockTypeModule } from '../types'
+import type { ContentBlockTypeModule } from '../types'
 import { createDefaultCallout } from './callout.default'
 import { calloutToMarkdown } from './callout.markdown'
 import { calloutAttributesSchema, type CalloutBlockAttributes } from './callout.schema'
@@ -18,7 +18,7 @@ export function isCalloutBlock(block: SduiDocumentBlock): block is CalloutBlock 
   return block.type === CALLOUT_BLOCK_TYPE
 }
 
-export const calloutBlockModule: SduiBlockTypeModule = {
+export const calloutBlockModule = {
   type: CALLOUT_BLOCK_TYPE,
   toSduiNode(block, { theme, mapChildren }) {
     const tone = String(block.attributes?.tone ?? theme.callout.defaultTone)
@@ -53,4 +53,4 @@ export const calloutBlockModule: SduiBlockTypeModule = {
   createDefault: createDefaultCallout,
   attributesSchema: calloutAttributesSchema,
   toMarkdown: calloutToMarkdown,
-}
+} satisfies ContentBlockTypeModule

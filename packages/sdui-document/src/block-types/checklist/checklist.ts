@@ -1,7 +1,7 @@
 // packages/sdui-document/src/block-types/checklist/checklist.ts
 import type { SduiDocumentBlock } from '../../blocks/schema/block'
 import { blockText, stateText, textChild } from '../shared'
-import type { SduiBlockTypeModule } from '../types'
+import type { ContentBlockTypeModule } from '../types'
 import { createDefaultChecklist } from './checklist.default'
 import { checklistToMarkdown } from './checklist.markdown'
 import { type ChecklistBlockState, checklistStateSchema } from './checklist.schema'
@@ -19,7 +19,7 @@ export function isChecklistBlock(block: SduiDocumentBlock): block is ChecklistBl
   return block.type === CHECKLIST_BLOCK_TYPE
 }
 
-export const checklistBlockModule: SduiBlockTypeModule = {
+export const checklistBlockModule = {
   type: CHECKLIST_BLOCK_TYPE,
   toSduiNode(block, { theme }) {
     const checked = block.state?.checked === true
@@ -47,4 +47,4 @@ export const checklistBlockModule: SduiBlockTypeModule = {
   createDefault: createDefaultChecklist,
   stateSchema: checklistStateSchema,
   toMarkdown: checklistToMarkdown,
-}
+} satisfies ContentBlockTypeModule

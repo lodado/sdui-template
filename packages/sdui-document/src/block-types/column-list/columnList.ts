@@ -15,7 +15,7 @@ export function isColumnListBlock(block: SduiDocumentBlock): boolean {
  * row. Never menu-inserted (no createDefault): columnLists exist only through
  * the horizontal drag-drop wrap operation, mirroring Notion.
  */
-export const columnListBlockModule: SduiBlockTypeModule = {
+export const columnListBlockModule = {
   type: COLUMN_LIST_BLOCK_TYPE,
   toSduiNode(block, { theme, mapChildren }) {
     return {
@@ -33,4 +33,4 @@ export const columnListBlockModule: SduiBlockTypeModule = {
   },
   toMarkdown: columnListToMarkdown,
   canHostInlineText: false,
-}
+} satisfies SduiBlockTypeModule

@@ -1,6 +1,6 @@
 import type { SduiDocumentBlock } from '../../blocks/schema/block'
 import { blockText, stateText } from '../shared'
-import type { SduiBlockTypeModule } from '../types'
+import type { ContentBlockTypeModule } from '../types'
 import { createDefaultQuote } from './quote.default'
 import { quoteToMarkdown } from './quote.markdown'
 import { type QuoteBlockState, quoteStateSchema } from './quote.schema'
@@ -18,7 +18,7 @@ export function isQuoteBlock(block: SduiDocumentBlock): block is QuoteBlock {
   return block.type === QUOTE_BLOCK_TYPE
 }
 
-export const quoteBlockModule: SduiBlockTypeModule = {
+export const quoteBlockModule = {
   type: QUOTE_BLOCK_TYPE,
   toSduiNode(block, { theme, mapChildren }) {
     return {
@@ -35,4 +35,4 @@ export const quoteBlockModule: SduiBlockTypeModule = {
   createDefault: createDefaultQuote,
   stateSchema: quoteStateSchema,
   toMarkdown: quoteToMarkdown,
-}
+} satisfies ContentBlockTypeModule

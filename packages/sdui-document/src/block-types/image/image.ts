@@ -1,6 +1,6 @@
 import type { SduiDocumentBlock } from '../../blocks/schema/block'
 import { blockText, stateText, stripKeys, textChild } from '../shared'
-import type { SduiBlockTypeModule } from '../types'
+import type { ContentBlockTypeModule } from '../types'
 import { createDefaultImage } from './image.default'
 import { imageToMarkdown } from './image.markdown'
 import { imageAttributesSchema, type ImageBlockAttributes } from './image.schema'
@@ -18,7 +18,7 @@ export function isImageBlock(block: SduiDocumentBlock): block is ImageBlock {
   return block.type === IMAGE_BLOCK_TYPE
 }
 
-export const imageBlockModule: SduiBlockTypeModule = {
+export const imageBlockModule = {
   type: IMAGE_BLOCK_TYPE,
   toSduiNode(block, { theme }) {
     const alt = blockText(block) || String(block.attributes?.alt ?? 'Image')
@@ -52,4 +52,4 @@ export const imageBlockModule: SduiBlockTypeModule = {
   attributesSchema: imageAttributesSchema,
   toMarkdown: imageToMarkdown,
   canHostInlineText: false,
-}
+} satisfies ContentBlockTypeModule

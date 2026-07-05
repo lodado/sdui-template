@@ -5,7 +5,7 @@ import { ROOT_BLOCK_TYPE } from './root.type'
 
 export { ROOT_BLOCK_TYPE } from './root.type'
 
-export const rootBlockModule: SduiBlockTypeModule = {
+export const rootBlockModule = {
   type: ROOT_BLOCK_TYPE,
   toSduiNode(block, { theme, mapChildren }) {
     const { background, textColor, maxWidth } = theme.root
@@ -25,4 +25,4 @@ export const rootBlockModule: SduiBlockTypeModule = {
   },
   toMarkdown: rootToMarkdown,
   canHostInlineText: false,
-}
+} satisfies SduiBlockTypeModule

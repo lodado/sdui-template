@@ -1,5 +1,5 @@
 import type { SduiDocumentBlock } from '../../blocks/schema/block'
-import type { SduiBlockTypeModule } from '../types'
+import type { ContentBlockTypeModule } from '../types'
 import { createDefaultDivider } from './divider.default'
 import { dividerToMarkdown } from './divider.markdown'
 import { DIVIDER_BLOCK_TYPE } from './divider.type'
@@ -11,7 +11,7 @@ export function isDividerBlock(block: SduiDocumentBlock): block is DividerBlock 
   return block.type === DIVIDER_BLOCK_TYPE
 }
 
-export const dividerBlockModule: SduiBlockTypeModule = {
+export const dividerBlockModule = {
   type: DIVIDER_BLOCK_TYPE,
   toSduiNode(block, { theme }) {
     return {
@@ -26,4 +26,4 @@ export const dividerBlockModule: SduiBlockTypeModule = {
   createDefault: createDefaultDivider,
   toMarkdown: dividerToMarkdown,
   canHostInlineText: false,
-}
+} satisfies ContentBlockTypeModule

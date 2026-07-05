@@ -117,3 +117,14 @@ export type SduiBlockTypeModule = {
    */
   toPlainText?(block: SduiDocumentBlock): string
 }
+
+/**
+ * Strict contract for menu-insertable content blocks (everything except root
+ * and the drag-only column containers): `createDefault` and `toMarkdown` are
+ * mandatory. Declare modules with `satisfies ContentBlockTypeModule` so a
+ * forgotten member is a compile error while the exported const keeps its
+ * precise inferred type. Schemas stay optional — some blocks (e.g. divider)
+ * genuinely have no state/attributes.
+ */
+export type ContentBlockTypeModule = SduiBlockTypeModule &
+  Required<Pick<SduiBlockTypeModule, 'createDefault' | 'toMarkdown'>>
