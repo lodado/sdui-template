@@ -20,9 +20,9 @@ import type {
   SduiDocumentPatch,
   SduiInlineContent,
 } from '../schema'
+import { createDocumentBlock } from '../schema'
 import type { BlockOrigin } from '../schema/block'
 import type { BlockPlacementAnchor } from '../schema/patch'
-import { createDocumentBlock } from '../schema'
 import {
   BlockNotFoundError,
   DuplicateBlockIdError,
@@ -655,4 +655,24 @@ export function applyPatchToDocumentWithInverse(
   const result = applyDocumentPatchWithInverse(document.content, patch)
 
   return { document: { ...document, content: result.content }, inverse: result.inverse }
+}
+
+/**
+ * Applies a batch to the document (title + content) and returns the combined
+ * inverse: each patch's inverse accumulated in reverse order, so applying
+ * `inverse` in array order rolls the whole batch back — including
+ * `document.setTitle`, which the content-level pipeline cannot invert.
+ */
+export function applyPatchesToDocumentWithInverse(
+  document: SduiDocument,
+  patches: SduiDocumentPatch[],
+): ApplyPatchToDocumentResult {
+  return patches.reduce<ApplyPatchToDocumentResult>(
+    (acc, patch) => {
+      const result = applyPatchToDocumentWithInverse(acc.document, patch)
+
+      return { document: result.document, inverse: [...result.inverse, ...acc.inverse] }
+    },
+    { document, inverse: [] },
+  )
 }

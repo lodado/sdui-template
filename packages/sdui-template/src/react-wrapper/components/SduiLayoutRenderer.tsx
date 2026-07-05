@@ -51,6 +51,8 @@ interface SduiLayoutRendererProps {
   onLayoutChange?: (document: SduiLayoutDocument) => void
   /** Error callback */
   onError?: (error: Error) => void
+  /** Rendered inside SduiLayoutProvider — useful for debug panels such as SduiLayoutStateInspector. */
+  children?: React.ReactNode
 }
 
 /**
@@ -64,6 +66,7 @@ export const SduiLayoutRenderer: React.FC<SduiLayoutRendererProps> = ({
   componentOverrides,
   onLayoutChange,
   onError,
+  children,
 }) => {
   const storeRef = useRef<SduiLayoutStore | null>(null)
   // Create store instance and update the document
@@ -86,11 +89,10 @@ export const SduiLayoutRenderer: React.FC<SduiLayoutRendererProps> = ({
           ...componentOverrides?.byNodeId,
         },
       }
-      if(!storeRef.current) {
+      if (!storeRef.current) {
         storeRef.current = new SduiLayoutStore(undefined, options)
         storeRef.current.updateLayout(document)
-      }
-      else {
+      } else {
         storeRef.current.mergeLayout(document)
       }
 
@@ -100,7 +102,7 @@ export const SduiLayoutRenderer: React.FC<SduiLayoutRendererProps> = ({
         onError(error instanceof Error ? error : new Error(String(error)))
       }
       // Return empty store on error
-      if(storeRef.current === null) {
+      if (storeRef.current === null) {
         storeRef.current = new SduiLayoutStore()
       }
       return storeRef.current
@@ -123,7 +125,21 @@ export const SduiLayoutRenderer: React.FC<SduiLayoutRendererProps> = ({
 
   return (
     <SduiLayoutProvider store={store}>
-      <SduiLayoutRendererInner id={rootId} componentMap={mergedComponentMap} />
+      {children ? (
+        <div
+          style={{
+            display: 'grid',
+            gap: 16,
+            gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
+            alignItems: 'start',
+          }}
+        >
+          <SduiLayoutRendererInner id={rootId} componentMap={mergedComponentMap} />
+          {children}
+        </div>
+      ) : (
+        <SduiLayoutRendererInner id={rootId} componentMap={mergedComponentMap} />
+      )}
     </SduiLayoutProvider>
   )
 }

@@ -2,4 +2,7 @@ import { defineAttrlessMark } from '../types'
 
 export type StrikethroughMark = { type: 'strikethrough' }
 
-export const strikethroughMark = defineAttrlessMark('strikethrough')
+export const strikethroughMark = defineAttrlessMark('strikethrough', {
+  token: 'del',
+  toMarkdown: (inner) => `~~${inner}~~`,
+})

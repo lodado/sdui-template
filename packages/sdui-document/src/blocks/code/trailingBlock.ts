@@ -1,5 +1,5 @@
+import { canHostInlineText, PARAGRAPH_BLOCK_TYPE } from '../../block-types'
 import { getInlineContentLength } from '../../content/inlineContent'
-import { canHostInlineText } from '../drag/inlineDragHelpers'
 import type { SduiDocumentBlock, SduiDocumentContent, SduiDocumentPatch } from '../schema'
 import { createBlockId, createDocumentBlock } from '../schema'
 import { applyDocumentPatch, getBlockInline } from './blockPatch'
@@ -14,7 +14,7 @@ import { applyDocumentPatch, getBlockInline } from './blockPatch'
 
 /** The empty paragraph the invariant appends (Outline's `type.create()`). */
 export function createEmptyParagraphBlock(id: string): SduiDocumentBlock {
-  return createDocumentBlock({ id, type: 'document.paragraph' })
+  return createDocumentBlock({ id, type: PARAGRAPH_BLOCK_TYPE })
 }
 
 /**

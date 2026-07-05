@@ -1,22 +1,29 @@
 import type { SduiDocumentBlock } from '../../blocks/schema/block'
 import type { SduiBlockTypeModule } from '../types'
+import { createDefaultDivider } from './divider.default'
+import { dividerToMarkdown } from './divider.markdown'
+import { DIVIDER_BLOCK_TYPE } from './divider.type'
 
-export type DividerBlock = SduiDocumentBlock & { type: 'document.divider' }
+export { DIVIDER_BLOCK_TYPE } from './divider.type'
+export type DividerBlock = SduiDocumentBlock & { type: typeof DIVIDER_BLOCK_TYPE }
 
 export function isDividerBlock(block: SduiDocumentBlock): block is DividerBlock {
-  return block.type === 'document.divider'
+  return block.type === DIVIDER_BLOCK_TYPE
 }
 
 export const dividerBlockModule: SduiBlockTypeModule = {
-  type: 'document.divider',
+  type: DIVIDER_BLOCK_TYPE,
   toSduiNode(block, { theme }) {
     return {
       id: block.id,
       type: 'Div',
-      attributes: { 'data-block-type': 'document.divider', className: theme.divider },
+      attributes: { 'data-block-type': DIVIDER_BLOCK_TYPE, className: theme.divider },
     }
   },
   fromSduiNode(_node, { id }) {
-    return { id, type: 'document.divider' }
+    return { id, type: DIVIDER_BLOCK_TYPE }
   },
+  createDefault: createDefaultDivider,
+  toMarkdown: dividerToMarkdown,
+  canHostInlineText: false,
 }

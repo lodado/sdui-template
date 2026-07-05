@@ -1,21 +1,13 @@
+import { canHostInlineText } from '../../block-types'
 import { getInlineContentLength } from '../../content/inlineContent'
 import { insertInlineContent, removeInlineRange, sliceInlineContent } from '../../content/inlineRange'
 import { findBlockById, getBlockInline, toInlineStatePatch } from '../code/blockPatch'
 import type { SduiDocumentBlock, SduiDocumentContent, SduiDocumentPatch } from '../schema'
 import { createBlockId } from '../schema'
 
-/** Block types that carry no inline text and can never receive a text drop. */
-const NON_INLINE_BLOCK_TYPES = new Set([
-  'document.root',
-  'document.divider',
-  'document.image',
-  'document.file',
-  'document.link',
-])
-
-export function canHostInlineText(block: SduiDocumentBlock): boolean {
-  return !NON_INLINE_BLOCK_TYPES.has(block.type)
-}
+// `canHostInlineText` is a per-block capability owned by each block folder — re-exported
+// here to keep the public drag API stable.
+export { canHostInlineText } from '../../block-types'
 
 export type InlineDragSource = {
   blockId: string

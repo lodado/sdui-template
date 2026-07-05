@@ -1,41 +1,53 @@
 import type { SduiDocumentPatch } from '../schema'
 
 /**
- * Two-stack document-level undo/redo over the patch engine.
+ * Generic two-stack undo/redo.
  *
- * Each entry pairs both directions of one applied batch:
- * - `undo`: the inverse patches (from applyDocumentPatchesWithInverse),
- *   applied in array order to roll the batch back
- * - `redo`: the original batch, applied in array order to replay it
+ * Each entry pairs both directions of one applied operation:
+ * - `undo`: the payload that rolls the operation back
+ * - `redo`: the payload that replays it
  *
  * Policies:
  * - recording a new entry clears the redo stack (a fresh edit forks history)
- * - applying history entries must bypass invariants that generate extra
- *   patches (e.g. the trailing-block invariant) — an entry's undo/redo pair
- *   only round-trips against the exact states it was recorded between
+ * - an entry's undo/redo pair only round-trips against the exact states it
+ *   was recorded between — appliers must not inject extra changes (e.g. the
+ *   trailing-block invariant) when replaying history entries
  * - pure data + pure functions; the caller owns where the history lives
  */
-export type DocumentHistoryEntry = {
-  undo: SduiDocumentPatch[]
-  redo: SduiDocumentPatch[]
+export type HistoryEntry<T> = {
+  undo: T
+  redo: T
 }
 
-export type DocumentHistory = {
-  readonly undoStack: readonly DocumentHistoryEntry[]
-  readonly redoStack: readonly DocumentHistoryEntry[]
+export type History<T> = {
+  readonly undoStack: readonly HistoryEntry<T>[]
+  readonly redoStack: readonly HistoryEntry<T>[]
 }
+
+/**
+ * Document-level history over the patch engine: `undo` holds the inverse
+ * patches from applyDocumentPatchesWithInverse, `redo` the original batch,
+ * both applied in array order.
+ */
+export type DocumentHistoryEntry = HistoryEntry<SduiDocumentPatch[]>
+
+export type DocumentHistory = History<SduiDocumentPatch[]>
 
 export const DEFAULT_HISTORY_DEPTH = 100
 
-export function createDocumentHistory(): DocumentHistory {
+export function createHistory<T>(): History<T> {
   return { undoStack: [], redoStack: [] }
 }
 
-export function recordHistoryEntry(
-  history: DocumentHistory,
-  entry: DocumentHistoryEntry,
+export function createDocumentHistory(): DocumentHistory {
+  return createHistory<SduiDocumentPatch[]>()
+}
+
+export function recordHistoryEntry<T>(
+  history: History<T>,
+  entry: HistoryEntry<T>,
   depth: number = DEFAULT_HISTORY_DEPTH,
-): DocumentHistory {
+): History<T> {
   const undoStack = [...history.undoStack, entry]
 
   return {
@@ -44,12 +56,12 @@ export function recordHistoryEntry(
   }
 }
 
-export type HistoryStepResult = {
-  history: DocumentHistory
-  entry: DocumentHistoryEntry
+export type HistoryStepResult<T = SduiDocumentPatch[]> = {
+  history: History<T>
+  entry: HistoryEntry<T>
 }
 
-export function undoHistory(history: DocumentHistory): HistoryStepResult | null {
+export function undoHistory<T>(history: History<T>): HistoryStepResult<T> | null {
   const entry = history.undoStack[history.undoStack.length - 1]
   if (!entry) {
     return null
@@ -64,7 +76,7 @@ export function undoHistory(history: DocumentHistory): HistoryStepResult | null 
   }
 }
 
-export function redoHistory(history: DocumentHistory): HistoryStepResult | null {
+export function redoHistory<T>(history: History<T>): HistoryStepResult<T> | null {
   const entry = history.redoStack[history.redoStack.length - 1]
   if (!entry) {
     return null

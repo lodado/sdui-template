@@ -6,6 +6,18 @@ export function blockText(block: SduiDocumentBlock): string {
   return typeof block.state?.text === 'string' ? block.state.text : ''
 }
 
+/** Empty inline state for freshly-inserted text-bearing blocks. */
+export function emptyTextState(): { content: never[]; text: string } {
+  return { content: [], text: '' }
+}
+
+/** `{ attributes }` wrapper only when attrs are present — keeps output keys minimal. */
+export function optionalAttributes(
+  attributes?: Record<string, unknown>,
+): { attributes: Record<string, unknown> } | Record<string, never> {
+  return attributes ? { attributes } : {}
+}
+
 const ALLOWED_HREF_SCHEMES = new Set(['http:', 'https:', 'mailto:', 'tel:'])
 
 export function sanitizeHref(href: unknown): string | undefined {

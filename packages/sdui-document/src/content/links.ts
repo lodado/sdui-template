@@ -1,29 +1,26 @@
-import type { SduiDocumentContent } from '../blocks/schema';
-import { walkDocumentBlocks } from './walkBlocks';
+import { extractBlockLinks } from '../block-types'
+import type { SduiDocumentContent } from '../blocks/schema'
+import { walkDocumentBlocks } from './walkBlocks'
 
 export type SduiDocumentLink = {
-  blockId: string;
-  targetDocumentId?: string;
-  href?: string;
-};
+  blockId: string
+  targetDocumentId?: string
+  href?: string
+}
 
+/**
+ * Collects every link in the document. Which blocks carry links (and what they
+ * expose) is a per-block capability (`module.extractLinks`) owned by each block
+ * folder; this walker just attaches the source blockId.
+ */
 export function extractDocumentLinks(content: SduiDocumentContent): SduiDocumentLink[] {
-  const links: SduiDocumentLink[] = [];
+  const links: SduiDocumentLink[] = []
 
   walkDocumentBlocks(content, (block) => {
-    if (block.type !== 'document.link') {
-      return;
-    }
+    extractBlockLinks(block).forEach((link) => {
+      links.push({ blockId: block.id, ...link })
+    })
+  })
 
-    const targetDocumentId = block.attributes?.targetDocumentId;
-    const href = block.attributes?.href;
-
-    links.push({
-      blockId: block.id,
-      targetDocumentId: typeof targetDocumentId === 'string' ? targetDocumentId : undefined,
-      href: typeof href === 'string' ? href : undefined,
-    });
-  });
-
-  return links;
+  return links
 }
