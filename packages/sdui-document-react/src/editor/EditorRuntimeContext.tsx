@@ -20,6 +20,8 @@ export type EditorHandlers = {
   toggleCollapsed(blockId: string, collapsed: boolean): void
   /** Code block language picker — block.update on attributes.language. */
   setCodeLanguage(blockId: string, language: string): void
+  /** Callout emoji icon — block.update on attributes.icon. */
+  setCalloutIcon(blockId: string, icon: string): void
   /** Horizontal alignment for a text block — block.update on attributes.align (null clears). */
   setBlockAlign(blockId: string, align: BlockAlign | null): void
   /** Image size/position — block.update merging attributes.width / attributes.align. */

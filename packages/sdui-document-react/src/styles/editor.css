@@ -22,11 +22,14 @@
   --sdui-doc-divider: #dae1e9;
   --sdui-doc-hr: #e8ebed;
 
-  /* code (Outline code/codeBackground/codeBorder/codeKeyword) */
+  /* code — Notion inline code (warm-gray tint, red text, no border)
+     + code block surface (rgb(247,246,243)) */
   --sdui-doc-code: #2f3336;
-  --sdui-doc-code-background: #f4f7fa;
-  --sdui-doc-code-border: #e8ebed;
-  --sdui-doc-code-keyword: #00009f;
+  --sdui-doc-code-background: rgba(135, 131, 120, 0.15);
+  --sdui-doc-code-border: transparent;
+  --sdui-doc-code-keyword: #eb5757;
+  --sdui-doc-code-block-background: #f7f6f3;
+  --sdui-doc-code-block-text: rgba(55, 53, 47, 0.5);
 
   /* notice variants (Outline notice*Background/notice*Text) */
   --sdui-doc-notice-info: #3633ff;
@@ -73,9 +76,11 @@
   --sdui-doc-hr: #2b2f38;
 
   --sdui-doc-code: #e6e6e6;
-  --sdui-doc-code-background: #1d202a;
-  --sdui-doc-code-border: rgba(255, 255, 255, 0.1);
-  --sdui-doc-code-keyword: #569cd6;
+  --sdui-doc-code-background: rgba(135, 131, 120, 0.15);
+  --sdui-doc-code-border: transparent;
+  --sdui-doc-code-keyword: #eb5757;
+  --sdui-doc-code-block-background: #252525;
+  --sdui-doc-code-block-text: rgba(255, 255, 255, 0.44);
 
   --sdui-doc-notice-text: #ffffff;
 
@@ -684,9 +689,9 @@
   border-radius: 4px;
   border: 1px solid var(--sdui-doc-code-border);
   background: var(--sdui-doc-code-background);
-  padding: 3px 4px;
+  padding: 0.2em 0.4em;
   font-family: var(--sdui-doc-font-mono);
-  font-size: 90%;
+  font-size: 85%;
   color: var(--sdui-doc-code-keyword);
 }
 
@@ -1318,7 +1323,7 @@ blockquote.quote-block {
   left: 8px;
   z-index: 1;
   font-size: 12px;
-  color: rgba(55, 53, 47, 0.5);
+  color: var(--sdui-doc-code-block-text);
   opacity: 0;
   transition: opacity 150ms ease-in;
 }
@@ -1336,7 +1341,8 @@ blockquote.quote-block {
 .code-block-wrapper > pre.code-block {
   margin: 0;
   padding: 34px 16px 32px 32px;
-  background: #f7f6f3;
+  background: var(--sdui-doc-code-block-background);
+  color: var(--sdui-doc-text);
   border-radius: 4px;
   overflow-x: auto;
   tab-size: 2;
@@ -1347,4 +1353,103 @@ blockquote.quote-block {
   line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+/* --- Cheap-wins bucket: counts, emoji picker, callout icon, TOC, inline date --- */
+.document-counts {
+  font-size: 12px;
+  color: var(--sdui-text-muted, #6b7280);
+  padding: 4px 8px;
+}
+
+.callout-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 6px;
+}
+.callout-icon-button:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+.callout-emoji {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.callout-icon-popover {
+  position: absolute;
+  z-index: 30;
+  margin-top: 4px;
+}
+
+.emoji-picker {
+  width: 240px;
+  padding: 8px;
+  background: var(--sdui-surface, #fff);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+}
+.emoji-picker__search {
+  width: 100%;
+  padding: 6px 8px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 6px;
+  font-size: 13px;
+}
+.emoji-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 2px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+.emoji-picker__grid button {
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+.emoji-picker__grid button:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.toc-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 0;
+}
+.toc-block__item {
+  color: var(--sdui-text, #37352f);
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 2px 4px;
+  transition: background var(--duration-fast, 150ms) ease, color var(--duration-fast, 150ms) ease;
+}
+.toc-block__item:hover {
+  background: rgba(0, 0, 0, 0.05);
+  text-decoration: underline;
+}
+.toc-block--empty {
+  color: var(--sdui-text-muted, #9b9a97);
+  font-style: italic;
+  padding: 4px;
+}
+
+.inline-date {
+  background: rgba(35, 131, 226, 0.1);
+  color: #1a73c7;
+  border-radius: 4px;
+  padding: 0 4px;
+  font-size: 0.95em;
+  white-space: nowrap;
 }

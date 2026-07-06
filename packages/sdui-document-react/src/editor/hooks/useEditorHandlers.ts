@@ -178,6 +178,10 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
         ])
       },
 
+      setCalloutIcon: (blockId, icon) => {
+        latest.current.applyPatches([{ type: 'block.update', blockId: createBlockId(blockId), attributes: { icon } }])
+      },
+
       setBlockAlign: (blockId, align) => {
         latest.current.applyPatches([
           { type: 'block.update', blockId: createBlockId(blockId), attributes: { align: align ?? undefined } },

@@ -1,5 +1,7 @@
-import React from 'react'
+import React, { useContext, useState } from 'react'
 
+import { EditorRuntimeContext } from '../../editor/EditorRuntimeContext'
+import { EmojiPicker } from '../../emoji/EmojiPicker'
 import type { BlockChromeProps } from '../BlockChrome'
 
 const CALLOUT_TONES = new Set(['info', 'warning', 'tip', 'success'])
@@ -25,11 +27,47 @@ const CalloutIcon = ({ tone }: { tone: string }) => (
 export const CalloutBlock = ({ block, children }: BlockChromeProps) => {
   // Schema + mapper store the variant under `tone`; older docs may use `style`.
   const tone = calloutTone(block.attributes?.tone ?? block.attributes?.style)
+  const icon = typeof block.attributes?.icon === 'string' ? block.attributes.icon : null
+
+  // Nullable: the callout renders read-only (no picker) when there is no editor
+  // runtime — e.g. static SSR/preview. ponytail: no explicit readOnly gate; the
+  // absence of a runtime is the gate.
+  const runtime = useContext(EditorRuntimeContext)
+  const [pickerOpen, setPickerOpen] = useState(false)
+
+  const iconGlyph = icon ? (
+    <span className="callout-emoji" aria-hidden>
+      {icon}
+    </span>
+  ) : (
+    <CalloutIcon tone={tone} />
+  )
 
   return (
     <div className={`notice-block ${tone}`}>
       <div className="icon">
-        <CalloutIcon tone={tone} />
+        {runtime ? (
+          <button
+            type="button"
+            className="callout-icon-button"
+            aria-label="Change callout icon"
+            onClick={() => setPickerOpen((open) => !open)}
+          >
+            {iconGlyph}
+          </button>
+        ) : (
+          iconGlyph
+        )}
+        {runtime && pickerOpen ? (
+          <div className="callout-icon-popover">
+            <EmojiPicker
+              onSelect={(char) => {
+                runtime.handlers.setCalloutIcon(block.id, char)
+                setPickerOpen(false)
+              }}
+            />
+          </div>
+        ) : null}
       </div>
       <div className="content">{children}</div>
     </div>
