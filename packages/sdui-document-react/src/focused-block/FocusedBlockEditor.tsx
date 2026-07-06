@@ -462,6 +462,33 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
     window.addEventListener('scroll', refreshSnapshot, true)
     window.addEventListener('resize', refreshSnapshot)
 
+    // Same detachment problem as the toolbar: the slash-menu anchor is a
+    // one-shot coordsAtPos snapshot, so any scroll after open (including PM's
+    // own scrollIntoView on dispatch) strands the menu at stale viewport
+    // coords. Re-measure while the menu is open.
+    const refreshMenuAnchor = () => {
+      const {current} = menuRef
+      if (!current || !viewRef.current) {
+        return
+      }
+
+      const range = getSlashRange(viewRef.current.state)
+      if (!range) {
+        return
+      }
+
+      try {
+        const coords = viewRef.current.coordsAtPos(range.from)
+        if (coords.left !== current.anchor.left || coords.top !== current.anchor.top) {
+          updateMenu({ ...current, anchor: { left: coords.left, top: coords.top, bottom: coords.bottom } })
+        }
+      } catch {
+        // coordsAtPos may throw in jsdom / SSR — keep the last anchor.
+      }
+    }
+    window.addEventListener('scroll', refreshMenuAnchor, true)
+    window.addEventListener('resize', refreshMenuAnchor)
+
     view.focus()
 
     // Keep a freshly focused block (e.g. one just inserted below the fold) in
@@ -481,6 +508,8 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
       document.removeEventListener('selectionchange', handleSelectionChange)
       window.removeEventListener('scroll', refreshSnapshot, true)
       window.removeEventListener('resize', refreshSnapshot)
+      window.removeEventListener('scroll', refreshMenuAnchor, true)
+      window.removeEventListener('resize', refreshMenuAnchor)
       delete (container as HTMLElement & { pmView?: EditorView }).pmView
       const finalCommit = retired.current ? undefined : editorStateToInline(view.state)
       viewRef.current = undefined

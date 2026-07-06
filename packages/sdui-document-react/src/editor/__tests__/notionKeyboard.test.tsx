@@ -131,6 +131,27 @@ describe('notion keyboard semantics', () => {
     })
   })
 
+  describe('as is: three paragraphs, first block-selected', () => {
+    it('to be: Shift+ArrowDown extends the selection and Cmd+D duplicates every selected block', async () => {
+      const user = userEvent.setup()
+      const { allPatches } = renderEditor([
+        createDocumentBlock({ id: 'p1', type: 'document.paragraph', state: { text: 'one' } }),
+        createDocumentBlock({ id: 'p2', type: 'document.paragraph', state: { text: 'two' } }),
+        createDocumentBlock({ id: 'p3', type: 'document.paragraph', state: { text: 'three' } }),
+      ])
+
+      // Enter block-selection mode on p1, extend to p2, duplicate both.
+      await user.click(screen.getByText('one'))
+      await user.keyboard('{Escape}{Shift>}{ArrowDown}{/Shift}')
+      await user.keyboard('{Meta>}d{/Meta}')
+
+      // One clone per selected block (p1 + p2). Without the Shift+ArrowDown
+      // extend, only p1 would be selected and this would be a single insert.
+      const inserts = allPatches().filter((patch) => (patch as { type: string }).type === 'block.insert')
+      expect(inserts).toHaveLength(2)
+    })
+  })
+
   describe('as is: toggle "hi" (collapsed)', () => {
     it('to be: Enter expands the toggle and inserts a first child', async () => {
       const user = userEvent.setup()
