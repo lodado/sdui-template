@@ -65,12 +65,12 @@ describe('toggle block', () => {
   test('empty expanded toggle shows the placeholder', () => {
     render(<SduiDocumentEditor content={createContent(false, false)} />)
 
-    expect(screen.getByText('Empty toggle. Click or drop blocks inside.')).toBeInTheDocument()
+    expect(screen.getByText('Empty toggle. Press Enter, click, or drop blocks inside.')).toBeInTheDocument()
   })
 
   test('empty collapsed toggle shows no placeholder', () => {
     render(<SduiDocumentEditor content={createContent(true, false)} />)
 
-    expect(screen.queryByText('Empty toggle. Click or drop blocks inside.')).not.toBeInTheDocument()
+    expect(screen.queryByText('Empty toggle. Press Enter, click, or drop blocks inside.')).not.toBeInTheDocument()
   })
 })
