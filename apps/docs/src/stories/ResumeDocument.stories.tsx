@@ -236,7 +236,7 @@ const badgeStyle: CSSProperties = {
  * editor's imperative apiRef. Not part of the library — a demo of how a host app
  * wires document controls. Reset remounts the editor (uncontrolled) via `key`.
  */
-function EditableResume() {
+const EditableResume = () => {
   const apiRef = useRef<SduiDocumentEditorApi>(null)
   const [instanceKey, setInstanceKey] = useState(0)
 

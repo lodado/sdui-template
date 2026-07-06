@@ -285,7 +285,16 @@ export function useRangeOperations(input: UseRangeOperationsInput): UseRangeOper
   useEffect(() => {
     const onSelectionChange = () => refreshRef.current()
     document.addEventListener('selectionchange', onSelectionChange)
-    return () => document.removeEventListener('selectionchange', onSelectionChange)
+    // Scroll/resize don't fire selectionchange, so the toolbar's fixed anchor
+    // (measured from the live selection rect) goes stale and detaches from the
+    // text. Re-measure so it tracks. Capture phase catches nested scrollers.
+    window.addEventListener('scroll', onSelectionChange, true)
+    window.addEventListener('resize', onSelectionChange)
+    return () => {
+      document.removeEventListener('selectionchange', onSelectionChange)
+      window.removeEventListener('scroll', onSelectionChange, true)
+      window.removeEventListener('resize', onSelectionChange)
+    }
   }, [])
 
   // Run a range mutation for a toolbar action, then restore the native

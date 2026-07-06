@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { TextSelection } from 'prosemirror-state'
 import type { EditorView } from 'prosemirror-view'
 import React from 'react'
@@ -131,6 +131,30 @@ describe('FocusedBlockEditor', () => {
         act(() => host.dispatchEvent(new MouseEvent('mouseup', { bubbles: true })))
 
         expect(toolbar()).toBeInTheDocument()
+      })
+    })
+
+    describe('when the page scrolls with a live selection (bug: fixed anchor detaches)', () => {
+      it('to be: re-measures coordsAtPos and repositions the toolbar anchor', () => {
+        render(<FocusedBlockEditor {...createProps({ content: [{ type: 'text', text: 'Hello world' }] })} />)
+        const host = screen.getByTestId('focused-block-editor')
+        const view = (host as HTMLElement & { pmView?: EditorView }).pmView
+        if (!view) throw new Error('pmView missing')
+
+        const coords = jest.spyOn(view, 'coordsAtPos').mockReturnValue({ left: 10, right: 50, top: 100, bottom: 120 })
+        selectAll(host)
+
+        const anchorSpan = document.querySelector('[data-selection-anchor]') as HTMLElement
+        expect(anchorSpan.style.top).toBe('100px')
+
+        // scroll up 40px: coordsAtPos now reports a higher position
+        coords.mockReturnValue({ left: 10, right: 50, top: 60, bottom: 80 })
+        act(() => {
+          fireEvent.scroll(window)
+        })
+
+        expect(anchorSpan.style.top).toBe('60px')
+        coords.mockRestore()
       })
     })
   })

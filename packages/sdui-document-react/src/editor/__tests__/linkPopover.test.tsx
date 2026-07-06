@@ -91,6 +91,40 @@ describe('link click popover (editable mode)', () => {
     expect(linkMarks(p1Content(onContentChange))[0]?.attrs?.href).toBe('https://z.com')
   })
 
+  test('popover follows the link on scroll (re-measures the anchor rect)', () => {
+    const { container } = render(<SduiDocumentEditor content={linkedContent()} />)
+    const anchor = container.querySelector('a.sdui-doc-link') as HTMLAnchorElement
+
+    const rectAt = (bottom: number, left: number) =>
+      ({ bottom, left, top: bottom - 20, right: left + 40, width: 40, height: 20, x: left, y: bottom - 20 } as DOMRect)
+
+    anchor.getBoundingClientRect = jest.fn(() => rectAt(100, 20))
+    fireEvent.click(anchor)
+
+    const popover = container.querySelector('[data-link-popover]') as HTMLElement
+    expect(popover.style.top).toBe('106px') // rect.bottom + 6
+    expect(popover.style.left).toBe('20px')
+
+    // scroll up 60px: the link moved, the fixed popover must follow
+    anchor.getBoundingClientRect = jest.fn(() => rectAt(40, 20))
+    fireEvent.scroll(window)
+
+    expect(popover.style.top).toBe('46px')
+  })
+
+  test('popover closes when its link scrolls out of the DOM', () => {
+    const { container } = render(<SduiDocumentEditor content={linkedContent()} />)
+    const anchor = container.querySelector('a.sdui-doc-link') as HTMLAnchorElement
+
+    fireEvent.click(anchor)
+    expect(container.querySelector('[data-link-popover]')).toBeInTheDocument()
+
+    anchor.remove() // element detached (e.g. block unmounted while scrolling)
+    fireEvent.scroll(window)
+
+    expect(container.querySelector('[data-link-popover]')).not.toBeInTheDocument()
+  })
+
   test('read-only mode leaves native link behavior intact', () => {
     const { container } = render(<SduiDocumentEditor content={linkedContent()} readOnly />)
 

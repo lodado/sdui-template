@@ -165,6 +165,31 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
   )
 
   const [linkTarget, setLinkTarget] = useState<LinkPopoverTarget | null>(null)
+  // The clicked link element; the popover is position:fixed at its viewport rect,
+  // so we re-measure from the live element on scroll/resize to keep it attached.
+  const linkAnchorRef = useRef<Element | null>(null)
+  const isLinkPopoverOpen = linkTarget !== null
+
+  useEffect(() => {
+    if (!isLinkPopoverOpen) {
+      return undefined
+    }
+    const reposition = () => {
+      const el = linkAnchorRef.current
+      if (!el || !el.isConnected) {
+        setLinkTarget(null)
+        return
+      }
+      setLinkTarget((prev) => (prev ? { ...prev, rect: el.getBoundingClientRect() } : prev))
+    }
+    // Capture phase catches nested scroll containers (scroll doesn't bubble).
+    window.addEventListener('scroll', reposition, true)
+    window.addEventListener('resize', reposition)
+    return () => {
+      window.removeEventListener('scroll', reposition, true)
+      window.removeEventListener('resize', reposition)
+    }
+  }, [isLinkPopoverOpen])
   const blockActions = useEditorUISelector(store, (state) => state.blockActions)
 
   // Cross-block native selections have no focused PM to own them, so their
@@ -223,6 +248,7 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     }
     event.preventDefault()
     event.stopPropagation()
+    linkAnchorRef.current = anchor
     setLinkTarget({ rect: anchor.getBoundingClientRect(), href, blockId })
   }
 

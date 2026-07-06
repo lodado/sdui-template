@@ -376,6 +376,15 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
     // toolbar would never re-appear.
     document.addEventListener('mouseup', handleMouseUp, true)
 
+    // The SelectionToolbar anchor is position:fixed at the selection's viewport
+    // rect (measured once via coordsAtPos). Scrolling moves the text but not the
+    // fixed anchor, so the toolbar detaches. Re-measure on scroll/resize so it
+    // tracks the selection. Capture phase catches nested scroll containers too
+    // (scroll doesn't bubble). ponytail: not rAF-throttled; coordsAtPos is cheap
+    // and refreshSnapshot bails via equality when the rect is unchanged.
+    window.addEventListener('scroll', refreshSnapshot, true)
+    window.addEventListener('resize', refreshSnapshot)
+
     view.focus()
 
     // Keep a freshly focused block (e.g. one just inserted below the fold) in
@@ -394,6 +403,8 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
       cancelAnimationFrame(pendingSelectionFrame)
       container.removeEventListener('mousedown', handleMouseDown)
       document.removeEventListener('mouseup', handleMouseUp, true)
+      window.removeEventListener('scroll', refreshSnapshot, true)
+      window.removeEventListener('resize', refreshSnapshot)
       delete (container as HTMLElement & { pmView?: EditorView }).pmView
       const finalCommit = retired.current ? undefined : editorStateToInline(view.state)
       viewRef.current = undefined
