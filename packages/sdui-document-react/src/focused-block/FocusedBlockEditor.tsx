@@ -411,7 +411,10 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
       // toolbar). Read now for responsiveness, then re-read next frame so the
       // settled selection + measurable rect reliably land the toolbar.
       refreshSnapshot()
-      if (typeof requestAnimationFrame === 'function') {
+      // Only a non-collapsed selection can raise the toolbar; skipping the
+      // deferred re-read for a collapsed caret avoids scheduling needless async
+      // state updates during plain typing/keyboard flows.
+      if (selection && !selection.isCollapsed && typeof requestAnimationFrame === 'function') {
         cancelAnimationFrame(pendingSelectionFrame)
         pendingSelectionFrame = requestAnimationFrame(() => refreshSnapshot())
       }
