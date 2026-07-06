@@ -28,15 +28,22 @@ export type InlineContentViewProps = {
 export const InlineContentView = ({ content }: InlineContentViewProps) => {
   return (
     <>
-      {content.map((node, nodeIndex) =>
-        node.type === 'hard_break' ? (
+      {content.map((node, nodeIndex) => {
+        if (node.type === 'hard_break') {
           // eslint-disable-next-line react/no-array-index-key
-          <br key={nodeIndex} />
-        ) : (
-          // eslint-disable-next-line react/no-array-index-key
-          <React.Fragment key={nodeIndex}>{renderTextNode(node)}</React.Fragment>
-        ),
-      )}
+          return <br key={nodeIndex} />
+        }
+        if (node.type === 'date') {
+          return (
+            // eslint-disable-next-line react/no-array-index-key
+            <time key={nodeIndex} className="inline-date" dateTime={node.iso}>
+              {node.display || node.iso}
+            </time>
+          )
+        }
+        // eslint-disable-next-line react/no-array-index-key
+        return <React.Fragment key={nodeIndex}>{renderTextNode(node)}</React.Fragment>
+      })}
     </>
   )
 }
