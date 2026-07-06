@@ -59,7 +59,7 @@ export type UseRangeOperationsInput = {
 /** Props the editor feeds straight into SelectionToolbar for a cross-block range. */
 export type CrossBlockToolbar = {
   snapshot: SelectionSnapshot
-  onToggleMark: (name: 'bold' | 'italic' | 'strikethrough' | 'code') => void
+  onToggleMark: (name: 'bold' | 'italic' | 'underline' | 'strikethrough' | 'code') => void
   onSetHighlight: (color: string | null) => void
   onSetColor: (color: string | null) => void
   onSetLink: (href: string | null) => void

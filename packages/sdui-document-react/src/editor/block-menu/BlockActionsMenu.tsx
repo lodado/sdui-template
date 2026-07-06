@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
 
-import { BLOCK_MENU_ITEMS } from './blockMenuItems'
+import { turnIntoShortcutEntries } from '../../block-types/turnInto'
+import ShortcutTooltip, { formatShortcut } from '../ShortcutTooltip'
+import { TURN_INTO_ITEMS } from './blockMenuItems'
 
 export type BlockActionsMenuProps = {
   /** Handle rect the menu positions against (viewport coords). */
@@ -11,19 +13,29 @@ export type BlockActionsMenuProps = {
   onMoveDown(): void
   onDelete(): void
   onClose(): void
+  onCancel(): void
 }
 
-/**
- * Turn-into targets = the insertable block types, minus the ones with no text
- * content to carry over (divider / image / file / link). Turning an existing
- * text block into those would silently drop its content.
- */
-const TURN_INTO_ITEMS = BLOCK_MENU_ITEMS.filter((item) => item.action === 'insert' && item.type !== 'document.divider')
+const TURN_INTO_SHORTCUTS = turnIntoShortcutEntries()
+
+const attrsMatch = (left?: Record<string, unknown>, right?: Record<string, unknown>) => {
+  const leftEntries = Object.entries(left ?? {})
+  const rightEntries = Object.entries(right ?? {})
+  return leftEntries.length === rightEntries.length && leftEntries.every(([key, value]) => right?.[key] === value)
+}
+
+const turnIntoShortcut = (item: (typeof TURN_INTO_ITEMS)[number]) => {
+  const shortcut = TURN_INTO_SHORTCUTS.find(
+    (entry) => entry.type === item.type && attrsMatch(entry.attrs, item.attributes),
+  )
+  return shortcut ? formatShortcut(shortcut.key) : undefined
+}
 
 type ActionRow = {
   key: string
   label: string
   glyph: string
+  shortcut?: string
   danger?: boolean
   run(): void
 }
@@ -42,6 +54,7 @@ export const BlockActionsMenu = ({
   onMoveDown,
   onDelete,
   onClose,
+  onCancel,
 }: BlockActionsMenuProps) => {
   const [view, setView] = useState<'root' | 'turn-into'>('root')
   const firstItemRef = useRef<HTMLButtonElement>(null)
@@ -60,7 +73,7 @@ export const BlockActionsMenu = ({
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.stopPropagation()
-        onClose()
+        onCancel()
       }
     }
     document.addEventListener('mousedown', onPointerDown, true)
@@ -74,10 +87,10 @@ export const BlockActionsMenu = ({
 
   const rootRows: ActionRow[] = [
     { key: 'turn-into', label: 'Turn into', glyph: '⇄', run: () => setView('turn-into') },
-    { key: 'duplicate', label: 'Duplicate', glyph: '⧉', run: onDuplicate },
-    { key: 'move-up', label: 'Move up', glyph: '↑', run: onMoveUp },
-    { key: 'move-down', label: 'Move down', glyph: '↓', run: onMoveDown },
-    { key: 'delete', label: 'Delete', glyph: '✕', danger: true, run: onDelete },
+    { key: 'duplicate', label: 'Duplicate', glyph: '⧉', shortcut: 'Ctrl/Cmd+D', run: onDuplicate },
+    { key: 'move-up', label: 'Move up', glyph: '↑', shortcut: 'Ctrl/Cmd+Alt+↑', run: onMoveUp },
+    { key: 'move-down', label: 'Move down', glyph: '↓', shortcut: 'Ctrl/Cmd+Alt+↓', run: onMoveDown },
+    { key: 'delete', label: 'Delete', glyph: '✕', shortcut: 'Backspace', danger: true, run: onDelete },
   ]
 
   return (
@@ -90,30 +103,31 @@ export const BlockActionsMenu = ({
     >
       {view === 'root' ? (
         rootRows.map((row, index) => (
-          <button
-            key={row.key}
-            ref={index === 0 ? firstItemRef : undefined}
-            type="button"
-            role="menuitem"
-            className="sdui-doc-block-menu-option"
-            data-danger={row.danger ? '' : undefined}
-            aria-haspopup={row.key === 'turn-into' ? 'menu' : undefined}
-            onClick={() => {
-              row.run()
-              // "Turn into" navigates; every other row is terminal and closes.
-              if (row.key !== 'turn-into') onClose()
-            }}
-          >
-            <span className="sdui-doc-block-menu-glyph" aria-hidden="true">
-              {row.glyph}
-            </span>
-            <span>{row.label}</span>
-            {row.key === 'turn-into' ? (
-              <span className="sdui-doc-block-actions-chevron" aria-hidden="true">
-                ›
+          <ShortcutTooltip key={row.key} label={row.label} shortcut={row.shortcut}>
+            <button
+              ref={index === 0 ? firstItemRef : undefined}
+              type="button"
+              role="menuitem"
+              className="sdui-doc-block-menu-option"
+              data-danger={row.danger ? '' : undefined}
+              aria-haspopup={row.key === 'turn-into' ? 'menu' : undefined}
+              onClick={() => {
+                row.run()
+                // "Turn into" navigates; every other row is terminal and closes.
+                if (row.key !== 'turn-into') onClose()
+              }}
+            >
+              <span className="sdui-doc-block-menu-glyph" aria-hidden="true">
+                {row.glyph}
               </span>
-            ) : null}
-          </button>
+              <span>{row.label}</span>
+              {row.key === 'turn-into' ? (
+                <span className="sdui-doc-block-actions-chevron" aria-hidden="true">
+                  ›
+                </span>
+              ) : null}
+            </button>
+          </ShortcutTooltip>
         ))
       ) : (
         <>
@@ -130,21 +144,22 @@ export const BlockActionsMenu = ({
           </button>
           <div className="sdui-doc-block-actions-separator" role="separator" />
           {TURN_INTO_ITEMS.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              role="menuitem"
-              className="sdui-doc-block-menu-option"
-              onClick={() => {
-                onTurnInto(item.type, item.attributes)
-                onClose()
-              }}
-            >
-              <span className="sdui-doc-block-menu-glyph" aria-hidden="true">
-                {item.glyph}
-              </span>
-              <span>{item.title}</span>
-            </button>
+            <ShortcutTooltip key={item.id} label={item.title} shortcut={turnIntoShortcut(item)}>
+              <button
+                type="button"
+                role="menuitem"
+                className="sdui-doc-block-menu-option"
+                onClick={() => {
+                  onTurnInto(item.type, item.attributes)
+                  onClose()
+                }}
+              >
+                <span className="sdui-doc-block-menu-glyph" aria-hidden="true">
+                  {item.glyph}
+                </span>
+                <span>{item.title}</span>
+              </button>
+            </ShortcutTooltip>
           ))}
         </>
       )}

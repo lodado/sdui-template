@@ -12,6 +12,7 @@ import React from 'react'
 import { BlockChrome } from '../block-types/BlockChrome'
 import { FocusedBlockEditor } from '../focused-block/FocusedBlockEditor'
 import { InlineContentView } from '../inline/InlineContentView'
+import { blockMenuItemIdFor } from './block-menu/blockMenuItems'
 import { blockInlineContent, isTextBlock, numberedListOrdinals } from './blockContent'
 import { DRAG_INDENT_WIDTH } from './editorConstants'
 import { useEditorRuntime } from './EditorRuntimeContext'
@@ -337,9 +338,19 @@ const BlockRow = React.memo(({ block, depth, readOnly, listOrdinal }: BlockNodeP
             data-dragging={isDragging || undefined}
             aria-label={`Drag block ${block.id}`}
             style={{ cursor: 'grab', border: 'none', background: 'transparent', padding: '2px 4px' }}
-            onClick={(event) => handlers.handleClick(block.id, event.shiftKey)}
+            onClick={(event) => {
+              // Notion parity: plain click opens the block-actions menu (which
+              // also selects the block); Shift+click extends the selection.
+              if (event.shiftKey) {
+                handlers.handleClick(block.id, true)
+
+                return
+              }
+
+              handlers.openBlockActions(block.id, event.currentTarget.getBoundingClientRect())
+            }}
             onContextMenu={(event) => {
-              // Right-click the handle → block-actions menu (turn into / duplicate / delete).
+              // Right-click the handle → same block-actions menu.
               event.preventDefault()
               handlers.openBlockActions(block.id, event.currentTarget.getBoundingClientRect())
             }}
@@ -380,6 +391,7 @@ const BlockRow = React.memo(({ block, depth, readOnly, listOrdinal }: BlockNodeP
                   onOutdent={() => handlers.outdent(block.id)}
                   onNavigate={(direction) => handlers.navigate(block.id, direction)}
                   onTurnInto={(type, attrs) => handlers.turnInto(block.id, type, attrs)}
+                  turnIntoActiveId={blockMenuItemIdFor(block.type, block.attributes)}
                   onMoveBlock={(direction) => handlers.moveBlock(block.id, direction)}
                   onHistory={(direction) => handlers.history(direction)}
                   onBlockAction={() => handlers.blockAction(block.id)}

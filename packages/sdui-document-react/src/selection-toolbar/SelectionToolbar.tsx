@@ -2,6 +2,7 @@ import type { BlockAlign } from '@lodado/sdui-document'
 import * as Popover from '@radix-ui/react-popover'
 import React, { useEffect, useRef, useState } from 'react'
 
+import { TURN_INTO_ITEMS } from '../editor/block-menu/blockMenuItems'
 import { highlightBackground } from '../marks'
 import { ColorMenu } from './ColorMenu'
 import { LinkEditor } from './LinkEditor'
@@ -10,7 +11,7 @@ import { ToolbarButton } from './ToolbarButton'
 
 export type SelectionToolbarProps = {
   snapshot: SelectionSnapshot
-  onToggleMark(name: 'bold' | 'italic' | 'strikethrough' | 'code'): void
+  onToggleMark(name: 'bold' | 'italic' | 'underline' | 'strikethrough' | 'code'): void
   onSetHighlight(color: string | null): void
   onSetColor(color: string | null): void
   onSetLink(href: string | null): void
@@ -18,6 +19,16 @@ export type SelectionToolbarProps = {
   blockAlign?: BlockAlign | null
   /** Set/clear the focused block's alignment; toggling the active one clears it. */
   onSetAlign?(align: BlockAlign | null): void
+  /**
+   * Turn-into dropdown (Notion's leading "Text ▾" toolbar control). Only
+   * provided for single-block selections — block type is ambiguous across a
+   * cross-block range.
+   */
+  turnInto?: {
+    /** BlockMenuItem id matching the current block, for the active check + label. */
+    activeId: string | null
+    onSelect(type: string, attrs?: Record<string, unknown>): void
+  }
 }
 
 const ALIGN_OPTIONS: ReadonlyArray<{ value: BlockAlign; label: string; glyph: string }> = [
@@ -26,7 +37,7 @@ const ALIGN_OPTIONS: ReadonlyArray<{ value: BlockAlign; label: string; glyph: st
   { value: 'right', label: 'Align right', glyph: '⇥' },
 ]
 
-type ToolbarView = 'menu' | 'color' | 'link'
+type ToolbarView = 'menu' | 'color' | 'link' | 'turn-into'
 
 /**
  * Floating formatting toolbar over the current text selection.
@@ -52,6 +63,7 @@ export const SelectionToolbar = ({
   onSetLink,
   blockAlign = null,
   onSetAlign,
+  turnInto,
 }: SelectionToolbarProps) => {
   const [view, setView] = useState<ToolbarView>('menu')
   const anchorRef = useRef<HTMLSpanElement>(null)
@@ -89,25 +101,66 @@ export const SelectionToolbar = ({
         >
           {view === 'menu' && (
             <div className="sdui-doc-toolbar-menu" role="toolbar" aria-label="Text formatting">
-              <ToolbarButton label="Bold" active={snapshot.activeMarks.bold} onClick={() => onToggleMark('bold')}>
+              {turnInto && (
+                <>
+                  <button
+                    type="button"
+                    className="sdui-doc-toolbar-turninto-trigger"
+                    aria-label="Turn into"
+                    aria-haspopup="menu"
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => setView('turn-into')}
+                  >
+                    {TURN_INTO_ITEMS.find((item) => item.id === turnInto.activeId)?.title ?? 'Turn into'}
+                    <span aria-hidden="true">▾</span>
+                  </button>
+                  <span className="sdui-doc-toolbar-separator" />
+                </>
+              )}
+              <ToolbarButton
+                label="Bold"
+                shortcut="Ctrl/Cmd+B"
+                active={snapshot.activeMarks.bold}
+                onClick={() => onToggleMark('bold')}
+              >
                 <strong>B</strong>
               </ToolbarButton>
-              <ToolbarButton label="Italic" active={snapshot.activeMarks.italic} onClick={() => onToggleMark('italic')}>
+              <ToolbarButton
+                label="Italic"
+                shortcut="Ctrl/Cmd+I"
+                active={snapshot.activeMarks.italic}
+                onClick={() => onToggleMark('italic')}
+              >
                 <em>I</em>
               </ToolbarButton>
               <ToolbarButton
+                label="Underline"
+                shortcut="Ctrl/Cmd+U"
+                active={snapshot.activeMarks.underline}
+                onClick={() => onToggleMark('underline')}
+              >
+                <u>U</u>
+              </ToolbarButton>
+              <ToolbarButton
                 label="Strikethrough"
+                shortcut="Ctrl/Cmd+D"
                 active={snapshot.activeMarks.strikethrough}
                 onClick={() => onToggleMark('strikethrough')}
               >
                 <del>S</del>
               </ToolbarButton>
-              <ToolbarButton label="Code" active={snapshot.activeMarks.code} onClick={() => onToggleMark('code')}>
+              <ToolbarButton
+                label="Code"
+                shortcut="Ctrl/Cmd+E"
+                active={snapshot.activeMarks.code}
+                onClick={() => onToggleMark('code')}
+              >
                 {'</>'}
               </ToolbarButton>
               <span className="sdui-doc-toolbar-separator" />
               <ToolbarButton
                 label="Color"
+                shortcut="Ctrl/Cmd+Shift+H"
                 active={snapshot.activeMarks.color || snapshot.activeMarks.highlight}
                 onClick={() => setView('color')}
               >
@@ -139,6 +192,29 @@ export const SelectionToolbar = ({
                   ))}
                 </>
               )}
+            </div>
+          )}
+          {view === 'turn-into' && turnInto && (
+            <div className="sdui-doc-block-menu-list" role="menu" aria-label="Turn into">
+              {TURN_INTO_ITEMS.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="menuitem"
+                  className="sdui-doc-block-menu-option"
+                  data-active={item.id === turnInto.activeId || undefined}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => {
+                    turnInto.onSelect(item.type, item.attributes)
+                    setView('menu')
+                  }}
+                >
+                  <span className="sdui-doc-block-menu-glyph" aria-hidden="true">
+                    {item.glyph}
+                  </span>
+                  {item.title}
+                </button>
+              ))}
             </div>
           )}
           {view === 'color' && (

@@ -914,6 +914,54 @@
   content: '⠿';
 }
 
+.sdui-doc-shortcut-tooltip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 260px;
+  padding: 5px 6px 5px 8px;
+  border-radius: 5px;
+  background: #191919;
+  color: #fff;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 8px 18px rgba(0, 0, 0, 0.18),
+    0 2px 5px rgba(0, 0, 0, 0.16);
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: nowrap;
+  z-index: 900;
+  animation: sdui-doc-tooltip-in 90ms ease-out;
+}
+
+.sdui-doc-shortcut-tooltip kbd {
+  min-width: 18px;
+  padding: 2px 5px;
+  border: 0;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.78);
+  font: inherit;
+  font-size: 11px;
+  text-align: center;
+}
+
+.sdui-doc-shortcut-tooltip-arrow {
+  fill: #191919;
+}
+
+@keyframes sdui-doc-tooltip-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 /* -------------------------------------------------------- selection toolbar
    Portaled to <body> so rules are class-scoped, not editor-scoped.
    Values from Outline FloatingToolbar/ToolbarMenu/ToolbarButton/theme.ts. */
@@ -1021,6 +1069,38 @@
   height: 36px;
   margin: -6px 2px;
   background: color-mix(in srgb, var(--sdui-doc-text-tertiary) 25%, transparent);
+}
+
+.sdui-doc-toolbar-turninto-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+  opacity: 0.85;
+}
+
+.sdui-doc-toolbar-turninto-trigger:hover,
+.sdui-doc-toolbar-turninto-trigger:focus-visible {
+  opacity: 1;
+  background: color-mix(in srgb, var(--sdui-doc-text-tertiary) 15%, transparent);
+}
+
+.sdui-doc-block-menu-group-label {
+  padding: 6px 8px 2px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--sdui-doc-text-tertiary);
+  user-select: none;
 }
 
 .sdui-doc-toolbar-highlight-dot {

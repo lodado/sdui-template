@@ -399,10 +399,11 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
                   runtime.handlers.moveBlock(blockActions.blockId, 'down')
                   runtime.handlers.closeBlockActions()
                 }}
-                onDelete={() => runtime.handlers.deleteBlock(blockActions.blockId)}
-                onClose={() => runtime.handlers.closeBlockActions()}
-              />
-            )}
+          onDelete={() => runtime.handlers.deleteBlock(blockActions.blockId)}
+          onClose={() => runtime.handlers.closeBlockActions()}
+          onCancel={() => store.set({ selection: clearBlockSelection(), blockActions: null })}
+        />
+      )}
           </div>
         </DndContext>
       </DocumentContentProvider>

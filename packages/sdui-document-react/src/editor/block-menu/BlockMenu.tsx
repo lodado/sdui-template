@@ -1,7 +1,10 @@
 import * as Popover from '@radix-ui/react-popover'
 import React, { useEffect, useRef, useState } from 'react'
 
+import { turnIntoShortcutEntries } from '../../block-types/turnInto'
+import ShortcutTooltip, { formatShortcut } from '../ShortcutTooltip'
 import type { BlockMenuItem } from './blockMenuItems'
+import { BLOCK_MENU_GROUP_LABELS } from './blockMenuItems'
 
 export type BlockMenuAnchorRect = { left: number; top: number; bottom: number }
 
@@ -30,6 +33,23 @@ export type BlockMenuProps = {
  *   link view DOES focus its URL input — it is an explicit text-entry step
  * - options prevent mousedown default so the PM selection survives the click
  */
+const TURN_INTO_SHORTCUTS = turnIntoShortcutEntries()
+
+const attrsMatch = (left?: Record<string, unknown>, right?: Record<string, unknown>) => {
+  const leftEntries = Object.entries(left ?? {})
+  const rightEntries = Object.entries(right ?? {})
+  return leftEntries.length === rightEntries.length && leftEntries.every(([key, value]) => right?.[key] === value)
+}
+
+// Keyboard shortcut when one exists, otherwise the item's own markdown
+// prefix hint (single source: blockMenuItems.ts).
+const blockMenuShortcut = (item: BlockMenuItem) => {
+  const turnInto = TURN_INTO_SHORTCUTS.find(
+    (entry) => entry.type === item.type && attrsMatch(entry.attrs, item.attributes),
+  )
+  return turnInto ? formatShortcut(turnInto.key) : item.hint
+}
+
 export const BlockMenu = ({ anchor, items, activeIndex, view, onSelect, onSubmitLink, onClose }: BlockMenuProps) => {
   const anchorRef = useRef<HTMLSpanElement>(null)
   const [linkValue, setLinkValue] = useState('')
@@ -74,21 +94,29 @@ export const BlockMenu = ({ anchor, items, activeIndex, view, onSelect, onSubmit
                 <div className="sdui-doc-block-menu-empty">No results</div>
               ) : (
                 items.map((item, index) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    role="option"
-                    aria-selected={index === activeIndex}
-                    data-active={index === activeIndex || undefined}
-                    className="sdui-doc-block-menu-option"
-                    onMouseDown={(event) => event.preventDefault()}
-                    onClick={() => onSelect(item)}
-                  >
-                    <span className="sdui-doc-block-menu-glyph" aria-hidden>
-                      {item.glyph}
-                    </span>
-                    {item.title}
-                  </button>
+                  <React.Fragment key={item.id}>
+                    {(index === 0 || items[index - 1].group !== item.group) && (
+                      <div className="sdui-doc-block-menu-group-label" aria-hidden="true">
+                        {BLOCK_MENU_GROUP_LABELS[item.group]}
+                      </div>
+                    )}
+                    <ShortcutTooltip label={item.title} shortcut={blockMenuShortcut(item)}>
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={index === activeIndex}
+                        data-active={index === activeIndex || undefined}
+                        className="sdui-doc-block-menu-option"
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={() => onSelect(item)}
+                      >
+                        <span className="sdui-doc-block-menu-glyph" aria-hidden>
+                          {item.glyph}
+                        </span>
+                        {item.title}
+                      </button>
+                    </ShortcutTooltip>
+                  </React.Fragment>
                 ))
               )}
             </div>

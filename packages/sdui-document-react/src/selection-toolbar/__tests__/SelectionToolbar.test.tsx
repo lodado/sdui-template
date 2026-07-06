@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 
@@ -65,7 +65,7 @@ describe('SelectionToolbar', () => {
       })
     })
 
-    describe('when the Bold button is clicked (mouse success flow)', () => {
+  describe('when the Bold button is clicked (mouse success flow)', () => {
       it('to be: onToggleMark fires with bold', async () => {
         const user = userEvent.setup()
         const { onToggleMark } = renderToolbar(makeSnapshot())
@@ -83,6 +83,18 @@ describe('SelectionToolbar', () => {
         expect(screen.getByRole('button', { name: 'Bold' })).toHaveAttribute('aria-pressed', 'true')
         expect(screen.getByRole('button', { name: 'Italic' })).toHaveAttribute('aria-pressed', 'false')
       })
+    })
+  })
+
+  describe('when a formatting button is hovered', () => {
+    it('to be: a shortcut tooltip is shown', async () => {
+      const user = userEvent.setup()
+      renderToolbar(makeSnapshot())
+
+      await user.hover(screen.getByRole('button', { name: 'Bold' }))
+
+      await waitFor(() => expect(screen.getByRole('tooltip')).toHaveTextContent('Bold'))
+      expect(screen.getByRole('tooltip')).toHaveTextContent('Ctrl/Cmd+B')
     })
   })
 

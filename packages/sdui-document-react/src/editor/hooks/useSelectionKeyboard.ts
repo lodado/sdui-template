@@ -5,6 +5,7 @@ import {
   createBlockId,
   createBlockSelection,
   createTrailingBlockPatch,
+  extendBlockSelection,
   findBlockById,
   flattenDocumentBlocks,
 } from '@lodado/sdui-document'
@@ -121,11 +122,29 @@ export function useSelectionKeyboard(input: UseSelectionKeyboardInput): UseSelec
       return
     }
 
-    // Notion block-selection keys: arrows walk the flattened order, Enter
-    // re-enters inline editing, Mod-A selects everything, Mod-D duplicates.
+    // Notion block-selection keys: arrows walk the flattened order (Shift
+    // extends from the anchor), Enter re-enters inline editing, Mod-A selects
+    // everything, Mod-D duplicates.
     if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
       event.preventDefault()
       const ids = orderedIds()
+
+      if (event.shiftKey && selection.anchorId) {
+        // The moving edge is the selection end opposite the anchor; the arrow
+        // moves that edge, growing or shrinking the anchor→edge range.
+        const anchorIndex = ids.indexOf(selection.anchorId)
+        const selectedIndexes = selection.selectedIds.map((id) => ids.indexOf(id)).filter((index) => index >= 0)
+        const minIndex = Math.min(...selectedIndexes)
+        const maxIndex = Math.max(...selectedIndexes)
+        const edgeIndex = anchorIndex === minIndex ? maxIndex : minIndex
+        const targetId = ids[edgeIndex + (event.key === 'ArrowUp' ? -1 : 1)]
+        if (targetId) {
+          store.set({ selection: extendBlockSelection(selection, docRef.current, targetId), focus: null })
+        }
+
+        return
+      }
+
       const currentId = selection.anchorId ?? selection.selectedIds[selection.selectedIds.length - 1]
       const index = ids.indexOf(currentId)
       const nextId = ids[event.key === 'ArrowUp' ? index - 1 : index + 1]

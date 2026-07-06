@@ -55,6 +55,11 @@ export type FocusedBlockEditorProps = Omit<
    */
   // eslint-disable-next-line react/no-unused-prop-types -- consumed via latestProps ref
   onToolbarPropsChange?(props: SelectionToolbarProps | null): void
+  /**
+   * BlockMenuItem id matching this block's current type, shown as the active
+   * entry in the toolbar's turn-into dropdown. `undefined` hides the dropdown.
+   */
+  turnIntoActiveId?: string | null
   className?: string
 }
 
@@ -80,7 +85,7 @@ export type FocusedBlockEditorProps = Omit<
 export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
   // onCommit is intentionally not destructured: it is only reached through
   // latestProps so late prop swaps still land (react/no-unused-prop-types).
-  const { content, autoFocus, className, blockAlign, onSetAlign } = props
+  const { content, autoFocus, className, blockAlign, onSetAlign, turnIntoActiveId } = props
   const containerRef = useRef<HTMLSpanElement>(null)
   const viewRef = useRef<EditorView>()
   const latestProps = useRef(props)
@@ -92,6 +97,7 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
   // Select/submit need commitNow/retired from the mount effect — bridged via refs.
   const selectItemRef = useRef<(item: BlockMenuItem) => void>()
   const submitLinkRef = useRef<(url: string) => void>()
+  const toolbarTurnIntoRef = useRef<(type: string, attrs?: Record<string, unknown>) => void>()
 
   const refreshSnapshot = useCallback(() => {
     const view = viewRef.current
@@ -110,7 +116,11 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
     })
   }, [])
 
-  const toggleNamedMark = useCallback((name: 'bold' | 'italic' | 'strikethrough' | 'code') => {
+  const handleToolbarTurnInto = useCallback((type: string, attrs?: Record<string, unknown>) => {
+    toolbarTurnIntoRef.current?.(type, attrs)
+  }, [])
+
+  const toggleNamedMark = useCallback((name: 'bold' | 'italic' | 'underline' | 'strikethrough' | 'code') => {
     const view = viewRef.current
     if (!view) {
       return
@@ -174,9 +184,23 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
             onSetLink: setLink,
             blockAlign: blockAlign ?? null,
             onSetAlign,
+            turnInto:
+              turnIntoActiveId !== undefined
+                ? { activeId: turnIntoActiveId, onSelect: handleToolbarTurnInto }
+                : undefined,
           }
         : null,
-    [snapshot, toggleNamedMark, setHighlight, setColor, setLink, blockAlign, onSetAlign],
+    [
+      snapshot,
+      toggleNamedMark,
+      setHighlight,
+      setColor,
+      setLink,
+      blockAlign,
+      onSetAlign,
+      turnIntoActiveId,
+      handleToolbarTurnInto,
+    ],
   )
 
   // Publish to the editor-level single toolbar; clear on unmount so a stale
@@ -200,6 +224,14 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
       }
 
       latestProps.current.onCommit(editorStateToInline(viewRef.current.state))
+    }
+
+    // Toolbar turn-into DOES commit first — unlike the input-rule path there
+    // is no pending prefix deletion, so the current text must be persisted
+    // before the block.setType patch lands.
+    toolbarTurnIntoRef.current = (type, attrs) => {
+      commitNow()
+      latestProps.current.onTurnInto(type, attrs)
     }
 
     const callbacks: FocusedBlockCallbacks = {
