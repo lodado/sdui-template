@@ -26,7 +26,8 @@ export function mapInlineRange(
     node.type === 'text' && text ? [{ ...node, text }] : []
 
   const segmentAt = (node: SduiInlineNode, start: number): SduiInlineNode[] => {
-    if (node.type === 'hard_break') {
+    // Leaf nodes (hard_break, date) occupy 1 unit and are never sliced.
+    if (node.type !== 'text') {
       const covered = start >= from && start < to
       return covered ? transform(node) : [node]
     }
