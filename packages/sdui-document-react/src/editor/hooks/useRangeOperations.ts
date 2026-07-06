@@ -93,7 +93,18 @@ export function useRangeOperations(input: UseRangeOperationsInput): UseRangeOper
       return null
     }
     const normalized = normalizeDocRange(docRef.current, range)
-    return normalized?.isCrossBlock ? normalized : null
+    if (!normalized) {
+      return null
+    }
+    // Cross-block ranges are always ours. A single-block range belongs to the
+    // focused PM editor when THAT block is focused (PM transactions + stored
+    // marks). But a drag-select never focuses first (BlockNode skips focusing a
+    // non-collapsed selection to preserve it), so an unfocused/static block has
+    // no PM — the document owns its selection here so the toolbar still appears.
+    if (!normalized.isCrossBlock && normalized.start.blockId === store.get().focus?.blockId) {
+      return null
+    }
+    return normalized
   }
 
   // Notion delete/replace: the surviving prefix of the start block, the typed

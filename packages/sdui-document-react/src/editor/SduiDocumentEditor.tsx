@@ -1,7 +1,6 @@
 import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import type { SduiDocumentContent, SduiDocumentPatch } from '@lodado/sdui-document'
 import { clearBlockSelection, isEmptyDocument } from '@lodado/sdui-document'
-import { DocumentContentProvider } from './DocumentContentContext'
 import {
   type MouseEvent as ReactMouseEvent,
   type Ref,
@@ -17,6 +16,7 @@ import { SelectionToolbar } from '../selection-toolbar/SelectionToolbar'
 import { BlockActionsMenu } from './block-menu/BlockActionsMenu'
 import { defaultGenerateBlockId, numberedListOrdinals } from './blockContent'
 import { BlockNode } from './BlockNode'
+import { DocumentContentProvider } from './DocumentContentContext'
 import { collisionDetection, DRAG_INDENT_WIDTH, POINTER_SENSOR_OPTIONS } from './editorConstants'
 import { type EditorRuntime, EditorRuntimeContext, useEditorRuntime } from './EditorRuntimeContext'
 import { useDocumentPatches } from './hooks/useDocumentPatches'
@@ -62,13 +62,13 @@ export type SduiDocumentEditorProps = {
  * published props on its own so a selection change re-renders only this leaf,
  * never the block rows. A cross-block range toolbar takes precedence.
  */
-function DocumentSelectionToolbar({
+const DocumentSelectionToolbar = ({
   store,
   rangeToolbar,
 }: {
   store: EditorUIStore
   rangeToolbar: SelectionToolbarProps | null
-}) {
+}) => {
   const focusToolbar = useEditorUISelector(store, (state) => state.selectionToolbar)
   const activeToolbar = rangeToolbar ?? focusToolbar
 

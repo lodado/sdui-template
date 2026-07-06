@@ -77,3 +77,21 @@ describe('cross-block mark toggle (Cmd+B)', () => {
     expect(markTypes(blockContent(next, 'c')).flat()).toEqual([])
   })
 })
+
+describe('single-block selection on an unfocused (static) block', () => {
+  // A drag-select never focuses first (BlockNode preserves a non-collapsed
+  // selection), so the block has no PM editor. The document range hook must
+  // still own it — otherwise the toolbar/keyboard have no owner and do nothing.
+  test('applies bold to a single-block range without focusing the block', () => {
+    const onContentChange = jest.fn()
+    const { container } = render(<SduiDocumentEditor content={threeParagraphs()} onContentChange={onContentChange} />)
+
+    selectAcross(container, ['a', 0], ['a', 2])
+    fireEvent.keyDown(document, { key: 'b', ctrlKey: true })
+
+    const next = onContentChange.mock.calls.at(-1)?.[0] as SduiDocumentContent
+    // 'aa' bold + 'a' plain — other blocks untouched
+    expect(markTypes(blockContent(next, 'a'))).toEqual([['bold'], []])
+    expect(markTypes(blockContent(next, 'b')).flat()).toEqual([])
+  })
+})
