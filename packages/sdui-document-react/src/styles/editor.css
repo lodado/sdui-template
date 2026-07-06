@@ -1398,6 +1398,23 @@ blockquote.quote-block {
   min-width: 0;
   line-height: 1.5;
 }
+/* Toggle children: keep the 24px indent (drag-depth math) but add a subtle
+   vertical guide so the nesting reads as "belongs to this toggle" (Notion).
+   The line sits under the triangle center (~11px into the 24px handle gutter). */
+[data-sdui-document-editor] [data-nested-toggle] {
+  position: relative;
+}
+[data-sdui-document-editor] [data-nested-toggle]::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: 11px;
+  width: 1.5px;
+  border-radius: 1px;
+  background: var(--sdui-doc-divider);
+}
+
 .toggle-empty-placeholder {
   display: block;
   width: 100%;

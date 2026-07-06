@@ -408,7 +408,7 @@ const BlockRow = React.memo(({ block, depth, readOnly, listOrdinal }: BlockNodeP
       {block.children?.length && !isCollapsedToggle ? (
         // one visual indent level per tree level — same unit the drag depth
         // projection uses, so the drop indicator lines up with real indents
-        <div data-block-nested style={{ paddingLeft: DRAG_INDENT_WIDTH }}>
+        <div data-block-nested data-nested-toggle={isToggle || undefined} style={{ paddingLeft: DRAG_INDENT_WIDTH }}>
           {(() => {
             const ordinals = numberedListOrdinals(block.children)
             return block.children.map((child) => (
@@ -424,7 +424,7 @@ const BlockRow = React.memo(({ block, depth, readOnly, listOrdinal }: BlockNodeP
         </div>
       ) : null}
       {isExpandedEmptyToggle ? (
-        <div data-block-nested style={{ paddingLeft: DRAG_INDENT_WIDTH }}>
+        <div data-block-nested data-nested-toggle style={{ paddingLeft: DRAG_INDENT_WIDTH }}>
           <button
             type="button"
             className="toggle-empty-placeholder"
