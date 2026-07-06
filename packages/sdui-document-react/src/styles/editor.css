@@ -1430,6 +1430,35 @@ blockquote.quote-block {
   color: inherit;
   cursor: pointer;
 }
+.code-block-wrapper > .code-copy-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  border: 1px solid color-mix(in srgb, var(--sdui-doc-code-block-text) 30%, transparent);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--sdui-doc-code-block-background) 85%, var(--sdui-doc-surface));
+  color: var(--sdui-doc-code-block-text);
+  font-size: 12px;
+  line-height: 1;
+  padding: 4px 8px;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    background 150ms ease-in,
+    border-color 150ms ease-in,
+    opacity 150ms ease-in;
+}
+.code-block-wrapper:hover > .code-copy-button,
+.code-block-wrapper:focus-within > .code-copy-button {
+  opacity: 1;
+}
+.code-block-wrapper > .code-copy-button:hover,
+.code-block-wrapper > .code-copy-button:focus-visible,
+.code-block-wrapper > .code-copy-button.is-copied {
+  border-color: color-mix(in srgb, var(--sdui-doc-code-block-text) 55%, transparent);
+  background: var(--sdui-doc-surface);
+}
 .code-block-wrapper > pre.code-block {
   margin: 0;
   padding: 34px 16px 32px 32px;
