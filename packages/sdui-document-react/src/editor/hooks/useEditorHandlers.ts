@@ -85,6 +85,34 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
       })
     }
 
+    // Insert a paragraph as the toggle's first child and focus it, expanding
+    // the toggle first if collapsed (a collapsed toggle hides its children).
+    // Shared by Enter-on-summary and the empty-toggle placeholder click.
+    const insertToggleChild = (blockId: string) => {
+      const source = findBlockById(docRef.current, blockId)
+      if (!source || source.type !== 'document.toggle') {
+        return
+      }
+
+      const childId = latest.current.generateBlockId()
+      const togglePatches: SduiDocumentPatch[] = []
+      if (source.attributes?.collapsed === true) {
+        togglePatches.push({
+          type: 'block.update',
+          blockId: createBlockId(blockId),
+          attributes: { collapsed: false },
+        })
+      }
+      togglePatches.push({
+        type: 'block.insert',
+        parentId: createBlockId(blockId),
+        after: null, // front of parent = first child
+        block: createDefaultBlock('document.paragraph', childId),
+      })
+      latest.current.applyPatches(togglePatches)
+      refocus(childId, 'start', true)
+    }
+
     const orderedTextBlocks = () =>
       flattenDocumentBlocks(docRef.current)
         .filter((item) => item.id !== docRef.current.root.id)
@@ -249,23 +277,7 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
         // caret is inside a child, split() is called with the child's id and
         // takes the normal path below.
         if (source && source.type === 'document.toggle') {
-          const childId = latest.current.generateBlockId()
-          const togglePatches: SduiDocumentPatch[] = []
-          if (source.attributes?.collapsed === true) {
-            togglePatches.push({
-              type: 'block.update',
-              blockId: createBlockId(blockId),
-              attributes: { collapsed: false },
-            })
-          }
-          togglePatches.push({
-            type: 'block.insert',
-            parentId: createBlockId(blockId),
-            after: null, // front of parent = first child
-            block: createDefaultBlock('document.paragraph', childId),
-          })
-          latest.current.applyPatches(togglePatches)
-          refocus(childId, 'start', true)
+          insertToggleChild(blockId)
 
           return
         }
@@ -575,6 +587,8 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
           },
         )
       },
+
+      insertToggleChild,
 
       insertBlockBelow: (blockId) => {
         const flattened = flattenDocumentBlocks(docRef.current)

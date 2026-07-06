@@ -49,6 +49,8 @@ export type EditorHandlers = {
   blockMenuSelect(blockId: string, item: BlockMenuItem, extraAttributes?: Record<string, unknown>): void
   blockMenuFilePicked(file: File): void
   insertBlockBelow(blockId: string): void
+  /** Insert (and focus) a paragraph as a toggle's first child; expands it if collapsed. */
+  insertToggleChild(blockId: string): void
   /** Gutter resize between two sibling columns; delta is a fraction of the pair width. */
   resizeColumnPair(leftColumnId: string, rightColumnId: string, deltaFraction: number): void
   /** Rewrite (nextHref: string) or remove (nextHref: null) every link mark matching `href` in a block. */

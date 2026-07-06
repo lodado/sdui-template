@@ -86,7 +86,7 @@ export const CodeBlock = ({ block, onSetCodeLanguage, children }: BlockChromePro
           language
         )}
       </span>
-      {onSetCodeLanguage && codeText ? (
+      {codeText ? (
         <button
           type="button"
           className={`code-copy-button${copied ? ' is-copied' : ''}`}

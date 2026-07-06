@@ -73,4 +73,30 @@ describe('toggle block', () => {
 
     expect(screen.queryByText('Empty toggle. Press Enter, click, or drop blocks inside.')).not.toBeInTheDocument()
   })
+
+  test('clicking the empty-toggle placeholder inserts a first child', async () => {
+    const user = userEvent.setup()
+    const onContentChange = jest.fn()
+    render(
+      <SduiDocumentEditor
+        content={createContent(false, false)}
+        onContentChange={onContentChange}
+        generateBlockId={() => 'child-1'}
+      />,
+    )
+
+    await user.click(screen.getByText('Empty toggle. Press Enter, click, or drop blocks inside.'))
+
+    const inserts = onContentChange.mock.calls
+      .flatMap(([, patches]) => stripPatchOrigins(patches) as Array<{ type: string; parentId?: string }>)
+      .filter((patch) => patch.type === 'block.insert')
+    expect(inserts).toHaveLength(1)
+    expect(inserts[0].parentId).toBe('t1')
+  })
+
+  test('placeholder is disabled in readOnly mode', () => {
+    render(<SduiDocumentEditor content={createContent(false, false)} readOnly />)
+
+    expect(screen.getByText('Empty toggle. Press Enter, click, or drop blocks inside.')).toBeDisabled()
+  })
 })
