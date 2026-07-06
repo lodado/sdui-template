@@ -14,6 +14,7 @@ import { LinkBlock } from './link/LinkBlock'
 import { NumberedListBlock } from './numbered-list/NumberedListBlock'
 import { ParagraphBlock } from './paragraph/ParagraphBlock'
 import { QuoteBlock } from './quote/QuoteBlock'
+import { TocBlock } from './toc/TocBlock'
 import { ToggleBlock } from './toggle/ToggleBlock'
 
 export type BlockChromeProps = {
@@ -102,6 +103,9 @@ export const BlockChrome = ({
 
     case 'document.callout':
       return <CalloutBlock block={block}>{children}</CalloutBlock>
+
+    case 'document.toc':
+      return <TocBlock />
 
     case 'document.divider':
       return <DividerBlock block={block} />
