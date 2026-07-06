@@ -25,6 +25,28 @@ export const focusedBlockSchema = new Schema({
       parseDOM: [{ tag: 'br' }],
       toDOM: () => ['br'],
     },
+    date: {
+      inline: true,
+      group: 'inline',
+      atom: true,
+      selectable: true,
+      attrs: { iso: {}, display: { default: '' } },
+      leafText: (node) => (node.attrs.display || node.attrs.iso) as string,
+      parseDOM: [
+        {
+          tag: 'time[data-inline-date]',
+          getAttrs: (dom) => ({
+            iso: (dom as HTMLElement).getAttribute('datetime') ?? '',
+            display: (dom as HTMLElement).textContent ?? '',
+          }),
+        },
+      ],
+      toDOM: (node) => [
+        'time',
+        { 'data-inline-date': 'true', datetime: node.attrs.iso as string, class: 'inline-date' },
+        (node.attrs.display || node.attrs.iso) as string,
+      ],
+    },
   },
   marks: MARK_DEFINITIONS.reduce((marks, definition) => ({ ...marks, [definition.name]: definition.spec }), {}),
 })

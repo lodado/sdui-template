@@ -116,4 +116,32 @@ describe('inline content <-> ProseMirror doc serialization', () => {
       })
     })
   })
+
+  describe('as is: inline content with a date node', () => {
+    describe('when round-tripped', () => {
+      it('to be: the date node survives with iso and display', () => {
+        const content: SduiInlineContent = [
+          { type: 'text', text: 'due ' },
+          { type: 'date', iso: '2026-07-06', display: 'Jul 6' },
+        ]
+
+        expect(roundTrip(content)).toEqual(content)
+      })
+
+      it('to be: a date node without display round-trips unchanged', () => {
+        const content: SduiInlineContent = [{ type: 'date', iso: '2026-07-06' }]
+
+        expect(roundTrip(content)).toEqual(content)
+      })
+
+      it('to be: a date node occupies one offset unit', () => {
+        const doc = inlineContentToPmDoc([
+          { type: 'text', text: 'ab' },
+          { type: 'date', iso: '2026-07-06' },
+        ])
+
+        expect(doc.content.size).toBe(3)
+      })
+    })
+  })
 })

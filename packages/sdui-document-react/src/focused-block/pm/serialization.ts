@@ -20,11 +20,15 @@ function toSduiMark(mark: Mark): SduiInlineMark {
  * @returns a doc whose content size equals `getInlineContentLength(content)`
  */
 export function inlineContentToPmDoc(content: SduiInlineContent): PmNode {
-  const nodes = content.map((node) =>
-    node.type === 'text'
-      ? focusedBlockSchema.text(node.text, (node.marks ?? []).map(toPmMark))
-      : focusedBlockSchema.nodes.hard_break.create(),
-  )
+  const nodes = content.map((node) => {
+    if (node.type === 'text') {
+      return focusedBlockSchema.text(node.text, (node.marks ?? []).map(toPmMark))
+    }
+    if (node.type === 'date') {
+      return focusedBlockSchema.nodes.date.create({ iso: node.iso, display: node.display ?? '' })
+    }
+    return focusedBlockSchema.nodes.hard_break.create()
+  })
 
   return focusedBlockSchema.nodes.doc.create(null, nodes)
 }
@@ -47,6 +51,11 @@ export function pmDocToInlineContent(doc: PmNode): SduiInlineContent {
 
       if (child.type.name === 'hard_break') {
         return [...content, { type: 'hard_break' }]
+      }
+
+      if (child.type.name === 'date') {
+        const display = child.attrs.display as string
+        return [...content, { type: 'date', iso: child.attrs.iso as string, ...(display ? { display } : {}) }]
       }
 
       return content
