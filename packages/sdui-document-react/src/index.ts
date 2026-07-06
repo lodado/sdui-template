@@ -2,6 +2,7 @@ import './styles/editor.css'
 
 export * from './block-types'
 export * from './editor'
+export { EmojiPicker, type EmojiPickerProps } from './emoji/EmojiPicker'
 export * from './focused-block'
 export * from './inline'
 export * from './marks'
