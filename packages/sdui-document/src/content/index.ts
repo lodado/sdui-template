@@ -1,3 +1,4 @@
+export * from './documentStats'
 export * from './errors'
 export * from './inlineBuilders'
 export * from './inlineContent'
