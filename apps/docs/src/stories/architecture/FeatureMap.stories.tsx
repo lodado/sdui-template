@@ -205,15 +205,49 @@ const REACT_GROUP: FeatureGroup = {
     },
     {
       name: '블록 메뉴 (슬래시 / + 버튼)',
-      what: <>10종 블록 레지스트리 + 한/영 키워드 검색. `/` 키 또는 좌측 + 버튼으로 Radix Popover 오픈.</>,
-      api: 'BLOCK_MENU_ITEMS, filterBlockMenuItems, BlockMenu',
+      what: (
+        <>
+          블록 레지스트리 + 한/영 키워드 검색. <code>/</code> 키 또는 좌측 + 버튼으로 Radix Popover 오픈.
+          기본/미디어/고급
+          <strong>섹션 그룹핑</strong>과 마크다운 힌트(<code>#</code>·<code>-</code>·<code>{'>'}</code>) 표시. 앵커는
+          스크롤 중 <code>coordsAtPos</code> 재측정으로 따라붙습니다.
+        </>
+      ),
+      api: 'BLOCK_MENU_ITEMS, BLOCK_MENU_GROUP_LABELS, filterBlockMenuItems, BlockMenu',
       file: 'editor/block-menu/',
     },
     {
+      name: '블록 액션 메뉴 (핸들)',
+      what: (
+        <>
+          드래그 핸들 <strong>클릭</strong> 시 여는 블록 조작 메뉴 — Turn into(하위 메뉴)·복제·이동·삭제. Notion 파리티.
+        </>
+      ),
+      api: 'BlockActionsMenu, TURN_INTO_ITEMS',
+      file: 'editor/block-menu/BlockActionsMenu.tsx',
+    },
+    {
       name: '셀렉션 툴바',
-      what: <>텍스트 선택 시 떠오르는 서식·링크 툴바.</>,
+      what: (
+        <>
+          텍스트 선택 시 떠오르는 서식·링크 툴바. Bold·Italic·<strong>Underline</strong>·Strike·Code·색상·정렬, 그리고
+          좌측
+          <strong>Turn-into 드롭다운</strong>(&ldquo;Text ▾&rdquo;)으로 블록 타입 변환.
+        </>
+      ),
       api: 'SelectionToolbar',
       file: 'selection-toolbar/',
+    },
+    {
+      name: '멀티 블록 선택',
+      what: (
+        <>
+          Esc로 블록 선택 진입, <code>Shift+↑/↓</code>로 범위 확장, <code>Cmd+A</code>·<code>Cmd+D</code>·Backspace로
+          일괄 선택·복제·삭제.
+        </>
+      ),
+      api: 'useSelectionKeyboard, extendBlockSelection',
+      file: 'editor/hooks/useSelectionKeyboard.ts',
     },
     {
       name: '에디터 UI 스토어',

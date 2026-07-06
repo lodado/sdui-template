@@ -42,6 +42,18 @@ const STEPS: Principle[] = [
     body: <>선택한 항목이 아래에 새 블록을 넣거나, 지금 있는 블록의 타입을 바꿉니다.</>,
     wide: true,
   },
+  {
+    num: '04',
+    title: '그룹 · 힌트 · 앵커',
+    body: (
+      <>
+        메뉴는 기본 / 미디어 / 고급 <strong>섹션</strong>으로 묶이고 각 항목에 마크다운 힌트(<code>#</code> ·{' '}
+        <code>-</code> · <code>{'>'}</code>)를 오른쪽에 보여줍니다. 앵커는 열린 뒤 스크롤이 나도{' '}
+        <code>coordsAtPos</code> 재측정으로 캐럿을 따라갑니다.
+      </>
+    ),
+    wide: true,
+  },
 ]
 
 const config: DeepDiveConfig = {

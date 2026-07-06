@@ -42,8 +42,19 @@ const STEPS: Principle[] = [
     title: '마크 토글 · 링크',
     body: (
       <>
-        굵게·기울임·코드·하이라이트를 토글하거나 링크 URL을 입력합니다. URL은 <code>safeHref</code> 가 스킴
-        화이트리스트로 검증합니다.
+        굵게·기울임·<strong>밑줄</strong>·취소선·코드·하이라이트를 토글하거나 링크 URL을 입력합니다. URL은{' '}
+        <code>safeHref</code> 가 스킴 화이트리스트로 검증합니다.
+      </>
+    ),
+  },
+  {
+    num: '04',
+    title: '블록 타입 변환',
+    body: (
+      <>
+        툴바 왼쪽 <strong>Turn-into 드롭다운</strong>(&ldquo;Text ▾&rdquo;)으로 선택 블록을 제목·목록·인용 등 다른
+        타입으로 바꿉니다. 현재 텍스트를 먼저 커밋한 뒤 <code>turnInto.ts</code> 정의로 <code>block.setType</code> 을
+        적용합니다.
       </>
     ),
   },
