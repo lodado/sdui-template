@@ -18,7 +18,7 @@ export type ToolbarButtonProps = {
  */
 export const ToolbarButton = ({ label, shortcut, active, onClick, children }: ToolbarButtonProps) => {
   return (
-    <ShortcutTooltip label={label} shortcut={shortcut}>
+    <ShortcutTooltip label={label} shortcut={shortcut} side="top">
       <button
         type="button"
         className="sdui-doc-toolbar-button"

@@ -4,6 +4,7 @@ import React from 'react'
 export type ShortcutTooltipProps = {
   label: string
   shortcut?: string
+  side?: React.ComponentProps<typeof Tooltip.Content>['side']
   children: React.ReactElement
 }
 
@@ -15,7 +16,7 @@ export const formatShortcut = (shortcut: string) =>
     .split('-')
     .join('+')
 
-const ShortcutTooltip = ({ label, shortcut, children }: ShortcutTooltipProps) => {
+const ShortcutTooltip = ({ label, shortcut, side = 'right', children }: ShortcutTooltipProps) => {
   if (!shortcut) return children
 
   return (
@@ -23,7 +24,7 @@ const ShortcutTooltip = ({ label, shortcut, children }: ShortcutTooltipProps) =>
       <Tooltip.Root>
         <Tooltip.Trigger asChild>{children}</Tooltip.Trigger>
         <Tooltip.Portal>
-          <Tooltip.Content className="sdui-doc-shortcut-tooltip" side="right" align="center" sideOffset={10}>
+          <Tooltip.Content className="sdui-doc-shortcut-tooltip" side={side} align="center" sideOffset={10}>
             <span>{label}</span>
             <kbd>{shortcut}</kbd>
             <Tooltip.Arrow className="sdui-doc-shortcut-tooltip-arrow" />
