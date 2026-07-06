@@ -2,6 +2,8 @@ import type { BlockSelectionState } from '@lodado/sdui-document'
 import { clearBlockSelection } from '@lodado/sdui-document'
 import { useSyncExternalStore } from 'react'
 
+import type { SelectionToolbarProps } from '../selection-toolbar/SelectionToolbar'
+
 export type FocusTarget = {
   blockId: string
   caret: 'start' | 'end' | number
@@ -24,6 +26,12 @@ export type EditorUIState = {
   focus: FocusTarget | null
   selection: BlockSelectionState
   blockActions: BlockActionsTarget | null
+  /**
+   * Props for the single, editor-level SelectionToolbar, published by the
+   * focused block editor. The document owns exactly one toolbar instance;
+   * a cross-block range toolbar takes precedence over this when present.
+   */
+  selectionToolbar: SelectionToolbarProps | null
 }
 
 export type EditorUIStore = {
@@ -42,7 +50,12 @@ export type EditorUIStore = {
  * useEditorUISelector and only affected rows re-render.
  */
 export function createEditorUIStore(): EditorUIStore {
-  let state: EditorUIState = { focus: null, selection: clearBlockSelection(), blockActions: null }
+  let state: EditorUIState = {
+    focus: null,
+    selection: clearBlockSelection(),
+    blockActions: null,
+    selectionToolbar: null,
+  }
   const listeners = new Set<() => void>()
 
   return {

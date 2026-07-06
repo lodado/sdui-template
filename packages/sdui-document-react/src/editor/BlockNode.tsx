@@ -385,6 +385,7 @@ const BlockRow = React.memo(({ block, depth, readOnly, listOrdinal }: BlockNodeP
                   onBlockAction={() => handlers.blockAction(block.id)}
                   onEscape={() => handlers.escape(block.id)}
                   onBlockMenuSelect={(item, extra) => handlers.blockMenuSelect(block.id, item, extra)}
+                  onToolbarPropsChange={(toolbarProps) => store.set({ selectionToolbar: toolbarProps })}
                 />
               ) : (
                 staticView

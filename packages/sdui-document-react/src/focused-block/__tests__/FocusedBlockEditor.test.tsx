@@ -3,6 +3,8 @@ import { TextSelection } from 'prosemirror-state'
 import type { EditorView } from 'prosemirror-view'
 import React from 'react'
 
+import type { SelectionToolbarProps } from '../../selection-toolbar/SelectionToolbar'
+import { SelectionToolbar } from '../../selection-toolbar/SelectionToolbar'
 import type { FocusedBlockEditorProps } from '../FocusedBlockEditor'
 import { FocusedBlockEditor } from '../FocusedBlockEditor'
 
@@ -27,6 +29,22 @@ function createProps(overrides?: Partial<FocusedBlockEditorProps>): FocusedBlock
     onSlashMenuKey: jest.fn(() => false),
     ...overrides,
   }
+}
+
+/**
+ * The editor no longer renders the SelectionToolbar itself — it publishes props
+ * via onToolbarPropsChange and the document renders a single toolbar. This
+ * harness reproduces that wiring so the DOM assertions stay meaningful.
+ */
+const ToolbarHarness = (overrides?: Partial<FocusedBlockEditorProps>) => {
+  const [toolbarProps, setToolbarProps] = React.useState<SelectionToolbarProps | null>(null)
+
+  return (
+    <>
+      <FocusedBlockEditor {...createProps(overrides)} onToolbarPropsChange={setToolbarProps} />
+      {toolbarProps ? <SelectionToolbar {...toolbarProps} /> : null}
+    </>
+  )
 }
 
 describe('FocusedBlockEditor', () => {
@@ -74,7 +92,7 @@ describe('FocusedBlockEditor', () => {
   })
 
   describe('as is: selection toolbar visibility on drag-select', () => {
-    // jsdom lacks the layout APIs ProseMirror's mousedown handler touches.
+    // jsdom lacks the layout APIs the toolbar's anchor measurement touches.
     const originalElementFromPoint = document.elementFromPoint
     const rangeProto = Range.prototype as unknown as {
       getClientRects?: () => DOMRectList
@@ -103,40 +121,21 @@ describe('FocusedBlockEditor', () => {
     }
     const toolbar = () => screen.queryByRole('toolbar', { name: 'Text formatting' })
 
-    describe('when a selection is dragged out (mousedown → extend → mouseup)', () => {
-      it('to be: hidden while selecting, shown on release', () => {
-        render(<FocusedBlockEditor {...createProps({ content: [{ type: 'text', text: 'Hello world' }] })} />)
+    describe('when a selection is dragged out', () => {
+      it('to be: shown as soon as the range is non-empty, without a trailing click', () => {
+        render(<ToolbarHarness content={[{ type: 'text', text: 'Hello world' }]} />)
         const host = screen.getByTestId('focused-block-editor')
 
-        // press-and-drag begins: toolbar suppressed even as the range grows
-        act(() => host.dispatchEvent(new MouseEvent('mousedown', { bubbles: true })))
+        // the toolbar tracks the DOM selection live — no mousedown/mouseup gating,
+        // so a drag-select raises it immediately instead of only after a click
         selectAll(host)
-        expect(toolbar()).toBeNull()
-
-        // release: toolbar appears for the finalized selection
-        act(() => document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true })))
-        expect(toolbar()).toBeInTheDocument()
-      })
-    })
-
-    describe('when the release mouseup is stopped from bubbling (regression: stuck isSelectingText)', () => {
-      it('to be: still shown because the listener is capture-phase', () => {
-        render(<FocusedBlockEditor {...createProps({ content: [{ type: 'text', text: 'Hello world' }] })} />)
-        const host = screen.getByTestId('focused-block-editor')
-        // a descendant that swallows the bubbling mouseup (mimics inline drag / menus)
-        host.addEventListener('mouseup', (event) => event.stopPropagation())
-
-        act(() => host.dispatchEvent(new MouseEvent('mousedown', { bubbles: true })))
-        selectAll(host)
-        act(() => host.dispatchEvent(new MouseEvent('mouseup', { bubbles: true })))
-
         expect(toolbar()).toBeInTheDocument()
       })
     })
 
     describe('when the page scrolls with a live selection (bug: fixed anchor detaches)', () => {
       it('to be: re-measures coordsAtPos and repositions the toolbar anchor', () => {
-        render(<FocusedBlockEditor {...createProps({ content: [{ type: 'text', text: 'Hello world' }] })} />)
+        render(<ToolbarHarness content={[{ type: 'text', text: 'Hello world' }]} />)
         const host = screen.getByTestId('focused-block-editor')
         const view = (host as HTMLElement & { pmView?: EditorView }).pmView
         if (!view) throw new Error('pmView missing')

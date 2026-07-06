@@ -191,6 +191,9 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     }
   }, [isLinkPopoverOpen])
   const blockActions = useEditorUISelector(store, (state) => state.blockActions)
+  // The single, editor-level SelectionToolbar. A focused block publishes its
+  // props here; a cross-block range toolbar (below) takes precedence.
+  const focusToolbar = useEditorUISelector(store, (state) => state.selectionToolbar)
 
   // Cross-block native selections have no focused PM to own them, so their
   // keyboard ops (delete, mark toggles) are handled at the document level.
@@ -344,7 +347,12 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
               pointerEvents: 'none',
             }}
           />
-          {rangeToolbar && <SelectionToolbar {...rangeToolbar} />}
+          {/* one toolbar for the whole document; range (cross-block) wins over
+              the focused block's own selection */}
+          {(() => {
+            const activeToolbar = rangeToolbar ?? focusToolbar
+            return activeToolbar ? <SelectionToolbar {...activeToolbar} /> : null
+          })()}
           {linkTarget && (
             <LinkPopover
               target={linkTarget}

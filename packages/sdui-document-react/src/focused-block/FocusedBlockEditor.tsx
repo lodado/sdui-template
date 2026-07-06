@@ -2,14 +2,14 @@ import type { BlockAlign, SduiInlineContent } from '@lodado/sdui-document'
 import { toggleMark } from 'prosemirror-commands'
 import { TextSelection } from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
-import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import { BlockMenu } from '../editor/block-menu/BlockMenu'
 import type { BlockMenuItem } from '../editor/block-menu/blockMenuItems'
 import { filterBlockMenuItems } from '../editor/block-menu/blockMenuItems'
 import type { SelectionSnapshot } from '../selection-toolbar/selectionSnapshot'
 import { buildSelectionSnapshot, selectionSnapshotsEqual } from '../selection-toolbar/selectionSnapshot'
-import { SelectionToolbar } from '../selection-toolbar/SelectionToolbar'
+import type { SelectionToolbarProps } from '../selection-toolbar/SelectionToolbar'
 import { resolveCaretOffset } from './caret'
 import { normalizeLinkHref } from './linkHref'
 import { handleMultilinePaste, insertLineBreaksBetweenBlocks } from './pm/clipboard'
@@ -48,6 +48,13 @@ export type FocusedBlockEditorProps = Omit<
   blockAlign?: BlockAlign | null
   /** Set/clear the block's horizontal alignment from the selection toolbar. */
   onSetAlign?(align: BlockAlign | null): void
+  /**
+   * Publishes this block's SelectionToolbar props (or null when there is no
+   * ranged selection). The document renders a single, editor-level toolbar
+   * from the published props instead of each block mounting its own.
+   */
+  // eslint-disable-next-line react/no-unused-prop-types -- consumed via latestProps ref
+  onToolbarPropsChange?(props: SelectionToolbarProps | null): void
   className?: string
 }
 
@@ -64,9 +71,11 @@ export type FocusedBlockEditorProps = Omit<
  *   so later blur/unmount commits are suppressed (they would be stale)
  * - indent/outdent commit first but do not retire (content is unaffected)
  * - block-boundary keys are delegated via FocusedBlockCallbacks (channel 3)
- * - a ranged selection raises the SelectionToolbar (hidden while the mouse
- *   drag is still in progress — Outline's isSelectingText rule); mark edits
- *   are plain PM transactions, persisted through the normal commit channel
+ * - a ranged selection publishes SelectionToolbar props (onToolbarPropsChange)
+ *   live off the DOM selection (selectionchange), so the editor-level single
+ *   toolbar tracks a drag in progress and appears without a trailing click;
+ *   cross-block selections publish null and are ceded to the range toolbar.
+ *   mark edits are plain PM transactions, persisted through the commit channel
  */
 export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
   // onCommit is intentionally not destructured: it is only reached through
@@ -78,7 +87,6 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
   latestProps.current = props
 
   const [snapshot, setSnapshot] = useState<SelectionSnapshot | null>(null)
-  const [isSelectingText, setIsSelectingText] = useState(false)
 
   const { menu, menuRef, updateMenu } = useBlockMenuState()
   // Select/submit need commitNow/retired from the mount effect — bridged via refs.
@@ -151,6 +159,32 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
     view.dispatch(normalized ? transaction.addMark(from, to, markType.create({ href: normalized })) : transaction)
     view.focus()
   }, [])
+
+  // Assembled once per selection change; SelectionToolbar self-gates on an
+  // empty snapshot, so an empty snapshot still publishes (the editor decides
+  // whether to render). Callbacks are stable, so identity tracks the snapshot.
+  const toolbarProps = useMemo<SelectionToolbarProps | null>(
+    () =>
+      snapshot
+        ? {
+            snapshot,
+            onToggleMark: toggleNamedMark,
+            onSetHighlight: setHighlight,
+            onSetColor: setColor,
+            onSetLink: setLink,
+            blockAlign: blockAlign ?? null,
+            onSetAlign,
+          }
+        : null,
+    [snapshot, toggleNamedMark, setHighlight, setColor, setLink, blockAlign, onSetAlign],
+  )
+
+  // Publish to the editor-level single toolbar; clear on unmount so a stale
+  // block's props never outlive it.
+  useEffect(() => {
+    latestProps.current.onToolbarPropsChange?.(toolbarProps)
+  }, [toolbarProps])
+  useEffect(() => () => latestProps.current.onToolbarPropsChange?.(null), [])
 
   useLayoutEffect(() => {
     const container = containerRef.current
@@ -354,27 +388,25 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
     // jsdom cannot type into contenteditable — tests drive PM through this handle.
     ;(container as HTMLElement & { pmView?: EditorView }).pmView = view
 
-    // Outline's isSelectingText: hide the toolbar while the mouse is dragging
-    // out a selection, show it on release.
-    let pendingSelectionFrame = 0
-    const handleMouseDown = () => setIsSelectingText(true)
-    const handleMouseUp = () => {
-      setIsSelectingText(false)
-      refreshSnapshot()
-      // ProseMirror's DOM observer can finalize the drag selection a tick after
-      // this native mouseup, so a synchronous read may still see the pre-release
-      // (or empty) range. Re-read next frame so the toolbar reliably sees the
-      // full selection and appears. Without this the popover is flaky on drag.
-      if (typeof requestAnimationFrame === 'function') {
-        cancelAnimationFrame(pendingSelectionFrame)
-        pendingSelectionFrame = requestAnimationFrame(() => refreshSnapshot())
+    // Drive the toolbar straight off the DOM selection — the same trigger the
+    // cross-block range toolbar uses — so it tracks a drag live and appears
+    // without a trailing click. A selection that leaves this block is cross-
+    // block: hide here and let the range toolbar own it (avoids two toolbars).
+    const handleSelectionChange = () => {
+      const selection = container.ownerDocument.getSelection()
+      if (
+        selection &&
+        !selection.isCollapsed &&
+        (!container.contains(selection.anchorNode) || !container.contains(selection.focusNode))
+      ) {
+        setSnapshot(null)
+
+        return
       }
+
+      refreshSnapshot()
     }
-    container.addEventListener('mousedown', handleMouseDown)
-    // Capture phase: fire even if a descendant (inline drag/menu) stops the
-    // bubbling mouseup, otherwise isSelectingText could stay stuck true and the
-    // toolbar would never re-appear.
-    document.addEventListener('mouseup', handleMouseUp, true)
+    document.addEventListener('selectionchange', handleSelectionChange)
 
     // The SelectionToolbar anchor is position:fixed at the selection's viewport
     // rect (measured once via coordsAtPos). Scrolling moves the text but not the
@@ -400,9 +432,7 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
     }
 
     return () => {
-      cancelAnimationFrame(pendingSelectionFrame)
-      container.removeEventListener('mousedown', handleMouseDown)
-      document.removeEventListener('mouseup', handleMouseUp, true)
+      document.removeEventListener('selectionchange', handleSelectionChange)
       window.removeEventListener('scroll', refreshSnapshot, true)
       window.removeEventListener('resize', refreshSnapshot)
       delete (container as HTMLElement & { pmView?: EditorView }).pmView
@@ -420,17 +450,6 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
   return (
     <>
       <span ref={containerRef} className={className} data-inline-root data-testid="focused-block-editor" />
-      {snapshot && !isSelectingText ? (
-        <SelectionToolbar
-          snapshot={snapshot}
-          onToggleMark={toggleNamedMark}
-          onSetHighlight={setHighlight}
-          onSetColor={setColor}
-          onSetLink={setLink}
-          blockAlign={blockAlign ?? null}
-          onSetAlign={onSetAlign}
-        />
-      ) : null}
       {menu ? (
         <BlockMenu
           anchor={menu.anchor}
