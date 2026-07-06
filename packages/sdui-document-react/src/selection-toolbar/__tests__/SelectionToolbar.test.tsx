@@ -28,11 +28,12 @@ function makeSnapshot(overrides: Partial<SelectionSnapshot> = {}): SelectionSnap
   }
 }
 
-function renderToolbar(snapshot: SelectionSnapshot) {
+function renderToolbar(snapshot: SelectionSnapshot, align?: { blockAlign: 'left' | 'center' | 'right' | null }) {
   const onToggleMark = jest.fn()
   const onSetHighlight = jest.fn()
   const onSetColor = jest.fn()
   const onSetLink = jest.fn()
+  const onSetAlign = jest.fn()
   render(
     <SelectionToolbar
       snapshot={snapshot}
@@ -40,10 +41,11 @@ function renderToolbar(snapshot: SelectionSnapshot) {
       onSetHighlight={onSetHighlight}
       onSetColor={onSetColor}
       onSetLink={onSetLink}
+      {...(align ? { blockAlign: align.blockAlign, onSetAlign } : {})}
     />,
   )
 
-  return { onToggleMark, onSetHighlight, onSetColor, onSetLink }
+  return { onToggleMark, onSetHighlight, onSetColor, onSetLink, onSetAlign }
 }
 
 describe('SelectionToolbar', () => {
@@ -80,6 +82,48 @@ describe('SelectionToolbar', () => {
 
         expect(screen.getByRole('button', { name: 'Bold' })).toHaveAttribute('aria-pressed', 'true')
         expect(screen.getByRole('button', { name: 'Italic' })).toHaveAttribute('aria-pressed', 'false')
+      })
+    })
+  })
+
+  describe('as is: block alignment controls (single-block range)', () => {
+    describe('when onSetAlign is provided', () => {
+      it('to be: renders the three align buttons', () => {
+        renderToolbar(makeSnapshot(), { blockAlign: null })
+
+        expect(screen.getByRole('button', { name: 'Align left' })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'Align center' })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'Align right' })).toBeInTheDocument()
+      })
+    })
+
+    describe('when onSetAlign is omitted (cross-block range)', () => {
+      it('to be: renders no align buttons', () => {
+        renderToolbar(makeSnapshot())
+
+        expect(screen.queryByRole('button', { name: 'Align right' })).not.toBeInTheDocument()
+      })
+    })
+
+    describe('when an align button is clicked', () => {
+      it('to be: onSetAlign fires with that alignment', async () => {
+        const user = userEvent.setup()
+        const { onSetAlign } = renderToolbar(makeSnapshot(), { blockAlign: null })
+
+        await user.click(screen.getByRole('button', { name: 'Align right' }))
+
+        expect(onSetAlign).toHaveBeenCalledWith('right')
+      })
+    })
+
+    describe('when the active alignment is clicked again (toggle off)', () => {
+      it('to be: onSetAlign fires with null', async () => {
+        const user = userEvent.setup()
+        const { onSetAlign } = renderToolbar(makeSnapshot(), { blockAlign: 'right' })
+
+        await user.click(screen.getByRole('button', { name: 'Align right' }))
+
+        expect(onSetAlign).toHaveBeenCalledWith(null)
       })
     })
   })

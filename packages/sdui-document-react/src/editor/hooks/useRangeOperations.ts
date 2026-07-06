@@ -1,11 +1,18 @@
 import type {
+  BlockAlign,
   SduiDocumentBlock,
   SduiDocumentContent,
   SduiDocumentPatch,
   SduiInlineContent,
   SduiInlineMark,
 } from '@lodado/sdui-document'
-import { createBlockId, findBlockById, getInlineContentLength, inlineState } from '@lodado/sdui-document'
+import {
+  createBlockId,
+  findBlockById,
+  getInlineContentLength,
+  inlineState,
+  resolveBlockAlign,
+} from '@lodado/sdui-document'
 import type React from 'react'
 import { useEffect, useRef, useState } from 'react'
 
@@ -56,6 +63,12 @@ export type CrossBlockToolbar = {
   onSetHighlight: (color: string | null) => void
   onSetColor: (color: string | null) => void
   onSetLink: (href: string | null) => void
+  /**
+   * Block alignment for a SINGLE-block range only (align is a block property,
+   * ambiguous across blocks). Absent for cross-block ranges.
+   */
+  blockAlign?: BlockAlign | null
+  onSetAlign?: (align: BlockAlign | null) => void
 }
 
 export type UseRangeOperationsResult = {
@@ -285,6 +298,9 @@ export function useRangeOperations(input: UseRangeOperationsInput): UseRangeOper
   }
 
   const [toolbarSnapshot, setToolbarSnapshot] = useState<SelectionSnapshot | null>(null)
+  // Alignment is a block property, so it only makes sense for a single-block
+  // range; null for cross-block (ambiguous) or no selection.
+  const [alignTarget, setAlignTarget] = useState<{ blockId: string; align: BlockAlign | null } | null>(null)
 
   // Recompute lives behind a ref so the selectionchange listener stays stable
   // while still reading the latest closures/refs.
@@ -292,6 +308,12 @@ export function useRangeOperations(input: UseRangeOperationsInput): UseRangeOper
   refreshRef.current = () => {
     const range = currentRange()
     setToolbarSnapshot(range ? buildSnapshot(range) : null)
+    if (range && !range.isCrossBlock) {
+      const block = findBlockById(docRef.current, range.start.blockId)
+      setAlignTarget({ blockId: range.start.blockId, align: resolveBlockAlign(block?.attributes?.align) ?? null })
+    } else {
+      setAlignTarget(null)
+    }
   }
   useEffect(() => {
     const onSelectionChange = () => refreshRef.current()
@@ -346,6 +368,23 @@ export function useRangeOperations(input: UseRangeOperationsInput): UseRangeOper
             runToolbarMutation((range) =>
               setMark(range, 'link', href ? ({ type: 'link', attrs: { href } } as SduiInlineMark) : null),
             ),
+          // Single-block only: expose the block's alignment so a static/unfocused
+          // block gets the same align controls the focused editor has.
+          ...(alignTarget
+            ? {
+                blockAlign: alignTarget.align,
+                onSetAlign: (next: BlockAlign | null) =>
+                  runToolbarMutation((range) =>
+                    applyPatches([
+                      {
+                        type: 'block.update',
+                        blockId: createBlockId(range.start.blockId),
+                        attributes: { align: next ?? undefined },
+                      },
+                    ]),
+                  ),
+              }
+            : {}),
         }
 
   // Plain-text serialization of the range: each covered block's covered slice,

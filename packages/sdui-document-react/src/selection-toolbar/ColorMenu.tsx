@@ -43,7 +43,7 @@ export const ColorMenu = ({ activeTextColor, activeHighlight, onSetColor, onSetH
             aria-pressed={activeTextColor === color.hex}
             data-active={activeTextColor === color.hex || undefined}
             onMouseDown={(event) => event.preventDefault()}
-            onClick={() => onSetColor(color.hex)}
+            onClick={() => onSetColor(activeTextColor === color.hex ? null : color.hex)}
           >
             A
           </button>
@@ -73,7 +73,7 @@ export const ColorMenu = ({ activeTextColor, activeHighlight, onSetColor, onSetH
             aria-pressed={activeHighlight === color.hex}
             data-active={activeHighlight === color.hex || undefined}
             onMouseDown={(event) => event.preventDefault()}
-            onClick={() => onSetHighlight(color.hex)}
+            onClick={() => onSetHighlight(activeHighlight === color.hex ? null : color.hex)}
           />
         ))}
       </div>

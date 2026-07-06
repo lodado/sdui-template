@@ -127,6 +127,18 @@
   min-width: 0;
 }
 
+/* Block alignment from the selection toolbar (attributes.align → data-align).
+   text-align covers text blocks and inline media flow. */
+[data-sdui-document-editor] [data-block-content][data-align='left'] {
+  text-align: left;
+}
+[data-sdui-document-editor] [data-block-content][data-align='center'] {
+  text-align: center;
+}
+[data-sdui-document-editor] [data-block-content][data-align='right'] {
+  text-align: right;
+}
+
 /* re-center the 24px handles on the first line box: text starts after the
    block's 3px top padding and a paragraph line box is exactly 24px, so this
    reproduces the old single-line centered position pixel for pixel */
