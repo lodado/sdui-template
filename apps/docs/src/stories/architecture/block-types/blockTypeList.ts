@@ -16,6 +16,7 @@ export const BLOCK_TYPE_IDS = [
   'document.link',
   'document.columnList',
   'document.column',
+  'document.toc',
 ] as const
 
 export type BlockTypeId = (typeof BLOCK_TYPE_IDS)[number]

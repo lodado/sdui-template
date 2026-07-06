@@ -267,3 +267,62 @@ export const blockMenuContent: SduiDocumentContent = {
     ],
   }),
 }
+
+/** Cheap-wins bucket demo: TOC block, emoji callout, inline @date chip. */
+export const cheapWinsContent: SduiDocumentContent = {
+  schemaVersion: '1.0',
+  root: createDocumentBlock({
+    id: 'cw-root',
+    type: 'document.root',
+    children: [
+      createDocumentBlock({
+        id: 'cw-toc',
+        type: 'document.toc',
+      }),
+      createDocumentBlock({
+        id: 'cw-h1',
+        type: 'document.heading',
+        attributes: { level: 1 },
+        state: { content: [{ type: 'text', text: '개요' }], text: '개요' },
+      }),
+      createDocumentBlock({
+        id: 'cw-callout',
+        type: 'document.callout',
+        attributes: { tone: 'tip', icon: '🔥' },
+        state: {
+          content: [{ type: 'text', text: '콜아웃 아이콘은 이모지로 바꿀 수 있습니다 (편집 시 아이콘 클릭).' }],
+          text: '콜아웃 아이콘은 이모지로 바꿀 수 있습니다 (편집 시 아이콘 클릭).',
+        },
+      }),
+      createDocumentBlock({
+        id: 'cw-h2',
+        type: 'document.heading',
+        attributes: { level: 2 },
+        state: { content: [{ type: 'text', text: '일정' }], text: '일정' },
+      }),
+      createDocumentBlock({
+        id: 'cw-date',
+        type: 'document.paragraph',
+        state: {
+          content: [
+            { type: 'text', text: '마감일 ' },
+            { type: 'date', iso: '2026-07-06', display: '2026년 7월 6일' },
+            { type: 'text', text: ' 까지. 본문에서 "@today "를 입력하면 날짜 칩이 삽입됩니다.' },
+          ],
+          text: '마감일 2026년 7월 6일 까지. 본문에서 "@today "를 입력하면 날짜 칩이 삽입됩니다.',
+        },
+      }),
+      createDocumentBlock({
+        id: 'cw-h2b',
+        type: 'document.heading',
+        attributes: { level: 2 },
+        state: { content: [{ type: 'text', text: '참고' }], text: '참고' },
+      }),
+      createDocumentBlock({
+        id: 'cw-p',
+        type: 'document.paragraph',
+        state: { text: '맨 위 목차는 제목 블록에서 자동 파생됩니다. 항목을 클릭하면 해당 제목으로 스크롤됩니다.' },
+      }),
+    ],
+  }),
+}

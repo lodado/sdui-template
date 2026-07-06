@@ -221,6 +221,17 @@ const REACT_GROUP: FeatureGroup = {
       api: 'EditorUIStore',
       file: 'editor/uiStore.ts',
     },
+    {
+      name: '노션 cheap-wins (프론트 전용)',
+      what: (
+        <>
+          문서 카운트·이모지 피커·목차 블록·인라인 @날짜. 목차는 <code>DocumentContentContext</code>로 라이브 파생(전체
+          리렌더 회피), @날짜는 입력 규칙(<code>@today</code>·<code>@YYYY-MM-DD</code>)으로 삽입.
+        </>
+      ),
+      api: 'DocumentCounts, EmojiPicker, document.toc, SduiInlineDateNode',
+      file: 'editor/DocumentCounts.tsx, emoji/, block-types/toc/, focused-block/pm/dateInputRules.ts',
+    },
   ],
 }
 
