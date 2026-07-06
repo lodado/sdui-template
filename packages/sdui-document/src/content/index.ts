@@ -1,3 +1,4 @@
+export * from './collectHeadings'
 export * from './documentStats'
 export * from './errors'
 export * from './inlineBuilders'
