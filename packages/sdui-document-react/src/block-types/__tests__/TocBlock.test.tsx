@@ -40,10 +40,10 @@ it('lists headings and scrolls to the target on click', () => {
     </div>,
   )
 
-  expect(screen.getByRole('link', { name: 'Intro' })).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Details' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Intro' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Details' })).toBeInTheDocument()
 
-  fireEvent.click(screen.getByRole('link', { name: 'Intro' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Intro' }))
   expect(scrollSpy).toHaveBeenCalled()
 })
 

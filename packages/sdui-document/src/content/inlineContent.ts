@@ -50,10 +50,18 @@ export function getInlineContentLength(content: SduiInlineContent): number {
 /**
  * Converts inline content to plain text; marks are stripped, hard_break becomes "\n".
  */
+function nodePlainText(node: SduiInlineNode): string {
+  if (isInlineTextNode(node)) {
+    return node.text
+  }
+  if (isInlineDateNode(node)) {
+    return node.display ?? node.iso
+  }
+  return '\n'
+}
+
 export function inlineContentToPlainText(content: SduiInlineContent): string {
-  return content
-    .map((node) => (isInlineTextNode(node) ? node.text : isInlineDateNode(node) ? node.display ?? node.iso : '\n'))
-    .join('')
+  return content.map(nodePlainText).join('')
 }
 
 /**

@@ -1428,6 +1428,12 @@ blockquote.quote-block {
   padding: 4px 0;
 }
 .toc-block__item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  font: inherit;
   color: var(--sdui-text, #37352f);
   text-decoration: none;
   cursor: pointer;

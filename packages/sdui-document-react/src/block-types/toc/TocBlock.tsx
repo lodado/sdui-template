@@ -26,22 +26,15 @@ export const TocBlock = () => {
   return (
     <nav className="toc-block" aria-label="Table of contents">
       {headings.map((heading) => (
-        <a
+        <button
           key={heading.id}
-          role="link"
-          tabIndex={0}
+          type="button"
           className={`toc-block__item toc-block__item--l${heading.level}`}
           style={{ paddingLeft: `${(heading.level - 1) * 12}px` }}
           onClick={() => goToHeading(heading.id)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-              event.preventDefault()
-              goToHeading(heading.id)
-            }
-          }}
         >
           {heading.text}
-        </a>
+        </button>
       ))}
     </nav>
   )
