@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 
 @source "../../../packages/sdui-template-component/src/**/*.{ts,tsx}";
+@source "../../../packages/sdui-document-react/src/**/*.{ts,tsx}";
 @source "../**/*.{ts,tsx}";
 
 /* Base styles */

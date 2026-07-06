@@ -5,22 +5,18 @@ import { safeHref } from '../../inline/safeHref'
 import type { BlockChromeProps } from '../BlockChrome'
 import { blockText } from '../blockText'
 
+function stringAttr(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined
+}
+
 function resolveLinkHref(block: BlockChromeProps['block']): string | undefined {
-  const hrefAttr = block.attributes?.href
-  const urlAttr = block.attributes?.url
-  const raw = typeof hrefAttr === 'string' ? hrefAttr : typeof urlAttr === 'string' ? urlAttr : undefined
+  const raw = stringAttr(block.attributes?.href) ?? stringAttr(block.attributes?.url)
   return raw ? safeHref(raw) : undefined
 }
 
 export const LinkBlock = ({ block }: BlockChromeProps) => {
   const href = resolveLinkHref(block)
-  const fallback =
-    blockText(block) ||
-    (typeof block.attributes?.href === 'string'
-      ? block.attributes.href
-      : typeof block.attributes?.url === 'string'
-      ? block.attributes.url
-      : '')
+  const fallback = blockText(block) || stringAttr(block.attributes?.href) || stringAttr(block.attributes?.url) || ''
 
   return href ? (
     <a {...externalLinkProps(href)}>{fallback}</a>
