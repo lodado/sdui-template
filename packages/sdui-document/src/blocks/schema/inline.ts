@@ -26,7 +26,14 @@ export type SduiInlineHardBreakNode = {
   type: 'hard_break'
 }
 
-export type SduiInlineNode = SduiInlineTextNode | SduiInlineHardBreakNode
+/** Inline date chip (e.g. inserted via `@`). Leaf node: occupies 1 offset unit. */
+export type SduiInlineDateNode = {
+  type: 'date'
+  iso: string
+  display?: string
+}
+
+export type SduiInlineNode = SduiInlineTextNode | SduiInlineHardBreakNode | SduiInlineDateNode
 
 export type SduiInlineContent = SduiInlineNode[]
 
@@ -36,4 +43,8 @@ export function isInlineTextNode(node: SduiInlineNode): node is SduiInlineTextNo
 
 export function isInlineHardBreakNode(node: SduiInlineNode): node is SduiInlineHardBreakNode {
   return node.type === 'hard_break'
+}
+
+export function isInlineDateNode(node: SduiInlineNode): node is SduiInlineDateNode {
+  return node.type === 'date'
 }

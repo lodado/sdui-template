@@ -12,6 +12,7 @@ const inlineNodeSchema = z.union([
     marks: z.array(inlineMarkSchema).optional(),
   }),
   z.object({ type: z.literal('hard_break') }),
+  z.object({ type: z.literal('date'), iso: z.string(), display: z.string().optional() }),
 ])
 
 const inlineContentSchema = z.array(inlineNodeSchema)
