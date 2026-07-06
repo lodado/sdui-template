@@ -262,8 +262,9 @@ const CorePage = () => {
       <DocSection index="2.7" label="Autosave" title="Autosave 상태 머신">
         <Prose>
           <p>
-            <code>reduceAutosaveState(state, event)</code> 는 타이머도 네트워크도 없는 순수 리듀서입니다. 저장 루프가
-            발생시킬 이벤트를 직접 디스패치하며 상태 전이를 확인하세요.
+            <code>reduceAutosaveState(state, event)</code> 는 타이머도 네트워크도 없는 순수 리듀서입니다.{' '}
+            <code>pendingPatchCount</code>는 “아직 서버에 안 올라간 편집” 신호이고, 패치 JSON 큐는 앱·outbox가
+            소유합니다. 저장 루프 조립·전이 규칙은 <strong>Deep Dive 06 §6.3</strong> 참조.
           </p>
         </Prose>
         <DemoFrame title="reduceAutosaveState" hint="이벤트를 눌러 상태 전이 관찰">

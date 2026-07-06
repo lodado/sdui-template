@@ -137,8 +137,13 @@ const CORE_GROUP: FeatureGroup = {
     },
     {
       name: 'Autosave 상태 머신',
-      what: <>local·saving·offline 전이를 결정론적 리듀서로. 언제 flush할지, 네트워크 에러를 어떻게 큐잉할지 정의.</>,
-      api: 'autosaveReducer, AutosaveState',
+      what: (
+        <>
+          <code>pendingPatchCount</code>·offline·failed 전이만 순수 리듀서로. 패치 본문 큐는 앱 <code>patchQueue</code>{' '}
+          또는 협업 <code>outbox</code>. <strong>Deep Dive 06 §6.3</strong>.
+        </>
+      ),
+      api: 'reduceAutosaveState, AutosaveState, pendingPatchCount',
       file: 'autosave/autosaveMachine.ts',
     },
     {
