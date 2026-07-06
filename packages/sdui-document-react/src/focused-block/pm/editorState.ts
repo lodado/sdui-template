@@ -7,6 +7,7 @@ import type { Command } from 'prosemirror-state'
 import { EditorState } from 'prosemirror-state'
 
 import { MARK_DEFINITIONS } from '../../marks'
+import { buildDateInputRules } from './dateInputRules'
 import { buildBlockTypeInputRules, buildMarkInputRules } from './inputRules'
 import type { FocusedBlockCallbacks, FocusedBlockKeymapOptions } from './keymapDelegation'
 import { buildFocusedBlockKeymap } from './keymapDelegation'
@@ -50,6 +51,7 @@ export function createFocusedBlockEditorState(
       buildFocusedBlockKeymap(callbacks, options),
       buildBlockTypeInputRules(callbacks),
       buildMarkInputRules(),
+      buildDateInputRules(),
       history(),
       keymap({
         // Two-tier history: PM's inline undo/redo runs first; when it has
