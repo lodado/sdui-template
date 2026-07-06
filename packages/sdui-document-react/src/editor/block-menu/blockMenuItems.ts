@@ -138,6 +138,14 @@ export const BLOCK_MENU_ITEMS: readonly BlockMenuItem[] = [
     action: 'link',
     keywords: ['link', 'url', 'bookmark', '링크', '주소'],
   },
+  {
+    id: 'toc',
+    type: 'document.toc',
+    title: 'Table of contents',
+    glyph: '≡',
+    action: 'insert',
+    keywords: ['toc', 'contents', 'outline', 'table of contents', '목차', '개요'],
+  },
 ]
 
 export function filterBlockMenuItems(query: string): BlockMenuItem[] {

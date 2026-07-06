@@ -18,7 +18,13 @@ describe('blockMenuItems', () => {
       'image',
       'file',
       'link',
+      'toc',
     ])
+  })
+
+  test('offers a table of contents item', () => {
+    expect(filterBlockMenuItems('contents').map((item) => item.type)).toContain('document.toc')
+    expect(filterBlockMenuItems('목차').map((item) => item.type)).toContain('document.toc')
   })
 
   test.each([
