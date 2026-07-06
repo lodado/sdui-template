@@ -1,5 +1,5 @@
 import type { SduiInlineContent, SduiInlineNode, SduiInlineTextNode } from '../blocks/schema/inline'
-import { isInlineTextNode } from '../blocks/schema/inline'
+import { isInlineDateNode, isInlineTextNode } from '../blocks/schema/inline'
 import { cloneMark, marksEqual } from '../marks'
 import { InvalidInlineOffsetError } from './errors'
 
@@ -11,6 +11,10 @@ function cloneNode(node: SduiInlineNode): SduiInlineNode {
     }
 
     return cloned
+  }
+
+  if (isInlineDateNode(node)) {
+    return { type: 'date', iso: node.iso, ...(node.display ? { display: node.display } : {}) }
   }
 
   return { type: 'hard_break' }
@@ -47,7 +51,9 @@ export function getInlineContentLength(content: SduiInlineContent): number {
  * Converts inline content to plain text; marks are stripped, hard_break becomes "\n".
  */
 export function inlineContentToPlainText(content: SduiInlineContent): string {
-  return content.map((node) => (isInlineTextNode(node) ? node.text : '\n')).join('')
+  return content
+    .map((node) => (isInlineTextNode(node) ? node.text : isInlineDateNode(node) ? node.display ?? node.iso : '\n'))
+    .join('')
 }
 
 /**
