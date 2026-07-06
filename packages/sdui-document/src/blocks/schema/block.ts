@@ -13,6 +13,7 @@ import { NUMBERED_LIST_BLOCK_TYPE } from '../../block-types/numbered-list/number
 import { PARAGRAPH_BLOCK_TYPE } from '../../block-types/paragraph/paragraph.type'
 import { QUOTE_BLOCK_TYPE } from '../../block-types/quote/quote.type'
 import { ROOT_BLOCK_TYPE } from '../../block-types/root/root.type'
+import { TOC_BLOCK_TYPE } from '../../block-types/toc/toc.type'
 import { TOGGLE_BLOCK_TYPE } from '../../block-types/toggle/toggle.type'
 import { createBlockId, type SduiDocumentBlockId } from './ids'
 
@@ -44,6 +45,7 @@ export type SduiDocumentBlockType =
   | typeof CODE_BLOCK_TYPE
   | typeof COLUMN_LIST_BLOCK_TYPE
   | typeof COLUMN_BLOCK_TYPE
+  | typeof TOC_BLOCK_TYPE
 
 export type SduiDocumentBlock = {
   id: SduiDocumentBlockId

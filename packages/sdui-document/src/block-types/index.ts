@@ -15,6 +15,7 @@ import { numberedListBlockModule } from './numbered-list/numberedList'
 import { paragraphBlockModule } from './paragraph/paragraph'
 import { quoteBlockModule } from './quote/quote'
 import { rootBlockModule } from './root/root'
+import { tocBlockModule } from './toc/toc'
 import { toggleBlockModule } from './toggle/toggle'
 import type { BlockLinkRef, SduiBlockTypeModule } from './types'
 
@@ -46,6 +47,7 @@ export const BLOCK_TYPE_MODULES: readonly SduiBlockTypeModule[] = [
   linkBlockModule,
   columnListBlockModule,
   columnBlockModule,
+  tocBlockModule,
 ]
 
 export const blockModuleByType: Record<string, SduiBlockTypeModule> = BLOCK_TYPE_MODULES.reduce(
@@ -87,6 +89,7 @@ export { PARAGRAPH_BLOCK_TYPE } from './paragraph/paragraph.type'
 export { QUOTE_BLOCK_TYPE } from './quote/quote.type'
 export { ROOT_BLOCK_TYPE } from './root/root.type'
 export { type BlockAlign, blockAlignSchema, resolveBlockAlign } from './shared/align'
+export { TOC_BLOCK_TYPE } from './toc/toc.type'
 export { TOGGLE_BLOCK_TYPE } from './toggle/toggle.type'
 export type {
   BlockFromMarkdownContext,
