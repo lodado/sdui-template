@@ -392,6 +392,7 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
     // cross-block range toolbar uses — so it tracks a drag live and appears
     // without a trailing click. A selection that leaves this block is cross-
     // block: hide here and let the range toolbar own it (avoids two toolbars).
+    let pendingSelectionFrame = 0
     const handleSelectionChange = () => {
       const selection = container.ownerDocument.getSelection()
       if (
@@ -404,7 +405,16 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
         return
       }
 
+      // buildSelectionSnapshot reads PM's *state* selection, which PM syncs from
+      // the DOM a tick after this event, and coordsAtPos needs layout. A purely
+      // synchronous read can miss a drag's final range (empty snapshot → no
+      // toolbar). Read now for responsiveness, then re-read next frame so the
+      // settled selection + measurable rect reliably land the toolbar.
       refreshSnapshot()
+      if (typeof requestAnimationFrame === 'function') {
+        cancelAnimationFrame(pendingSelectionFrame)
+        pendingSelectionFrame = requestAnimationFrame(() => refreshSnapshot())
+      }
     }
     document.addEventListener('selectionchange', handleSelectionChange)
 
@@ -432,6 +442,7 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
     }
 
     return () => {
+      cancelAnimationFrame(pendingSelectionFrame)
       document.removeEventListener('selectionchange', handleSelectionChange)
       window.removeEventListener('scroll', refreshSnapshot, true)
       window.removeEventListener('resize', refreshSnapshot)
