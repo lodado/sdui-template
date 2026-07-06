@@ -413,7 +413,7 @@ const BlockRow = React.memo(({ block, depth, readOnly, listOrdinal }: BlockNodeP
       ) : null}
       {isExpandedEmptyToggle ? (
         <div data-block-nested style={{ paddingLeft: DRAG_INDENT_WIDTH }}>
-          <div className="toggle-empty-placeholder">Empty toggle. Click or drop blocks inside.</div>
+          <div className="toggle-empty-placeholder">Empty toggle. Press Enter, click, or drop blocks inside.</div>
         </div>
       ) : null}
     </div>

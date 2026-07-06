@@ -107,4 +107,52 @@ describe('notion keyboard semantics', () => {
       expect(container.querySelector('[data-block-id="n1"] .list-marker')).not.toBeInTheDocument()
     })
   })
+
+  describe('as is: toggle "hi" (expanded)', () => {
+    it('to be: Enter inserts a paragraph as the toggle first child, not a sibling', async () => {
+      const user = userEvent.setup()
+      const { allPatches } = renderEditor([
+        createDocumentBlock({
+          id: 't1',
+          type: 'document.toggle',
+          state: { text: 'hi' },
+          attributes: { collapsed: false },
+        }),
+      ])
+
+      await user.click(screen.getByText('hi'))
+      await user.keyboard('{End}{Enter}')
+
+      const patches = allPatches()
+      expect(patches).toEqual(
+        expect.arrayContaining([expect.objectContaining({ type: 'block.insert', parentId: 't1', after: null })]),
+      )
+      expect(patches.filter((patch) => (patch as { type: string }).type === 'block.split')).toEqual([])
+    })
+  })
+
+  describe('as is: toggle "hi" (collapsed)', () => {
+    it('to be: Enter expands the toggle and inserts a first child', async () => {
+      const user = userEvent.setup()
+      const { allPatches } = renderEditor([
+        createDocumentBlock({
+          id: 't1',
+          type: 'document.toggle',
+          state: { text: 'hi' },
+          attributes: { collapsed: true },
+        }),
+      ])
+
+      await user.click(screen.getByText('hi'))
+      await user.keyboard('{End}{Enter}')
+
+      const patches = allPatches()
+      expect(patches).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ type: 'block.update', blockId: 't1', attributes: { collapsed: false } }),
+          expect.objectContaining({ type: 'block.insert', parentId: 't1', after: null }),
+        ]),
+      )
+    })
+  })
 })

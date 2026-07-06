@@ -244,6 +244,32 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
           return
         }
 
+        // Notion: Enter on a toggle summary opens the toggle and starts typing
+        // its first child block (instead of splitting to a sibling). Once the
+        // caret is inside a child, split() is called with the child's id and
+        // takes the normal path below.
+        if (source && source.type === 'document.toggle') {
+          const childId = latest.current.generateBlockId()
+          const togglePatches: SduiDocumentPatch[] = []
+          if (source.attributes?.collapsed === true) {
+            togglePatches.push({
+              type: 'block.update',
+              blockId: createBlockId(blockId),
+              attributes: { collapsed: false },
+            })
+          }
+          togglePatches.push({
+            type: 'block.insert',
+            parentId: createBlockId(blockId),
+            after: null, // front of parent = first child
+            block: createDefaultBlock('document.paragraph', childId),
+          })
+          latest.current.applyPatches(togglePatches)
+          refocus(childId, 'start', true)
+
+          return
+        }
+
         const newBlockId = latest.current.generateBlockId()
         const patches: SduiDocumentPatch[] = [
           { type: 'block.split', blockId: createBlockId(blockId), offset, newBlockId: createBlockId(newBlockId) },
