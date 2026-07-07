@@ -11,7 +11,7 @@ import { expect, test } from '@playwright/test'
 const EDITOR = '[data-sdui-document-editor]'
 
 async function dragHandleToRowEdge(page: Page, activeId: string, overId: string, xRatio: number) {
-  const handle = page.getByRole('button', { name: `Drag block ${activeId}` })
+  const handle = page.locator(`[data-drag-handle][aria-label="Drag block ${activeId}"]`)
   const targetRow = page.locator(`[data-block-id="${overId}"] [data-block-row]`).first()
   await page.locator(`[data-block-id="${activeId}"] [data-block-row]`).first().hover()
   const handleBox = await handle.boundingBox()

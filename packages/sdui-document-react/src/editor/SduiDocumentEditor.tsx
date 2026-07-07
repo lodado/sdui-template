@@ -14,9 +14,10 @@ import {
 import type { SelectionToolbarProps } from '../selection-toolbar/SelectionToolbar'
 import { SelectionToolbar } from '../selection-toolbar/SelectionToolbar'
 import { BlockActionsMenu } from './block-menu/BlockActionsMenu'
-import { defaultGenerateBlockId, numberedListOrdinals } from './blockContent'
+import { defaultGenerateBlockId } from './blockContent'
 import { BlockNode } from './BlockNode'
 import { DocumentContentProvider } from './DocumentContentContext'
+import { createRenderModelStore } from './renderModel/RenderModelStore'
 import { collisionDetection, DRAG_INDENT_WIDTH, POINTER_SENSOR_OPTIONS } from './editorConstants'
 import { type EditorRuntime, EditorRuntimeContext, useEditorRuntime } from './EditorRuntimeContext'
 import { useDocumentPatches } from './hooks/useDocumentPatches'
@@ -26,6 +27,7 @@ import { useNestedBlockDragDrop } from './hooks/useNestedBlockDragDrop'
 import { useRangeOperations } from './hooks/useRangeOperations'
 import { useSelectionKeyboard } from './hooks/useSelectionKeyboard'
 import { LinkPopover, type LinkPopoverTarget } from './LinkPopover'
+import { rafThrottle } from '../shared/rafThrottle'
 import type { EditorUIStore } from './uiStore'
 import { createEditorUIStore, useEditorUISelector } from './uiStore'
 
@@ -102,12 +104,32 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     apiRef,
   } = props
 
+  // Render model: rows subscribe per-id so a single-block edit re-renders only
+  // that row (O(1)) instead of the root->block ancestor path. Kept in sync at
+  // the document's single publish choke point (onPublish) — synchronously,
+  // before the state update re-renders, so a freshly inserted block already has
+  // an entry by the time its row mounts.
+  const renderStoreRef = useRef<ReturnType<typeof createRenderModelStore>>()
+  if (!renderStoreRef.current) {
+    renderStoreRef.current = createRenderModelStore()
+  }
+  const renderStore = renderStoreRef.current
+
   const { doc, docRef, applyPatches, undo, redo } = useDocumentPatches({
     content,
     onContentChange,
+    onPublish: (prev, next) => renderStore.sync(prev.root, next.root),
     generateBlockId,
     readOnly,
   })
+
+  // Seed the render model once, before children first render.
+  const renderSeededRef = useRef(false)
+  if (!renderSeededRef.current) {
+    renderStore.sync(null, doc.root)
+    renderSeededRef.current = true
+  }
+
   const containerRef = useRef<HTMLDivElement>(null)
   const indicatorRef = useRef<HTMLDivElement>(null)
   const inlineCaretRef = useRef<HTMLDivElement>(null)
@@ -132,7 +154,7 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     onTurnInto,
     onUploadFile,
   })
-  const runtime = useMemo<EditorRuntime>(() => ({ store, handlers }), [store, handlers])
+  const runtime = useMemo<EditorRuntime>(() => ({ store, handlers, renderStore }), [store, handlers, renderStore])
 
   useInlineTextDragDrop({
     docRef,
@@ -194,18 +216,19 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     if (!isLinkPopoverOpen) {
       return undefined
     }
-    const reposition = () => {
+    const reposition = rafThrottle(() => {
       const el = linkAnchorRef.current
       if (!el || !el.isConnected) {
         setLinkTarget(null)
         return
       }
       setLinkTarget((prev) => (prev ? { ...prev, rect: el.getBoundingClientRect() } : prev))
-    }
+    })
     // Capture phase catches nested scroll containers (scroll doesn't bubble).
     window.addEventListener('scroll', reposition, true)
     window.addEventListener('resize', reposition)
     return () => {
+      reposition.cancel()
       window.removeEventListener('scroll', reposition, true)
       window.removeEventListener('resize', reposition)
     }
@@ -297,18 +320,9 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
             onClickCapture={handleLinkClickCapture}
             style={{ outline: 'none', position: 'relative' }}
           >
-            {(() => {
-              const ordinals = numberedListOrdinals(doc.root.children ?? [])
-              return doc.root.children?.map((child) => (
-                <BlockNode
-                  key={child.id}
-                  block={child}
-                  depth={1}
-                  readOnly={readOnly}
-                  listOrdinal={ordinals.get(child.id)}
-                />
-              ))
-            })()}
+            {doc.root.children?.map((child) => (
+              <BlockNode key={child.id} id={child.id} depth={1} readOnly={readOnly} />
+            ))}
             {!readOnly && (
               // Outline ClickablePadding: a text-cursor strip below the last
               // block; keyboard users reach the same spot via ArrowDown.
@@ -399,11 +413,11 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
                   runtime.handlers.moveBlock(blockActions.blockId, 'down')
                   runtime.handlers.closeBlockActions()
                 }}
-          onDelete={() => runtime.handlers.deleteBlock(blockActions.blockId)}
-          onClose={() => runtime.handlers.closeBlockActions()}
-          onCancel={() => store.set({ selection: clearBlockSelection(), blockActions: null })}
-        />
-      )}
+                onDelete={() => runtime.handlers.deleteBlock(blockActions.blockId)}
+                onClose={() => runtime.handlers.closeBlockActions()}
+                onCancel={() => store.set({ selection: clearBlockSelection(), blockActions: null })}
+              />
+            )}
           </div>
         </DndContext>
       </DocumentContentProvider>

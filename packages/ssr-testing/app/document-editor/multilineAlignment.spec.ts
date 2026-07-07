@@ -73,10 +73,10 @@ test.describe('Shift-Enter 멀티라인 정렬', () => {
 
     const firstLineCenter = row.y + PAD_Y + LINE / 2
     expect(
-      Math.abs((await centerY(page.getByRole('button', { name: 'Drag block p1' }))) - firstLineCenter),
+      Math.abs((await centerY(page.locator('[data-drag-handle][aria-label="Drag block p1"]'))) - firstLineCenter),
     ).toBeLessThanOrEqual(TOLERANCE)
     expect(
-      Math.abs((await centerY(page.getByRole('button', { name: 'Add block below p1' }))) - firstLineCenter),
+      Math.abs((await centerY(page.locator('[data-plus-handle][aria-label="Add block below p1"]'))) - firstLineCenter),
     ).toBeLessThanOrEqual(TOLERANCE)
   })
 
@@ -85,7 +85,7 @@ test.describe('Shift-Enter 멀티라인 정렬', () => {
     const rowCenter = row.y + row.height / 2
 
     expect(
-      Math.abs((await centerY(page.getByRole('button', { name: 'Drag block p2' }))) - rowCenter),
+      Math.abs((await centerY(page.locator('[data-drag-handle][aria-label="Drag block p2"]'))) - rowCenter),
     ).toBeLessThanOrEqual(TOLERANCE)
   })
 
@@ -102,7 +102,7 @@ test.describe('Shift-Enter 멀티라인 정렬', () => {
     const firstLineCenter = heading.y + PAD_Y + (28 * 1.5) / 2
 
     expect(
-      Math.abs((await centerY(page.getByRole('button', { name: 'Drag block p2' }))) - firstLineCenter),
+      Math.abs((await centerY(page.locator('[data-drag-handle][aria-label="Drag block p2"]'))) - firstLineCenter),
     ).toBeLessThanOrEqual(TOLERANCE)
   })
 })

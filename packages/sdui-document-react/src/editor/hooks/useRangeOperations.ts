@@ -20,6 +20,7 @@ import { deleteInlineRange } from '../../inline/deleteInlineRange'
 import type { NormalizedRange } from '../../inline/docRange'
 import { normalizeDocRange, readDocRangeFromDom } from '../../inline/docRange'
 import { domPositionFromInlineOffset } from '../../inline/domInlineOffsets'
+import { inlineToHtml } from '../../inline/inlineToHtml'
 import {
   addMarkInRange,
   coveredTextSegments,
@@ -28,8 +29,42 @@ import {
   removeMarkInRange,
 } from '../../inline/inlineRangeMarks'
 import type { SelectionSnapshot } from '../../selection-toolbar/selectionSnapshot'
+import { rafThrottle } from '../../shared/rafThrottle'
 import { blockInlineContent, isTextBlock } from '../blockContent'
 import type { EditorUIStore, FocusTarget } from '../uiStore'
+
+/** Private clipboard mime for SDUI→SDUI rich paste (marks + block breaks). */
+const SDUI_INLINE_MIME = 'application/x-sdui-inline'
+
+/**
+ * Validate untrusted clipboard payload before inserting it into the document.
+ * Returns the inline content only when it is a non-empty array of well-formed
+ * nodes; anything else falls back to the plain-text paste path.
+ */
+function parseInlineClipboard(raw: string | undefined): SduiInlineContent | null {
+  if (!raw) {
+    return null
+  }
+  try {
+    const parsed: unknown = JSON.parse(raw)
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      return null
+    }
+    const isValid = parsed.every((node): boolean => {
+      if (!node || typeof node !== 'object') {
+        return false
+      }
+      const type = (node as { type?: unknown }).type
+      if (type === 'hard_break' || type === 'date') {
+        return true
+      }
+      return type === 'text' && typeof (node as { text?: unknown }).text === 'string'
+    })
+    return isValid ? (parsed as SduiInlineContent) : null
+  } catch {
+    return null
+  }
+}
 
 /** Mark names the cross-block toolbar reflects an active state for. */
 const TOOLBAR_MARK_NAMES = ['bold', 'italic', 'strikethrough', 'code', 'underline'] as const
@@ -123,7 +158,13 @@ export function useRangeOperations(input: UseRangeOperationsInput): UseRangeOper
   // Notion delete/replace: the surviving prefix of the start block, the typed
   // text (empty for a plain delete), and the suffix of the end block merge into
   // one block; every block between them is removed.
-  const mutateRange = (range: NormalizedRange, insertText: string) => {
+  const mutateRange = (range: NormalizedRange, insert: string | SduiInlineContent) => {
+    // Accepts plain text (typing / external paste) or rich inline content
+    // (mark-preserving cross-block paste). String collapses to a single text node.
+    const insertContent: SduiInlineContent =
+      typeof insert === 'string' ? (insert ? [{ type: 'text', text: insert }] : []) : insert
+    const insertLength = getInlineContentLength(insertContent)
+
     const startBlock = findBlockById(docRef.current, range.start.blockId)
     const endBlock = findBlockById(docRef.current, range.end.blockId)
     const startIsText = startBlock !== undefined && isTextBlock(startBlock)
@@ -139,16 +180,14 @@ export function useRangeOperations(input: UseRangeOperationsInput): UseRangeOper
         getInlineContentLength(blockInlineContent(startBlock)),
       )
       const tail = endIsText ? deleteInlineRange(blockInlineContent(endBlock), 0, range.end.offset) : []
-      // ponytail: typed text is plain; mark inheritance from the left edge can come later
-      const inserted = insertText ? [{ type: 'text' as const, text: insertText }] : []
       patches.push({
         type: 'block.update',
         blockId: createBlockId(range.start.blockId),
-        state: inlineState([...head, ...inserted, ...tail]),
+        state: inlineState([...head, ...insertContent, ...tail]),
       })
       // delete everything after the start block, up to and including the end
       range.blockIds.slice(1).forEach((id) => patches.push({ type: 'block.delete', blockId: createBlockId(id) }))
-      caretTarget = { blockId: range.start.blockId, offset: range.start.offset + insertText.length }
+      caretTarget = { blockId: range.start.blockId, offset: range.start.offset + insertLength }
     } else {
       // start is non-text (image/divider): drop it and the middles; keep the
       // end block's suffix if it is text.
@@ -321,12 +360,16 @@ export function useRangeOperations(input: UseRangeOperationsInput): UseRangeOper
     // Scroll/resize don't fire selectionchange, so the toolbar's fixed anchor
     // (measured from the live selection rect) goes stale and detaches from the
     // text. Re-measure so it tracks. Capture phase catches nested scrollers.
-    window.addEventListener('scroll', onSelectionChange, true)
-    window.addEventListener('resize', onSelectionChange)
+    // rAF-throttle: scroll can fire several times per frame — collapse the
+    // re-measure to one paint-aligned read.
+    const onReposition = rafThrottle(() => refreshRef.current())
+    window.addEventListener('scroll', onReposition, true)
+    window.addEventListener('resize', onReposition)
     return () => {
       document.removeEventListener('selectionchange', onSelectionChange)
-      window.removeEventListener('scroll', onSelectionChange, true)
-      window.removeEventListener('resize', onSelectionChange)
+      onReposition.cancel()
+      window.removeEventListener('scroll', onReposition, true)
+      window.removeEventListener('resize', onReposition)
     }
   }, [])
 
@@ -399,6 +442,16 @@ export function useRangeOperations(input: UseRangeOperationsInput): UseRangeOper
       })
       .join('\n')
 
+  // Rich variant for internal (SDUI→SDUI) paste: keeps each segment's marks and
+  // inserts a hard break at every block boundary, so a cross-block copy of marked
+  // text round-trips into a single block instead of degrading to plain text.
+  const serializeRangeInline = (range: NormalizedRange): SduiInlineContent =>
+    coveredTextBlocks(range).flatMap((block, index) => {
+      const [from, to] = perBlockRange(range, block)
+      const segments = coveredTextSegments(blockInlineContent(block), from, to)
+      return index === 0 ? segments : [{ type: 'hard_break' as const }, ...segments]
+    })
+
   const handleClipboard = (event: ClipboardEvent): boolean => {
     const range = currentRange()
     if (!range) {
@@ -411,7 +464,13 @@ export function useRangeOperations(input: UseRangeOperationsInput): UseRangeOper
         return false
       }
       event.preventDefault()
+      // text/plain for external targets; text/html so a paste landing in a
+      // focused block (PM handles text/html natively) keeps marks + hard breaks;
+      // a private mime for the cross-block range paste path (see paste branch).
+      const inline = serializeRangeInline(range)
       event.clipboardData?.setData('text/plain', serializeRangeText(range))
+      event.clipboardData?.setData('text/html', inlineToHtml(inline))
+      event.clipboardData?.setData(SDUI_INLINE_MIME, JSON.stringify(inline))
       if (event.type === 'cut') {
         mutateRange(range, '')
       }
@@ -423,7 +482,13 @@ export function useRangeOperations(input: UseRangeOperationsInput): UseRangeOper
         return false
       }
       event.preventDefault()
-      // ponytail: multi-line paste collapses newlines to spaces (single block);
+      // Prefer the private mime (mark-preserving); fall back to plain text.
+      const rich = parseInlineClipboard(event.clipboardData?.getData(SDUI_INLINE_MIME))
+      if (rich) {
+        mutateRange(range, rich)
+        return true
+      }
+      // ponytail: multi-line plain paste collapses newlines to spaces (single block);
       // splitting into blocks per line can come later.
       const text = (event.clipboardData?.getData('text/plain') ?? '').replace(/\r?\n/g, ' ')
       mutateRange(range, text)

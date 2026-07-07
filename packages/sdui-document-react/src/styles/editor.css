@@ -9,18 +9,19 @@
 
 :root,
 [data-theme='light'] {
-  /* base (Outline buildLightTheme) */
-  --sdui-doc-text: #111319;
-  --sdui-doc-text-secondary: #394351;
-  --sdui-doc-text-tertiary: #66778f;
+  /* base — Notion light palette (warm near-black text #37352f, Notion blue
+     accent rgb(35,131,226), tinted-alpha dividers) */
+  --sdui-doc-text: #37352f;
+  --sdui-doc-text-secondary: #787774;
+  --sdui-doc-text-tertiary: #9b9a97;
   --sdui-doc-background: #ffffff;
-  --sdui-doc-background-secondary: hsl(212 31% 95% / 1);
-  --sdui-doc-accent: #0366d6;
+  --sdui-doc-background-secondary: rgba(55, 53, 47, 0.06);
+  --sdui-doc-accent: #2383e6;
   --sdui-doc-accent-text: #ffffff;
-  --sdui-doc-link: #0366d6;
-  --sdui-doc-quote: #dae1e9;
-  --sdui-doc-divider: #dae1e9;
-  --sdui-doc-hr: #e8ebed;
+  --sdui-doc-link: #2383e6;
+  --sdui-doc-quote: rgba(55, 53, 47, 0.16);
+  --sdui-doc-divider: rgba(55, 53, 47, 0.09);
+  --sdui-doc-hr: rgba(55, 53, 47, 0.09);
 
   /* code — Notion inline code (warm-gray tint, red text, no border)
      + code block surface (rgb(247,246,243)) */
@@ -36,22 +37,22 @@
   --sdui-doc-notice-tip: #f5be31;
   --sdui-doc-notice-warning: #d73a49;
   --sdui-doc-notice-success: #3ad984;
-  --sdui-doc-notice-text: #111319;
+  --sdui-doc-notice-text: #37352f;
 
   /* typography (Outline fontFamily/fontFamilyMono) */
   --sdui-doc-font: -apple-system, BlinkMacSystemFont, Inter, 'Segoe UI', Roboto, Oxygen, sans-serif;
   --sdui-doc-font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
 
-  /* heading scale (Outline --font-size-h1..h4) */
-  --sdui-doc-font-size-h1: 28px;
-  --sdui-doc-font-size-h2: 22px;
-  --sdui-doc-font-size-h3: 18px;
+  /* heading scale — Notion (1.875 / 1.5 / 1.25 / 1em on a 16px base) */
+  --sdui-doc-font-size-h1: 30px;
+  --sdui-doc-font-size-h2: 24px;
+  --sdui-doc-font-size-h3: 20px;
   --sdui-doc-font-size-h4: 16px;
 
   /* block row metrics (Notion text block: 24px line + 3px vertical padding
      on each side = 30px row; 2px horizontal padding) */
-  --sdui-doc-block-min-height: 30px;
-  --sdui-doc-block-padding-y: 3px;
+  --sdui-doc-block-min-height: 32px;
+  --sdui-doc-block-padding-y: 5px;
   --sdui-doc-block-padding-x: 2px;
 
   /* floating menu chrome (Outline theme.ts menuBackground/menuShadow) */
@@ -61,19 +62,18 @@
 }
 
 [data-theme='dark'] {
-  /* base (Outline buildDarkTheme) */
-  --sdui-doc-text: #e6e6e6;
-  --sdui-doc-text-secondary: #78838f;
-  --sdui-doc-text-tertiary: #66778f;
-  --sdui-doc-background: #111319;
-  --sdui-doc-background-secondary: #1f232e;
-  --sdui-doc-accent: #0366d6;
+  /* base — Notion dark palette (white-alpha text, Notion-blue link #529cca) */
+  --sdui-doc-text: rgba(255, 255, 255, 0.81);
+  --sdui-doc-text-secondary: rgba(255, 255, 255, 0.46);
+  --sdui-doc-text-tertiary: rgba(255, 255, 255, 0.28);
+  --sdui-doc-background: #191919;
+  --sdui-doc-background-secondary: rgba(255, 255, 255, 0.055);
+  --sdui-doc-accent: #2383e6;
   --sdui-doc-accent-text: #ffffff;
-  --sdui-doc-link: #137ffb;
-  --sdui-doc-quote: #e6e6e6;
-  /* Outline buildDarkTheme divider — near-invisible ring on dark surfaces */
-  --sdui-doc-divider: rgba(0, 0, 0, 0.5);
-  --sdui-doc-hr: #2b2f38;
+  --sdui-doc-link: #529cca;
+  --sdui-doc-quote: rgba(255, 255, 255, 0.16);
+  --sdui-doc-divider: rgba(255, 255, 255, 0.13);
+  --sdui-doc-hr: rgba(255, 255, 255, 0.13);
 
   --sdui-doc-code: #e6e6e6;
   --sdui-doc-code-background: rgba(135, 131, 120, 0.15);
@@ -277,6 +277,8 @@
 
 [data-sdui-document-editor] h1 {
   font-size: var(--sdui-doc-font-size-h1);
+  font-weight: 700; /* Notion h1 is heavier than h2–h4 */
+  letter-spacing: -0.01em;
 }
 
 [data-sdui-document-editor] h2 {
@@ -315,11 +317,15 @@
 }
 
 [data-sdui-document-editor] .checkbox {
-  display: inline-block;
+  /* height matches the first text line (1.5em) so the box centers against the
+     line instead of pinning to the top of the row */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   pointer-events: initial;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 1.5em;
   position: relative;
   transition: transform 100ms ease-in-out;
   opacity: 0.8;
@@ -339,8 +345,8 @@
 
 [data-sdui-document-editor] .checkbox svg {
   display: block;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   overflow: visible;
 }
 
@@ -376,15 +382,19 @@
 
 /* ------------------------------------------------------ callout/notice */
 
+/* Notion callouts: soft full-tint fill + hairline ring, no left accent bar.
+   Tint is mixed into --background so it stays opaque over the focused-block
+   wash instead of stacking translucent layers. */
 [data-sdui-document-editor] .notice-block {
   display: flex;
   align-items: flex-start;
-  background: color-mix(in srgb, var(--sdui-doc-notice-info) 10%, transparent);
-  border-left: 4px solid var(--sdui-doc-notice-info);
+  gap: 8px;
+  background: color-mix(in srgb, var(--sdui-doc-notice-info) 8%, var(--sdui-doc-background));
+  border: 1px solid color-mix(in srgb, var(--sdui-doc-notice-info) 22%, transparent);
   color: var(--sdui-doc-notice-text);
-  border-radius: 4px;
-  padding: 8px 10px 8px 8px;
-  margin: 8px 0;
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin: 6px 0;
 }
 
 [data-sdui-document-editor] .notice-block .content {
@@ -396,13 +406,12 @@
   width: 24px;
   height: 24px;
   align-self: flex-start;
-  margin-right: 4px;
   color: var(--sdui-doc-notice-info);
 }
 
 [data-sdui-document-editor] .notice-block.tip {
-  background: color-mix(in srgb, var(--sdui-doc-notice-tip) 10%, transparent);
-  border-left: 4px solid var(--sdui-doc-notice-tip);
+  background: color-mix(in srgb, var(--sdui-doc-notice-tip) 9%, var(--sdui-doc-background));
+  border-color: color-mix(in srgb, var(--sdui-doc-notice-tip) 26%, transparent);
 }
 
 [data-sdui-document-editor] .notice-block.tip .icon {
@@ -410,8 +419,8 @@
 }
 
 [data-sdui-document-editor] .notice-block.warning {
-  background: color-mix(in srgb, var(--sdui-doc-notice-warning) 10%, transparent);
-  border-left: 4px solid var(--sdui-doc-notice-warning);
+  background: color-mix(in srgb, var(--sdui-doc-notice-warning) 9%, var(--sdui-doc-background));
+  border-color: color-mix(in srgb, var(--sdui-doc-notice-warning) 26%, transparent);
 }
 
 [data-sdui-document-editor] .notice-block.warning .icon {
@@ -419,8 +428,8 @@
 }
 
 [data-sdui-document-editor] .notice-block.success {
-  background: color-mix(in srgb, var(--sdui-doc-notice-success) 10%, transparent);
-  border-left: 4px solid var(--sdui-doc-notice-success);
+  background: color-mix(in srgb, var(--sdui-doc-notice-success) 9%, var(--sdui-doc-background));
+  border-color: color-mix(in srgb, var(--sdui-doc-notice-success) 26%, transparent);
 }
 
 [data-sdui-document-editor] .notice-block.success .icon {
@@ -642,17 +651,62 @@
 
 /* ----------------------------------------------------- file/attachment */
 
-/* Outline Styles.ts .attachment — no border, hairline ring via box-shadow */
+/* Notion file card: borderless icon + name row, hover fill, name underlines
+   on hover. PDF icon tints red. */
 [data-sdui-document-editor] .attachment {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   color: var(--sdui-doc-text);
-  box-shadow: 0 0 0 1px var(--sdui-doc-divider);
-  white-space: nowrap;
-  border-radius: 8px;
-  padding: 6px 8px;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin: 2px 0;
   text-decoration: none;
+  transition: background 100ms ease;
+}
+
+[data-sdui-document-editor] a.attachment:hover {
+  background: var(--sdui-doc-background-secondary);
+}
+
+[data-sdui-document-editor] .attachment-icon {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  color: var(--sdui-doc-text-secondary);
+}
+
+[data-sdui-document-editor] .attachment.is-pdf .attachment-icon {
+  color: #eb5757;
+}
+
+[data-sdui-document-editor] .attachment-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+[data-sdui-document-editor] .attachment-name {
+  font-size: 14px;
+  line-height: 1.3;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  border-bottom: 1px solid transparent;
+}
+
+[data-sdui-document-editor] a.attachment:hover .attachment-name {
+  border-bottom-color: var(--sdui-doc-divider);
+}
+
+[data-sdui-document-editor] .attachment-size {
+  font-size: 12px;
+  line-height: 1.2;
+  color: var(--sdui-doc-text-tertiary);
 }
 
 /* -------------------------------------------------------- link/bookmark */
@@ -809,6 +863,11 @@
 }
 
 [data-sdui-document-editor] [data-drag-handle] {
+  /* center the ⠿ glyph in the 24px box so it lines up with the first text line
+     (box top sits at padding-y; a 24px line box centers at the same point) */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 24px;
   height: 24px;
   color: var(--sdui-doc-text-secondary);
@@ -832,6 +891,9 @@
 
 /* '+' insert button — same hover-reveal contract as the drag handle */
 [data-sdui-document-editor] [data-plus-handle] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 24px;
   height: 24px;
   color: var(--sdui-doc-text-secondary);
@@ -1332,12 +1394,13 @@
   justify-content: center;
   width: 24px;
   min-width: 24px;
-  /* pin the marker box to the first text line (24px) so it stays on line 1 of
-     wrapped/multiline items instead of centering across the whole block —
-     matches the checkbox alignment */
-  height: 24px;
-  font-size: 1.5em;
+  /* box == first text line (1.5em = 24px), pinned to the top of the item so it
+     stays on line 1 of wrapped content; flex-center puts the dot in the middle
+     of that first line. keep the glyph small — a large bullet's mass reads high
+     even when centered. */
+  height: 1.5em;
   line-height: 1;
+  font-size: 1em;
   user-select: none;
 }
 .list-item > .list-marker.list-marker-number {

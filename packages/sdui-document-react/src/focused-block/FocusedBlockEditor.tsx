@@ -10,6 +10,7 @@ import { filterBlockMenuItems } from '../editor/block-menu/blockMenuItems'
 import type { SelectionSnapshot } from '../selection-toolbar/selectionSnapshot'
 import { buildSelectionSnapshot, selectionSnapshotsEqual } from '../selection-toolbar/selectionSnapshot'
 import type { SelectionToolbarProps } from '../selection-toolbar/SelectionToolbar'
+import { rafThrottle } from '../shared/rafThrottle'
 import { resolveCaretOffset } from './caret'
 import { normalizeLinkHref } from './linkHref'
 import { handleMultilinePaste, insertLineBreaksBetweenBlocks } from './pm/clipboard'
@@ -457,17 +458,19 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
     // rect (measured once via coordsAtPos). Scrolling moves the text but not the
     // fixed anchor, so the toolbar detaches. Re-measure on scroll/resize so it
     // tracks the selection. Capture phase catches nested scroll containers too
-    // (scroll doesn't bubble). ponytail: not rAF-throttled; coordsAtPos is cheap
-    // and refreshSnapshot bails via equality when the rect is unchanged.
-    window.addEventListener('scroll', refreshSnapshot, true)
-    window.addEventListener('resize', refreshSnapshot)
+    // (scroll doesn't bubble). rAF-throttled: scroll may fire several times per
+    // frame — one paint-aligned re-measure suffices (equality bail still skips
+    // the setState when the rect is unchanged).
+    const refreshSnapshotOnScroll = rafThrottle(refreshSnapshot)
+    window.addEventListener('scroll', refreshSnapshotOnScroll, true)
+    window.addEventListener('resize', refreshSnapshotOnScroll)
 
     // Same detachment problem as the toolbar: the slash-menu anchor is a
     // one-shot coordsAtPos snapshot, so any scroll after open (including PM's
     // own scrollIntoView on dispatch) strands the menu at stale viewport
     // coords. Re-measure while the menu is open.
     const refreshMenuAnchor = () => {
-      const {current} = menuRef
+      const { current } = menuRef
       if (!current || !viewRef.current) {
         return
       }
@@ -486,8 +489,9 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
         // coordsAtPos may throw in jsdom / SSR — keep the last anchor.
       }
     }
-    window.addEventListener('scroll', refreshMenuAnchor, true)
-    window.addEventListener('resize', refreshMenuAnchor)
+    const refreshMenuAnchorOnScroll = rafThrottle(refreshMenuAnchor)
+    window.addEventListener('scroll', refreshMenuAnchorOnScroll, true)
+    window.addEventListener('resize', refreshMenuAnchorOnScroll)
 
     view.focus()
 
@@ -506,10 +510,12 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
     return () => {
       cancelAnimationFrame(pendingSelectionFrame)
       document.removeEventListener('selectionchange', handleSelectionChange)
-      window.removeEventListener('scroll', refreshSnapshot, true)
-      window.removeEventListener('resize', refreshSnapshot)
-      window.removeEventListener('scroll', refreshMenuAnchor, true)
-      window.removeEventListener('resize', refreshMenuAnchor)
+      refreshSnapshotOnScroll.cancel()
+      window.removeEventListener('scroll', refreshSnapshotOnScroll, true)
+      window.removeEventListener('resize', refreshSnapshotOnScroll)
+      refreshMenuAnchorOnScroll.cancel()
+      window.removeEventListener('scroll', refreshMenuAnchorOnScroll, true)
+      window.removeEventListener('resize', refreshMenuAnchorOnScroll)
       delete (container as HTMLElement & { pmView?: EditorView }).pmView
       const finalCommit = retired.current ? undefined : editorStateToInline(view.state)
       viewRef.current = undefined

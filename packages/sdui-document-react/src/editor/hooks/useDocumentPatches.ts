@@ -16,6 +16,12 @@ type DocumentPatchesOptions = {
   content: SduiDocumentContent
   onContentChange?(next: SduiDocumentContent, patches: SduiDocumentPatch[]): void
   /**
+   * Called synchronously whenever a new document is produced, BEFORE the state
+   * update that re-renders — so a derived store (e.g. the render model) is fresh
+   * by the time rows read it. Runs outside React render, so it may notify.
+   */
+  onPublish?(prev: SduiDocumentContent, next: SduiDocumentContent): void
+  /**
    * Enables the trailing-block invariant (Outline TrailingNode): the document
    * always ends in a block that can host inline text. Omit to opt out.
    */
@@ -26,6 +32,7 @@ type DocumentPatchesOptions = {
 export function useDocumentPatches({
   content,
   onContentChange,
+  onPublish,
   generateBlockId,
   readOnly = false,
 }: DocumentPatchesOptions) {
@@ -53,6 +60,9 @@ export function useDocumentPatches({
     })
 
   const publish = (next: SduiDocumentContent, patches: SduiDocumentPatch[]) => {
+    // sync derived stores BEFORE the state update, so rows see fresh data on the
+    // re-render this triggers (a newly inserted block must already have an entry)
+    onPublish?.(docRef.current, next)
     docRef.current = next
     setDoc(next)
     onContentChange?.(next, patches)

@@ -56,10 +56,28 @@ describe('toggle block', () => {
     ])
   })
 
-  test('triangle is disabled in readOnly mode', () => {
-    render(<SduiDocumentEditor content={createContent(false)} readOnly />)
+  test('readOnly mode toggles visibility without persisting collapsed state', async () => {
+    const user = userEvent.setup()
+    const onContentChange = jest.fn()
+    render(<SduiDocumentEditor content={createContent(false)} readOnly onContentChange={onContentChange} />)
 
-    expect(screen.getByRole('button', { name: 'Toggle t1' })).toBeDisabled()
+    expect(screen.getByText('Hidden detail')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Toggle t1' }))
+
+    expect(screen.queryByText('Hidden detail')).not.toBeInTheDocument()
+    expect(onContentChange).not.toHaveBeenCalled()
+  })
+
+  test('readOnly collapsed toggle can be expanded', async () => {
+    const user = userEvent.setup()
+    render(<SduiDocumentEditor content={createContent(true)} readOnly />)
+
+    expect(screen.queryByText('Hidden detail')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Toggle t1' }))
+
+    expect(screen.getByText('Hidden detail')).toBeInTheDocument()
   })
 
   test('empty expanded toggle shows the placeholder', () => {

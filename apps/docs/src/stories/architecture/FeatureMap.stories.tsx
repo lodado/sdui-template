@@ -266,6 +266,18 @@ const REACT_GROUP: FeatureGroup = {
       api: 'DocumentCounts, EmojiPicker, document.toc, SduiInlineDateNode',
       file: 'editor/DocumentCounts.tsx, emoji/, block-types/toc/, focused-block/pm/dateInputRules.ts',
     },
+    {
+      name: '렌더 모델 O(1) 리렌더',
+      what: (
+        <>
+          불변 트리를 그대로 두고 정규화 <code>id→entry</code> 파생 read-model + id별 <code>useSyncExternalStore</code>{' '}
+          구독으로 블록 하나를 편집하면 그 행만 리렌더. 동기화는 <code>useDocumentPatches</code>의 publish choke
+          point에서 setState 직전에 일어납니다. <strong>Deep Dive 29번</strong>.
+        </>
+      ),
+      api: 'RenderModelStore, useBlockEntry, deriveEntry, syncTree',
+      file: 'editor/renderModel/, editor/hooks/useDocumentPatches.ts',
+    },
   ],
 }
 
@@ -383,7 +395,7 @@ const FeatureMapPage = () => {
         <FeatureTable groups={GROUPS} />
         <Callout icon="◆">
           <strong>더 파고들기:</strong> 아키텍처 개요는 <code>1~3. sdui-document / react</code> 와{' '}
-          <code>5~6. sdui-template / component</code>, 기능별 딥다이브는 <code>Document/Deep Dive</code> 챕터의 27개
+          <code>5~6. sdui-template / component</code>, 기능별 딥다이브는 <code>Document/Deep Dive</code> 챕터의 28개
           문서로. 각 문서가 이 표의 한 줄에 대응합니다.
         </Callout>
       </DocSection>
