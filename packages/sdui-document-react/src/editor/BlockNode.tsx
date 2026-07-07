@@ -1,4 +1,3 @@
-import { useDraggable, useDroppable } from '@dnd-kit/core'
 import type { SduiDocumentBlock } from '@lodado/sdui-document'
 import {
   COLUMN_BLOCK_TYPE,
@@ -268,8 +267,6 @@ const BlockRow = ({ entry, depth, readOnly }: BlockViewProps) => {
   const { childrenIds, listOrdinal } = entry
   const isSelected = useEditorUISelector(store, (state) => state.selection.selectedIds.includes(id))
   const focus = useEditorUISelector(store, (state) => (state.focus?.blockId === id ? state.focus : null))
-  const { setNodeRef: setDropRef } = useDroppable({ id, disabled: readOnly })
-  const { setNodeRef: setDragRef, listeners, attributes, isDragging } = useDraggable({ id, disabled: readOnly })
 
   const isFocused = !readOnly && focus !== null && isTextBlock(block)
 
@@ -338,7 +335,9 @@ const BlockRow = ({ entry, depth, readOnly }: BlockViewProps) => {
       {/* row layout (flex + vertical centering + Notion block height) lives in editor.css */}
       {/* the ROW is the droppable — not the subtree wrapper — so the drop
           projection's vertical zones are measured against this row only */}
-      <div ref={setDropRef} data-block-row>
+      {/* the ROW is the drop hit-test target (useBlockPointerDrag reads its rect
+          via elementFromPoint) — the vertical zones measure against this row only */}
+      <div data-block-row>
         {/* the ⠿ glyph is CSS ::before content — a real text node would join
             cross-block native selections and get copied between blocks */}
         {/* Mouse-only affordances: hidden from the a11y tree and tab order so a
@@ -358,9 +357,7 @@ const BlockRow = ({ entry, depth, readOnly }: BlockViewProps) => {
         {!readOnly && (
           <button
             type="button"
-            ref={setDragRef}
             data-drag-handle
-            data-dragging={isDragging || undefined}
             aria-label={`Drag block ${block.id}`}
             style={{ cursor: 'grab', border: 'none', background: 'transparent', padding: '2px 4px' }}
             onClick={(event) => {
@@ -379,12 +376,8 @@ const BlockRow = ({ entry, depth, readOnly }: BlockViewProps) => {
               event.preventDefault()
               handlers.openBlockActions(block.id, event.currentTarget.getBoundingClientRect())
             }}
-            // eslint-disable-next-line react/jsx-props-no-spreading -- dnd-kit activator contract
-            {...attributes}
-            // eslint-disable-next-line react/jsx-props-no-spreading -- dnd-kit activator contract
-            {...listeners}
-            // aria-hidden + tabIndex must win over dnd-kit's own role/tabIndex,
-            // so they are spread last.
+            // pointerdown on this handle starts the drag (delegated on the
+            // container by useBlockPointerDrag); onClick still opens the menu.
             aria-hidden="true"
             tabIndex={-1}
           />

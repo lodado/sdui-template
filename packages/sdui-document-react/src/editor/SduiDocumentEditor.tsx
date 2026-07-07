@@ -1,4 +1,3 @@
-import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import type { SduiDocumentContent, SduiDocumentPatch } from '@lodado/sdui-document'
 import { clearBlockSelection } from '@lodado/sdui-document'
 import {
@@ -18,12 +17,12 @@ import { BlockActionsMenu } from './block-menu/BlockActionsMenu'
 import { defaultGenerateBlockId } from './blockContent'
 import { DocEmptyFlag } from './DocEmptyFlag'
 import { createDocContentStore, DocumentContentProvider, type MutableDocContentStore } from './DocumentContentContext'
-import { collisionDetection, DRAG_INDENT_WIDTH, POINTER_SENSOR_OPTIONS } from './editorConstants'
+import { DRAG_INDENT_WIDTH } from './editorConstants'
 import { type EditorRuntime, EditorRuntimeContext, useEditorRuntime } from './EditorRuntimeContext'
+import { useBlockPointerDrag } from './hooks/useBlockPointerDrag'
 import { useDocumentPatches } from './hooks/useDocumentPatches'
 import { useEditorHandlers } from './hooks/useEditorHandlers'
 import { useInlineTextDragDrop } from './hooks/useInlineTextDragDrop'
-import { useNestedBlockDragDrop } from './hooks/useNestedBlockDragDrop'
 import { useRangeOperations } from './hooks/useRangeOperations'
 import { useSelectionKeyboard } from './hooks/useSelectionKeyboard'
 import { LinkPopover, type LinkPopoverTarget } from './LinkPopover'
@@ -185,7 +184,7 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     },
   })
 
-  const { handleDragStart, handleDragMove, handleDragEnd, handleDragCancel } = useNestedBlockDragDrop({
+  useBlockPointerDrag({
     docRef,
     indentWidth: DRAG_INDENT_WIDTH,
     containerRef,
@@ -310,130 +309,121 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     setLinkTarget({ rect: anchor.getBoundingClientRect(), href, blockId })
   }
 
-  const sensors = useSensors(useSensor(PointerSensor, POINTER_SENSOR_OPTIONS))
-
   return (
     <EditorRuntimeContext.Provider value={runtime}>
       <DocumentContentProvider value={docStore}>
-        <DndContext
-          sensors={sensors}
-          collisionDetection={collisionDetection}
-          onDragStart={handleDragStart}
-          onDragMove={handleDragMove}
-          onDragEnd={handleDragEnd}
-          onDragCancel={handleDragCancel}
+        {/* Block drag & drop is native-pointer (useBlockPointerDrag) — no dnd-kit
+            context, so a drag never re-renders the block tree. */}
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
+        <div
+          ref={containerRef}
+          className={className}
+          data-sdui-document-editor
+          role="tree"
+          tabIndex={-1}
+          onKeyDown={handleSelectionKeyDown}
+          onClickCapture={handleLinkClickCapture}
+          style={{ outline: 'none', position: 'relative' }}
         >
-          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex */}
+          <RootBlockList rootId={rootId} readOnly={readOnly} />
+          {/* null leaf: paints data-doc-empty on the container via ref, no container re-render */}
+          <DocEmptyFlag containerRef={containerRef} />
+          {!readOnly && (
+            // Outline ClickablePadding: a text-cursor strip below the last
+            // block; keyboard users reach the same spot via ArrowDown.
+            // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
+            <div data-editor-clickable-padding onClick={handlePaddingClick} />
+          )}
+          {!readOnly && (
+            // Hidden picker for the block menu's image/file items — clicked
+            // programmatically, value reset so the same file can be re-picked.
+            <input
+              ref={fileInputRef}
+              type="file"
+              data-block-menu-file-input
+              aria-hidden
+              tabIndex={-1}
+              style={{ display: 'none' }}
+              onChange={(event) => {
+                const file = event.target.files?.[0]
+                // eslint-disable-next-line no-param-reassign -- reset the native picker for re-picks
+                event.target.value = ''
+                if (file) {
+                  runtime.handlers.blockMenuFilePicked(file)
+                }
+              }}
+            />
+          )}
+          {/* single drop indicator, painted via DOM during drags (no re-render) */}
           <div
-            ref={containerRef}
-            className={className}
-            data-sdui-document-editor
-            role="tree"
-            tabIndex={-1}
-            onKeyDown={handleSelectionKeyDown}
-            onClickCapture={handleLinkClickCapture}
-            style={{ outline: 'none', position: 'relative' }}
-          >
-            <RootBlockList rootId={rootId} readOnly={readOnly} />
-            {/* null leaf: paints data-doc-empty on the container via ref, no container re-render */}
-            <DocEmptyFlag containerRef={containerRef} />
-            {!readOnly && (
-              // Outline ClickablePadding: a text-cursor strip below the last
-              // block; keyboard users reach the same spot via ArrowDown.
-              // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
-              <div data-editor-clickable-padding onClick={handlePaddingClick} />
-            )}
-            {!readOnly && (
-              // Hidden picker for the block menu's image/file items — clicked
-              // programmatically, value reset so the same file can be re-picked.
-              <input
-                ref={fileInputRef}
-                type="file"
-                data-block-menu-file-input
-                aria-hidden
-                tabIndex={-1}
-                style={{ display: 'none' }}
-                onChange={(event) => {
-                  const file = event.target.files?.[0]
-                  // eslint-disable-next-line no-param-reassign -- reset the native picker for re-picks
-                  event.target.value = ''
-                  if (file) {
-                    runtime.handlers.blockMenuFilePicked(file)
-                  }
-                }}
-              />
-            )}
-            {/* single drop indicator, painted via DOM during drags (no re-render) */}
-            <div
-              ref={indicatorRef}
-              data-drop-indicator
-              aria-hidden
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                height: 2,
-                width: 0,
-                display: 'none',
-                pointerEvents: 'none',
-              }}
-            />
-            {/* insertion caret for inline text drags — same DOM-painting policy */}
-            <div
-              ref={inlineCaretRef}
-              data-drop-caret
-              aria-hidden
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: 2,
-                height: 0,
-                display: 'none',
-                pointerEvents: 'none',
-              }}
-            />
-            {/* one toolbar for the whole document; range (cross-block) wins over
+            ref={indicatorRef}
+            data-drop-indicator
+            aria-hidden
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              height: 2,
+              width: 0,
+              display: 'none',
+              pointerEvents: 'none',
+            }}
+          />
+          {/* insertion caret for inline text drags — same DOM-painting policy */}
+          <div
+            ref={inlineCaretRef}
+            data-drop-caret
+            aria-hidden
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: 2,
+              height: 0,
+              display: 'none',
+              pointerEvents: 'none',
+            }}
+          />
+          {/* one toolbar for the whole document; range (cross-block) wins over
               the focused block's own selection. Isolated in its own subscriber so
               a selection change never re-renders the block rows. */}
-            <DocumentSelectionToolbar store={store} rangeToolbar={rangeToolbar} />
-            {linkTarget && (
-              <LinkPopover
-                target={linkTarget}
-                onEdit={(nextHref) => {
-                  runtime.handlers.updateLink(linkTarget.blockId, linkTarget.href, nextHref)
-                  setLinkTarget(null)
-                }}
-                onRemove={() => {
-                  runtime.handlers.updateLink(linkTarget.blockId, linkTarget.href, null)
-                  setLinkTarget(null)
-                }}
-                onClose={() => setLinkTarget(null)}
-              />
-            )}
-            {!readOnly && blockActions && (
-              <BlockActionsMenu
-                rect={blockActions.rect}
-                onTurnInto={(type, attrs) => {
-                  runtime.handlers.turnInto(blockActions.blockId, type, attrs)
-                  runtime.handlers.closeBlockActions()
-                }}
-                onDuplicate={() => runtime.handlers.duplicateBlock(blockActions.blockId)}
-                onMoveUp={() => {
-                  runtime.handlers.moveBlock(blockActions.blockId, 'up')
-                  runtime.handlers.closeBlockActions()
-                }}
-                onMoveDown={() => {
-                  runtime.handlers.moveBlock(blockActions.blockId, 'down')
-                  runtime.handlers.closeBlockActions()
-                }}
-                onDelete={() => runtime.handlers.deleteBlock(blockActions.blockId)}
-                onClose={() => runtime.handlers.closeBlockActions()}
-                onCancel={() => store.set({ selection: clearBlockSelection(), blockActions: null })}
-              />
-            )}
-          </div>
-        </DndContext>
+          <DocumentSelectionToolbar store={store} rangeToolbar={rangeToolbar} />
+          {linkTarget && (
+            <LinkPopover
+              target={linkTarget}
+              onEdit={(nextHref) => {
+                runtime.handlers.updateLink(linkTarget.blockId, linkTarget.href, nextHref)
+                setLinkTarget(null)
+              }}
+              onRemove={() => {
+                runtime.handlers.updateLink(linkTarget.blockId, linkTarget.href, null)
+                setLinkTarget(null)
+              }}
+              onClose={() => setLinkTarget(null)}
+            />
+          )}
+          {!readOnly && blockActions && (
+            <BlockActionsMenu
+              rect={blockActions.rect}
+              onTurnInto={(type, attrs) => {
+                runtime.handlers.turnInto(blockActions.blockId, type, attrs)
+                runtime.handlers.closeBlockActions()
+              }}
+              onDuplicate={() => runtime.handlers.duplicateBlock(blockActions.blockId)}
+              onMoveUp={() => {
+                runtime.handlers.moveBlock(blockActions.blockId, 'up')
+                runtime.handlers.closeBlockActions()
+              }}
+              onMoveDown={() => {
+                runtime.handlers.moveBlock(blockActions.blockId, 'down')
+                runtime.handlers.closeBlockActions()
+              }}
+              onDelete={() => runtime.handlers.deleteBlock(blockActions.blockId)}
+              onClose={() => runtime.handlers.closeBlockActions()}
+              onCancel={() => store.set({ selection: clearBlockSelection(), blockActions: null })}
+            />
+          )}
+        </div>
       </DocumentContentProvider>
     </EditorRuntimeContext.Provider>
   )

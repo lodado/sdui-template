@@ -875,6 +875,9 @@
   border: 0;
   padding: 0;
   border-radius: 4px;
+  /* native-pointer drag (useBlockPointerDrag): stop touch scroll/long-press from
+     hijacking the gesture so pointermove fires for the drag */
+  touch-action: none;
   /* hidden until the row is hovered (Notion/Outline behavior) — opacity, not
      display, so the row never reflows and the handle stays a drop-zone-stable
      flex item */

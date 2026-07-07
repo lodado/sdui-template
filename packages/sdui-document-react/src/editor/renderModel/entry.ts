@@ -112,9 +112,19 @@ export function collectTreeIds(root: SduiDocumentBlock, into: Set<string> = new 
   return into
 }
 
-function dropSubtree(node: SduiDocumentBlock, cache: RenderEntryCache): void {
-  cache.delete(node.id)
-  node.children?.forEach((child) => dropSubtree(child, cache))
+/**
+ * GC the cache entries for a removed subtree. A descendant of a removed block may
+ * itself have MOVED OUT to a live parent in the same batch (e.g. dragging a block
+ * out of a column collapses the column: the column is removed, but its child is
+ * now live elsewhere). So every node — not just the subtree root — is checked
+ * against the live set before its entry is dropped; otherwise the moved block's
+ * fresh entry is nuked and its row renders null (the "칸 사라짐" bug).
+ */
+function dropSubtree(node: SduiDocumentBlock, cache: RenderEntryCache, live: Set<string>): void {
+  if (!live.has(node.id)) {
+    cache.delete(node.id)
+  }
+  node.children?.forEach((child) => dropSubtree(child, cache, live))
 }
 
 /**
@@ -205,11 +215,9 @@ export function syncTree(
   // (structural edits) — plain text edits stay O(depth).
   if (removed.length > 0) {
     const live = collectTreeIds(nextRoot)
-    removed.forEach((block) => {
-      if (!live.has(block.id)) {
-        dropSubtree(block, cache)
-      }
-    })
+    // Always recurse: a removed subtree can still contain a moved-out live block,
+    // so the live check is per node (inside dropSubtree), not just on the root.
+    removed.forEach((block) => dropSubtree(block, cache, live))
   }
 
   return changed

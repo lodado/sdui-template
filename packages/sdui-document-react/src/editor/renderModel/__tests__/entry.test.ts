@@ -179,4 +179,39 @@ describe('render model projection', () => {
 
     expect(cache.has('a-1-1-2')).toBe(false)
   })
+
+  // Regression: dragging a block out of a column collapses the column (moved out
+  // + container deleted in ONE batch). The moved block is live at its new parent,
+  // so its entry must survive — GC must not follow the deleted container's OLD
+  // children and nuke it (the "칸 사라짐" / mv 중 값 사라짐 bug).
+  it('keeps the entry of a block moved out of a subtree deleted in the same batch', () => {
+    const before: SduiDocumentContent = ensureFractionalContent({
+      schemaVersion: '1.0',
+      root: createDocumentBlock({
+        id: 'root',
+        type: 'document.root',
+        children: [
+          createDocumentBlock({
+            id: 'wrapper',
+            type: 'document.paragraph',
+            state: { text: 'wrapper' },
+            children: [createDocumentBlock({ id: 'moved', type: 'document.paragraph', state: { text: 'MOVED' } })],
+          }),
+          createDocumentBlock({ id: 'sib', type: 'document.paragraph', state: { text: 'sib' } }),
+        ],
+      }),
+    })
+    const cache: RenderEntryCache = new Map()
+    syncTree(null, before.root, cache)
+
+    // move `moved` out to root, then delete its old parent `wrapper` — one batch
+    const after = applyDocumentPatches(before, [
+      { type: 'block.move', blockId: 'moved', parentId: 'root', after: 'wrapper' },
+      { type: 'block.delete', blockId: 'wrapper' },
+    ])
+    syncTree(before.root, after.root, cache)
+
+    expect(cache.has('wrapper')).toBe(false) // container genuinely gone
+    expect(cache.has('moved')).toBe(true) // moved block's entry survives (was nuked before the fix)
+  })
 })
