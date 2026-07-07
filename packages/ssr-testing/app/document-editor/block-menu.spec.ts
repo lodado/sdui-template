@@ -71,7 +71,7 @@ test.describe('Block menu (slash command + plus button)', () => {
     await expect(page.locator(MENU)).toBeVisible()
     const focusedRow = page.locator('[data-block-id]', { has: page.locator(EDITABLE) })
     await expect(focusedRow).toHaveAttribute('data-block-id', 'gen-1')
-    await expect(page.locator(`${MENU} [role="option"]`)).toHaveCount(10)
+    await expect(page.locator(`${MENU} [role="option"]`)).toHaveCount(16)
 
     // Escape leaves an empty paragraph ready for typing
     await page.keyboard.press('Escape')

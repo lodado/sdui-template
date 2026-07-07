@@ -3,6 +3,7 @@ import React, { useContext } from 'react'
 
 import type { FocusedBlockCommit } from '../focused-block/FocusedBlockEditor'
 import type { BlockMenuItem } from './block-menu/blockMenuItems'
+import type { RenderModelStore } from './renderModel/RenderModelStore'
 import type { EditorUIStore, FocusTarget } from './uiStore'
 
 /** Image layout attributes settable from the image block's inline controls. */
@@ -60,6 +61,8 @@ export type EditorHandlers = {
 export type EditorRuntime = {
   store: EditorUIStore
   handlers: EditorHandlers
+  /** Per-id render-model store: block rows subscribe to their own entry for O(1) re-render. */
+  renderStore: RenderModelStore
 }
 
 export const EditorRuntimeContext = React.createContext<EditorRuntime | null>(null)

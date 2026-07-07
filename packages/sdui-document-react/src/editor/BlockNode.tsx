@@ -13,21 +13,44 @@ import { BlockChrome } from '../block-types/BlockChrome'
 import { FocusedBlockEditor } from '../focused-block/FocusedBlockEditor'
 import { InlineContentView } from '../inline/InlineContentView'
 import { blockMenuItemIdFor } from './block-menu/blockMenuItems'
-import { blockInlineContent, isTextBlock, numberedListOrdinals } from './blockContent'
+import { blockInlineContent, isTextBlock } from './blockContent'
 import { DRAG_INDENT_WIDTH } from './editorConstants'
 import { useEditorRuntime } from './EditorRuntimeContext'
+import type { RenderEntry } from './renderModel/entry'
+import { useBlockEntry } from './renderModel/useBlockEntry'
 import { useEditorUISelector } from './uiStore'
 
 type BlockNodeProps = {
-  block: SduiDocumentBlock
+  /** Block id; the row subscribes to its own render entry via this id. */
+  id: string
   depth: number
   readOnly: boolean
-  /** Render-time ordinal for numbered list items — computed by the parent's children map. */
-  listOrdinal?: number
 }
 
-function columnRatio(block: SduiDocumentBlock): number | undefined {
-  const ratio = block.attributes?.ratio
+type BlockViewProps = {
+  entry: RenderEntry
+  depth: number
+  readOnly: boolean
+}
+
+/**
+ * A childless block object reconstructed from a render entry. Everything a row
+ * or its BlockChrome needs (type/state/attributes) is here; children are
+ * rendered separately by id, so no block-type reads `.children`.
+ */
+function entryToBlock(entry: RenderEntry): SduiDocumentBlock {
+  return {
+    id: entry.id as SduiDocumentBlock['id'],
+    type: entry.type,
+    position: entry.position,
+    origin: entry.origin,
+    state: entry.state,
+    attributes: entry.attributes,
+  }
+}
+
+function attributeRatio(attributes: Record<string, unknown> | undefined): number | undefined {
+  const ratio = attributes?.ratio
   return typeof ratio === 'number' && Number.isFinite(ratio) && ratio > 0 ? ratio : undefined
 }
 
@@ -59,18 +82,12 @@ function currentColumnRatio(element: HTMLElement | null): number | undefined {
  * the commit; the preview is torn down on pointerup or Escape, then the final
  * position is committed as one undo step. Escape cancels without committing.
  */
-const ColumnResizeGutter = ({
-  leftId,
-  rightId,
-  leftRatio,
-  rightRatio,
-}: {
-  leftId: string
-  rightId: string
-  leftRatio: number
-  rightRatio: number
-}) => {
-  const { handlers } = useEditorRuntime()
+const ColumnResizeGutter = ({ leftId, rightId }: { leftId: string; rightId: string }) => {
+  const { handlers, renderStore } = useEditorRuntime()
+  // subscribe to both columns' entries so a committed resize updates the
+  // splitter's ARIA value reactively (ratio lives on each column's attributes)
+  const leftRatio = attributeRatio(useBlockEntry(renderStore, leftId)?.attributes) ?? 1
+  const rightRatio = attributeRatio(useBlockEntry(renderStore, rightId)?.attributes) ?? 1
 
   // Left column's share of the pair, as a percentage, for the splitter's ARIA
   // value. The pair total is preserved on resize and each side clamps at
@@ -193,83 +210,84 @@ const ColumnResizeGutter = ({
  * interactive. Column children do NOT get the [data-block-nested] indent —
  * horizontal layout replaces vertical indentation at this level.
  */
-const ColumnContainers = ({ block, depth, readOnly }: Omit<BlockNodeProps, 'listOrdinal'>) => {
-  if (block.type === COLUMN_LIST_BLOCK_TYPE) {
-    const columns = block.children ?? []
+const ColumnContainers = ({ entry, depth, readOnly }: BlockViewProps) => {
+  const { childrenIds } = entry
 
+  if (entry.type === COLUMN_LIST_BLOCK_TYPE) {
     return (
-      <div data-block-id={block.id} data-depth={depth} data-column-list>
-        {columns.map((child, index) => (
-          <React.Fragment key={child.id}>
-            {index > 0 && !readOnly && (
-              <ColumnResizeGutter
-                leftId={columns[index - 1].id}
-                rightId={child.id}
-                leftRatio={columnRatio(columns[index - 1]) ?? 1}
-                rightRatio={columnRatio(child) ?? 1}
-              />
-            )}
+      <div data-block-id={entry.id} data-depth={depth} data-column-list>
+        {childrenIds.map((childId, index) => (
+          <React.Fragment key={childId}>
+            {index > 0 && !readOnly && <ColumnResizeGutter leftId={childrenIds[index - 1]} rightId={childId} />}
             {/* eslint-disable-next-line no-use-before-define -- mutual recursion: containers render nested BlockNodes */}
-            <BlockNode block={child} depth={depth} readOnly={readOnly} />
+            <BlockNode id={childId} depth={depth} readOnly={readOnly} />
           </React.Fragment>
         ))}
       </div>
     )
   }
 
-  const ratio = columnRatio(block)
-  const ordinals = numberedListOrdinals(block.children ?? [])
+  const ratio = attributeRatio(entry.attributes)
 
   return (
-    <div data-block-id={block.id} data-column style={ratio !== undefined ? { flexGrow: ratio } : undefined}>
-      {block.children?.map((child) => (
+    <div data-block-id={entry.id} data-column style={ratio !== undefined ? { flexGrow: ratio } : undefined}>
+      {childrenIds.map((childId) => (
         // eslint-disable-next-line no-use-before-define -- mutual recursion: containers render nested BlockNodes
-        <BlockNode
-          key={child.id}
-          block={child}
-          depth={depth}
-          readOnly={readOnly}
-          listOrdinal={ordinals.get(child.id)}
-        />
+        <BlockNode key={childId} id={childId} depth={depth} readOnly={readOnly} />
       ))}
     </div>
   )
 }
 
 /**
- * One block row: droppable row + drag handle + type chrome + recursive
- * children. Memoized — re-renders only when its own block reference, its
- * focus/selection slice, or dnd state for this row changes. Focus, selection
- * and the drop indicator are NOT props, so sibling rows stay untouched.
+ * Subscribes a row to its own render entry (per-id) and dispatches to the right
+ * view. Memoized on {id, depth, readOnly}, so a parent re-render never cascades;
+ * the row re-renders only when ITS entry changes — that is the O(1) boundary.
  */
-export const BlockNode = React.memo(({ block, depth, readOnly, listOrdinal }: BlockNodeProps) => {
-  if (block.type === COLUMN_LIST_BLOCK_TYPE || block.type === COLUMN_BLOCK_TYPE) {
-    return <ColumnContainers block={block} depth={depth} readOnly={readOnly} />
+export const BlockNode = React.memo(({ id, depth, readOnly }: BlockNodeProps) => {
+  const { renderStore } = useEditorRuntime()
+  const entry = useBlockEntry(renderStore, id)
+
+  if (!entry) {
+    return null
+  }
+
+  if (entry.type === COLUMN_LIST_BLOCK_TYPE || entry.type === COLUMN_BLOCK_TYPE) {
+    return <ColumnContainers entry={entry} depth={depth} readOnly={readOnly} />
   }
 
   // eslint-disable-next-line no-use-before-define -- mutual recursion: rows render nested BlockNodes
-  return <BlockRow block={block} depth={depth} readOnly={readOnly} listOrdinal={listOrdinal} />
+  return <BlockRow entry={entry} depth={depth} readOnly={readOnly} />
 })
 BlockNode.displayName = 'BlockNode'
 
-const BlockRow = React.memo(({ block, depth, readOnly, listOrdinal }: BlockNodeProps) => {
+const BlockRow = ({ entry, depth, readOnly }: BlockViewProps) => {
   const { store, handlers } = useEditorRuntime()
-  const isSelected = useEditorUISelector(store, (state) => state.selection.selectedIds.includes(block.id))
-  const focus = useEditorUISelector(store, (state) => (state.focus?.blockId === block.id ? state.focus : null))
-  const { setNodeRef: setDropRef } = useDroppable({ id: block.id, disabled: readOnly })
-  const {
-    setNodeRef: setDragRef,
-    listeners,
-    attributes,
-    isDragging,
-  } = useDraggable({ id: block.id, disabled: readOnly })
+  const block = React.useMemo(() => entryToBlock(entry), [entry])
+  const { id } = entry
+  const { childrenIds, listOrdinal } = entry
+  const isSelected = useEditorUISelector(store, (state) => state.selection.selectedIds.includes(id))
+  const focus = useEditorUISelector(store, (state) => (state.focus?.blockId === id ? state.focus : null))
+  const { setNodeRef: setDropRef } = useDroppable({ id, disabled: readOnly })
+  const { setNodeRef: setDragRef, listeners, attributes, isDragging } = useDraggable({ id, disabled: readOnly })
 
   const isFocused = !readOnly && focus !== null && isTextBlock(block)
 
   // toggle collapse hides children at render time only — they stay in the document
   const isToggle = block.type === 'document.toggle'
-  const isCollapsedToggle = isToggle && block.attributes?.collapsed === true
-  const isExpandedEmptyToggle = isToggle && !isCollapsedToggle && !block.children?.length
+  const documentCollapsed = block.attributes?.collapsed === true
+  const [readCollapsed, setReadCollapsed] = React.useState(documentCollapsed)
+
+  React.useEffect(() => {
+    if (readOnly && isToggle) {
+      setReadCollapsed(documentCollapsed)
+    }
+  }, [readOnly, isToggle, documentCollapsed])
+
+  const isCollapsedToggle = isToggle && (readOnly ? readCollapsed : documentCollapsed)
+  const isExpandedEmptyToggle = isToggle && !isCollapsedToggle && childrenIds.length === 0
+  const chromeBlock =
+    readOnly && isToggle ? { ...block, attributes: { ...block.attributes, collapsed: readCollapsed } } : block
 
   // span keeps the chrome wrapper (<p>/<h1>…) valid — div may not nest there
   const staticView = readOnly ? (
@@ -366,11 +384,17 @@ const BlockRow = React.memo(({ block, depth, readOnly, listOrdinal }: BlockNodeP
         )}
         <div data-block-content data-align={resolveBlockAlign(block.attributes?.align)}>
           <BlockChrome
-            block={block}
+            block={chromeBlock}
             depth={depth}
             listOrdinal={listOrdinal}
             onToggleChecked={readOnly ? undefined : handlers.toggleChecked}
-            onToggleCollapsed={readOnly ? undefined : handlers.toggleCollapsed}
+            onToggleCollapsed={
+              readOnly && isToggle
+                ? (_blockId, collapsed) => setReadCollapsed(collapsed)
+                : readOnly
+                ? undefined
+                : handlers.toggleCollapsed
+            }
             onSetCodeLanguage={readOnly ? undefined : handlers.setCodeLanguage}
             onSetImageLayout={readOnly ? undefined : handlers.setImageLayout}
           >
@@ -405,22 +429,13 @@ const BlockRow = React.memo(({ block, depth, readOnly, listOrdinal }: BlockNodeP
           </BlockChrome>
         </div>
       </div>
-      {block.children?.length && !isCollapsedToggle ? (
+      {childrenIds.length > 0 && !isCollapsedToggle ? (
         // one visual indent level per tree level — same unit the drag depth
         // projection uses, so the drop indicator lines up with real indents
         <div data-block-nested data-nested-toggle={isToggle || undefined} style={{ paddingLeft: DRAG_INDENT_WIDTH }}>
-          {(() => {
-            const ordinals = numberedListOrdinals(block.children)
-            return block.children.map((child) => (
-              <BlockNode
-                key={child.id}
-                block={child}
-                depth={depth + 1}
-                readOnly={readOnly}
-                listOrdinal={ordinals.get(child.id)}
-              />
-            ))
-          })()}
+          {childrenIds.map((childId) => (
+            <BlockNode key={childId} id={childId} depth={depth + 1} readOnly={readOnly} />
+          ))}
         </div>
       ) : null}
       {isExpandedEmptyToggle ? (
@@ -437,5 +452,5 @@ const BlockRow = React.memo(({ block, depth, readOnly, listOrdinal }: BlockNodeP
       ) : null}
     </div>
   )
-})
+}
 BlockRow.displayName = 'BlockRow'

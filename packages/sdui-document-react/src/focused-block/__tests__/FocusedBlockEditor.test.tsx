@@ -146,11 +146,16 @@ describe('FocusedBlockEditor', () => {
         const anchorSpan = document.querySelector('[data-selection-anchor]') as HTMLElement
         expect(anchorSpan.style.top).toBe('100px')
 
-        // scroll up 40px: coordsAtPos now reports a higher position
+        // scroll up 40px: coordsAtPos now reports a higher position. The
+        // re-measure is rAF-throttled, so run the frame synchronously.
         coords.mockReturnValue({ left: 10, right: 50, top: 60, bottom: 80 })
+        const raf = jest
+          .spyOn(window, 'requestAnimationFrame')
+          .mockImplementation((cb: FrameRequestCallback) => (cb(0), 0))
         act(() => {
           fireEvent.scroll(window)
         })
+        raf.mockRestore()
 
         expect(anchorSpan.style.top).toBe('60px')
         coords.mockRestore()

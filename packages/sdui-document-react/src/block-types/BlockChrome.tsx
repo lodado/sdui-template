@@ -25,7 +25,7 @@ export type BlockChromeProps = {
   listOrdinal?: number
   /** Checklist checkbox toggle — omitted (readOnly) renders a non-interactive box. */
   onToggleChecked?(blockId: string, checked: boolean): void
-  /** Toggle collapse — omitted (readOnly) renders a disabled triangle. */
+  /** Toggle collapse — omitted renders a disabled triangle (editor read mode passes an ephemeral handler). */
   onToggleCollapsed?(blockId: string, collapsed: boolean): void
   /** Code language picker — omitted (readOnly) renders a static label. */
   onSetCodeLanguage?(blockId: string, language: string): void

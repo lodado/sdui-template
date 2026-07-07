@@ -233,10 +233,10 @@ test.describe('Selection formatting toolbar', () => {
     await focusBlock(page, 'First')
     await selectFirstWord(page)
 
-    await page.getByRole('button', { name: 'Highlight' }).click()
-    await page.getByRole('button', { name: 'Highlight Coral' }).click()
+    await page.getByRole('button', { name: 'Color' }).click()
+    await page.getByRole('button', { name: 'Background Yellow' }).click()
 
-    await expect(page.locator(`${EDITABLE} mark[data-color="#FDEA9B"]`)).toContainText('First')
+    await expect(page.locator(`${EDITABLE} mark[data-color="#CB912F"]`)).toContainText('First')
   })
 })
 
@@ -247,7 +247,7 @@ test.describe('Block drag and drop', () => {
    * 0.1 = top zone → before, 0.9 = bottom zone → after).
    */
   async function dragBlockOnto(page: Page, blockId: string, targetId: string, ratio: number) {
-    const handle = page.getByRole('button', { name: `Drag block ${blockId}` })
+    const handle = page.locator(`[data-drag-handle][aria-label="Drag block ${blockId}"]`)
     const targetRow = page.locator(`[data-block-id="${targetId}"] [data-block-row]`).first()
     const handleBox = await handle.boundingBox()
     const targetBox = await targetRow.boundingBox()
@@ -269,7 +269,7 @@ test.describe('Block drag and drop', () => {
   })
 
   test('드래그 핸들은 블록에 호버했을 때만 보인다', async ({ page }) => {
-    const handle = page.getByRole('button', { name: 'Drag block p1' })
+    const handle = page.locator('[data-drag-handle][aria-label="Drag block p1"]')
     const row = page.locator('[data-block-id="p1"] [data-block-row]').first()
     const otherRow = page.locator('[data-block-id="p3"] [data-block-row]').first()
 

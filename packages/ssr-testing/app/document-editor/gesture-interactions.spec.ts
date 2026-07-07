@@ -182,7 +182,7 @@ test.describe('제스처 상호작용 (충돌 검증)', () => {
   })
 
   test('⠿ 핸들 블록 드래그(dnd-kit)는 텍스트 선택을 만들지 않는다', async ({ page }) => {
-    const handle = page.getByRole('button', { name: 'Drag block p3' })
+    const handle = page.locator('[data-drag-handle][aria-label="Drag block p3"]')
     const targetRow = page.locator('[data-block-id="p1"] [data-block-row]').first()
     await page.locator('[data-block-id="p3"] [data-block-row]').first().hover()
     const handleBox = await handle.boundingBox()
