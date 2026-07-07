@@ -219,7 +219,7 @@ describe('BlockChrome', () => {
       it('to be: a.attachment with href and download', () => {
         render(<BlockChrome block={block('document.file', { url: 'https://example.com/f.pdf', name: 'f.pdf' })} />)
 
-        const anchor = screen.getByText('f.pdf')
+        const anchor = screen.getByText('f.pdf').closest('.attachment') as HTMLElement
         expect(anchor.tagName).toBe('A')
         expect(anchor).toHaveClass('attachment')
         expect(anchor).toHaveAttribute('href', 'https://example.com/f.pdf')
@@ -232,7 +232,7 @@ describe('BlockChrome', () => {
         const dangerous = ['javascript', 'alert(1)'].join(':')
         render(<BlockChrome block={block('document.file', { url: dangerous, name: 'f.pdf' })} />)
 
-        expect(screen.getByText('f.pdf').tagName).toBe('SPAN')
+        expect((screen.getByText('f.pdf').closest('.attachment') as HTMLElement).tagName).toBe('SPAN')
       })
     })
   })
@@ -272,7 +272,7 @@ describe('BlockChrome', () => {
     it('to be: file attachment anchor is not draggable', () => {
       render(<BlockChrome block={block('document.file', { url: 'https://example.com/f.pdf', name: 'f.pdf' })} />)
 
-      expect(screen.getByText('f.pdf')).toHaveAttribute('draggable', 'false')
+      expect(screen.getByText('f.pdf').closest('.attachment')).toHaveAttribute('draggable', 'false')
     })
 
     it('to be: link anchor is not draggable', () => {
