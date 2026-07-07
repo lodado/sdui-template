@@ -100,9 +100,9 @@ describe('render model projection', () => {
     expect(cache.get('target')?.state).toEqual({ text: 'new' })
 
     // every other entry: SAME reference (subscribers would bail)
-    for (const id of ['root', 'section-a', 'a-1', 'a-1-1', 'a-1-1-1', 'a-1-1-2', 'a-2', 'section-b', 'tail']) {
+    ;['root', 'section-a', 'a-1', 'a-1-1', 'a-1-1-1', 'a-1-1-2', 'a-2', 'section-b', 'tail'].forEach((id) => {
       expect(cache.get(id)).toBe(beforeEntries.get(id))
-    }
+    })
   })
 
   it('childrenIds arrays are reference-stable when the id list is unchanged', () => {

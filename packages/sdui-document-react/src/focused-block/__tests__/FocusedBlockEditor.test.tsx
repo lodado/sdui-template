@@ -149,9 +149,10 @@ describe('FocusedBlockEditor', () => {
         // scroll up 40px: coordsAtPos now reports a higher position. The
         // re-measure is rAF-throttled, so run the frame synchronously.
         coords.mockReturnValue({ left: 10, right: 50, top: 60, bottom: 80 })
-        const raf = jest
-          .spyOn(window, 'requestAnimationFrame')
-          .mockImplementation((cb: FrameRequestCallback) => (cb(0), 0))
+        const raf = jest.spyOn(window, 'requestAnimationFrame').mockImplementation((cb: (time: number) => void) => {
+          cb(0)
+          return 0
+        })
         act(() => {
           fireEvent.scroll(window)
         })

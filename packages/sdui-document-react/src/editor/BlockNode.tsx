@@ -289,6 +289,13 @@ const BlockRow = ({ entry, depth, readOnly }: BlockViewProps) => {
   const chromeBlock =
     readOnly && isToggle ? { ...block, attributes: { ...block.attributes, collapsed: readCollapsed } } : block
 
+  let onToggleCollapsed: ((blockId: string, collapsed: boolean) => void) | undefined
+  if (readOnly) {
+    onToggleCollapsed = isToggle ? (_blockId, collapsed) => setReadCollapsed(collapsed) : undefined
+  } else {
+    onToggleCollapsed = handlers.toggleCollapsed
+  }
+
   // span keeps the chrome wrapper (<p>/<h1>…) valid — div may not nest there
   const staticView = readOnly ? (
     <span className="sdui-doc-static" data-inline-root>
@@ -388,13 +395,7 @@ const BlockRow = ({ entry, depth, readOnly }: BlockViewProps) => {
             depth={depth}
             listOrdinal={listOrdinal}
             onToggleChecked={readOnly ? undefined : handlers.toggleChecked}
-            onToggleCollapsed={
-              readOnly && isToggle
-                ? (_blockId, collapsed) => setReadCollapsed(collapsed)
-                : readOnly
-                ? undefined
-                : handlers.toggleCollapsed
-            }
+            onToggleCollapsed={onToggleCollapsed}
             onSetCodeLanguage={readOnly ? undefined : handlers.setCodeLanguage}
             onSetImageLayout={readOnly ? undefined : handlers.setImageLayout}
           >

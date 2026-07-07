@@ -20,7 +20,6 @@ import { deleteInlineRange } from '../../inline/deleteInlineRange'
 import type { NormalizedRange } from '../../inline/docRange'
 import { normalizeDocRange, readDocRangeFromDom } from '../../inline/docRange'
 import { domPositionFromInlineOffset } from '../../inline/domInlineOffsets'
-import { inlineToHtml } from '../../inline/inlineToHtml'
 import {
   addMarkInRange,
   coveredTextSegments,
@@ -28,6 +27,7 @@ import {
   rangeMarkAttr,
   removeMarkInRange,
 } from '../../inline/inlineRangeMarks'
+import { inlineToHtml } from '../../inline/inlineToHtml'
 import type { SelectionSnapshot } from '../../selection-toolbar/selectionSnapshot'
 import { rafThrottle } from '../../shared/rafThrottle'
 import { blockInlineContent, isTextBlock } from '../blockContent'
@@ -54,7 +54,7 @@ function parseInlineClipboard(raw: string | undefined): SduiInlineContent | null
       if (!node || typeof node !== 'object') {
         return false
       }
-      const type = (node as { type?: unknown }).type
+      const { type } = node as { type?: unknown }
       if (type === 'hard_break' || type === 'date') {
         return true
       }
@@ -161,8 +161,12 @@ export function useRangeOperations(input: UseRangeOperationsInput): UseRangeOper
   const mutateRange = (range: NormalizedRange, insert: string | SduiInlineContent) => {
     // Accepts plain text (typing / external paste) or rich inline content
     // (mark-preserving cross-block paste). String collapses to a single text node.
-    const insertContent: SduiInlineContent =
-      typeof insert === 'string' ? (insert ? [{ type: 'text', text: insert }] : []) : insert
+    let insertContent: SduiInlineContent
+    if (typeof insert === 'string') {
+      insertContent = insert ? [{ type: 'text', text: insert }] : []
+    } else {
+      insertContent = insert
+    }
     const insertLength = getInlineContentLength(insertContent)
 
     const startBlock = findBlockById(docRef.current, range.start.blockId)

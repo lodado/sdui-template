@@ -1,6 +1,6 @@
 import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import type { SduiDocumentContent, SduiDocumentPatch } from '@lodado/sdui-document'
-import { clearBlockSelection, isEmptyDocument } from '@lodado/sdui-document'
+import { clearBlockSelection } from '@lodado/sdui-document'
 import {
   type MouseEvent as ReactMouseEvent,
   type Ref,
@@ -13,11 +13,11 @@ import {
 
 import type { SelectionToolbarProps } from '../selection-toolbar/SelectionToolbar'
 import { SelectionToolbar } from '../selection-toolbar/SelectionToolbar'
+import { rafThrottle } from '../shared/rafThrottle'
 import { BlockActionsMenu } from './block-menu/BlockActionsMenu'
 import { defaultGenerateBlockId } from './blockContent'
-import { BlockNode } from './BlockNode'
-import { DocumentContentProvider } from './DocumentContentContext'
-import { createRenderModelStore } from './renderModel/RenderModelStore'
+import { DocEmptyFlag } from './DocEmptyFlag'
+import { createDocContentStore, DocumentContentProvider, type MutableDocContentStore } from './DocumentContentContext'
 import { collisionDetection, DRAG_INDENT_WIDTH, POINTER_SENSOR_OPTIONS } from './editorConstants'
 import { type EditorRuntime, EditorRuntimeContext, useEditorRuntime } from './EditorRuntimeContext'
 import { useDocumentPatches } from './hooks/useDocumentPatches'
@@ -27,7 +27,8 @@ import { useNestedBlockDragDrop } from './hooks/useNestedBlockDragDrop'
 import { useRangeOperations } from './hooks/useRangeOperations'
 import { useSelectionKeyboard } from './hooks/useSelectionKeyboard'
 import { LinkPopover, type LinkPopoverTarget } from './LinkPopover'
-import { rafThrottle } from '../shared/rafThrottle'
+import { createRenderModelStore } from './renderModel/RenderModelStore'
+import { RootBlockList } from './RootBlockList'
 import type { EditorUIStore } from './uiStore'
 import { createEditorUIStore, useEditorUISelector } from './uiStore'
 
@@ -115,20 +116,34 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
   }
   const renderStore = renderStoreRef.current
 
-  const { doc, docRef, applyPatches, undo, redo } = useDocumentPatches({
+  // Whole-tree readers (TOC, empty-flag) subscribe to this stable store instead
+  // of a changing context value, so they update on commit without re-rendering
+  // the container. Created once; snapshot is swapped at the publish choke point.
+  const docStoreRef = useRef<MutableDocContentStore>()
+  if (!docStoreRef.current) {
+    docStoreRef.current = createDocContentStore()
+  }
+  const docStore = docStoreRef.current
+
+  const { docRef, applyPatches, undo, redo } = useDocumentPatches({
     content,
     onContentChange,
-    onPublish: (prev, next) => renderStore.sync(prev.root, next.root),
+    onPublish: (prev, next) => {
+      renderStore.sync(prev.root, next.root)
+      docStore.setSnapshot(next)
+    },
     generateBlockId,
     readOnly,
   })
 
-  // Seed the render model once, before children first render.
-  const renderSeededRef = useRef(false)
-  if (!renderSeededRef.current) {
-    renderStore.sync(null, doc.root)
-    renderSeededRef.current = true
+  // Seed both derived stores once, before children first render.
+  const seededRef = useRef(false)
+  if (!seededRef.current) {
+    renderStore.sync(null, docRef.current.root)
+    docStore.setSnapshot(docRef.current)
+    seededRef.current = true
   }
+  const rootId = docRef.current.root.id
 
   const containerRef = useRef<HTMLDivElement>(null)
   const indicatorRef = useRef<HTMLDivElement>(null)
@@ -299,7 +314,7 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
 
   return (
     <EditorRuntimeContext.Provider value={runtime}>
-      <DocumentContentProvider value={doc}>
+      <DocumentContentProvider value={docStore}>
         <DndContext
           sensors={sensors}
           collisionDetection={collisionDetection}
@@ -313,16 +328,15 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
             ref={containerRef}
             className={className}
             data-sdui-document-editor
-            data-doc-empty={isEmptyDocument(doc) || undefined}
             role="tree"
             tabIndex={-1}
             onKeyDown={handleSelectionKeyDown}
             onClickCapture={handleLinkClickCapture}
             style={{ outline: 'none', position: 'relative' }}
           >
-            {doc.root.children?.map((child) => (
-              <BlockNode key={child.id} id={child.id} depth={1} readOnly={readOnly} />
-            ))}
+            <RootBlockList rootId={rootId} readOnly={readOnly} />
+            {/* null leaf: paints data-doc-empty on the container via ref, no container re-render */}
+            <DocEmptyFlag containerRef={containerRef} />
             {!readOnly && (
               // Outline ClickablePadding: a text-cursor strip below the last
               // block; keyboard users reach the same spot via ArrowDown.

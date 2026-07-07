@@ -10,7 +10,7 @@ import {
   undoHistory,
   withTrailingBlock,
 } from '@lodado/sdui-document'
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 
 type DocumentPatchesOptions = {
   content: SduiDocumentContent
@@ -38,10 +38,11 @@ export function useDocumentPatches({
 }: DocumentPatchesOptions) {
   // Load normalization mirrors Outline's withTrailingNode: seed the invariant
   // silently — opening a document is not an edit, so no patch event fires.
-  const [doc, setDoc] = useState(() =>
+  // Seed is computed once (the container never re-renders — content lives in the
+  // render-model store + the doc store, never in this component's state).
+  const docRef = useRef<SduiDocumentContent>(
     readOnly || !generateBlockId ? content : withTrailingBlock(content, generateBlockId),
   )
-  const docRef = useRef(doc)
   // Two-stack undo/redo (PM history covers only inline text within one focus
   // session; everything that lands here as a patch batch is one undo step).
   const historyRef = useRef<DocumentHistory>(createDocumentHistory())
@@ -60,11 +61,11 @@ export function useDocumentPatches({
     })
 
   const publish = (next: SduiDocumentContent, patches: SduiDocumentPatch[]) => {
-    // sync derived stores BEFORE the state update, so rows see fresh data on the
-    // re-render this triggers (a newly inserted block must already have an entry)
+    // Push into the derived stores (render-model + doc store) BEFORE swapping the
+    // ref, so their subscribers (rows, TOC, empty-flag) re-render off fresh data.
+    // The container itself holds no doc state, so it never re-renders here.
     onPublish?.(docRef.current, next)
     docRef.current = next
-    setDoc(next)
     onContentChange?.(next, patches)
   }
 
@@ -120,5 +121,5 @@ export function useDocumentPatches({
   const undo = () => applyHistoryStep(undoHistory(historyRef.current), 'undo')
   const redo = () => applyHistoryStep(redoHistory(historyRef.current), 'redo')
 
-  return { doc, docRef, applyPatches, undo, redo }
+  return { docRef, applyPatches, undo, redo }
 }

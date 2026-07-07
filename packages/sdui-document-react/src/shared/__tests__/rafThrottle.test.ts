@@ -15,8 +15,9 @@ describe('rafThrottle', () => {
   beforeEach(() => {
     frames = new Map()
     nextId = 1
-    rafSpy = jest.spyOn(globalThis, 'requestAnimationFrame').mockImplementation((cb: FrameRequestCallback) => {
-      const id = nextId++
+    rafSpy = jest.spyOn(globalThis, 'requestAnimationFrame').mockImplementation((cb: (time: number) => void) => {
+      const id = nextId
+      nextId += 1
       frames.set(id, () => cb(0))
       return id
     })

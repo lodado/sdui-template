@@ -108,7 +108,10 @@ describe('link click popover (editable mode)', () => {
     // scroll up 60px: the link moved, the fixed popover must follow. The
     // reposition is rAF-throttled, so run the frame synchronously.
     anchor.getBoundingClientRect = jest.fn(() => rectAt(40, 20))
-    const raf = jest.spyOn(window, 'requestAnimationFrame').mockImplementation((cb: FrameRequestCallback) => (cb(0), 0))
+    const raf = jest.spyOn(window, 'requestAnimationFrame').mockImplementation((cb: (time: number) => void) => {
+      cb(0)
+      return 0
+    })
     fireEvent.scroll(window)
     raf.mockRestore()
 
@@ -123,7 +126,10 @@ describe('link click popover (editable mode)', () => {
     expect(container.querySelector('[data-link-popover]')).toBeInTheDocument()
 
     anchor.remove() // element detached (e.g. block unmounted while scrolling)
-    const raf = jest.spyOn(window, 'requestAnimationFrame').mockImplementation((cb: FrameRequestCallback) => (cb(0), 0))
+    const raf = jest.spyOn(window, 'requestAnimationFrame').mockImplementation((cb: (time: number) => void) => {
+      cb(0)
+      return 0
+    })
     fireEvent.scroll(window)
     raf.mockRestore()
 

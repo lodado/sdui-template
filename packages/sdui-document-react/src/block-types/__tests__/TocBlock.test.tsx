@@ -2,7 +2,7 @@ import type { SduiDocumentContent } from '@lodado/sdui-document'
 import { fireEvent, render, screen } from '@testing-library/react'
 import React from 'react'
 
-import { DocumentContentProvider } from '../../editor/DocumentContentContext'
+import { createDocContentStore, DocumentContentProvider } from '../../editor/DocumentContentContext'
 import { TocBlock } from '../toc/TocBlock'
 
 const content: SduiDocumentContent = {
@@ -34,7 +34,7 @@ it('lists headings and scrolls to the target on click', () => {
   render(
     <div>
       <div data-block-id="h1" tabIndex={-1} />
-      <DocumentContentProvider value={content}>
+      <DocumentContentProvider value={createDocContentStore(content)}>
         <TocBlock />
       </DocumentContentProvider>
     </div>,

@@ -103,36 +103,42 @@ export function deriveEntry(node: SduiDocumentBlock, cache: RenderEntryCache): R
 }
 
 /**
- * Reconcile the render entries from `prevRoot` to `nextRoot`, collecting the ids
- * whose entry reference actually changed. Structural sharing prunes the walk:
- * an untouched subtree is the same object reference and is skipped wholesale, so
- * the walk is O(depth-of-change), and only genuinely changed ids are reported.
- *
- * @returns the ids whose subscribers must be notified.
+ * Collect every block id currently in the tree — used to garbage-collect cache
+ * entries for deleted blocks so the memo table cannot grow unbounded.
  */
-export function syncTree(
-  prevRoot: SduiDocumentBlock | null,
-  nextRoot: SduiDocumentBlock,
-  cache: RenderEntryCache,
-): string[] {
-  const changed: string[] = []
-  const removed: SduiDocumentBlock[] = []
-  reconcile(prevRoot, nextRoot, cache, changed, removed)
+export function collectTreeIds(root: SduiDocumentBlock, into: Set<string> = new Set()): Set<string> {
+  into.add(root.id)
+  root.children?.forEach((child) => collectTreeIds(child, into))
+  return into
+}
 
-  // GC deleted blocks. A block absent from ITS OLD PARENT may have moved to a
-  // different parent (still live), so we can only drop entries whose id is gone
-  // from the WHOLE next tree. The O(n) walk runs only when something was removed
-  // (structural edits) — plain text edits stay O(depth).
-  if (removed.length > 0) {
-    const live = collectTreeIds(nextRoot)
-    removed.forEach((block) => {
-      if (!live.has(block.id)) {
-        dropSubtree(block, cache)
+function dropSubtree(node: SduiDocumentBlock, cache: RenderEntryCache): void {
+  cache.delete(node.id)
+  node.children?.forEach((child) => dropSubtree(child, cache))
+}
+
+/**
+ * Assign numbered-list ordinals to a parent's children. Consecutive
+ * `document.numbered-list` siblings form one run; any other type resets it
+ * (Notion behavior). Directly patches each child entry whose ordinal changed —
+ * bypassing the reconcile prune, since a sibling's ordinal can shift without its
+ * own block changing.
+ */
+function applyOrdinals(parent: SduiDocumentBlock, cache: RenderEntryCache, changed: string[]): void {
+  const { children } = parent
+  if (!children?.length) return
+
+  let run = 0
+  children.forEach((child) => {
+    const desired = child.type === NUMBERED_LIST_TYPE ? (run += 1) : ((run = 0), undefined)
+    const entry = cache.get(child.id)
+    if (entry && entry.listOrdinal !== desired) {
+      cache.set(child.id, { ...entry, listOrdinal: desired })
+      if (!changed.includes(child.id)) {
+        changed.push(child.id)
       }
-    })
-  }
-
-  return changed
+    }
+  })
 }
 
 function reconcile(
@@ -177,40 +183,34 @@ function reconcile(
 }
 
 /**
- * Assign numbered-list ordinals to a parent's children. Consecutive
- * `document.numbered-list` siblings form one run; any other type resets it
- * (Notion behavior). Directly patches each child entry whose ordinal changed —
- * bypassing the reconcile prune, since a sibling's ordinal can shift without its
- * own block changing.
+ * Reconcile the render entries from `prevRoot` to `nextRoot`, collecting the ids
+ * whose entry reference actually changed. Structural sharing prunes the walk:
+ * an untouched subtree is the same object reference and is skipped wholesale, so
+ * the walk is O(depth-of-change), and only genuinely changed ids are reported.
+ *
+ * @returns the ids whose subscribers must be notified.
  */
-function applyOrdinals(parent: SduiDocumentBlock, cache: RenderEntryCache, changed: string[]): void {
-  const {children} = parent
-  if (!children?.length) return
+export function syncTree(
+  prevRoot: SduiDocumentBlock | null,
+  nextRoot: SduiDocumentBlock,
+  cache: RenderEntryCache,
+): string[] {
+  const changed: string[] = []
+  const removed: SduiDocumentBlock[] = []
+  reconcile(prevRoot, nextRoot, cache, changed, removed)
 
-  let run = 0
-  for (const child of children) {
-    const desired = child.type === NUMBERED_LIST_TYPE ? (run += 1) : ((run = 0), undefined)
-    const entry = cache.get(child.id)
-    if (entry && entry.listOrdinal !== desired) {
-      cache.set(child.id, { ...entry, listOrdinal: desired })
-      if (!changed.includes(child.id)) {
-        changed.push(child.id)
+  // GC deleted blocks. A block absent from ITS OLD PARENT may have moved to a
+  // different parent (still live), so we can only drop entries whose id is gone
+  // from the WHOLE next tree. The O(n) walk runs only when something was removed
+  // (structural edits) — plain text edits stay O(depth).
+  if (removed.length > 0) {
+    const live = collectTreeIds(nextRoot)
+    removed.forEach((block) => {
+      if (!live.has(block.id)) {
+        dropSubtree(block, cache)
       }
-    }
+    })
   }
-}
 
-function dropSubtree(node: SduiDocumentBlock, cache: RenderEntryCache): void {
-  cache.delete(node.id)
-  node.children?.forEach((child) => dropSubtree(child, cache))
-}
-
-/**
- * Collect every block id currently in the tree — used to garbage-collect cache
- * entries for deleted blocks so the memo table cannot grow unbounded.
- */
-export function collectTreeIds(root: SduiDocumentBlock, into: Set<string> = new Set()): Set<string> {
-  into.add(root.id)
-  root.children?.forEach((child) => collectTreeIds(child, into))
-  return into
+  return changed
 }
