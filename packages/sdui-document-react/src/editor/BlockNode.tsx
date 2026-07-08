@@ -1,5 +1,11 @@
 import type { SduiDocumentBlock } from '@lodado/sdui-document'
-import { COLUMN_BLOCK_TYPE, COLUMN_LIST_BLOCK_TYPE, resolveBlockAlign } from '@lodado/sdui-document'
+import {
+  CODE_BLOCK_TYPE,
+  COLUMN_BLOCK_TYPE,
+  COLUMN_LIST_BLOCK_TYPE,
+  resolveBlockAlign,
+  TOGGLE_BLOCK_TYPE,
+} from '@lodado/sdui-document'
 import React from 'react'
 
 import { BlockChrome } from '../block-types/BlockChrome'
@@ -112,7 +118,7 @@ const BlockRow = ({ entry, depth, readOnly }: BlockViewProps) => {
   const isFocused = !readOnly && focus !== null && isTextBlock(block)
 
   // toggle collapse hides children at render time only — they stay in the document
-  const isToggle = block.type === 'document.toggle'
+  const isToggle = block.type === TOGGLE_BLOCK_TYPE
   const documentCollapsed = block.attributes?.collapsed === true
   const [readCollapsed, setReadCollapsed] = React.useState(documentCollapsed)
 
@@ -240,7 +246,7 @@ const BlockRow = ({ entry, depth, readOnly }: BlockViewProps) => {
                   content={blockInlineContent(block)}
                   autoFocus={focus.caret}
                   autoOpenBlockMenu={focus.openBlockMenu === true}
-                  rawTextMode={block.type === 'document.code'}
+                  rawTextMode={block.type === CODE_BLOCK_TYPE}
                   blockAlign={resolveBlockAlign(block.attributes?.align) ?? null}
                   onSetAlign={(align) => handlers.setBlockAlign(block.id, align)}
                   onCommit={(commit) => handlers.commit(block.id, commit)}

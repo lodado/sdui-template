@@ -1,4 +1,5 @@
 import type { SduiDocumentBlock } from '@lodado/sdui-document'
+import { CODE_BLOCK_TYPE, TOGGLE_BLOCK_TYPE } from '@lodado/sdui-document'
 import React from 'react'
 
 import type { ImageLayoutPatch } from '../editor/EditorRuntimeContext'
@@ -87,14 +88,14 @@ export const BlockChrome = ({
     case 'document.quote':
       return <QuoteBlock block={block}>{children}</QuoteBlock>
 
-    case 'document.toggle':
+    case TOGGLE_BLOCK_TYPE:
       return (
         <ToggleBlock block={block} onToggleCollapsed={onToggleCollapsed}>
           {children}
         </ToggleBlock>
       )
 
-    case 'document.code':
+    case CODE_BLOCK_TYPE:
       return (
         <CodeBlock block={block} onSetCodeLanguage={onSetCodeLanguage}>
           {children}

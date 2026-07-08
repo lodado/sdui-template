@@ -13,6 +13,7 @@ import {
   extendBlockSelection,
   findBlockById,
   flattenDocumentBlocks,
+  TOGGLE_BLOCK_TYPE,
 } from '@lodado/sdui-document'
 import React, { useMemo, useRef } from 'react'
 
@@ -283,7 +284,7 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
           latest.current.applyPatches([blockAttrsPatch(blockId, { checked: block.attributes?.checked !== true })])
         }
 
-        if (block?.type === 'document.toggle') {
+        if (block?.type === TOGGLE_BLOCK_TYPE) {
           latest.current.applyPatches([blockAttrsPatch(blockId, { collapsed: block.attributes?.collapsed !== true })])
         }
       },

@@ -21,6 +21,7 @@ import {
   findBlockById,
   flattenDocumentBlocks,
   getInlineContentLength,
+  TOGGLE_BLOCK_TYPE,
 } from '@lodado/sdui-document'
 
 import { blockInlineContent, isTextBlock } from './blockContent'
@@ -70,7 +71,7 @@ export function computeInsertToggleChild(
   nextBlockId: () => string,
 ): HandlerDecision | null {
   const source = findBlockById(content, blockId)
-  if (!source || source.type !== 'document.toggle') {
+  if (!source || source.type !== TOGGLE_BLOCK_TYPE) {
     return null
   }
 
@@ -175,7 +176,7 @@ export function computeSplit(
     }
   }
 
-  if (source && source.type === 'document.toggle') {
+  if (source && source.type === TOGGLE_BLOCK_TYPE) {
     return computeInsertToggleChild(content, blockId, nextBlockId) ?? { patches: [] }
   }
 

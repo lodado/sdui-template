@@ -3,6 +3,8 @@
  * `action` decides the select flow: 'insert' patches immediately, 'file'
  * opens the file picker first, 'link' switches the menu to a URL input.
  */
+import { CODE_BLOCK_TYPE, TOGGLE_BLOCK_TYPE } from '@lodado/sdui-document'
+
 export type BlockMenuGroup = 'basic' | 'media' | 'advanced'
 
 export const BLOCK_MENU_GROUP_LABELS: Record<BlockMenuGroup, string> = {
@@ -101,7 +103,7 @@ export const BLOCK_MENU_ITEMS: readonly BlockMenuItem[] = [
   },
   {
     id: 'toggle',
-    type: 'document.toggle',
+    type: TOGGLE_BLOCK_TYPE,
     title: 'Toggle list',
     glyph: '▸',
     action: 'insert',
@@ -139,7 +141,7 @@ export const BLOCK_MENU_ITEMS: readonly BlockMenuItem[] = [
   },
   {
     id: 'code',
-    type: 'document.code',
+    type: CODE_BLOCK_TYPE,
     title: 'Code',
     glyph: '</>',
     action: 'insert',

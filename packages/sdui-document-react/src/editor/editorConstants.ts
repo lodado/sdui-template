@@ -1,5 +1,6 @@
 import type { CollisionDetection } from '@dnd-kit/core'
 import { pointerWithin, rectIntersection } from '@dnd-kit/core'
+import { TOGGLE_BLOCK_TYPE } from '@lodado/sdui-document'
 
 /** Pixel width of one indentation level for drag depth projection. */
 export const DRAG_INDENT_WIDTH = 24
@@ -32,8 +33,8 @@ export const LIST_LIKE_BLOCK_TYPES = new Set([
   'document.bulleted-list',
   'document.numbered-list',
   'document.checklist',
-  'document.toggle',
+  TOGGLE_BLOCK_TYPE,
 ])
 
 /** Enter never continues these — the continuation block becomes a paragraph. */
-export const SPLIT_TO_PARAGRAPH_BLOCK_TYPES = new Set(['document.heading', 'document.quote', 'document.toggle'])
+export const SPLIT_TO_PARAGRAPH_BLOCK_TYPES = new Set(['document.heading', 'document.quote', TOGGLE_BLOCK_TYPE])
