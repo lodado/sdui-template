@@ -1,6 +1,6 @@
 import { inlineContentToPlainText, mergeInlineContent, splitInlineContent } from '../../content/inlineContent'
 import { generatePositionBetween, generatePositions, resolvePositionBounds, sortBlocksByPosition } from '../../ordering'
-import type { SduiDocumentBlock, SduiDocumentContent, SduiInlineContent } from '../schema'
+import type { SduiDocumentBlock, SduiInlineContent } from '../schema'
 import { createDocumentBlock } from '../schema'
 import type { BlockOrigin } from '../schema/block'
 import type { BlockPlacementAnchor } from '../schema/patch'
@@ -15,22 +15,23 @@ import {
   RootBlockCannotBeDeletedError,
 } from './errors'
 import { getBlockInline, stripUndefinedKeys, toInlineStatePatch } from './inlineState'
-import { collectBlockIds, findBlock, findBlockById, findParent } from './traverse'
+import { collectBlockIds, findBlock } from './traverse'
+import type { PatchWriteScope } from './writeScope'
 
 export function insertBlockAtAnchor(
-  content: SduiDocumentContent,
+  scope: PatchWriteScope,
   parentId: string,
   block: SduiDocumentBlock,
   anchor: BlockPlacementAnchor,
   origin?: BlockOrigin,
 ): void {
-  const parent = findBlockById(content, parentId)
+  const parent = scope.writableBlock(parentId)
   if (!parent) {
     throw new ParentBlockNotFoundError(parentId)
   }
 
   const existingIds = new Set<string>()
-  collectBlockIds(content.root, existingIds)
+  collectBlockIds(scope.root(), existingIds)
 
   const incomingIds = new Set<string>()
   collectBlockIds(block, incomingIds)
@@ -54,12 +55,12 @@ export function insertBlockAtAnchor(
 }
 
 export function updateBlock(
-  content: SduiDocumentContent,
+  scope: PatchWriteScope,
   blockId: string,
   state?: Record<string, unknown>,
   attributes?: Record<string, unknown>,
 ): void {
-  const block = findBlockById(content, blockId)
+  const block = scope.writableBlock(blockId)
   if (!block) {
     throw new BlockNotFoundError(blockId)
   }
@@ -82,12 +83,12 @@ export function updateBlock(
   }
 }
 
-export function deleteBlock(content: SduiDocumentContent, blockId: string): void {
-  if (content.root.id === blockId) {
+export function deleteBlock(scope: PatchWriteScope, blockId: string): void {
+  if (scope.rootId === blockId) {
     throw new RootBlockCannotBeDeletedError()
   }
 
-  const found = findParent(content.root, blockId)
+  const found = scope.writableParentOf(blockId)
   if (!found) {
     throw new BlockNotFoundError(blockId)
   }
@@ -96,17 +97,18 @@ export function deleteBlock(content: SduiDocumentContent, blockId: string): void
 }
 
 export function moveBlockAtAnchor(
-  content: SduiDocumentContent,
+  scope: PatchWriteScope,
   blockId: string,
   parentId: string,
   anchor: BlockPlacementAnchor,
   origin?: BlockOrigin,
 ): void {
-  if (blockId === content.root.id || blockId === parentId) {
+  if (blockId === scope.rootId || blockId === parentId) {
     throw new InvalidBlockMoveError('Cannot move a block below itself')
   }
 
-  const movingBlock = findBlockById(content, blockId)
+  // The moved subtree is unchanged — read it (shared) and re-parent as-is.
+  const movingBlock = scope.block(blockId)
   if (!movingBlock) {
     throw new BlockNotFoundError(blockId)
   }
@@ -115,27 +117,27 @@ export function moveBlockAtAnchor(
     throw new InvalidBlockMoveError('Cannot move a block below its descendant')
   }
 
-  const found = findParent(content.root, blockId)
+  const found = scope.writableParentOf(blockId)
   if (!found) {
     throw new BlockNotFoundError(blockId)
   }
 
   found.parent.children = sortBlocksByPosition(found.parent.children?.filter((child) => child.id !== blockId) ?? [])
 
-  insertBlockAtAnchor(content, parentId, movingBlock, anchor, origin ?? movingBlock.origin)
+  insertBlockAtAnchor(scope, parentId, movingBlock, anchor, origin ?? movingBlock.origin)
 }
 
-export function splitBlock(content: SduiDocumentContent, blockId: string, offset: number, newBlockId: string): void {
-  if (content.root.id === blockId) {
+export function splitBlock(scope: PatchWriteScope, blockId: string, offset: number, newBlockId: string): void {
+  if (scope.rootId === blockId) {
     throw new InvalidBlockSplitError('Root block cannot be split')
   }
 
-  const block = findBlockById(content, blockId)
+  const block = scope.writableBlock(blockId)
   if (!block) {
     throw new BlockNotFoundError(blockId)
   }
 
-  const found = findParent(content.root, blockId)
+  const found = scope.parentOf(blockId)
   if (!found) {
     throw new BlockNotFoundError(blockId)
   }
@@ -150,35 +152,43 @@ export function splitBlock(content: SduiDocumentContent, blockId: string, offset
     ...(inline.mode === 'empty' ? {} : { state: toInlineStatePatch(inline.mode, right) }),
   }
 
-  insertBlockAtAnchor(content, found.parent.id, newBlock, { after: blockId })
+  insertBlockAtAnchor(scope, found.parent.id, newBlock, { after: blockId })
 
   if (inline.mode !== 'empty') {
     block.state = { ...(block.state ?? {}), ...toInlineStatePatch(inline.mode, left) }
   }
 }
 
-export function mergeBlock(content: SduiDocumentContent, blockId: string, intoBlockId: string): void {
+export function mergeBlock(scope: PatchWriteScope, blockId: string, intoBlockId: string): void {
   if (blockId === intoBlockId) {
     throw new InvalidBlockMergeError('Cannot merge a block into itself')
   }
 
-  if (content.root.id === blockId) {
+  if (scope.rootId === blockId) {
     throw new InvalidBlockMergeError('Root block cannot be merged')
   }
 
-  const block = findBlockById(content, blockId)
-  if (!block) {
+  // Validate against the read tree before committing any write.
+  const blockRead = scope.block(blockId)
+  if (!blockRead) {
     throw new BlockNotFoundError(blockId)
   }
 
-  const intoBlock = findBlockById(content, intoBlockId)
-  if (!intoBlock) {
+  if (!scope.block(intoBlockId)) {
     throw new BlockNotFoundError(intoBlockId)
   }
 
-  if (findBlock(block, intoBlockId)) {
+  if (findBlock(blockRead, intoBlockId)) {
     throw new InvalidBlockMergeError('Cannot merge a block into its own descendant')
   }
+
+  // Copy every write path up front, then read the (now writable) nodes, then
+  // mutate — so a later copy can never re-clone a node an earlier write touched.
+  scope.ensure(intoBlockId)
+  scope.ensure(blockId)
+  const intoBlock = scope.block(intoBlockId)!
+  const block = scope.block(blockId)!
+  const found = scope.parentOf(blockId)!
 
   const blockInline = getBlockInline(block)
   const intoInline = getBlockInline(intoBlock)
@@ -187,11 +197,6 @@ export function mergeBlock(content: SduiDocumentContent, blockId: string, intoBl
     const resultMode = blockInline.mode === 'content' || intoInline.mode === 'content' ? 'content' : 'text'
     const merged = mergeInlineContent(intoInline.content, blockInline.content)
     intoBlock.state = { ...(intoBlock.state ?? {}), ...toInlineStatePatch(resultMode, merged) }
-  }
-
-  const found = findParent(content.root, blockId)
-  if (!found) {
-    throw new BlockNotFoundError(blockId)
   }
 
   const siblings = sortBlocksByPosition(found.parent.children ?? [])
@@ -216,16 +221,16 @@ export function mergeBlock(content: SduiDocumentContent, blockId: string, intoBl
 }
 
 export function setBlockType(
-  content: SduiDocumentContent,
+  scope: PatchWriteScope,
   blockId: string,
   blockType: SduiDocumentBlock['type'],
   attributes?: Record<string, unknown>,
 ): void {
-  if (content.root.id === blockId) {
+  if (scope.rootId === blockId) {
     throw new InvalidBlockTypeChangeError('Root block type cannot change')
   }
 
-  const block = findBlockById(content, blockId)
+  const block = scope.writableBlock(blockId)
   if (!block) {
     throw new BlockNotFoundError(blockId)
   }

@@ -10,51 +10,50 @@ import {
   splitBlock,
   updateBlock,
 } from './operations'
-import { cloneTouchedPaths, touchedBlockIds } from './structuralSharing'
+import { createPatchWriteScope } from './writeScope'
 
 export function applyDocumentPatch(content: SduiDocumentContent, patch: SduiDocumentPatch): SduiDocumentContent {
-  const migrated = ensureFractionalContent(content)
-  const next = cloneTouchedPaths(migrated, touchedBlockIds(patch))
+  const scope = createPatchWriteScope(ensureFractionalContent(content))
 
   switch (patch.type) {
     case 'block.insert':
       insertBlockAtAnchor(
-        next,
+        scope,
         patch.parentId,
         patch.block,
         { after: patch.after, before: patch.before, fallbackAfter: patch.fallbackAfter },
         patch.origin,
       )
-      return next
+      return scope.content()
     case 'block.update':
-      updateBlock(next, patch.blockId, patch.state, patch.attributes)
-      return next
+      updateBlock(scope, patch.blockId, patch.state, patch.attributes)
+      return scope.content()
     case 'block.delete':
-      deleteBlock(next, patch.blockId)
-      return next
+      deleteBlock(scope, patch.blockId)
+      return scope.content()
     case 'block.move':
       moveBlockAtAnchor(
-        next,
+        scope,
         patch.blockId,
         patch.parentId,
         { after: patch.after, before: patch.before, fallbackAfter: patch.fallbackAfter },
         patch.origin,
       )
-      return next
+      return scope.content()
     case 'block.split':
-      splitBlock(next, patch.blockId, patch.offset, patch.newBlockId)
-      return next
+      splitBlock(scope, patch.blockId, patch.offset, patch.newBlockId)
+      return scope.content()
     case 'block.merge':
-      mergeBlock(next, patch.blockId, patch.intoBlockId)
-      return next
+      mergeBlock(scope, patch.blockId, patch.intoBlockId)
+      return scope.content()
     case 'block.setType':
-      setBlockType(next, patch.blockId, patch.blockType, patch.attributes)
-      return next
+      setBlockType(scope, patch.blockId, patch.blockType, patch.attributes)
+      return scope.content()
     case 'document.setTitle':
       // Title lives on the document, not the content tree. Collaboration replays
       // mixed batches (title + block edits) through this content-level pipeline,
       // so setTitle is an intentional no-op here — applyPatchToDocument owns it.
-      return next
+      return scope.content()
     default:
       return assertNever(patch, 'applyDocumentPatch')
   }
