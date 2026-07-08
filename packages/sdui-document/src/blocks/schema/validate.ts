@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { BLOCK_TYPE_MODULES } from '../../block-types'
+import { BLOCK_TYPE_MODULES, blockModuleByType } from '../../block-types'
 import { inlineMarkSchema } from '../../marks'
 import type { SduiDocument, SduiDocumentBlock, SduiDocumentContent, SduiDocumentPatch } from './index'
 import type { SduiInlineContent } from './inline'
@@ -31,15 +31,40 @@ const blockOriginSchema = z.object({
 })
 
 const blockSchema: z.ZodTypeAny = z.lazy(() =>
-  z.object({
-    id: z.string().min(1),
-    type: blockTypeSchema,
-    position: z.string().optional(),
-    origin: blockOriginSchema.optional(),
-    state: z.record(z.string(), z.unknown()).optional(),
-    attributes: z.record(z.string(), z.unknown()).optional(),
-    children: z.array(blockSchema).optional(),
-  }),
+  z
+    .object({
+      id: z.string().min(1),
+      type: blockTypeSchema,
+      position: z.string().optional(),
+      origin: blockOriginSchema.optional(),
+      state: z.record(z.string(), z.unknown()).optional(),
+      attributes: z.record(z.string(), z.unknown()).optional(),
+      children: z.array(blockSchema).optional(),
+    })
+    // Enforce each block type's own `state`/`attributes` schema at the parse
+    // boundary via the registry. Unknown/custom types have no module and stay
+    // open by design. Schemas are non-strict, so extra keys (e.g. rich `content`
+    // alongside a modelled `text`) pass; only wrong-typed values are rejected.
+    .superRefine((block, ctx) => {
+      const blockModule = blockModuleByType[block.type as string]
+      if (!blockModule) {
+        return
+      }
+
+      if (blockModule.stateSchema && block.state !== undefined) {
+        const result = blockModule.stateSchema.safeParse(block.state)
+        if (!result.success) {
+          result.error.issues.forEach((issue) => ctx.addIssue({ ...issue, path: ['state', ...issue.path] }))
+        }
+      }
+
+      if (blockModule.attributesSchema && block.attributes !== undefined) {
+        const result = blockModule.attributesSchema.safeParse(block.attributes)
+        if (!result.success) {
+          result.error.issues.forEach((issue) => ctx.addIssue({ ...issue, path: ['attributes', ...issue.path] }))
+        }
+      }
+    }),
 )
 
 const contentSchema = z.object({
