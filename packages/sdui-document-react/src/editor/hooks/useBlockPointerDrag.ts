@@ -22,9 +22,9 @@ export const TOUCH_ACTIVATION_DISTANCE = 10
 /** Hold (ms) on the handle before a stationary touch becomes a drag (long-press to drag). */
 export const TOUCH_LONG_PRESS_MS = 220
 /** Distance (px) from a scroll edge at which a live drag starts auto-scrolling. */
-const AUTOSCROLL_EDGE_BAND = 48
+export const AUTOSCROLL_EDGE_BAND = 48
 /** Peak auto-scroll speed (px/frame) at the very edge of the band. */
-const AUTOSCROLL_MAX_SPEED = 14
+export const AUTOSCROLL_MAX_SPEED = 14
 const GHOST_OPACITY = '0.6'
 const SOURCE_OPACITY = '0.4'
 
@@ -45,6 +45,31 @@ type DropInput = {
   /** Pointer X at press start — the horizontal travel drives indent depth. */
   startX: number
   indentWidth: number
+}
+
+/**
+ * Auto-scroll speed for a pointer near a scroll edge (pure ramp math).
+ * Inside the top/bottom `band` the speed ramps linearly with depth, peaking at
+ * `maxSpeed` px/frame at the very edge; `Math.ceil` keeps a minimum of 1px so
+ * the scroll never stalls just inside the band. Negative = scroll up.
+ *
+ * @returns 0 when the pointer is outside both edge bands.
+ */
+export function computeAutoScrollDelta(
+  pointerY: number,
+  top: number,
+  bottom: number,
+  band: number = AUTOSCROLL_EDGE_BAND,
+  maxSpeed: number = AUTOSCROLL_MAX_SPEED,
+): number {
+  if (pointerY < top + band) {
+    return -Math.ceil(((top + band - pointerY) / band) * maxSpeed)
+  }
+  if (pointerY > bottom - band) {
+    return Math.ceil(((pointerY - (bottom - band)) / band) * maxSpeed)
+  }
+
+  return 0
 }
 
 /**
@@ -258,7 +283,7 @@ export function useBlockPointerDrag(options: BlockPointerDragOptions): void {
     const findScrollParent = (el: HTMLElement | null): HTMLElement | null => {
       let node = el?.parentElement ?? null
       while (node) {
-        const {overflowY} = getComputedStyle(node)
+        const { overflowY } = getComputedStyle(node)
         if ((overflowY === 'auto' || overflowY === 'scroll') && node.scrollHeight > node.clientHeight) {
           return node
         }
@@ -285,12 +310,7 @@ export function useBlockPointerDrag(options: BlockPointerDragOptions): void {
 
         const top = scroller ? scroller.getBoundingClientRect().top : 0
         const bottom = scroller ? scroller.getBoundingClientRect().bottom : window.innerHeight
-        let dy = 0
-        if (lastY < top + AUTOSCROLL_EDGE_BAND) {
-          dy = -Math.ceil(((top + AUTOSCROLL_EDGE_BAND - lastY) / AUTOSCROLL_EDGE_BAND) * AUTOSCROLL_MAX_SPEED)
-        } else if (lastY > bottom - AUTOSCROLL_EDGE_BAND) {
-          dy = Math.ceil(((lastY - (bottom - AUTOSCROLL_EDGE_BAND)) / AUTOSCROLL_EDGE_BAND) * AUTOSCROLL_MAX_SPEED)
-        }
+        const dy = computeAutoScrollDelta(lastY, top, bottom)
 
         if (dy !== 0) {
           if (scroller) {
