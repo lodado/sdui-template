@@ -1,6 +1,6 @@
 import { ensureFractionalContent, siblingAnchorsForBlock } from '../../ordering'
 import type { SduiDocumentContent, SduiDocumentPatch } from '../schema'
-import { createDocumentBlock } from '../schema'
+import { assertNever, createDocumentBlock } from '../schema'
 import { applyDocumentPatch, type ApplyDocumentPatchResult } from './apply'
 import { BlockNotFoundError } from './errors'
 import { findBlockById, findParent } from './traverse'
@@ -129,10 +129,12 @@ export function computeInverse(content: SduiDocumentContent, patch: SduiDocument
     }
 
     case 'document.setTitle':
+      // Content-level inverse is empty; the title's inverse is produced by
+      // applyPatchToDocumentWithInverse at the document layer.
       return []
 
     default:
-      return []
+      return assertNever(patch, 'computeInverse')
   }
 }
 

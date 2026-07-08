@@ -1,4 +1,5 @@
 import type { SduiDocumentBlock, SduiDocumentContent, SduiDocumentPatch } from '../schema'
+import { assertNever } from '../schema'
 import { copyPathTo } from './traverse'
 
 /** Block ids whose ancestor chains a patch mutates (see the operations). */
@@ -18,8 +19,11 @@ export function touchedBlockIds(patch: SduiDocumentPatch): string[] {
       return [patch.blockId, patch.intoBlockId]
     case 'block.setType':
       return [patch.blockId]
-    default:
+    case 'document.setTitle':
+      // No block target — nothing to clone at the content level.
       return []
+    default:
+      return assertNever(patch, 'touchedBlockIds')
   }
 }
 

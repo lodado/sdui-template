@@ -1,5 +1,6 @@
 import { ensureFractionalContent } from '../../ordering'
 import type { SduiDocumentContent, SduiDocumentPatch } from '../schema'
+import { assertNever } from '../schema'
 import {
   deleteBlock,
   insertBlockAtAnchor,
@@ -49,8 +50,13 @@ export function applyDocumentPatch(content: SduiDocumentContent, patch: SduiDocu
     case 'block.setType':
       setBlockType(next, patch.blockId, patch.blockType, patch.attributes)
       return next
-    default:
+    case 'document.setTitle':
+      // Title lives on the document, not the content tree. Collaboration replays
+      // mixed batches (title + block edits) through this content-level pipeline,
+      // so setTitle is an intentional no-op here — applyPatchToDocument owns it.
       return next
+    default:
+      return assertNever(patch, 'applyDocumentPatch')
   }
 }
 
