@@ -109,6 +109,12 @@ export type SduiBlockTypeModule = {
    * declare false.
    */
   readonly canHostInlineText?: boolean
+  /**
+   * Whether this block serializes as a markdown list item — adjacent ones join
+   * with a single newline (tight list). Owned per type instead of a second
+   * hardcoded set in the markdown serializer.
+   */
+  readonly isListItem?: boolean
   /** Links this block contributes to the document link index. Only link-like blocks implement it. */
   extractLinks?(block: SduiDocumentBlock): BlockLinkRef[]
   /**

@@ -20,6 +20,7 @@ export function isNumberedListBlock(block: SduiDocumentBlock): block is Numbered
 
 export const numberedListBlockModule = {
   type: NUMBERED_LIST_BLOCK_TYPE,
+  isListItem: true,
   toSduiNode(block, { theme, mapChildren }) {
     return {
       id: block.id,

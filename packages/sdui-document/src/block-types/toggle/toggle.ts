@@ -26,6 +26,7 @@ export function isToggleBlock(block: SduiDocumentBlock): block is ToggleBlock {
 
 export const toggleBlockModule = {
   type: TOGGLE_BLOCK_TYPE,
+  isListItem: true,
   toSduiNode(block, { theme, mapChildren }) {
     const collapsed = block.attributes?.collapsed === true
     return {
