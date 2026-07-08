@@ -2,6 +2,7 @@ import type { Token, Tokens } from 'marked'
 
 import type { SduiDocumentBlock } from '../../blocks/schema/block'
 import type { SduiInlineContent } from '../../blocks/schema/inline'
+import { UnsupportedMarkdownError } from '../../markdown/errors/UnsupportedMarkdownError'
 import { imageFromMarkdown } from '../image/image.markdown'
 import type { BlockFromMarkdownContext, BlockToMarkdownContext } from '../types'
 import { PARAGRAPH_BLOCK_TYPE } from './paragraph.type'
@@ -49,7 +50,7 @@ export function paragraphFromListItemContent(
 /** Last-resort mapping for constructs the schema cannot express (per onUnsupported). */
 export function paragraphFromUnsupported(token: Token, ctx: BlockFromMarkdownContext): SduiDocumentBlock[] {
   if (ctx.onUnsupported === 'throw') {
-    throw new Error(`Unsupported markdown construct: ${token.type}`)
+    throw new UnsupportedMarkdownError(token.type)
   }
   if (ctx.onUnsupported === 'skip') {
     return []
