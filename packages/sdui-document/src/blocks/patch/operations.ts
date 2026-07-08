@@ -4,6 +4,7 @@ import type { SduiDocumentBlock, SduiInlineContent } from '../schema'
 import { createDocumentBlock } from '../schema'
 import type { BlockOrigin } from '../schema/block'
 import type { BlockPlacementAnchor } from '../schema/patch'
+import { collectBlockIds, findBlock } from '../traverse'
 import {
   BlockNotFoundError,
   DuplicateBlockIdError,
@@ -15,7 +16,6 @@ import {
   RootBlockCannotBeDeletedError,
 } from './errors'
 import { getBlockInline, stripUndefinedKeys, toInlineStatePatch } from './inlineState'
-import { collectBlockIds, findBlock } from './traverse'
 import type { PatchWriteScope } from './writeScope'
 
 export function insertBlockAtAnchor(

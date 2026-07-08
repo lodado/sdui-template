@@ -1,5 +1,5 @@
 import type { SduiDocumentBlock, SduiDocumentContent } from '../schema'
-import { copyPathTo, findBlock, findParent } from './traverse'
+import { copyPathTo, findBlock, findParent } from '../traverse'
 
 export type BlockParentRef = { parent: SduiDocumentBlock; index: number }
 
