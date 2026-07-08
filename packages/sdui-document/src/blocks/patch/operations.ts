@@ -1,11 +1,6 @@
-import { mergeInlineContent, splitInlineContent } from '../../content/inlineContent'
-import {
-  generatePositionBetween,
-  generatePositions,
-  resolvePositionBounds,
-  sortBlocksByPosition,
-} from '../../ordering'
-import type { SduiDocumentBlock, SduiDocumentContent } from '../schema'
+import { inlineContentToPlainText, mergeInlineContent, splitInlineContent } from '../../content/inlineContent'
+import { generatePositionBetween, generatePositions, resolvePositionBounds, sortBlocksByPosition } from '../../ordering'
+import type { SduiDocumentBlock, SduiDocumentContent, SduiInlineContent } from '../schema'
 import { createDocumentBlock } from '../schema'
 import type { BlockOrigin } from '../schema/block'
 import type { BlockPlacementAnchor } from '../schema/patch'
@@ -72,7 +67,14 @@ export function updateBlock(
   // Merging an explicit `undefined` value deletes the key; an empty result
   // normalizes to an absent object. Keeps update patches exactly invertible.
   if (state) {
-    block.state = stripUndefinedKeys({ ...(block.state ?? {}), ...state })
+    const merged = { ...(block.state ?? {}), ...state }
+    // `text` is a derived cache of `content` (see inlineState policy). When the
+    // merge lands in content mode, re-derive `text` so a patch that sets
+    // `content` alone — or an incoming stale `text` — can never desync the cache.
+    if (Array.isArray(merged.content)) {
+      merged.text = inlineContentToPlainText(merged.content as SduiInlineContent)
+    }
+    block.state = stripUndefinedKeys(merged)
   }
 
   if (attributes) {
