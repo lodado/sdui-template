@@ -2,6 +2,7 @@ export * from './autosave'
 export {
   bulletedList,
   type BulletedListBuilderOptions,
+  CODE_BLOCK_TYPE,
   column,
   type ColumnBuilderOptions,
   columnList,
@@ -16,6 +17,7 @@ export {
   paragraph,
   type ParagraphBuilderOptions,
   resetBlockIds,
+  TOGGLE_BLOCK_TYPE,
 } from './block-types'
 export { createDefaultBlock } from './block-types/createDefaultBlock'
 export { type BlockAlign, blockAlignSchema, resolveBlockAlign } from './block-types/shared/align'
