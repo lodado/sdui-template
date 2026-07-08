@@ -1,8 +1,8 @@
-import { ensureFractionalContent, siblingAnchorsForBlock } from '../../../ordering'
-import type { SduiDocumentContent, SduiDocumentPatch } from '../../schema'
-import { createDocumentBlock } from '../../schema'
-import { BlockNotFoundError } from '../errors'
+import { ensureFractionalContent, siblingAnchorsForBlock } from '../../ordering'
+import type { SduiDocumentContent, SduiDocumentPatch } from '../schema'
+import { createDocumentBlock } from '../schema'
 import { applyDocumentPatch, type ApplyDocumentPatchResult } from './apply'
+import { BlockNotFoundError } from './errors'
 import { findBlockById, findParent } from './traverse'
 
 function previousValuesOf(

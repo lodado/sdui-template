@@ -1,5 +1,5 @@
-import { ensureFractionalContent } from '../../../ordering'
-import type { SduiDocumentContent, SduiDocumentPatch } from '../../schema'
+import { ensureFractionalContent } from '../../ordering'
+import type { SduiDocumentContent, SduiDocumentPatch } from '../schema'
 import {
   deleteBlock,
   insertBlockAtAnchor,

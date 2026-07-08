@@ -1,6 +1,6 @@
 import { sortBlocksByPosition } from '../../ordering'
-import { findBlockById } from '../code'
-import { BlockNotFoundError, InvalidBlockMoveError } from '../code/errors'
+import { findBlockById } from '../patch'
+import { BlockNotFoundError, InvalidBlockMoveError } from '../patch/errors'
 import type { SduiDocumentBlock, SduiDocumentContent, SduiDocumentPatch } from '../schema'
 import { createBlockId } from '../schema/ids'
 

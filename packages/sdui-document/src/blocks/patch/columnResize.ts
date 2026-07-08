@@ -1,7 +1,7 @@
 import { normalizeColumnRatio } from '../../block-types/column/column.schema'
 import { COLUMN_BLOCK_TYPE } from '../../block-types/column/column.type'
 import type { SduiDocumentContent, SduiDocumentPatch } from '../schema'
-import { findBlockById, findParent } from './patch/traverse'
+import { findBlockById, findParent } from './traverse'
 
 /** A column can never be squeezed below this weight (≈ Notion's min column width). */
 export const MIN_COLUMN_RATIO = 0.2

@@ -1,4 +1,4 @@
-import type { SduiDocumentBlock, SduiDocumentContent, SduiDocumentPatch } from '../../schema'
+import type { SduiDocumentBlock, SduiDocumentContent, SduiDocumentPatch } from '../schema'
 import { copyPathTo } from './traverse'
 
 /** Block ids whose ancestor chains a patch mutates (see the operations). */

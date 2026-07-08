@@ -1,4 +1,4 @@
-import type { SduiDocumentBlock, SduiDocumentContent } from '../../schema'
+import type { SduiDocumentBlock, SduiDocumentContent } from '../schema'
 
 export function collectBlockIds(block: SduiDocumentBlock, ids: Set<string>): void {
   ids.add(block.id)

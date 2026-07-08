@@ -1,7 +1,7 @@
 import { canHostInlineText } from '../../block-types'
 import { getInlineContentLength } from '../../content/inlineContent'
 import { insertInlineContent, removeInlineRange, sliceInlineContent } from '../../content/inlineRange'
-import { findBlockById, getBlockInline, toInlineStatePatch } from '../code/blockPatch'
+import { findBlockById, getBlockInline, toInlineStatePatch } from '../patch/blockPatch'
 import type { SduiDocumentBlock, SduiDocumentContent, SduiDocumentPatch } from '../schema'
 import { createBlockId } from '../schema'
 

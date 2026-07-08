@@ -3,7 +3,7 @@ import { COLUMN_LIST_BLOCK_TYPE } from '../../block-types/column-list/columnList
 import { generatePositions } from '../../ordering'
 import type { SduiDocumentBlock, SduiDocumentContent } from '../schema'
 import { createBlockId } from '../schema/ids'
-import { collectBlockIds } from './patch/traverse'
+import { collectBlockIds } from './traverse'
 
 /**
  * Derives a deterministic child-scoped id (`<base>`, `<base>-2`, `<base>-3`, …)

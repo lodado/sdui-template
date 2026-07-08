@@ -1,12 +1,12 @@
 import { COLUMN_BLOCK_TYPE } from '../../block-types/column/column.type'
 import { COLUMN_LIST_BLOCK_TYPE } from '../../block-types/column-list/columnList.type'
-import { applyDocumentPatches } from '../code'
 import {
   appendColumnCleanupPatches,
   createNestedBlockMovePatch,
   HORIZONTAL_DROP_EDGE_PX,
   projectHorizontalBlockDrop,
 } from '../drag'
+import { applyDocumentPatches } from '../patch'
 import { createDocumentBlock, type CreateDocumentBlockInput, type SduiDocumentContent } from '../schema'
 
 const paragraph = (id: string, text = id): CreateDocumentBlockInput => ({

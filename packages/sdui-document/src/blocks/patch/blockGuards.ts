@@ -1,6 +1,6 @@
-// packages/sdui-document/src/blocks/code/blockGuards.ts
+// packages/sdui-document/src/blocks/patch/blockGuards.ts
 // Block-type domain code moved to src/block-types/<name>/ — re-exported here
-// to keep the public API (blocks/code barrel) stable.
+// to keep the public API (blocks/patch barrel) stable.
 export { CALLOUT_BLOCK_TYPE, type CalloutBlock, type CalloutBlockAttributes } from '../../block-types/callout/callout'
 export { isCalloutBlock } from '../../block-types/callout/callout'
 export {

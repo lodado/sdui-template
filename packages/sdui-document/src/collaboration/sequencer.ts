@@ -1,4 +1,4 @@
-import { applyDocumentPatches } from '../blocks/code/blockPatch'
+import { applyDocumentPatches } from '../blocks/patch/blockPatch'
 import type { SduiDocumentContent } from '../blocks/schema'
 import {
   type BlockVersionConflict,

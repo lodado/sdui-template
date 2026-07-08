@@ -1,7 +1,7 @@
 import { COLUMN_BLOCK_TYPE } from '../block-types/column/column.type'
 import { COLUMN_LIST_BLOCK_TYPE } from '../block-types/column-list/columnList.type'
-import { normalizeColumnStructure } from '../blocks/code/columnStructure'
 import { createHorizontalBlockDropPatches } from '../blocks/drag/columnDropPatches'
+import { normalizeColumnStructure } from '../blocks/patch/columnStructure'
 import type { SduiDocumentContent, SduiDocumentPatch } from '../blocks/schema'
 import { createBlockId, createDocumentBlock, createDocumentId } from '../blocks/schema'
 import type { PatchEnvelope } from './envelope'

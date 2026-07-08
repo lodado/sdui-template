@@ -1,6 +1,6 @@
 import { COLUMN_BLOCK_TYPE } from '../../block-types/column/column.type'
 import { COLUMN_LIST_BLOCK_TYPE } from '../../block-types/column-list/columnList.type'
-import { createColumnResizePatches, MIN_COLUMN_RATIO, resizeColumnPair } from '../code/columnResize'
+import { createColumnResizePatches, MIN_COLUMN_RATIO, resizeColumnPair } from '../patch/columnResize'
 import { createDocumentBlock, type CreateDocumentBlockInput, type SduiDocumentContent } from '../schema'
 
 const paragraph = (id: string): CreateDocumentBlockInput => ({ id, type: 'document.paragraph', state: { text: id } })

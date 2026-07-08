@@ -1,5 +1,5 @@
-import { inlineContentToPlainText, textToInlineContent } from '../../../content/inlineContent'
-import type { SduiDocumentBlock, SduiInlineContent } from '../../schema'
+import { inlineContentToPlainText, textToInlineContent } from '../../content/inlineContent'
+import type { SduiDocumentBlock, SduiInlineContent } from '../schema'
 
 /**
  * Inline representation of a block's text state.

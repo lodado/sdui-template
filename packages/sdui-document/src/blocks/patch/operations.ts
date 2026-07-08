@@ -1,14 +1,14 @@
-import { mergeInlineContent, splitInlineContent } from '../../../content/inlineContent'
+import { mergeInlineContent, splitInlineContent } from '../../content/inlineContent'
 import {
   generatePositionBetween,
   generatePositions,
   resolvePositionBounds,
   sortBlocksByPosition,
-} from '../../../ordering'
-import type { SduiDocumentBlock, SduiDocumentContent } from '../../schema'
-import { createDocumentBlock } from '../../schema'
-import type { BlockOrigin } from '../../schema/block'
-import type { BlockPlacementAnchor } from '../../schema/patch'
+} from '../../ordering'
+import type { SduiDocumentBlock, SduiDocumentContent } from '../schema'
+import { createDocumentBlock } from '../schema'
+import type { BlockOrigin } from '../schema/block'
+import type { BlockPlacementAnchor } from '../schema/patch'
 import {
   BlockNotFoundError,
   DuplicateBlockIdError,
@@ -18,7 +18,7 @@ import {
   InvalidBlockTypeChangeError,
   ParentBlockNotFoundError,
   RootBlockCannotBeDeletedError,
-} from '../errors'
+} from './errors'
 import { getBlockInline, stripUndefinedKeys, toInlineStatePatch } from './inlineState'
 import { collectBlockIds, findBlock, findBlockById, findParent } from './traverse'
 

@@ -1,4 +1,4 @@
-import { findBlockById } from '../code'
+import { findBlockById } from '../patch'
 import type { SduiDocumentContent, SduiDocumentPatch } from '../schema'
 import type { FlattenedDocumentBlock, NestedBlockDropPosition } from './dragHelpers'
 import { createNestedBlockMovePatch, flattenDocumentBlocks } from './dragHelpers'
