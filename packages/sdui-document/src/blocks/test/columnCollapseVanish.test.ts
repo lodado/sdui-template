@@ -1,5 +1,5 @@
-import { applyDocumentPatches } from '../code'
 import { appendColumnCleanupPatches, createHorizontalBlockDropPatches } from '../drag'
+import { applyDocumentPatches } from '../patch'
 import {
   createDocumentBlock,
   type SduiDocumentBlock,

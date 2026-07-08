@@ -12,16 +12,13 @@ function blockInline(block: SduiDocumentBlock): string {
   return typeof block.state?.text === 'string' ? block.state.text : ''
 }
 
-/** Blocks that serialize as markdown list items — adjacent ones join with a single newline (tight list). */
-const LIST_ITEM_BLOCK_TYPES = new Set([
-  'document.bulleted-list',
-  'document.numbered-list',
-  'document.checklist',
-  'document.toggle',
-])
-
+/**
+ * Blocks that serialize as markdown list items — adjacent ones join with a
+ * single newline (tight list). The fact lives on each block-type module
+ * (`isListItem`), not a second hardcoded set here.
+ */
 function isListItemBlock(block: SduiDocumentBlock): boolean {
-  return LIST_ITEM_BLOCK_TYPES.has(block.type)
+  return blockModuleByType[block.type]?.isListItem ?? false
 }
 
 const markdownContext: BlockToMarkdownContext = {

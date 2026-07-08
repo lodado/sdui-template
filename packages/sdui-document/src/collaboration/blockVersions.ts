@@ -1,4 +1,4 @@
-import type { SduiDocumentPatch } from '../blocks/schema'
+import { assertNever, type SduiDocumentPatch } from '../blocks/schema'
 
 /** Block id → last acknowledged version. Absent entries mean version 0. */
 export type BlockVersionMap = Record<string, number>
@@ -22,9 +22,15 @@ function patchTargetBlockId(patch: SduiDocumentPatch): string | undefined {
     case 'block.split':
     case 'block.merge':
       return patch.blockId
-    default:
-      // block.insert targets a not-yet-versioned block; document.setTitle has no block target
+    // block.insert targets a not-yet-versioned block; document.setTitle has no
+    // block target; block.setType is intentionally excluded from conflict
+    // detection today (surfaced explicitly — revisit if setType needs versioning).
+    case 'block.insert':
+    case 'block.setType':
+    case 'document.setTitle':
       return undefined
+    default:
+      return assertNever(patch, 'patchTargetBlockId')
   }
 }
 
@@ -87,8 +93,13 @@ export function bumpBlockVersions(versions: BlockVersionMap, patches: SduiDocume
 
           return { ...rest, [patch.intoBlockId]: (rest[patch.intoBlockId] ?? 0) + 1 }
         }
-        default:
+        // block.setType does not bump versions today; document.setTitle has no
+        // block target. Both surfaced explicitly rather than swallowed.
+        case 'block.setType':
+        case 'document.setTitle':
           return next
+        default:
+          return assertNever(patch, 'bumpBlockVersions')
       }
     },
     { ...versions },

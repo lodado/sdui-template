@@ -20,6 +20,7 @@ export function isBulletedListBlock(block: SduiDocumentBlock): block is Bulleted
 
 export const bulletedListBlockModule = {
   type: BULLETED_LIST_BLOCK_TYPE,
+  isListItem: true,
   toSduiNode(block, { theme, mapChildren }) {
     return {
       id: block.id,

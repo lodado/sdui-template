@@ -1,4 +1,4 @@
-import type { SduiDocument, SduiDocumentPatch } from '../../schema'
+import type { SduiDocument, SduiDocumentPatch } from '../schema'
 import { applyDocumentPatch } from './apply'
 import { applyDocumentPatchWithInverse } from './inverse'
 

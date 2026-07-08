@@ -1,3 +1,4 @@
+export * from './errors'
 export { markdownToSduiDocumentContent } from './fromMarkdown'
 export { inlineContentToMarkdown } from './inlineToMarkdown'
 export { sduiDocumentContentToMarkdown, sduiDocumentToMarkdown } from './toMarkdown'

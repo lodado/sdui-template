@@ -1,4 +1,4 @@
-import { applyDocumentPatches, applyDocumentPatchesWithInverse } from '../blocks/code/blockPatch'
+import { applyDocumentPatches, applyDocumentPatchesWithInverse } from '../blocks/patch/blockPatch'
 import type { SduiDocumentContent, SduiDocumentPatch } from '../blocks/schema'
 import type { CommittedPatchEnvelope, PatchEnvelope } from './envelope'
 

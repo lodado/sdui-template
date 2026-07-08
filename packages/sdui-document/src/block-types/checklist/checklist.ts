@@ -21,6 +21,7 @@ export function isChecklistBlock(block: SduiDocumentBlock): block is ChecklistBl
 
 export const checklistBlockModule = {
   type: CHECKLIST_BLOCK_TYPE,
+  isListItem: true,
   toSduiNode(block, { theme }) {
     const checked = block.state?.checked === true
     const t = theme.checklist

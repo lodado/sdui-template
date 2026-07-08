@@ -1,12 +1,12 @@
 import { COLUMN_BLOCK_TYPE } from '../../block-types/column/column.type'
 import { COLUMN_LIST_BLOCK_TYPE } from '../../block-types/column-list/columnList.type'
 import { generatePositions } from '../../ordering'
-import { applyDocumentPatches, findBlockById } from '../code'
-import { deriveUniqueBlockId } from '../code/columnStructure'
-import { collectBlockIds, findBlock, findParent } from '../code/patch/traverse'
+import { applyDocumentPatches, findBlockById } from '../patch'
+import { deriveUniqueBlockId } from '../patch/columnStructure'
 import type { SduiDocumentBlock, SduiDocumentContent, SduiDocumentPatch } from '../schema'
 import { createDocumentBlock } from '../schema'
 import { createBlockId } from '../schema/ids'
+import { collectBlockIds, findBlock, findParent } from '../traverse'
 
 /** Which side of the over row the dragged block lands on. */
 export type HorizontalDropSide = 'left' | 'right'
