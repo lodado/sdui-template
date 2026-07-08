@@ -203,6 +203,9 @@ const ImageResizeHandle = ({ blockId, side, imgRef, frameRef, onSetImageLayout }
         },
         { signal },
       )
+      // pointercancel (touch interrupted mid-resize) reverts the preview without
+      // committing — same as Escape. Without it the inline width would stick.
+      window.addEventListener('pointercancel', teardown, { signal })
     }}
   />
 )

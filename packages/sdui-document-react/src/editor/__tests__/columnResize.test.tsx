@@ -224,6 +224,31 @@ describe('column resize gutter', () => {
       })
     })
 
+    describe('when a live-preview drag is interrupted by pointercancel (touch steal)', () => {
+      it('to be: the equal split is restored, the tooltip is torn down, nothing is committed', () => {
+        const { container } = render(<SduiDocumentEditor content={createSplitContent()} />)
+        stubColumnWidths(container)
+
+        const gutter = container.querySelectorAll('[data-column-resize]')[0]
+        fireEvent(gutter, new MouseEvent('pointerdown', { bubbles: true, clientX: 100, button: 0 }))
+        fireEvent(window, new MouseEvent('pointermove', { clientX: 140 }))
+        // preview is live before the cancel
+        expect((container.querySelector('[data-block-id="col-a"]') as HTMLElement).style.flexGrow).not.toBe('')
+        expect(gutter.querySelector('[data-resize-tooltip]')).not.toBeNull()
+
+        fireEvent(window, new MouseEvent('pointercancel', { clientX: 140 }))
+
+        // reverted to the equal-split baseline, tooltip gone
+        expect((container.querySelector('[data-block-id="col-a"]') as HTMLElement).style.flexGrow).toBe('')
+        expect((container.querySelector('[data-block-id="col-b"]') as HTMLElement).style.flexGrow).toBe('')
+        expect(gutter.querySelector('[data-resize-tooltip]')).toBeNull()
+
+        // a stray pointerup after the cancel is inert (listeners already aborted)
+        fireEvent(window, new MouseEvent('pointerup', { clientX: 140 }))
+        expect((container.querySelector('[data-block-id="col-a"]') as HTMLElement).style.flexGrow).toBe('')
+      })
+    })
+
     describe('when dragged far past the edge from the equal split (BVA: min-ratio clamp)', () => {
       it('to be: the shrinking column stops at the minimum and the pair sum stays 2', () => {
         const { container } = render(<SduiDocumentEditor content={createSplitContent()} />)

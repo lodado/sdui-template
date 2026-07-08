@@ -198,6 +198,11 @@ const ColumnResizeGutter = ({ leftId, rightId }: { leftId: string; rightId: stri
           },
           { signal },
         )
+        // A touch resize is interrupted (scroll steal, incoming call, second
+        // finger) by pointercancel, never pointerup — without this the live
+        // flex-grow preview and the % tooltip would be stranded. Cancel = revert,
+        // same as Escape: no commit.
+        window.addEventListener('pointercancel', teardown, { signal })
       }}
     />
   )

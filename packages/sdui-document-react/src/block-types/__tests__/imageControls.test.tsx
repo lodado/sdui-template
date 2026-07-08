@@ -111,4 +111,42 @@ describe('image layout controls', () => {
     expect(lastImageAttrs(onContentChange).width).toBe(260)
     expect(img.style.width).toBe('') // inline preview cleared on commit
   })
+
+  describe('as is: an image edge-resize drag in progress', () => {
+    describe('when the gesture is interrupted by pointercancel (touch steal)', () => {
+      it('to be: the inline preview reverts and no width is committed', () => {
+        const onContentChange = jest.fn()
+        const { container } = render(
+          <SduiDocumentEditor content={imageContent({ width: 300 })} onContentChange={onContentChange} />,
+        )
+
+        const img = container.querySelector('.image-frame img') as HTMLImageElement
+        jest.spyOn(img, 'getBoundingClientRect').mockReturnValue({
+          width: 300,
+          height: 200,
+          top: 0,
+          left: 0,
+          right: 300,
+          bottom: 200,
+          x: 0,
+          y: 0,
+          toJSON: () => ({}),
+        } as DOMRect)
+
+        const handle = container.querySelector('[data-image-resize-handle="right"]') as HTMLElement
+        fireEvent(handle, new MouseEvent('pointerdown', { bubbles: true, clientX: 300, button: 0 }))
+        fireEvent(window, new MouseEvent('pointermove', { clientX: 260 })) // 40px preview
+        expect(img.style.width).not.toBe('') // preview is live
+
+        fireEvent(window, new MouseEvent('pointercancel', { clientX: 260 }))
+
+        expect(img.style.width).toBe('') // reverted, not stranded
+        expect(onContentChange).not.toHaveBeenCalled() // cancel never commits
+
+        // a stray pointerup after the cancel is inert
+        fireEvent(window, new MouseEvent('pointerup', { clientX: 260 }))
+        expect(onContentChange).not.toHaveBeenCalled()
+      })
+    })
+  })
 })

@@ -15,8 +15,16 @@ import { type MutableRefObject, type RefObject, useEffect, useRef } from 'react'
 
 import { type DropIndicatorProjection, positionDropIndicatorOverlay } from './dropIndicatorOverlay'
 
-/** Pointer travel (px) before a press becomes a drag — below this it stays a click. */
-const ACTIVATION_DISTANCE = 4
+/** Pointer travel (px) before a mouse/pen press becomes a drag — below this it stays a click. */
+export const ACTIVATION_DISTANCE = 4
+/** Touch travel (px) before a press becomes a drag — wider than mouse to tolerate finger jitter on a tap. */
+export const TOUCH_ACTIVATION_DISTANCE = 10
+/** Hold (ms) on the handle before a stationary touch becomes a drag (long-press to drag). */
+export const TOUCH_LONG_PRESS_MS = 220
+/** Distance (px) from a scroll edge at which a live drag starts auto-scrolling. */
+const AUTOSCROLL_EDGE_BAND = 48
+/** Peak auto-scroll speed (px/frame) at the very edge of the band. */
+const AUTOSCROLL_MAX_SPEED = 14
 const GHOST_OPACITY = '0.6'
 const SOURCE_OPACITY = '0.4'
 
@@ -157,13 +165,19 @@ export function useBlockPointerDrag(options: BlockPointerDragOptions): void {
     // --- per-session drag state (closure, never React state) ---
     let activeId: string | null = null
     let pointerId: number | null = null
+    let pointerType = 'mouse'
     let startX = 0
     let startY = 0
+    let lastX = 0
+    let lastY = 0
     let activated = false
     let ghost: HTMLElement | null = null
     let sourceRow: HTMLElement | null = null
     let grabX = 0
     let grabY = 0
+    // touch long-press timer (window handle); autoscroll rAF handle
+    let longPressTimer: ReturnType<typeof setTimeout> | null = null
+    let autoScrollRaf: number | null = null
 
     const paint = (projection: DropIndicatorProjection | null) => {
       const overlay = optsRef.current.indicatorRef.current
@@ -233,7 +247,98 @@ export function useBlockPointerDrag(options: BlockPointerDragOptions): void {
       }
     }
 
+    const clearLongPress = () => {
+      if (longPressTimer !== null) {
+        clearTimeout(longPressTimer)
+        longPressTimer = null
+      }
+    }
+
+    // Nearest scrollable ancestor of the editor; falls back to the viewport.
+    const findScrollParent = (el: HTMLElement | null): HTMLElement | null => {
+      let node = el?.parentElement ?? null
+      while (node) {
+        const {overflowY} = getComputedStyle(node)
+        if ((overflowY === 'auto' || overflowY === 'scroll') && node.scrollHeight > node.clientHeight) {
+          return node
+        }
+        node = node.parentElement
+      }
+
+      return null
+    }
+
+    // While a drag is live, nudge the page when the pointer sits near a scroll
+    // edge — mobile viewports are short, so without this a drop target below the
+    // fold is unreachable. Speed ramps with how deep into the edge band we are.
+    const startAutoScroll = () => {
+      if (typeof requestAnimationFrame !== 'function' || autoScrollRaf !== null) {
+        return
+      }
+
+      const scroller = findScrollParent(container)
+      const tick = () => {
+        autoScrollRaf = null
+        if (!activated) {
+          return
+        }
+
+        const top = scroller ? scroller.getBoundingClientRect().top : 0
+        const bottom = scroller ? scroller.getBoundingClientRect().bottom : window.innerHeight
+        let dy = 0
+        if (lastY < top + AUTOSCROLL_EDGE_BAND) {
+          dy = -Math.ceil(((top + AUTOSCROLL_EDGE_BAND - lastY) / AUTOSCROLL_EDGE_BAND) * AUTOSCROLL_MAX_SPEED)
+        } else if (lastY > bottom - AUTOSCROLL_EDGE_BAND) {
+          dy = Math.ceil(((lastY - (bottom - AUTOSCROLL_EDGE_BAND)) / AUTOSCROLL_EDGE_BAND) * AUTOSCROLL_MAX_SPEED)
+        }
+
+        if (dy !== 0) {
+          if (scroller) {
+            scroller.scrollTop += dy
+          } else {
+            window.scrollBy(0, dy)
+          }
+          // the drop projection is stale after a scroll — re-hit-test at the last point
+          const hit = hitTest(lastX, lastY)
+          paint(hit && hit.overId !== activeId ? projectBlockDrop(dropInput(hit, lastX, lastY)) : null)
+        }
+
+        autoScrollRaf = requestAnimationFrame(tick)
+      }
+
+      autoScrollRaf = requestAnimationFrame(tick)
+    }
+
+    const stopAutoScroll = () => {
+      if (autoScrollRaf !== null) {
+        cancelAnimationFrame(autoScrollRaf)
+        autoScrollRaf = null
+      }
+    }
+
+    // Promote the live press to a real drag: ghost, dimmed source, autoscroll.
+    // Reached from a mouse/pen threshold cross, a touch threshold cross, or the
+    // touch long-press timer.
+    const activate = () => {
+      if (activated || !activeId) {
+        return
+      }
+
+      clearLongPress()
+      activated = true
+      optsRef.current.onDragStart()
+      createGhost()
+      if (sourceRow) {
+        sourceRow.style.opacity = SOURCE_OPACITY
+      }
+      document.body.style.cursor = 'grabbing'
+      moveGhost(lastX, lastY)
+      startAutoScroll()
+    }
+
     const cleanup = () => {
+      clearLongPress()
+      stopAutoScroll()
       paint(null)
       if (ghost) {
         ghost.remove()
@@ -263,18 +368,16 @@ export function useBlockPointerDrag(options: BlockPointerDragOptions): void {
         return
       }
 
+      lastX = event.clientX
+      lastY = event.clientY
+
       if (!activated) {
-        if (!hasPassedThreshold(event.clientX - startX, event.clientY - startY)) {
+        const threshold = pointerType === 'touch' ? TOUCH_ACTIVATION_DISTANCE : ACTIVATION_DISTANCE
+        if (!hasPassedThreshold(event.clientX - startX, event.clientY - startY, threshold)) {
           return
         }
 
-        activated = true
-        optsRef.current.onDragStart()
-        createGhost()
-        if (sourceRow) {
-          sourceRow.style.opacity = SOURCE_OPACITY
-        }
-        document.body.style.cursor = 'grabbing'
+        activate()
       }
 
       event.preventDefault()
@@ -307,10 +410,26 @@ export function useBlockPointerDrag(options: BlockPointerDragOptions): void {
             optsRef.current.applyPatches(patches)
           }
         }
+        // Mouse fires a synchronous trailing click, caught by this once-listener
+        // in the same task. Touch fires none, so a task later we disarm the
+        // listener — otherwise it would swallow the user's next unrelated tap.
         window.addEventListener('click', suppressNextClick, { capture: true, once: true })
+        setTimeout(() => window.removeEventListener('click', suppressNextClick, { capture: true }), 0)
       }
 
       cleanup()
+    }
+
+    // A live handle press must not surface a context menu: on touch the browser
+    // fires `contextmenu` on long-press, which would interrupt the drag and pop
+    // the block-actions menu. Suppressing in the capture phase also stops it from
+    // reaching BlockNode. Mouse right-clicks never set a session (button !== 0),
+    // so those still open the menu.
+    function onContextMenu(event: MouseEvent) {
+      if (activeId) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
     }
 
     function onKeyDown(event: KeyboardEvent) {
@@ -325,6 +444,7 @@ export function useBlockPointerDrag(options: BlockPointerDragOptions): void {
       window.removeEventListener('pointerup', onPointerUp)
       window.removeEventListener('pointercancel', onPointerUp)
       window.removeEventListener('keydown', onKeyDown)
+      window.removeEventListener('contextmenu', onContextMenu, { capture: true })
     }
 
     function onPointerDown(event: PointerEvent) {
@@ -341,9 +461,19 @@ export function useBlockPointerDrag(options: BlockPointerDragOptions): void {
       activeId = row.dataset.blockId
       sourceRow = row
       pointerId = event.pointerId
+      pointerType = event.pointerType || 'mouse'
       startX = event.clientX
       startY = event.clientY
+      lastX = event.clientX
+      lastY = event.clientY
       activated = false
+
+      // Touch can't disambiguate tap-to-open-menu from press-to-drag by movement
+      // alone (a finger jitters), so a stationary hold promotes to a drag.
+      if (pointerType === 'touch') {
+        clearLongPress()
+        longPressTimer = setTimeout(activate, TOUCH_LONG_PRESS_MS)
+      }
 
       // No preventDefault yet: a press that never crosses the threshold stays a
       // plain click (opens the block menu via the handle's onClick).
@@ -351,6 +481,7 @@ export function useBlockPointerDrag(options: BlockPointerDragOptions): void {
       window.addEventListener('pointerup', onPointerUp)
       window.addEventListener('pointercancel', onPointerUp)
       window.addEventListener('keydown', onKeyDown)
+      window.addEventListener('contextmenu', onContextMenu, { capture: true })
     }
 
     container.addEventListener('pointerdown', onPointerDown)
@@ -358,6 +489,8 @@ export function useBlockPointerDrag(options: BlockPointerDragOptions): void {
     return () => {
       container.removeEventListener('pointerdown', onPointerDown)
       detachWindowListeners()
+      clearLongPress()
+      stopAutoScroll()
       if (ghost) {
         ghost.remove()
       }

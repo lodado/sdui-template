@@ -191,6 +191,9 @@
   cursor: col-resize;
   position: relative;
   outline: none;
+  /* the gutter drag is a pointer gesture — stop touch from scrolling the page so
+     the resize actually tracks the finger (matches the block drag handle) */
+  touch-action: none;
 }
 
 [data-sdui-document-editor] [data-column-resize]::after {
@@ -210,6 +213,20 @@
 [data-sdui-document-editor] [data-column-resize]:active::after,
 [data-sdui-document-editor] [data-column-resize]:focus-visible::after {
   background: rgba(35, 131, 226, 0.5);
+}
+
+/* Touch/pen: there is no hover to reveal the gutter, so it reads as a hidden
+   strip that steals taps near the column edge. Widen the target and show the
+   grab line faintly so it's visibly a control, not dead space. */
+@media (pointer: coarse) {
+  [data-sdui-document-editor] [data-column-resize] {
+    flex-basis: 20px;
+    margin: 0 -16px;
+  }
+
+  [data-sdui-document-editor] [data-column-resize]::after {
+    background: rgba(35, 131, 226, 0.3);
+  }
 }
 
 /* Live percentage readout appended to the gutter during a drag. */
@@ -634,6 +651,15 @@
   opacity: 0.85;
 }
 
+/* Touch/pen: the edge handles are invisible (no hover) yet still hit-test, so
+   they steal taps on the image's left/right edge. Remove them on coarse pointers
+   — the controls popover's width input is the touch path for resizing. */
+@media (pointer: coarse) {
+  [data-sdui-document-editor] .image-resize-handle {
+    display: none;
+  }
+}
+
 [data-sdui-document-editor] .caption {
   border: 0;
   display: block;
@@ -878,6 +904,11 @@
   /* native-pointer drag (useBlockPointerDrag): stop touch scroll/long-press from
      hijacking the gesture so pointermove fires for the drag */
   touch-action: none;
+  /* a long-press on the handle is a drag grab, not a text/callout selection —
+     suppress iOS selection magnifier and the tap-callout so the drag stays clean */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
   /* hidden until the row is hovered (Notion/Outline behavior) — opacity, not
      display, so the row never reflows and the handle stays a drop-zone-stable
      flex item */
@@ -935,9 +966,21 @@
 
 /* Touch-primary devices only (coarse pointer + no hover). Headless Firefox
    reports (hover: none) with (pointer: fine), so require both — otherwise CI
-   and desktop-like environments keep the hover-reveal behavior. */
+   and desktop-like environments keep the hover-reveal behavior.
+
+   These controls are otherwise revealed on :hover, which touch can only fake via
+   sticky-hover (appears on tap, vanishes on the next tap elsewhere) — so they
+   read as flickering, undiscoverable UI. Pin them visible on touch instead. */
 @media (hover: none) and (pointer: coarse) {
-  [data-sdui-document-editor] [data-drag-handle] {
+  [data-sdui-document-editor] [data-drag-handle],
+  [data-sdui-document-editor] .image-controls-trigger {
+    opacity: 1;
+  }
+
+  /* code-block controls are styled unscoped (they render in readOnly too), so
+     the coarse override matches that scope to keep specificity high enough. */
+  .code-block-wrapper > .code-language,
+  .code-block-wrapper > .code-copy-button {
     opacity: 1;
   }
 }

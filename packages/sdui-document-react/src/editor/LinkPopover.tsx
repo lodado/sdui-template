@@ -28,7 +28,7 @@ export const LinkPopover = ({ target, onEdit, onRemove, onClose }: LinkPopoverPr
   const safe = safeHref(target.href)
 
   useEffect(() => {
-    const onPointerDown = (event: MouseEvent) => {
+    const onPointerDown = (event: Event) => {
       if (!(event.target as Element).closest('[data-link-popover]')) {
         onClose()
       }
@@ -38,10 +38,12 @@ export const LinkPopover = ({ target, onEdit, onRemove, onClose }: LinkPopoverPr
         onClose()
       }
     }
-    document.addEventListener('mousedown', onPointerDown, true)
+    // pointerdown, not mousedown: on touch the compat mousedown only fires after
+    // touchend, so an outside tap wouldn't dismiss the popover until too late.
+    document.addEventListener('pointerdown', onPointerDown, true)
     document.addEventListener('keydown', onKeyDown, true)
     return () => {
-      document.removeEventListener('mousedown', onPointerDown, true)
+      document.removeEventListener('pointerdown', onPointerDown, true)
       document.removeEventListener('keydown', onKeyDown, true)
     }
   }, [onClose])

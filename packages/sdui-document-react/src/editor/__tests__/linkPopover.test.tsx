@@ -136,6 +136,34 @@ describe('link click popover (editable mode)', () => {
     expect(container.querySelector('[data-link-popover]')).not.toBeInTheDocument()
   })
 
+  describe('as is: an open link popover', () => {
+    describe('when a pointerdown lands outside the popover (touch/mouse dismiss)', () => {
+      it('to be: the popover closes', () => {
+        const { container } = render(<SduiDocumentEditor content={linkedContent()} />)
+        fireEvent.click(container.querySelector('a.sdui-doc-link') as HTMLAnchorElement)
+        expect(container.querySelector('[data-link-popover]')).toBeInTheDocument()
+
+        // pointerdown (not mousedown) is the outside-dismiss trigger — a touch
+        // tap fires it immediately, before any compat mousedown
+        fireEvent.pointerDown(document.body)
+
+        expect(container.querySelector('[data-link-popover]')).not.toBeInTheDocument()
+      })
+    })
+
+    describe('when a pointerdown lands inside the popover', () => {
+      it('to be: the popover stays open', () => {
+        const { container } = render(<SduiDocumentEditor content={linkedContent()} />)
+        fireEvent.click(container.querySelector('a.sdui-doc-link') as HTMLAnchorElement)
+        const popover = container.querySelector('[data-link-popover]') as HTMLElement
+
+        fireEvent.pointerDown(popover)
+
+        expect(container.querySelector('[data-link-popover]')).toBeInTheDocument()
+      })
+    })
+  })
+
   test('read-only mode leaves native link behavior intact', () => {
     const { container } = render(<SduiDocumentEditor content={linkedContent()} readOnly />)
 
