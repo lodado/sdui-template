@@ -2,6 +2,10 @@ import type { Attrs, MarkType } from 'prosemirror-model'
 import type { EditorState } from 'prosemirror-state'
 import type { EditorView } from 'prosemirror-view'
 
+// Deep import on purpose: the focused-block barrel also exports
+// FocusedBlockEditor, whose publish hook imports this file — going through
+// the barrel would create an import cycle. The PM schema is an intentionally
+// colocated leaf module, safe to reach directly.
 import { focusedBlockSchema } from '../focused-block/pm/schema'
 import { MARK_DEFINITIONS } from '../marks'
 

@@ -1,5 +1,4 @@
 import type { BlockAlign, SduiInlineContent } from '@lodado/sdui-document'
-import { toggleMark } from 'prosemirror-commands'
 import { TextSelection } from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
@@ -7,8 +6,6 @@ import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useSta
 import { BlockMenu } from '../editor/block-menu/BlockMenu'
 import type { BlockMenuItem } from '../editor/block-menu/blockMenuItems'
 import { filterBlockMenuItems } from '../editor/block-menu/blockMenuItems'
-import type { SelectionSnapshot } from '../selection-toolbar/selectionSnapshot'
-import { buildSelectionSnapshot, selectionSnapshotsEqual } from '../selection-toolbar/selectionSnapshot'
 import type { SelectionToolbarProps } from '../selection-toolbar/SelectionToolbar'
 import { rafThrottle } from '../shared/rafThrottle'
 import { resolveCaretOffset } from './caret'
@@ -19,6 +16,7 @@ import type { FocusedBlockCallbacks } from './pm/keymapDelegation'
 import { focusedBlockSchema } from './pm/schema'
 import { getSlashRange } from './pm/slashMenuPlugin'
 import { useBlockMenuState } from './useBlockMenuState'
+import { useSelectionSnapshotPublish } from './useSelectionSnapshotPublish'
 
 export type FocusedBlockCommit = {
   content: SduiInlineContent
@@ -86,130 +84,26 @@ export type FocusedBlockEditorProps = Omit<
 export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
   // onCommit is intentionally not destructured: it is only reached through
   // latestProps so late prop swaps still land (react/no-unused-prop-types).
-  const { content, autoFocus, className, blockAlign, onSetAlign, turnIntoActiveId } = props
+  // onToolbarPropsChange is safe to destructure: the publish hook tracks the
+  // latest value through its own ref.
+  const { content, autoFocus, className, blockAlign, onSetAlign, turnIntoActiveId, onToolbarPropsChange } = props
   const containerRef = useRef<HTMLSpanElement>(null)
   const viewRef = useRef<EditorView>()
   const latestProps = useRef(props)
   latestProps.current = props
 
-  const [snapshot, setSnapshot] = useState<SelectionSnapshot | null>(null)
-
   const { menu, menuRef, updateMenu } = useBlockMenuState()
   // Select/submit need commitNow/retired from the mount effect — bridged via refs.
   const selectItemRef = useRef<(item: BlockMenuItem) => void>()
   const submitLinkRef = useRef<(url: string) => void>()
-  const toolbarTurnIntoRef = useRef<(type: string, attrs?: Record<string, unknown>) => void>()
 
-  const refreshSnapshot = useCallback(() => {
-    const view = viewRef.current
-    if (!view) {
-      return
-    }
-
-    const next = buildSelectionSnapshot(view)
-    setSnapshot((previous) => {
-      // collapsed -> collapsed changes (typing) never affect a hidden toolbar
-      if (next.empty && (previous === null || previous.empty)) {
-        return previous
-      }
-
-      return previous && selectionSnapshotsEqual(previous, next) ? previous : next
-    })
-  }, [])
-
-  const handleToolbarTurnInto = useCallback((type: string, attrs?: Record<string, unknown>) => {
-    toolbarTurnIntoRef.current?.(type, attrs)
-  }, [])
-
-  const toggleNamedMark = useCallback((name: 'bold' | 'italic' | 'underline' | 'strikethrough' | 'code') => {
-    const view = viewRef.current
-    if (!view) {
-      return
-    }
-
-    toggleMark(focusedBlockSchema.marks[name])(view.state, view.dispatch)
-    view.focus()
-  }, [])
-
-  const setHighlight = useCallback((color: string | null) => {
-    const view = viewRef.current
-    if (!view) {
-      return
-    }
-
-    const { from, to } = view.state.selection
-    const markType = focusedBlockSchema.marks.highlight
-    const transaction = view.state.tr.removeMark(from, to, markType)
-    view.dispatch(color ? transaction.addMark(from, to, markType.create({ color })) : transaction)
-    view.focus()
-  }, [])
-
-  const setColor = useCallback((color: string | null) => {
-    const view = viewRef.current
-    if (!view) {
-      return
-    }
-
-    const { from, to } = view.state.selection
-    const markType = focusedBlockSchema.marks.color
-    const transaction = view.state.tr.removeMark(from, to, markType)
-    view.dispatch(color ? transaction.addMark(from, to, markType.create({ color })) : transaction)
-    view.focus()
-  }, [])
-
-  const setLink = useCallback((href: string | null) => {
-    const view = viewRef.current
-    if (!view) {
-      return
-    }
-
-    const { from, to } = view.state.selection
-    const markType = focusedBlockSchema.marks.link
-    const normalized = href === null ? null : normalizeLinkHref(href)
-    const transaction = view.state.tr.removeMark(from, to, markType)
-    view.dispatch(normalized ? transaction.addMark(from, to, markType.create({ href: normalized })) : transaction)
-    view.focus()
-  }, [])
-
-  // Assembled once per selection change; SelectionToolbar self-gates on an
-  // empty snapshot, so an empty snapshot still publishes (the editor decides
-  // whether to render). Callbacks are stable, so identity tracks the snapshot.
-  const toolbarProps = useMemo<SelectionToolbarProps | null>(
-    () =>
-      snapshot
-        ? {
-            snapshot,
-            onToggleMark: toggleNamedMark,
-            onSetHighlight: setHighlight,
-            onSetColor: setColor,
-            onSetLink: setLink,
-            blockAlign: blockAlign ?? null,
-            onSetAlign,
-            turnInto:
-              turnIntoActiveId !== undefined
-                ? { activeId: turnIntoActiveId, onSelect: handleToolbarTurnInto }
-                : undefined,
-          }
-        : null,
-    [
-      snapshot,
-      toggleNamedMark,
-      setHighlight,
-      setColor,
-      setLink,
-      blockAlign,
-      onSetAlign,
-      turnIntoActiveId,
-      handleToolbarTurnInto,
-    ],
-  )
-
-  // Publish to the editor-level single toolbar; clear on unmount so a stale
-  // block's props never outlive it.
-  useEffect(() => {
-    latestProps.current.onToolbarPropsChange?.(toolbarProps)
-  }, [toolbarProps])
-  useEffect(() => () => latestProps.current.onToolbarPropsChange?.(null), [])
+  const { refreshSnapshot, clearSnapshot, toolbarTurnIntoRef } = useSelectionSnapshotPublish({
+    viewRef,
+    blockAlign,
+    onSetAlign,
+    turnIntoActiveId,
+    onToolbarPropsChange,
+  })
 
   useLayoutEffect(() => {
     const container = containerRef.current
@@ -433,7 +327,7 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
         !selection.isCollapsed &&
         (!container.contains(selection.anchorNode) || !container.contains(selection.focusNode))
       ) {
-        setSnapshot(null)
+        clearSnapshot()
 
         return
       }

@@ -6,27 +6,38 @@ import type {
 } from '@lodado/sdui-document'
 import {
   anchorAfterBlock,
-  anchorAppendToParent,
-  anchorBeforeBlock,
   clearBlockSelection,
   createBlockId,
   createBlockSelection,
   createColumnResizePatches,
-  createDefaultBlock,
   extendBlockSelection,
   findBlockById,
   flattenDocumentBlocks,
-  getInlineContentLength,
+  TOGGLE_BLOCK_TYPE,
 } from '@lodado/sdui-document'
 import React, { useMemo, useRef } from 'react'
 
 import { normalizeLinkHref } from '../../focused-block/linkHref'
 import { updateLinkMark } from '../../inline/updateLinkMark'
 import type { BlockMenuItem } from '../block-menu/blockMenuItems'
-import { blockInlineContent, cloneBlockWithNewIds, isSameCommit, isTextBlock } from '../blockContent'
-import { LIST_LIKE_BLOCK_TYPES, NON_TEXT_BLOCK_TYPES, SPLIT_TO_PARAGRAPH_BLOCK_TYPES } from '../editorConstants'
+import { cloneBlockWithNewIds, isSameCommit } from '../blockContent'
+import { NON_TEXT_BLOCK_TYPES } from '../editorConstants'
 import type { EditorHandlers } from '../EditorRuntimeContext'
-import type { EditorUIStore, FocusTarget } from '../uiStore'
+import type { HandlerDecision, HandlerFocusIntent } from '../handlerLogic'
+import {
+  blockAttrsPatch,
+  computeApplyMenuType,
+  computeIndent,
+  computeInsertBlockBelow,
+  computeInsertToggleChild,
+  computeMergeBackward,
+  computeMoveBlock,
+  computeNavigate,
+  computeOutdent,
+  computeSplit,
+  computeTurnInto,
+} from '../handlerLogic'
+import type { EditorUIStore } from '../uiStore'
 
 export type UseEditorHandlersInput = {
   store: EditorUIStore
@@ -46,6 +57,8 @@ export type UseEditorHandlersResult = {
 }
 
 /**
+ * Imperative shell around the pure decision logic in `../handlerLogic`.
+ *
  * Builds the per-block interaction handlers ONCE per editor instance. The
  * handlers read live values (applyPatches, generateBlockId, callbacks) through
  * a `latest` ref, never through render-scoped closures, so their identities
@@ -71,109 +84,50 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
       }
     }
 
-    const refocus = (blockId: string, caret: FocusTarget['caret'], justInserted?: boolean) => {
+    // The session bump lives here (shell state): it forces a fresh PM mount
+    // even when blockId stays the same, so it must not leak into pure logic.
+    const applyFocusIntent = (intent: HandlerFocusIntent) => {
       const previous = store.get().focus
       store.set({
         selection: clearBlockSelection(),
         blockActions: null,
         focus: {
-          blockId,
-          caret,
+          blockId: intent.blockId,
+          caret: intent.caret,
           session: (previous?.session ?? 0) + 1,
-          ...(justInserted ? { justInserted: true } : {}),
+          ...(intent.justInserted ? { justInserted: true } : {}),
+          ...(intent.openBlockMenu ? { openBlockMenu: true } : {}),
         },
       })
     }
 
-    // Insert a paragraph as the toggle's first child and focus it, expanding
-    // the toggle first if collapsed (a collapsed toggle hides its children).
-    // Shared by Enter-on-summary and the empty-toggle placeholder click.
-    const insertToggleChild = (blockId: string) => {
-      const source = findBlockById(docRef.current, blockId)
-      if (!source || source.type !== 'document.toggle') {
+    const refocus = (blockId: string, caret: HandlerFocusIntent['caret'], justInserted?: boolean) => {
+      applyFocusIntent({ blockId, caret, ...(justInserted ? { justInserted: true } : {}) })
+    }
+
+    // Effect runner for pure decisions: patches first, then focus/selection —
+    // the order the store consumers depend on.
+    const applyDecision = (decision: HandlerDecision | null) => {
+      if (!decision) {
         return
       }
-
-      const childId = latest.current.generateBlockId()
-      const togglePatches: SduiDocumentPatch[] = []
-      if (source.attributes?.collapsed === true) {
-        togglePatches.push({
-          type: 'block.update',
-          blockId: createBlockId(blockId),
-          attributes: { collapsed: false },
-        })
+      if (decision.patches.length > 0) {
+        latest.current.applyPatches(decision.patches)
       }
-      togglePatches.push({
-        type: 'block.insert',
-        parentId: createBlockId(blockId),
-        after: null, // front of parent = first child
-        block: createDefaultBlock('document.paragraph', childId),
-      })
-      latest.current.applyPatches(togglePatches)
-      refocus(childId, 'start', true)
+      if (decision.focus) {
+        applyFocusIntent(decision.focus)
+      }
+      if (decision.selectBlockId) {
+        selectBlocks(createBlockSelection(decision.selectBlockId))
+      }
     }
 
-    const orderedTextBlocks = () =>
-      flattenDocumentBlocks(docRef.current)
-        .filter((item) => item.id !== docRef.current.root.id)
-        .filter((item) => {
-          const block = findBlockById(docRef.current, item.id)
+    // id thunk: pure logic pulls fresh ids lazily so id consumption order
+    // matches the legacy behavior (deterministic id seeds in tests)
+    const nextBlockId = () => latest.current.generateBlockId()
 
-          return block !== undefined && isTextBlock(block)
-        })
-
-    /**
-     * Notion semantics: an empty block converts in place (block.setType),
-     * a non-empty block gets a new default sibling below (block.insert).
-     * Returns the id that received the type, or null when the block has no
-     * insert position (root-less).
-     */
-    const applyMenuType = (
-      blockId: string,
-      item: BlockMenuItem,
-      attributes: Record<string, unknown> | undefined,
-      extraState?: Record<string, unknown>,
-    ): string | null => {
-      const source = findBlockById(docRef.current, blockId)
-      const isEmpty = getInlineContentLength(blockInlineContent(source)) === 0
-
-      if (isEmpty) {
-        const patches: SduiDocumentPatch[] = [
-          {
-            type: 'block.setType',
-            blockId: createBlockId(blockId),
-            blockType: item.type,
-            ...(attributes ? { attributes } : {}),
-          },
-        ]
-        if (extraState) {
-          patches.push({ type: 'block.update', blockId: createBlockId(blockId), state: extraState })
-        }
-
-        latest.current.applyPatches(patches)
-
-        return blockId
-      }
-
-      const flattened = flattenDocumentBlocks(docRef.current)
-      const location = flattened.find((candidate) => candidate.id === blockId)
-      if (!location?.parentId) {
-        return null
-      }
-
-      const newId = latest.current.generateBlockId()
-      const base = createDefaultBlock(item.type, newId, attributes)
-      const block = extraState ? { ...base, state: { ...base.state, ...extraState } } : base
-      latest.current.applyPatches([
-        {
-          type: 'block.insert',
-          parentId: createBlockId(location.parentId),
-          ...anchorAfterBlock(docRef.current, location.parentId, blockId),
-          block,
-        },
-      ])
-
-      return newId
+    const insertToggleChild = (blockId: string) => {
+      applyDecision(computeInsertToggleChild(docRef.current, blockId, nextBlockId))
     }
 
     const editorHandlers: EditorHandlers = {
@@ -189,37 +143,27 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
       },
 
       toggleChecked: (blockId, checked) => {
-        latest.current.applyPatches([
-          { type: 'block.update', blockId: createBlockId(blockId), attributes: { checked } },
-        ])
+        latest.current.applyPatches([blockAttrsPatch(blockId, { checked })])
       },
 
       toggleCollapsed: (blockId, collapsed) => {
-        latest.current.applyPatches([
-          { type: 'block.update', blockId: createBlockId(blockId), attributes: { collapsed } },
-        ])
+        latest.current.applyPatches([blockAttrsPatch(blockId, { collapsed })])
       },
 
       setCodeLanguage: (blockId, language) => {
-        latest.current.applyPatches([
-          { type: 'block.update', blockId: createBlockId(blockId), attributes: { language } },
-        ])
+        latest.current.applyPatches([blockAttrsPatch(blockId, { language })])
       },
 
       setCalloutIcon: (blockId, icon) => {
-        latest.current.applyPatches([{ type: 'block.update', blockId: createBlockId(blockId), attributes: { icon } }])
+        latest.current.applyPatches([blockAttrsPatch(blockId, { icon })])
       },
 
       setBlockAlign: (blockId, align) => {
-        latest.current.applyPatches([
-          { type: 'block.update', blockId: createBlockId(blockId), attributes: { align: align ?? undefined } },
-        ])
+        latest.current.applyPatches([blockAttrsPatch(blockId, { align: align ?? undefined })])
       },
 
       setImageLayout: (blockId, layout) => {
-        latest.current.applyPatches([
-          { type: 'block.update', blockId: createBlockId(blockId), attributes: { ...layout } },
-        ])
+        latest.current.applyPatches([blockAttrsPatch(blockId, { ...layout })])
       },
 
       updateLink: (blockId, href, nextHref) => {
@@ -256,135 +200,23 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
       },
 
       split: (blockId, offset) => {
-        const source = findBlockById(docRef.current, blockId)
-
-        // Notion: Enter on an EMPTY list-like block converts it to a paragraph in place
-        if (
-          source &&
-          LIST_LIKE_BLOCK_TYPES.has(source.type) &&
-          getInlineContentLength(blockInlineContent(source)) === 0
-        ) {
-          latest.current.applyPatches([
-            { type: 'block.setType', blockId: createBlockId(blockId), blockType: 'document.paragraph' },
-          ])
-          refocus(blockId, 'start')
-
-          return
-        }
-
-        // Notion: Enter on a toggle summary opens the toggle and starts typing
-        // its first child block (instead of splitting to a sibling). Once the
-        // caret is inside a child, split() is called with the child's id and
-        // takes the normal path below.
-        if (source && source.type === 'document.toggle') {
-          insertToggleChild(blockId)
-
-          return
-        }
-
-        const newBlockId = latest.current.generateBlockId()
-        const patches: SduiDocumentPatch[] = [
-          { type: 'block.split', blockId: createBlockId(blockId), offset, newBlockId: createBlockId(newBlockId) },
-        ]
-
-        // Notion split policy: heading/quote/toggle never continue — the
-        // continuation block becomes body text (setType with no attributes
-        // also clears inherited attributes like heading level). List blocks
-        // continue: block.split copies the type.
-        if (source && SPLIT_TO_PARAGRAPH_BLOCK_TYPES.has(source.type)) {
-          patches.push({ type: 'block.setType', blockId: createBlockId(newBlockId), blockType: 'document.paragraph' })
-        }
-
-        latest.current.applyPatches(patches)
-        refocus(newBlockId, 'start', true)
+        applyDecision(computeSplit(docRef.current, { blockId, offset, nextBlockId }))
       },
 
       mergeBackward: (blockId) => {
-        const source = findBlockById(docRef.current, blockId)
-
-        // Notion: Backspace at the start of a list-like or quote block first
-        // strips the type; only the SECOND Backspace (now a paragraph) merges.
-        if (source && (LIST_LIKE_BLOCK_TYPES.has(source.type) || source.type === 'document.quote')) {
-          latest.current.applyPatches([
-            { type: 'block.setType', blockId: createBlockId(blockId), blockType: 'document.paragraph' },
-          ])
-          refocus(blockId, 'start')
-
-          return
-        }
-
-        const ordered = orderedTextBlocks()
-        const index = ordered.findIndex((item) => item.id === blockId)
-        const previous = index > 0 ? ordered[index - 1] : undefined
-        if (!previous) {
-          refocus(blockId, 'start')
-
-          return
-        }
-
-        const caretOffset = getInlineContentLength(blockInlineContent(findBlockById(docRef.current, previous.id)))
-        latest.current.applyPatches([
-          { type: 'block.merge', blockId: createBlockId(blockId), intoBlockId: createBlockId(previous.id) },
-        ])
-        refocus(previous.id, caretOffset)
+        applyDecision(computeMergeBackward(docRef.current, blockId))
       },
 
       indent: (blockId) => {
-        const flattened = flattenDocumentBlocks(docRef.current)
-        const item = flattened.find((candidate) => candidate.id === blockId)
-        const previousSibling = flattened.find(
-          (candidate) => candidate.parentId === item?.parentId && candidate.index === (item?.index ?? 0) - 1,
-        )
-        if (!item || !previousSibling) {
-          refocus(blockId, 'start')
-
-          return
-        }
-
-        const newParent = findBlockById(docRef.current, previousSibling.id)
-        latest.current.applyPatches([
-          {
-            type: 'block.move',
-            blockId: createBlockId(blockId),
-            parentId: createBlockId(previousSibling.id),
-            ...anchorAppendToParent(docRef.current, previousSibling.id),
-          },
-        ])
-        refocus(blockId, 'start')
+        applyDecision(computeIndent(docRef.current, blockId))
       },
 
       outdent: (blockId) => {
-        const flattened = flattenDocumentBlocks(docRef.current)
-        const item = flattened.find((candidate) => candidate.id === blockId)
-        const parentItem = flattened.find((candidate) => candidate.id === item?.parentId)
-        if (!item || !parentItem || !parentItem.parentId) {
-          refocus(blockId, 'start')
-
-          return
-        }
-
-        latest.current.applyPatches([
-          {
-            type: 'block.move',
-            blockId: createBlockId(blockId),
-            parentId: createBlockId(parentItem.parentId),
-            ...anchorAfterBlock(docRef.current, parentItem.parentId, parentItem.id),
-          },
-        ])
-        refocus(blockId, 'start')
+        applyDecision(computeOutdent(docRef.current, blockId))
       },
 
       navigate: (blockId, direction) => {
-        const ordered = orderedTextBlocks()
-        const index = ordered.findIndex((item) => item.id === blockId)
-        const neighbor = direction === 'up' ? ordered[index - 1] : ordered[index + 1]
-        if (!neighbor) {
-          refocus(blockId, direction === 'up' ? 'start' : 'end')
-
-          return
-        }
-
-        refocus(neighbor.id, direction === 'up' ? 'end' : 'start')
+        applyDecision(computeNavigate(docRef.current, blockId, direction))
       },
 
       escape: (blockId) => {
@@ -399,52 +231,11 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
           return
         }
 
-        latest.current.applyPatches([
-          {
-            type: 'block.setType',
-            blockId: createBlockId(blockId),
-            blockType: type,
-            ...(attrs ? { attributes: attrs } : {}),
-          },
-        ])
-
-        // turning into a non-text type ends the inline session — select the block
-        if (NON_TEXT_BLOCK_TYPES.has(type)) {
-          selectBlocks(createBlockSelection(blockId))
-        }
+        applyDecision(computeTurnInto(docRef.current, blockId, type, attrs))
       },
 
       moveBlock: (blockId, direction) => {
-        const flattened = flattenDocumentBlocks(docRef.current)
-        const item = flattened.find((candidate) => candidate.id === blockId)
-        if (!item?.parentId) {
-          return
-        }
-
-        const parent = findBlockById(docRef.current, item.parentId)
-        const siblingCount = parent?.children?.length ?? 0
-        const targetIndex = item.index + (direction === 'up' ? -1 : 1)
-        if (targetIndex < 0 || targetIndex >= siblingCount) {
-          return
-        }
-
-        const neighbor = flattenDocumentBlocks(docRef.current).find(
-          (candidate) => candidate.parentId === item.parentId && candidate.index === targetIndex,
-        )
-        if (!neighbor) {
-          return
-        }
-
-        latest.current.applyPatches([
-          {
-            type: 'block.move',
-            blockId: createBlockId(blockId),
-            parentId: createBlockId(item.parentId),
-            ...(direction === 'up'
-              ? anchorBeforeBlock(docRef.current, item.parentId, neighbor.id)
-              : anchorAfterBlock(docRef.current, item.parentId, neighbor.id)),
-          },
-        ])
+        applyDecision(computeMoveBlock(docRef.current, blockId, direction))
       },
 
       openBlockActions: (blockId, rect) => {
@@ -490,23 +281,11 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
       blockAction: (blockId) => {
         const block = findBlockById(docRef.current, blockId)
         if (block?.type === 'document.checklist') {
-          latest.current.applyPatches([
-            {
-              type: 'block.update',
-              blockId: createBlockId(blockId),
-              attributes: { checked: block.attributes?.checked !== true },
-            },
-          ])
+          latest.current.applyPatches([blockAttrsPatch(blockId, { checked: block.attributes?.checked !== true })])
         }
 
-        if (block?.type === 'document.toggle') {
-          latest.current.applyPatches([
-            {
-              type: 'block.update',
-              blockId: createBlockId(blockId),
-              attributes: { collapsed: block.attributes?.collapsed !== true },
-            },
-          ])
+        if (block?.type === TOGGLE_BLOCK_TYPE) {
+          latest.current.applyPatches([blockAttrsPatch(blockId, { collapsed: block.attributes?.collapsed !== true })])
         }
       },
 
@@ -521,15 +300,21 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
 
         const merged = { ...item.attributes, ...extraAttributes }
         const attributes = Object.keys(merged).length > 0 ? merged : undefined
-        const targetId = applyMenuType(blockId, item, attributes)
-        if (!targetId) {
+        const applied = computeApplyMenuType(docRef.current, {
+          blockId,
+          type: item.type,
+          attributes,
+          nextBlockId,
+        })
+        if (!applied) {
           return
         }
 
+        latest.current.applyPatches(applied.patches)
         if (NON_TEXT_BLOCK_TYPES.has(item.type)) {
-          selectBlocks(createBlockSelection(targetId))
+          selectBlocks(createBlockSelection(applied.targetId))
         } else {
-          refocus(targetId, 'start', true)
+          refocus(applied.targetId, 'start', true)
         }
       },
 
@@ -543,16 +328,19 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
         const isImage = pending.item.type === 'document.image'
         // FileBlock reads attributes.name (download label); ImageBlock reads alt
         const nameAttributes = isImage ? { alt: file.name } : { name: file.name }
-        const targetId = applyMenuType(
-          pending.blockId,
-          pending.item,
-          { ...pending.item.attributes, ...nameAttributes },
-          { upload: 'uploading' },
-        )
-        if (!targetId) {
+        const applied = computeApplyMenuType(docRef.current, {
+          blockId: pending.blockId,
+          type: pending.item.type,
+          attributes: { ...pending.item.attributes, ...nameAttributes },
+          extraState: { upload: 'uploading' },
+          nextBlockId,
+        })
+        if (!applied) {
           return
         }
 
+        latest.current.applyPatches(applied.patches)
+        const {targetId} = applied
         selectBlocks(createBlockSelection(targetId))
 
         // The upload resolves after arbitrary user edits — the block may be
@@ -591,33 +379,7 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
       insertToggleChild,
 
       insertBlockBelow: (blockId) => {
-        const flattened = flattenDocumentBlocks(docRef.current)
-        const location = flattened.find((candidate) => candidate.id === blockId)
-        if (!location?.parentId) {
-          return
-        }
-
-        const newId = latest.current.generateBlockId()
-        latest.current.applyPatches([
-          {
-            type: 'block.insert',
-            parentId: createBlockId(location.parentId),
-            ...anchorAfterBlock(docRef.current, location.parentId, blockId),
-            block: createDefaultBlock('document.paragraph', newId),
-          },
-        ])
-
-        const previous = store.get().focus
-        store.set({
-          selection: clearBlockSelection(),
-          focus: {
-            blockId: newId,
-            caret: 'start',
-            session: (previous?.session ?? 0) + 1,
-            openBlockMenu: true,
-            justInserted: true,
-          },
-        })
+        applyDecision(computeInsertBlockBelow(docRef.current, blockId, nextBlockId))
       },
 
       resizeColumnPair: (leftColumnId, rightColumnId, deltaFraction) => {

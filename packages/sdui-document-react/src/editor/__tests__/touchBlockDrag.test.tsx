@@ -299,3 +299,50 @@ describe('useBlockPointerDrag trailing-click suppression lifecycle', () => {
     })
   })
 })
+
+describe('useBlockPointerDrag edge-band autoscroll', () => {
+  beforeEach(() => {
+    // modern fake timers also fake rAF — advanceTimersByTime runs the loop
+    jest.useFakeTimers()
+    window.scrollBy = jest.fn()
+    ;(document as unknown as { elementFromPoint: () => Element | null }).elementFromPoint = () => null
+  })
+  afterEach(() => {
+    jest.runOnlyPendingTimers()
+    jest.useRealTimers()
+    document.querySelectorAll('[data-drag-ghost]').forEach((n) => n.remove())
+  })
+
+  describe('as is: an active touch drag with the pointer mid-viewport', () => {
+    describe('when the pointer moves into the bottom autoscroll edge band', () => {
+      it('to be: the viewport scrolls downward (window.scrollBy with positive dy)', () => {
+        const { container } = render(<SduiDocumentEditor content={content()} />)
+        const handle = dragHandle(container)
+
+        // press mid-viewport so the first ticks sit outside both edge bands
+        const midY = Math.floor(window.innerHeight / 2)
+        firePointer('pointerdown', { pointerType: 'touch', clientX: 10, clientY: midY }, handle)
+        act(() => jest.advanceTimersByTime(TOUCH_LONG_PRESS_MS)) // long-press → drag + rAF loop
+        expect(ghostEl()).not.toBeNull()
+
+        // frames outside the band never scroll (dy computes to 0)
+        act(() => jest.advanceTimersByTime(64))
+        expect(window.scrollBy).not.toHaveBeenCalled()
+
+        // jsdom has no scrollable ancestor (findScrollParent → null), so the
+        // tick falls back to the window; assert sign only — the ramp math gets
+        // its own pure-function tests later
+        firePointer('pointermove', { pointerType: 'touch', clientX: 10, clientY: window.innerHeight - 1 }, window)
+        act(() => jest.advanceTimersByTime(64))
+
+        const scrollBy = window.scrollBy as jest.Mock
+        expect(scrollBy).toHaveBeenCalled()
+        const [dx, dy] = scrollBy.mock.calls[0] as [number, number]
+        expect(dx).toBe(0)
+        expect(dy).toBeGreaterThan(0)
+
+        firePointer('pointerup', { pointerType: 'touch', clientX: 10, clientY: window.innerHeight - 1 }, window)
+      })
+    })
+  })
+})

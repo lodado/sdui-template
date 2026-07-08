@@ -10,6 +10,8 @@
  *   from the PM doc and the type change is delegated the same way
  */
 
+import { CODE_BLOCK_TYPE, TOGGLE_BLOCK_TYPE } from '@lodado/sdui-document'
+
 export type BlockTurnIntoShortcut = {
   /** ProseMirror keymap key string — Outline binding kept verbatim. */
   key: string
@@ -63,7 +65,7 @@ export const BLOCK_TURN_INTO_DEFINITIONS: readonly BlockTurnIntoDefinition[] = [
   },
   {
     // Notion: "> " creates a toggle; callout moved to slash-menu only
-    type: 'document.toggle',
+    type: TOGGLE_BLOCK_TYPE,
     inputRules: [{ pattern: /^>\s$/ }],
   },
   {
@@ -85,7 +87,7 @@ export const BLOCK_TURN_INTO_DEFINITIONS: readonly BlockTurnIntoDefinition[] = [
   },
   {
     // Notion/Outline: ``` fence; Outline CodeFence Shift-Ctrl-c
-    type: 'document.code',
+    type: CODE_BLOCK_TYPE,
     shortcuts: [{ key: 'Shift-Ctrl-c' }],
     inputRules: [{ pattern: /^```$/ }],
   },

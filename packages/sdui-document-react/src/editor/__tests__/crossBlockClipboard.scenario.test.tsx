@@ -1,6 +1,6 @@
 import type { SduiDocumentContent } from '@lodado/sdui-document'
 import { createDocumentBlock } from '@lodado/sdui-document'
-import { render } from '@testing-library/react'
+import { fireEvent, render } from '@testing-library/react'
 import React from 'react'
 
 import { SduiDocumentEditor } from '../SduiDocumentEditor'
@@ -36,8 +36,8 @@ function selectAcross(container: HTMLElement, from: [string, number], to: [strin
 
 // jsdom lacks a full ClipboardEvent/DataTransfer, so dispatch a plain cancelable
 // Event with a minimal clipboardData shim — the same surface the handler uses.
-function dispatchClipboard(type: 'copy' | 'cut' | 'paste', seedText = '') {
-  const store = new Map<string, string>()
+// Pass a previous dispatch's `store` to round-trip a copy into a later paste.
+function dispatchClipboard(type: 'copy' | 'cut' | 'paste', seedText = '', store = new Map<string, string>()) {
   if (seedText) {
     store.set('text/plain', seedText)
   }
@@ -56,6 +56,12 @@ function childIds(content: SduiDocumentContent): string[] {
 
 function blockText(content: SduiDocumentContent, id: string): string {
   return (content.root.children?.find((child) => child.id === id)?.state?.text as string) ?? ''
+}
+
+type InlineNode = { type: string; text?: string; marks?: Array<{ type: string }> }
+
+function blockContent(content: SduiDocumentContent, id: string): InlineNode[] {
+  return (content.root.children?.find((child) => child.id === id)?.state?.content ?? []) as InlineNode[]
 }
 
 describe('SduiDocumentEditor cross-block clipboard', () => {
@@ -124,6 +130,47 @@ describe('SduiDocumentEditor cross-block clipboard', () => {
 
         const { event } = dispatchClipboard('copy')
         expect(event.defaultPrevented).toBe(false)
+      })
+    })
+  })
+
+  describe('as is: blocks a+b carry a bold mark (seeded via the real Cmd+B range path)', () => {
+    describe('when the marked range is copied and that store is pasted over b[0]..c[1]', () => {
+      it('to be: copy writes the private inline mime; the paste preserves marks and hard breaks', () => {
+        const onContentChange = jest.fn()
+        const { container } = render(
+          <SduiDocumentEditor content={threeParagraphs()} onContentChange={onContentChange} />,
+        )
+
+        selectAcross(container, ['a', 0], ['b', 3])
+        fireEvent.keyDown(document, { key: 'b', ctrlKey: true }) // bold a+b
+
+        // copy: the store now carries text/plain AND application/x-sdui-inline
+        selectAcross(container, ['a', 0], ['b', 3])
+        const { store } = dispatchClipboard('copy')
+        expect(store.get('text/plain')).toBe('aaa\nbbb')
+        expect(JSON.parse(store.get('application/x-sdui-inline') ?? 'null')).toEqual([
+          expect.objectContaining({ type: 'text', text: 'aaa', marks: [{ type: 'bold' }] }),
+          expect.objectContaining({ type: 'hard_break' }),
+          expect.objectContaining({ type: 'text', text: 'bbb', marks: [{ type: 'bold' }] }),
+        ])
+
+        // paste the SAME captured store over a different cross-block range
+        selectAcross(container, ['b', 0], ['c', 1])
+        dispatchClipboard('paste', '', store)
+
+        const next = onContentChange.mock.calls.at(-1)?.[0] as SduiDocumentContent
+        expect(childIds(next)).toEqual(['a', 'b'])
+        // rich (mark-preserving) path won over the plain-text fallback
+        const pasted = blockContent(next, 'b')
+        expect(pasted.map((node) => node.type)).toEqual(['text', 'hard_break', 'text', 'text'])
+        expect(pasted.map((node) => node.text ?? '')).toEqual(['aaa', '', 'bbb', 'cc'])
+        expect(pasted.map((node) => (node.marks ?? []).map((mark) => mark.type))).toEqual([
+          ['bold'],
+          [],
+          ['bold'],
+          [], // the tail slice of c was never bolded
+        ])
       })
     })
   })

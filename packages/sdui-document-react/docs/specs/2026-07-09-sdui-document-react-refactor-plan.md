@@ -239,3 +239,24 @@ core(`@lodado/sdui-document`)는 순수 헤드리스 문서 모델(불변 패치
 - SduiDocumentEditor store-factory 추출 (5번째 store 실제 등장 전까지 YAGNI)
 - useBlockPointerDrag/useSelectionKeyboard/useInlineTextDragDrop 분할
 - marks/\* 구조 변경, publish 순서 변경, EditorRuntime 구조 변경
+
+---
+
+## 부록: 실행 기록 — 2차 구루 패널 정정 (2026-07-09, 실행 완료)
+
+4렌즈 재감사(함수형 코어/React 훅/테스트가능성/아키텍처) 전원 AGREE-WITH-CHANGES. 실행 시 플랜 대비 변경 사항:
+
+- **A-1 재설계**: keymapDelegation 하네스 경로 폐기 (delegation keymap은 `composing` 미참조, slashMenu 가드는 `view().update()` 소속 — 하네스 도달 불가). 실제 렌더 + `container.pmView` + `Object.defineProperty(view, 'composing')` getter 오버라이드로 두 가드 직접 검증 (`imeComposition.test.tsx`).
+- **A-3 축소**: long-press BVA는 기존 존재 — autoscroll 경로 1건만 추가.
+- **B-1 id 규칙**: 순수함수는 pre-generated id "값" 대신 `nextBlockId: () => string` thunk를 받아 **필요할 때만 1회 호출** — 빈 블록 변환 경로의 id 소비 순서(테스트 결정론)를 레거시와 동일하게 보존. `insertToggleChild`/`insertBlockBelow`/`navigate`도 추가 추출, 6개 one-liner는 `blockAttrsPatch` 헬퍼 1개로 수렴 (anemic 방지).
+- **B-2 네이밍**: `mutateRange` 순수부 → `computeRangeReplacePatches`, `toggleMark`→`computeToggleRangeMark`, `setMark`→`computeSetRangeMark`, `isMarkActive`→`isRangeMarkActive`.
+- **B-3 축소**: `hasPassedThreshold`/`projectBlockDrop`/`buildBlockDropPatches` 직접 단위테스트는 이미 존재(columnDragDrop.test.tsx, resolveOverRatio.test.ts) — `computeAutoScrollDelta` 추출+테스트만 신규.
+- **C-1**: `useColumnResize()` 훅 취소 — 드래그 로직은 hook 모양이 아님(AbortController+명령형 DOM). 컴포넌트 파일 추출만.
+- **C-2**: 시임 확대 — `useSelectionSnapshotPublish(viewRef, ...)` → `{refreshSnapshot, clearSnapshot, toolbarTurnIntoRef}` 반환. setSnapshot dedup bail 2개 원문 보존. IME 가드/commitNow는 mount effect 잔류.
+- **C-3**: 조건부 → **확정 SKIP** (B-1 후 402L 단일 useMemo 응집; 그룹 분할은 `runtime` memo dep-array 리스크만 추가).
+- **D-0 신설**: `TOGGLE_BLOCK_TYPE`/`CODE_BLOCK_TYPE`는 core 루트 미공개였음 → sdui-document index export + changeset 별도 커밋.
+- **D-2 확대**: 매직스트링 프로덕션 7개 파일 전부 상수화 (BlockNode 2곳만으로는 절반짜리).
+- **D-3 정정**: focused-block 배럴 import는 **순환 유발** (배럴이 FocusedBlockEditor 재export → publish 훅 → selectionSnapshot). deep import 유지 + 의도 주석이 올바른 수정.
+- **import 방향 규칙**: 순수 로직 파일(`handlerLogic.ts`, `rangePatchLogic.ts`)은 hooks/를 import 금지 — 방향은 hook → 순수함수 단방향 (각 파일 헤더에 명시).
+
+결과: 66 suites/422 tests → 72 suites/508 tests. 커밋: d8233b2(A) f625dab(B-1) 0470196(B-2) 8353a9d(B-3) dff9b32(B-4) 33c580c(C-1) 00a8c45(C-2) c6db278(D-0) 1fbd732(D).

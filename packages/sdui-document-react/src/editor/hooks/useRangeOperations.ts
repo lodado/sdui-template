@@ -1,70 +1,32 @@
 import type {
   BlockAlign,
-  SduiDocumentBlock,
   SduiDocumentContent,
   SduiDocumentPatch,
   SduiInlineContent,
   SduiInlineMark,
 } from '@lodado/sdui-document'
-import {
-  createBlockId,
-  findBlockById,
-  getInlineContentLength,
-  inlineState,
-  resolveBlockAlign,
-} from '@lodado/sdui-document'
+import { createBlockId, findBlockById, resolveBlockAlign } from '@lodado/sdui-document'
 import type React from 'react'
 import { useEffect, useRef, useState } from 'react'
 
-import { deleteInlineRange } from '../../inline/deleteInlineRange'
 import type { NormalizedRange } from '../../inline/docRange'
 import { normalizeDocRange, readDocRangeFromDom } from '../../inline/docRange'
 import { domPositionFromInlineOffset } from '../../inline/domInlineOffsets'
-import {
-  addMarkInRange,
-  coveredTextSegments,
-  rangeHasMark,
-  rangeMarkAttr,
-  removeMarkInRange,
-} from '../../inline/inlineRangeMarks'
 import { inlineToHtml } from '../../inline/inlineToHtml'
 import type { SelectionSnapshot } from '../../selection-toolbar/selectionSnapshot'
 import { rafThrottle } from '../../shared/rafThrottle'
-import { blockInlineContent, isTextBlock } from '../blockContent'
+import {
+  computeRangeReplacePatches,
+  computeSetRangeMark,
+  computeToggleRangeMark,
+  isRangeMarkActive,
+  parseInlineClipboard,
+  SDUI_INLINE_MIME,
+  serializeRangeInline,
+  serializeRangeText,
+  uniformRangeAttr,
+} from '../rangePatchLogic'
 import type { EditorUIStore, FocusTarget } from '../uiStore'
-
-/** Private clipboard mime for SDUI→SDUI rich paste (marks + block breaks). */
-const SDUI_INLINE_MIME = 'application/x-sdui-inline'
-
-/**
- * Validate untrusted clipboard payload before inserting it into the document.
- * Returns the inline content only when it is a non-empty array of well-formed
- * nodes; anything else falls back to the plain-text paste path.
- */
-function parseInlineClipboard(raw: string | undefined): SduiInlineContent | null {
-  if (!raw) {
-    return null
-  }
-  try {
-    const parsed: unknown = JSON.parse(raw)
-    if (!Array.isArray(parsed) || parsed.length === 0) {
-      return null
-    }
-    const isValid = parsed.every((node): boolean => {
-      if (!node || typeof node !== 'object') {
-        return false
-      }
-      const { type } = node as { type?: unknown }
-      if (type === 'hard_break' || type === 'date') {
-        return true
-      }
-      return type === 'text' && typeof (node as { text?: unknown }).text === 'string'
-    })
-    return isValid ? (parsed as SduiInlineContent) : null
-  } catch {
-    return null
-  }
-}
 
 /** Mark names the cross-block toolbar reflects an active state for. */
 const TOOLBAR_MARK_NAMES = ['bold', 'italic', 'strikethrough', 'code', 'underline'] as const
@@ -123,6 +85,9 @@ export type UseRangeOperationsResult = {
  * Cross-block range operations for the hybrid editor. Only a native selection
  * that spans two or more blocks reaches here (no single ProseMirror instance
  * owns it); everything is expressed as document patches so undo/redo is free.
+ *
+ * Imperative shell: DOM selection reads/writes, event handling, and patch
+ * application live here; the range→patch decisions live in ../rangePatchLogic.
  */
 export function useRangeOperations(input: UseRangeOperationsInput): UseRangeOperationsResult {
   const { store, docRef, containerRef, readOnly, applyPatches, focusBlock } = input
@@ -155,138 +120,30 @@ export function useRangeOperations(input: UseRangeOperationsInput): UseRangeOper
     return normalized
   }
 
-  // Notion delete/replace: the surviving prefix of the start block, the typed
-  // text (empty for a plain delete), and the suffix of the end block merge into
-  // one block; every block between them is removed.
+  // Effect runner for the pure replace decision: apply patches, drop the now
+  // stale native selection, put the caret at the join point.
   const mutateRange = (range: NormalizedRange, insert: string | SduiInlineContent) => {
-    // Accepts plain text (typing / external paste) or rich inline content
-    // (mark-preserving cross-block paste). String collapses to a single text node.
-    let insertContent: SduiInlineContent
-    if (typeof insert === 'string') {
-      insertContent = insert ? [{ type: 'text', text: insert }] : []
-    } else {
-      insertContent = insert
-    }
-    const insertLength = getInlineContentLength(insertContent)
-
-    const startBlock = findBlockById(docRef.current, range.start.blockId)
-    const endBlock = findBlockById(docRef.current, range.end.blockId)
-    const startIsText = startBlock !== undefined && isTextBlock(startBlock)
-    const endIsText = endBlock !== undefined && isTextBlock(endBlock)
-
-    const patches: SduiDocumentPatch[] = []
-    let caretTarget: { blockId: string; offset: number } | null = null
-
-    if (startIsText) {
-      const head = deleteInlineRange(
-        blockInlineContent(startBlock),
-        range.start.offset,
-        getInlineContentLength(blockInlineContent(startBlock)),
-      )
-      const tail = endIsText ? deleteInlineRange(blockInlineContent(endBlock), 0, range.end.offset) : []
-      patches.push({
-        type: 'block.update',
-        blockId: createBlockId(range.start.blockId),
-        state: inlineState([...head, ...insertContent, ...tail]),
-      })
-      // delete everything after the start block, up to and including the end
-      range.blockIds.slice(1).forEach((id) => patches.push({ type: 'block.delete', blockId: createBlockId(id) }))
-      caretTarget = { blockId: range.start.blockId, offset: range.start.offset + insertLength }
-    } else {
-      // start is non-text (image/divider): drop it and the middles; keep the
-      // end block's suffix if it is text.
-      range.blockIds.slice(0, -1).forEach((id) => patches.push({ type: 'block.delete', blockId: createBlockId(id) }))
-      if (endIsText) {
-        patches.push({
-          type: 'block.update',
-          blockId: createBlockId(range.end.blockId),
-          state: inlineState(deleteInlineRange(blockInlineContent(endBlock), 0, range.end.offset)),
-        })
-        caretTarget = { blockId: range.end.blockId, offset: 0 }
-      } else {
-        patches.push({ type: 'block.delete', blockId: createBlockId(range.end.blockId) })
-      }
-    }
+    const { patches, caret } = computeRangeReplacePatches(docRef.current, range, insert)
 
     applyPatches(patches)
     containerRef.current?.ownerDocument.getSelection()?.removeAllRanges()
-    if (caretTarget) {
-      focusBlock(caretTarget.blockId, caretTarget.offset)
+    if (caret) {
+      focusBlock(caret.blockId, caret.offset)
     }
   }
 
-  // Each covered block's own sub-range: the start block from its offset, the
-  // end block up to its offset, the middles in full.
-  const perBlockRange = (range: NormalizedRange, block: SduiDocumentBlock): [number, number] => {
-    const from = block.id === range.start.blockId ? range.start.offset : 0
-    const to = block.id === range.end.blockId ? range.end.offset : getInlineContentLength(blockInlineContent(block))
-    return [from, to]
-  }
-
-  const coveredTextBlocks = (range: NormalizedRange): SduiDocumentBlock[] =>
-    range.blockIds
-      .map((id) => findBlockById(docRef.current, id))
-      .filter((block): block is SduiDocumentBlock => block !== undefined && isTextBlock(block))
-
-  const isMarkActive = (range: NormalizedRange, markType: string): boolean => {
-    const blocks = coveredTextBlocks(range)
-    return (
-      blocks.length > 0 &&
-      blocks.every((block) => {
-        const [from, to] = perBlockRange(range, block)
-        return rangeHasMark(blockInlineContent(block), from, to, markType)
-      })
-    )
-  }
-
-  // Uniform attr value across the range, or null on a mixed selection.
-  const uniformAttr = (range: NormalizedRange, markType: string, attrKey: string): string | null => {
-    const blocks = coveredTextBlocks(range)
-    if (blocks.length === 0) {
-      return null
+  const applyMarkPatches = (patches: SduiDocumentPatch[]) => {
+    if (patches.length > 0) {
+      applyPatches(patches)
     }
-    const values = blocks.map((block) => {
-      const [from, to] = perBlockRange(range, block)
-      return rangeMarkAttr(blockInlineContent(block), from, to, markType, attrKey)
-    })
-    return values.some((value) => value === null) || !values.every((value) => value === values[0]) ? null : values[0]
   }
 
-  // Patch every covered text block's sub-range with `apply` (add/remove a mark).
-  const patchRangeMarks = (
-    range: NormalizedRange,
-    apply: (content: SduiInlineContent, from: number, to: number) => SduiInlineContent,
-  ) => {
-    const blocks = coveredTextBlocks(range)
-    if (blocks.length === 0) {
-      return
-    }
-    const patches: SduiDocumentPatch[] = blocks.map((block) => {
-      const [from, to] = perBlockRange(range, block)
-      return {
-        type: 'block.update',
-        blockId: createBlockId(block.id),
-        state: inlineState(apply(blockInlineContent(block), from, to)),
-      }
-    })
-    applyPatches(patches)
+  const toggleRangeMark = (range: NormalizedRange, mark: SduiInlineMark) => {
+    applyMarkPatches(computeToggleRangeMark(docRef.current, range, mark))
   }
 
-  // Toggle a mark across the range: if every covered text segment already has
-  // it, remove; otherwise add (Notion's whole-selection toggle semantics).
-  const toggleMark = (range: NormalizedRange, mark: SduiInlineMark) => {
-    const allMarked = isMarkActive(range, mark.type)
-    patchRangeMarks(range, (content, from, to) =>
-      allMarked ? removeMarkInRange(content, from, to, mark.type) : addMarkInRange(content, from, to, mark),
-    )
-  }
-
-  // Set (mark != null) or clear (mark == null) a mark across the range — used
-  // for color / highlight / link where the value replaces rather than toggles.
-  const setMark = (range: NormalizedRange, markType: string, mark: SduiInlineMark | null) => {
-    patchRangeMarks(range, (content, from, to) =>
-      mark ? addMarkInRange(content, from, to, mark) : removeMarkInRange(content, from, to, markType),
-    )
+  const setRangeMark = (range: NormalizedRange, markType: string, mark: SduiInlineMark | null) => {
+    applyMarkPatches(computeSetRangeMark(docRef.current, range, markType, mark))
   }
 
   // Re-derive the browser selection after a cross-block edit re-renders the
@@ -322,20 +179,20 @@ export function useRangeOperations(input: UseRangeOperationsInput): UseRangeOper
 
     const activeMarks: Record<string, boolean> = {}
     TOOLBAR_MARK_NAMES.forEach((name) => {
-      activeMarks[name] = isMarkActive(range, name)
+      activeMarks[name] = isRangeMarkActive(docRef.current, range, name)
     })
-    activeMarks.highlight = isMarkActive(range, 'highlight')
-    activeMarks.color = isMarkActive(range, 'color')
-    activeMarks.link = isMarkActive(range, 'link')
+    activeMarks.highlight = isRangeMarkActive(docRef.current, range, 'highlight')
+    activeMarks.color = isRangeMarkActive(docRef.current, range, 'color')
+    activeMarks.link = isRangeMarkActive(docRef.current, range, 'link')
 
     return {
       empty: false,
       from: range.start.offset,
       to: range.end.offset,
       activeMarks,
-      highlightColor: uniformAttr(range, 'highlight', 'color'),
-      textColor: uniformAttr(range, 'color', 'color'),
-      linkHref: uniformAttr(range, 'link', 'href'),
+      highlightColor: uniformRangeAttr(docRef.current, range, 'highlight', 'color'),
+      textColor: uniformRangeAttr(docRef.current, range, 'color', 'color'),
+      linkHref: uniformRangeAttr(docRef.current, range, 'link', 'href'),
       anchorRect,
     }
   }
@@ -402,18 +259,23 @@ export function useRangeOperations(input: UseRangeOperationsInput): UseRangeOper
       ? null
       : {
           snapshot: toolbarSnapshot,
-          onToggleMark: (name) => runToolbarMutation((range) => toggleMark(range, { type: name } as SduiInlineMark)),
+          onToggleMark: (name) =>
+            runToolbarMutation((range) => toggleRangeMark(range, { type: name } as SduiInlineMark)),
           onSetHighlight: (color) =>
             runToolbarMutation((range) =>
-              setMark(range, 'highlight', color ? ({ type: 'highlight', attrs: { color } } as SduiInlineMark) : null),
+              setRangeMark(
+                range,
+                'highlight',
+                color ? ({ type: 'highlight', attrs: { color } } as SduiInlineMark) : null,
+              ),
             ),
           onSetColor: (color) =>
             runToolbarMutation((range) =>
-              setMark(range, 'color', color ? ({ type: 'color', attrs: { color } } as SduiInlineMark) : null),
+              setRangeMark(range, 'color', color ? ({ type: 'color', attrs: { color } } as SduiInlineMark) : null),
             ),
           onSetLink: (href) =>
             runToolbarMutation((range) =>
-              setMark(range, 'link', href ? ({ type: 'link', attrs: { href } } as SduiInlineMark) : null),
+              setRangeMark(range, 'link', href ? ({ type: 'link', attrs: { href } } as SduiInlineMark) : null),
             ),
           // Single-block only: expose the block's alignment so a static/unfocused
           // block gets the same align controls the focused editor has.
@@ -434,28 +296,6 @@ export function useRangeOperations(input: UseRangeOperationsInput): UseRangeOper
             : {}),
         }
 
-  // Plain-text serialization of the range: each covered block's covered slice,
-  // joined by newlines (one line per block).
-  const serializeRangeText = (range: NormalizedRange): string =>
-    coveredTextBlocks(range)
-      .map((block) => {
-        const [from, to] = perBlockRange(range, block)
-        return coveredTextSegments(blockInlineContent(block), from, to)
-          .map((segment) => segment.text)
-          .join('')
-      })
-      .join('\n')
-
-  // Rich variant for internal (SDUI→SDUI) paste: keeps each segment's marks and
-  // inserts a hard break at every block boundary, so a cross-block copy of marked
-  // text round-trips into a single block instead of degrading to plain text.
-  const serializeRangeInline = (range: NormalizedRange): SduiInlineContent =>
-    coveredTextBlocks(range).flatMap((block, index) => {
-      const [from, to] = perBlockRange(range, block)
-      const segments = coveredTextSegments(blockInlineContent(block), from, to)
-      return index === 0 ? segments : [{ type: 'hard_break' as const }, ...segments]
-    })
-
   const handleClipboard = (event: ClipboardEvent): boolean => {
     const range = currentRange()
     if (!range) {
@@ -471,8 +311,8 @@ export function useRangeOperations(input: UseRangeOperationsInput): UseRangeOper
       // text/plain for external targets; text/html so a paste landing in a
       // focused block (PM handles text/html natively) keeps marks + hard breaks;
       // a private mime for the cross-block range paste path (see paste branch).
-      const inline = serializeRangeInline(range)
-      event.clipboardData?.setData('text/plain', serializeRangeText(range))
+      const inline = serializeRangeInline(docRef.current, range)
+      event.clipboardData?.setData('text/plain', serializeRangeText(docRef.current, range))
       event.clipboardData?.setData('text/html', inlineToHtml(inline))
       event.clipboardData?.setData(SDUI_INLINE_MIME, JSON.stringify(inline))
       if (event.type === 'cut') {
@@ -539,7 +379,7 @@ export function useRangeOperations(input: UseRangeOperationsInput): UseRangeOper
           return false
         }
         event.preventDefault()
-        toggleMark(range, shortcut.mark)
+        toggleRangeMark(range, shortcut.mark)
         return true
       }
     }
