@@ -17,6 +17,11 @@
       "require": "./src/index.ts",
       "types": "./src/index.ts"
     },
+    "./viewer": {
+      "import": "./src/viewer/index.ts",
+      "require": "./src/viewer/index.ts",
+      "types": "./src/viewer/index.ts"
+    },
     "./src/styles/editor.css": "./src/styles/editor.css",
     "./package.json": "./package.json"
   },
@@ -80,7 +85,18 @@
           "default": "./dist/cjs/client/index.cjs",
           "types": "./dist/types/index.d.ts"
         }
-      }
+      },
+      "./viewer": {
+        "import": {
+          "default": "./dist/es/client/viewer/index.mjs",
+          "types": "./dist/types/viewer/index.d.ts"
+        },
+        "require": {
+          "default": "./dist/cjs/client/viewer/index.cjs",
+          "types": "./dist/types/viewer/index.d.ts"
+        }
+      },
+      "./package.json": "./package.json"
     },
     "main": "./dist/cjs/client/index.cjs",
     "module": "./dist/es/client/index.mjs",

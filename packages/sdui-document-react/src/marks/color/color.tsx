@@ -1,5 +1,4 @@
-import React from 'react'
-
+import { staticMarkRenderers } from '../staticRenderers'
 import type { SduiMarkDefinition } from '../types'
 
 /**
@@ -27,17 +26,7 @@ export const colorMark: SduiMarkDefinition = {
       0,
     ],
   },
-  renderStatic: (children, mark) => {
-    if (mark.type !== 'color') {
-      return children
-    }
-
-    return (
-      <span data-text-color={mark.attrs.color} style={{ color: mark.attrs.color }}>
-        {children}
-      </span>
-    )
-  },
+  renderStatic: staticMarkRenderers.color,
   toPmAttrs: (mark) => (mark.type === 'color' ? { color: mark.attrs.color } : undefined),
   toSduiMark: (mark) => ({ type: 'color', attrs: { color: String(mark.attrs.color) } }),
 }

@@ -1,12 +1,12 @@
 import type { SduiInlineContent, SduiInlineMark, SduiInlineTextNode } from '@lodado/sdui-document'
 import React from 'react'
 
-import { markDefinitionByName } from '../marks'
+import { staticMarkRenderers } from '../marks/staticRenderers'
 
 function wrapWithMark(element: React.ReactNode, mark: SduiInlineMark): React.ReactNode {
-  const definition = markDefinitionByName[mark.type]
+  const renderer = staticMarkRenderers[mark.type]
 
-  return definition ? definition.renderStatic(element, mark) : element
+  return renderer ? renderer(element, mark) : element
 }
 
 function renderTextNode(node: SduiInlineTextNode): React.ReactNode {

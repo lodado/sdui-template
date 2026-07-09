@@ -45,6 +45,8 @@ const meta: Meta = {
     },
   },
   tags: ['autodocs'],
+  // `allBlocksContent` is a shared fixture (DocumentViewer story), not a story
+  excludeStories: ['allBlocksContent'],
 }
 
 export default meta
@@ -67,7 +69,7 @@ const STATUS = {
   ],
 }
 
-const content: SduiDocumentContent = {
+export const allBlocksContent: SduiDocumentContent = {
   schemaVersion: '1.0',
   root: createDocumentBlock({
     id: 'root',
@@ -272,7 +274,7 @@ export const AllBlocks: StoryObj = {
     <SduiEmbedConfigProvider value={{ allowedHosts: ['codepen.io', 'codesandbox.io'] }}>
       <SduiPageProvider resolver={async (docId) => vault.get(docId)} navigator={{ push: () => {} }}>
         <div style={{ maxWidth: 820, margin: '0 auto' }}>
-          <SduiDocumentEditor content={content} readOnly />
+          <SduiDocumentEditor content={allBlocksContent} readOnly />
         </div>
       </SduiPageProvider>
     </SduiEmbedConfigProvider>

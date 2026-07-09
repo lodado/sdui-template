@@ -1,7 +1,7 @@
 import { toggleMark } from 'prosemirror-commands'
-import React from 'react'
 
 import { markInputRule } from '../markInputRule'
+import { staticMarkRenderers } from '../staticRenderers'
 import type { SduiMarkDefinition } from '../types'
 
 /** Outline marks/Italic.ts — <em>, Mod-i, `*text*` / `_text_`. */
@@ -11,7 +11,7 @@ export const italicMark: SduiMarkDefinition = {
     parseDOM: [{ tag: 'em' }, { tag: 'i' }],
     toDOM: () => ['em', 0],
   },
-  renderStatic: (children) => <em>{children}</em>,
+  renderStatic: staticMarkRenderers.italic,
   toSduiMark: () => ({ type: 'italic' }),
   keys: (markType) => ({ 'Mod-i': toggleMark(markType) }),
   // single same-delimiter only (`*text*` / `_text_`) — `**` stays bold's,

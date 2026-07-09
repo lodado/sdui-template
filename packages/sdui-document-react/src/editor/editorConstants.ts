@@ -1,18 +1,8 @@
 import type { CollisionDetection } from '@dnd-kit/core'
 import { pointerWithin, rectIntersection } from '@dnd-kit/core'
-import {
-  BOOKMARK_BLOCK_TYPE,
-  BUTTON_BLOCK_TYPE,
-  COLLECTION_BLOCK_TYPE,
-  EMBED_BLOCK_TYPE,
-  PAGE_BLOCK_TYPE,
-  TAGS_BLOCK_TYPE,
-  TOGGLE_BLOCK_TYPE,
-  VIDEO_BLOCK_TYPE,
-} from '@lodado/sdui-document'
+import { TOGGLE_BLOCK_TYPE } from '@lodado/sdui-document'
 
-/** Pixel width of one indentation level for drag depth projection. */
-export const DRAG_INDENT_WIDTH = 24
+export { DRAG_INDENT_WIDTH, NON_TEXT_BLOCK_TYPES } from '../shared/blockConstants'
 
 // Module-level constant: a fresh options object each render would change the
 // sensors identity, recreate DndContext's internal context, and force every
@@ -28,21 +18,6 @@ export const collisionDetection: CollisionDetection = (args) => {
 
   return pointerCollisions.length > 0 ? pointerCollisions : rectIntersection(args)
 }
-
-export const NON_TEXT_BLOCK_TYPES = new Set([
-  'document.root',
-  'document.divider',
-  'document.image',
-  'document.file',
-  'document.link',
-  PAGE_BLOCK_TYPE,
-  COLLECTION_BLOCK_TYPE,
-  BOOKMARK_BLOCK_TYPE,
-  VIDEO_BLOCK_TYPE,
-  EMBED_BLOCK_TYPE,
-  TAGS_BLOCK_TYPE,
-  BUTTON_BLOCK_TYPE,
-])
 
 /** Blocks with Notion list semantics: empty+Enter → paragraph, Backspace-at-start → paragraph. */
 export const LIST_LIKE_BLOCK_TYPES = new Set([

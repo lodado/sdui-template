@@ -1,7 +1,7 @@
 import { toggleMark } from 'prosemirror-commands'
-import React from 'react'
 
 import { markInputRule } from '../markInputRule'
+import { staticMarkRenderers } from '../staticRenderers'
 import type { SduiMarkDefinition } from '../types'
 import { HIGHLIGHT_PALETTE, highlightBackground } from './palette'
 
@@ -28,17 +28,7 @@ export const highlightMark: SduiMarkDefinition = {
       0,
     ],
   },
-  renderStatic: (children, mark) => {
-    if (mark.type !== 'highlight') {
-      return children
-    }
-
-    return (
-      <mark data-color={mark.attrs.color} style={{ backgroundColor: highlightBackground(mark.attrs.color) }}>
-        {children}
-      </mark>
-    )
-  },
+  renderStatic: staticMarkRenderers.highlight,
   toPmAttrs: (mark) => (mark.type === 'highlight' ? { color: mark.attrs.color } : undefined),
   toSduiMark: (mark) => ({ type: 'highlight', attrs: { color: String(mark.attrs.color) } }),
   keys: (markType) => ({ 'Mod-Shift-h': toggleMark(markType, { color: HIGHLIGHT_PALETTE[0].hex }) }),

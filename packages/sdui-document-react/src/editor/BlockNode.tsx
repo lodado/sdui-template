@@ -239,6 +239,7 @@ const BlockRow = ({ entry, depth, readOnly }: BlockViewProps) => {
             onToggleChecked={readOnly ? undefined : handlers.toggleChecked}
             onToggleCollapsed={onToggleCollapsed}
             onSetCodeLanguage={readOnly ? undefined : handlers.setCodeLanguage}
+            onSetCalloutIcon={readOnly ? undefined : handlers.setCalloutIcon}
             onSetImageLayout={readOnly ? undefined : handlers.setImageLayout}
             collectionEditor={
               readOnly

@@ -1,14 +1,11 @@
 import { MIN_COLUMN_RATIO, resizeColumnPair } from '@lodado/sdui-document'
 import React from 'react'
 
+import { attributeRatio } from '../shared/blockConstants'
 import { useEditorRuntime } from './EditorRuntimeContext'
 import { useBlockEntry } from './renderModel/useBlockEntry'
 
-/** A column's grow weight from its attributes; absent/invalid = equal-split default. */
-export function attributeRatio(attributes: Record<string, unknown> | undefined): number | undefined {
-  const ratio = attributes?.ratio
-  return typeof ratio === 'number' && Number.isFinite(ratio) && ratio > 0 ? ratio : undefined
-}
+export { attributeRatio } from '../shared/blockConstants'
 
 /** One ArrowLeft/ArrowRight press moves the gutter by this fraction of the pair width. */
 export const KEYBOARD_RESIZE_STEP = 0.05

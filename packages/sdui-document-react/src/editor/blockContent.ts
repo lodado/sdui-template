@@ -2,7 +2,7 @@ import type { SduiDocumentBlock, SduiInlineContent } from '@lodado/sdui-document
 import { createBlockId, textToInlineContent } from '@lodado/sdui-document'
 
 import type { FocusedBlockCommit } from '../focused-block/FocusedBlockEditor'
-import { NON_TEXT_BLOCK_TYPES } from './editorConstants'
+import { NON_TEXT_BLOCK_TYPES } from '../shared/blockConstants'
 
 export function defaultGenerateBlockId(): string {
   return `block-${Math.random().toString(36).slice(2, 10)}`

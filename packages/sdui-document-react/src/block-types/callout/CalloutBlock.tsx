@@ -1,6 +1,5 @@
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
 
-import { EditorRuntimeContext } from '../../editor/EditorRuntimeContext'
 import { EmojiPicker } from '../../emoji/EmojiPicker'
 import type { BlockChromeProps } from '../BlockChrome'
 
@@ -24,15 +23,11 @@ const CalloutIcon = ({ tone }: { tone: string }) => (
   </svg>
 )
 
-export const CalloutBlock = ({ block, children }: BlockChromeProps) => {
+export const CalloutBlock = ({ block, children, onSetCalloutIcon }: BlockChromeProps) => {
   // Schema + mapper store the variant under `tone`; older docs may use `style`.
   const tone = calloutTone(block.attributes?.tone ?? block.attributes?.style)
   const icon = typeof block.attributes?.icon === 'string' ? block.attributes.icon : null
 
-  // Nullable: the callout renders read-only (no picker) when there is no editor
-  // runtime — e.g. static SSR/preview. ponytail: no explicit readOnly gate; the
-  // absence of a runtime is the gate.
-  const runtime = useContext(EditorRuntimeContext)
   const [pickerOpen, setPickerOpen] = useState(false)
 
   const iconGlyph = icon ? (
@@ -46,7 +41,7 @@ export const CalloutBlock = ({ block, children }: BlockChromeProps) => {
   return (
     <div className={`notice-block ${tone}`}>
       <div className="icon">
-        {runtime ? (
+        {onSetCalloutIcon ? (
           <button
             type="button"
             className="callout-icon-button"
@@ -58,11 +53,11 @@ export const CalloutBlock = ({ block, children }: BlockChromeProps) => {
         ) : (
           iconGlyph
         )}
-        {runtime && pickerOpen ? (
+        {onSetCalloutIcon && pickerOpen ? (
           <div className="callout-icon-popover">
             <EmojiPicker
               onSelect={(char) => {
-                runtime.handlers.setCalloutIcon(block.id, char)
+                onSetCalloutIcon(block.id, char)
                 setPickerOpen(false)
               }}
             />
