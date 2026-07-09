@@ -6,6 +6,7 @@ import {
   COLLECTION_BLOCK_TYPE,
   EMBED_BLOCK_TYPE,
   PAGE_BLOCK_TYPE,
+  SDUI_BLOCK_TYPE,
   TAGS_BLOCK_TYPE,
   TOGGLE_BLOCK_TYPE,
   VIDEO_BLOCK_TYPE,
@@ -30,6 +31,7 @@ import { NumberedListBlock } from './numbered-list/NumberedListBlock'
 import { PageBlock } from './page/PageBlock'
 import { ParagraphBlock } from './paragraph/ParagraphBlock'
 import { QuoteBlock } from './quote/QuoteBlock'
+import { SduiLayoutBlock } from './sdui/SduiLayoutBlock'
 import { TagsBlock, type TagsEditor } from './tags/TagsBlock'
 import { TocBlock } from './toc/TocBlock'
 import { ToggleBlock } from './toggle/ToggleBlock'
@@ -173,6 +175,9 @@ export const BlockChrome = ({
 
     case BUTTON_BLOCK_TYPE:
       return <ButtonBlock block={block} editor={buttonEditor} />
+
+    case SDUI_BLOCK_TYPE:
+      return <SduiLayoutBlock block={block} />
 
     case 'document.paragraph':
     default:

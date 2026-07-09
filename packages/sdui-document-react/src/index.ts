@@ -7,6 +7,11 @@ export {
   SduiEmbedConfigProvider,
   useEmbedConfig,
 } from './block-types/embed/EmbedConfigContext'
+export {
+  SduiComponentsProvider,
+  type SduiLayoutComponents,
+  useSduiComponents,
+} from './block-types/sdui/SduiComponentsContext'
 export * from './editor'
 export { EmojiPicker, type EmojiPickerProps } from './emoji/EmojiPicker'
 export * from './focused-block'

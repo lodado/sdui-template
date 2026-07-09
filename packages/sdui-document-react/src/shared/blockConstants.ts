@@ -4,6 +4,7 @@ import {
   COLLECTION_BLOCK_TYPE,
   EMBED_BLOCK_TYPE,
   PAGE_BLOCK_TYPE,
+  SDUI_BLOCK_TYPE,
   TAGS_BLOCK_TYPE,
   VIDEO_BLOCK_TYPE,
 } from '@lodado/sdui-document'
@@ -27,6 +28,7 @@ export const NON_TEXT_BLOCK_TYPES = new Set([
   EMBED_BLOCK_TYPE,
   TAGS_BLOCK_TYPE,
   BUTTON_BLOCK_TYPE,
+  SDUI_BLOCK_TYPE,
 ])
 
 /** A column's grow weight from its attributes; absent/invalid = equal-split default. */

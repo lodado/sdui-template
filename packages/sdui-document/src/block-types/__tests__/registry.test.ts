@@ -23,6 +23,7 @@ import {
   PARAGRAPH_BLOCK_TYPE,
   QUOTE_BLOCK_TYPE,
   ROOT_BLOCK_TYPE,
+  SDUI_BLOCK_TYPE,
   TAGS_BLOCK_TYPE,
   TOC_BLOCK_TYPE,
   TOGGLE_BLOCK_TYPE,
@@ -58,6 +59,7 @@ describe('block-type constants', () => {
       EMBED_BLOCK_TYPE,
       TAGS_BLOCK_TYPE,
       BUTTON_BLOCK_TYPE,
+      SDUI_BLOCK_TYPE,
     ])
     const moduleTypes = new Set(BLOCK_TYPE_MODULES.map((blockModule) => blockModule.type))
     expect(moduleTypes).toEqual(constants)

@@ -5,6 +5,10 @@
  * Custom error classes for SDUI Layout Store operations
  */
 
+// V8-only stack cleanup; typed structurally so consumers compiling this source
+// without @types/node (e.g. workspace src imports) still typecheck.
+const {captureStackTrace} = (Error as { captureStackTrace?: (target: object, ctor: unknown) => void })
+
 /**
  * NodeNotFoundError
  *
@@ -15,9 +19,7 @@ export class NodeNotFoundError extends Error {
     super(`Node not found: "${nodeId}"`)
     this.name = 'NodeNotFoundError'
     // Maintains proper stack trace for where our error was thrown (only available on V8)
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, NodeNotFoundError)
-    }
+    captureStackTrace?.(this, NodeNotFoundError)
   }
 }
 
@@ -30,9 +32,7 @@ export class RootNotFoundError extends Error {
   constructor() {
     super('Root node ID not found')
     this.name = 'RootNotFoundError'
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, RootNotFoundError)
-    }
+    captureStackTrace?.(this, RootNotFoundError)
   }
 }
 
@@ -45,9 +45,7 @@ export class MetadataNotFoundError extends Error {
   constructor() {
     super('Metadata not found')
     this.name = 'MetadataNotFoundError'
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, MetadataNotFoundError)
-    }
+    captureStackTrace?.(this, MetadataNotFoundError)
   }
 }
 
@@ -60,8 +58,6 @@ export class AttributesNotFoundError extends Error {
   constructor(nodeId: string) {
     super(`Attributes not found for node: "${nodeId}"`)
     this.name = 'AttributesNotFoundError'
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, AttributesNotFoundError)
-    }
+    captureStackTrace?.(this, AttributesNotFoundError)
   }
 }

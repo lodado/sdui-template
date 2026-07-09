@@ -7,6 +7,11 @@ import '../styles/editor.css'
 // SduiPageContext directly so hosts can wire their own navigator.
 
 export {
+  SduiComponentsProvider,
+  type SduiLayoutComponents,
+  useSduiComponents,
+} from '../block-types/sdui/SduiComponentsContext'
+export {
   type DocumentResolver,
   type PageOpenMode,
   type ResolvedDocumentState,

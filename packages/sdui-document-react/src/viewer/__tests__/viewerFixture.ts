@@ -91,6 +91,9 @@ export function createViewerFixture(): SduiDocumentContent {
           state: { text: 'Click me' },
           attributes: { href: 'https://example.com' },
         }),
+        block('sdui', 'document.sdui', {
+          attributes: { document: { version: '1.0', root: { id: 'sdui-root', type: 'Widget' } } },
+        }),
       ],
     }),
   }
