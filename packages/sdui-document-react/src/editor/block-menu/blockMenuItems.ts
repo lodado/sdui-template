@@ -3,7 +3,7 @@
  * `action` decides the select flow: 'insert' patches immediately, 'file'
  * opens the file picker first, 'link' switches the menu to a URL input.
  */
-import { CODE_BLOCK_TYPE, PAGE_BLOCK_TYPE, TOGGLE_BLOCK_TYPE } from '@lodado/sdui-document'
+import { CODE_BLOCK_TYPE, COLLECTION_BLOCK_TYPE, PAGE_BLOCK_TYPE, TOGGLE_BLOCK_TYPE } from '@lodado/sdui-document'
 
 export type BlockMenuGroup = 'basic' | 'media' | 'advanced'
 
@@ -194,6 +194,26 @@ export const BLOCK_MENU_ITEMS: readonly BlockMenuItem[] = [
     group: 'basic',
     keywords: ['page', 'subpage', 'document', '페이지', '하위', '문서'],
   },
+  {
+    id: 'collection-gallery',
+    type: COLLECTION_BLOCK_TYPE,
+    title: 'Gallery',
+    glyph: '▦',
+    action: 'insert',
+    group: 'advanced',
+    attributes: { view: 'gallery', properties: [] },
+    keywords: ['gallery', 'collection', 'database', 'cards', '갤러리', '컬렉션', '카드'],
+  },
+  {
+    id: 'collection-list',
+    type: COLLECTION_BLOCK_TYPE,
+    title: 'List view',
+    glyph: '☰',
+    action: 'insert',
+    group: 'advanced',
+    attributes: { view: 'list', properties: [] },
+    keywords: ['list', 'collection', 'database', '리스트', '목록', '컬렉션'],
+  },
 ]
 
 /**
@@ -203,8 +223,15 @@ export const BLOCK_MENU_ITEMS: readonly BlockMenuItem[] = [
  * too: turn-into-page implies moving content to a new document (backlog).
  */
 export const TURN_INTO_ITEMS: readonly BlockMenuItem[] = BLOCK_MENU_ITEMS.filter(
-  (item) => item.action === 'insert' && item.type !== 'document.divider' && item.type !== PAGE_BLOCK_TYPE,
+  (item) =>
+    item.action === 'insert' &&
+    item.type !== 'document.divider' &&
+    item.type !== PAGE_BLOCK_TYPE &&
+    item.type !== COLLECTION_BLOCK_TYPE,
 )
+
+/** Page and collection insertion both need the host document factory (onCreatePage). */
+const DOCUMENT_FACTORY_TYPES = new Set<string>([PAGE_BLOCK_TYPE, COLLECTION_BLOCK_TYPE])
 
 /** Menu item matching a live block (heading levels disambiguated via attrs). */
 export function blockMenuItemIdFor(type: string, attributes?: Record<string, unknown>): string | null {
@@ -228,7 +255,7 @@ export type BlockMenuCapabilities = {
 export function filterBlockMenuItems(query: string, capabilities?: BlockMenuCapabilities): BlockMenuItem[] {
   const needle = query.trim().toLowerCase()
   const available = BLOCK_MENU_ITEMS.filter(
-    (item) => item.type !== PAGE_BLOCK_TYPE || capabilities?.canCreatePage === true,
+    (item) => !DOCUMENT_FACTORY_TYPES.has(item.type) || capabilities?.canCreatePage === true,
   )
   if (!needle) {
     return available

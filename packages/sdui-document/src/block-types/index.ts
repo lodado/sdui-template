@@ -4,6 +4,7 @@ import { bulletedListBlockModule } from './bulleted-list/bulletedList'
 import { calloutBlockModule } from './callout/callout'
 import { checklistBlockModule } from './checklist/checklist'
 import { codeBlockModule } from './code/code'
+import { collectionBlockModule } from './collection/collection'
 import { columnBlockModule } from './column/column'
 import { columnListBlockModule } from './column-list/columnList'
 import { dividerBlockModule } from './divider/divider'
@@ -50,6 +51,7 @@ export const BLOCK_TYPE_MODULES: readonly SduiBlockTypeModule[] = [
   columnBlockModule,
   tocBlockModule,
   pageBlockModule,
+  collectionBlockModule,
 ]
 
 export const blockModuleByType: Record<string, SduiBlockTypeModule> = BLOCK_TYPE_MODULES.reduce(
@@ -79,6 +81,24 @@ export { BULLETED_LIST_BLOCK_TYPE } from './bulleted-list/bulletedList.type'
 export { CALLOUT_BLOCK_TYPE } from './callout/callout.type'
 export { CHECKLIST_BLOCK_TYPE } from './checklist/checklist.type'
 export { CODE_BLOCK_TYPE } from './code/code.type'
+export {
+  COLLECTION_BLOCK_TYPE,
+  type CollectionBlockAttributes,
+  type CollectionView,
+  collectionViewSchema,
+  type DateRangeValue,
+  findPropertyOption,
+  groupByProperty,
+  NO_GROUP_KEY,
+  parsePropertyValue,
+  PROPERTY_COLORS,
+  type PropertyColor,
+  type PropertyDef,
+  type PropertyOption,
+  type PropertyType,
+  type PropertyValueMap,
+  sortByProperty,
+} from './collection/collection'
 export { COLUMN_BLOCK_TYPE } from './column/column.type'
 export { COLUMN_LIST_BLOCK_TYPE } from './column-list/columnList.type'
 export { DIVIDER_BLOCK_TYPE } from './divider/divider.type'

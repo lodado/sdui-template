@@ -48,6 +48,8 @@ export type EditorHandlers = {
   history(direction: 'undo' | 'redo'): void
   blockAction(blockId: string): void
   blockMenuSelect(blockId: string, item: BlockMenuItem, extraAttributes?: Record<string, unknown>): void
+  /** Collection "+ New": create a page document (host) and insert it as a collection item. */
+  addCollectionItem(collectionId: string): void
   blockMenuFilePicked(file: File): void
   insertBlockBelow(blockId: string): void
   /** Insert (and focus) a paragraph as a toggle's first child; expands it if collapsed. */

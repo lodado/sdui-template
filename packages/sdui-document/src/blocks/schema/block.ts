@@ -2,6 +2,7 @@ import { BULLETED_LIST_BLOCK_TYPE } from '../../block-types/bulleted-list/bullet
 import { CALLOUT_BLOCK_TYPE } from '../../block-types/callout/callout.type'
 import { CHECKLIST_BLOCK_TYPE } from '../../block-types/checklist/checklist.type'
 import { CODE_BLOCK_TYPE } from '../../block-types/code/code.type'
+import { COLLECTION_BLOCK_TYPE } from '../../block-types/collection/collection.type'
 import { COLUMN_BLOCK_TYPE } from '../../block-types/column/column.type'
 import { COLUMN_LIST_BLOCK_TYPE } from '../../block-types/column-list/columnList.type'
 import { DIVIDER_BLOCK_TYPE } from '../../block-types/divider/divider.type'
@@ -48,6 +49,7 @@ export type SduiDocumentBlockType =
   | typeof COLUMN_BLOCK_TYPE
   | typeof TOC_BLOCK_TYPE
   | typeof PAGE_BLOCK_TYPE
+  | typeof COLLECTION_BLOCK_TYPE
 
 export type SduiDocumentBlock = {
   id: SduiDocumentBlockId

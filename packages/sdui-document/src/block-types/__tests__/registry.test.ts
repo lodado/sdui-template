@@ -6,6 +6,7 @@ import {
   canHostInlineText,
   CHECKLIST_BLOCK_TYPE,
   CODE_BLOCK_TYPE,
+  COLLECTION_BLOCK_TYPE,
   COLUMN_BLOCK_TYPE,
   COLUMN_LIST_BLOCK_TYPE,
   DIVIDER_BLOCK_TYPE,
@@ -46,6 +47,7 @@ describe('block-type constants', () => {
       COLUMN_BLOCK_TYPE,
       TOC_BLOCK_TYPE,
       PAGE_BLOCK_TYPE,
+      COLLECTION_BLOCK_TYPE,
     ])
     const moduleTypes = new Set(BLOCK_TYPE_MODULES.map((blockModule) => blockModule.type))
     expect(moduleTypes).toEqual(constants)

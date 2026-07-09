@@ -27,6 +27,7 @@ import type { EditorHandlers } from '../EditorRuntimeContext'
 import type { HandlerDecision, HandlerFocusIntent } from '../handlerLogic'
 import {
   blockAttrsPatch,
+  computeAddCollectionItem,
   computeApplyMenuType,
   computeIndent,
   computeInsertBlockBelow,
@@ -140,6 +141,23 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
 
     const insertToggleChild = (blockId: string) => {
       applyDecision(computeInsertToggleChild(docRef.current, blockId, nextBlockId))
+    }
+
+    const addCollectionItem = (collectionId: string) => {
+      // Document first, item block second — a failed creation touches nothing.
+      const createPage = latest.current.onCreatePage
+      if (!createPage) {
+        return
+      }
+      createPage().then(
+        ({ documentId, title }) => {
+          applyDecision(computeAddCollectionItem(docRef.current, collectionId, { documentId, title }, nextBlockId))
+        },
+        (error: unknown) => {
+          // eslint-disable-next-line no-console
+          console.warn('[sdui-document-react] onCreatePage failed — collection item not added', error)
+        },
+      )
     }
 
     const editorHandlers: EditorHandlers = {
@@ -422,6 +440,8 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
       },
 
       insertToggleChild,
+
+      addCollectionItem,
 
       insertBlockBelow: (blockId) => {
         applyDecision(computeInsertBlockBelow(docRef.current, blockId, nextBlockId))

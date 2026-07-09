@@ -20,6 +20,8 @@ describe('blockMenuItems', () => {
       'link',
       'toc',
       'page',
+      'collection-gallery',
+      'collection-list',
     ])
   })
 
@@ -47,9 +49,19 @@ describe('blockMenuItems', () => {
   })
 
   test('empty query returns everything except capability-gated items', () => {
-    // page needs onCreatePage — hidden by default
-    expect(filterBlockMenuItems('')).toHaveLength(BLOCK_MENU_ITEMS.length - 1)
+    // page + gallery + list all need onCreatePage — hidden by default (3 items)
+    expect(filterBlockMenuItems('')).toHaveLength(BLOCK_MENU_ITEMS.length - 3)
     expect(filterBlockMenuItems('', { canCreatePage: true })).toHaveLength(BLOCK_MENU_ITEMS.length)
+  })
+
+  test('collection items are capability-gated', () => {
+    expect(filterBlockMenuItems('gallery').map((item) => item.id)).toEqual([])
+    expect(filterBlockMenuItems('gallery', { canCreatePage: true }).map((item) => item.id)).toContain(
+      'collection-gallery',
+    )
+    expect(filterBlockMenuItems('갤러리', { canCreatePage: true }).map((item) => item.id)).toContain(
+      'collection-gallery',
+    )
   })
 
   test('page item is capability-gated', () => {

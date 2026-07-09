@@ -1,5 +1,5 @@
 import type { SduiDocumentBlock } from '@lodado/sdui-document'
-import { CODE_BLOCK_TYPE, PAGE_BLOCK_TYPE, TOGGLE_BLOCK_TYPE } from '@lodado/sdui-document'
+import { CODE_BLOCK_TYPE, COLLECTION_BLOCK_TYPE, PAGE_BLOCK_TYPE, TOGGLE_BLOCK_TYPE } from '@lodado/sdui-document'
 import React from 'react'
 
 import type { ImageLayoutPatch } from '../editor/EditorRuntimeContext'
@@ -7,6 +7,7 @@ import { BulletedListBlock } from './bulleted-list/BulletedListBlock'
 import { CalloutBlock } from './callout/CalloutBlock'
 import { ChecklistBlock } from './checklist/ChecklistBlock'
 import { CodeBlock } from './code/CodeBlock'
+import { CollectionBlock } from './collection/CollectionBlock'
 import { DividerBlock } from './divider/DividerBlock'
 import { FileBlock } from './file/FileBlock'
 import { HeadingBlock } from './heading/HeadingBlock'
@@ -33,6 +34,8 @@ export type BlockChromeProps = {
   onSetCodeLanguage?(blockId: string, language: string): void
   /** Image size/position controls — omitted (readOnly) renders the image without controls. */
   onSetImageLayout?(blockId: string, layout: ImageLayoutPatch): void
+  /** Collection "+ New" — omitted (readOnly) hides the add-item button. */
+  onAddCollectionItem?(collectionId: string): void
   /** Inline content: static InlineContentView or the focused ProseMirror editor. */
   children?: React.ReactNode
 }
@@ -59,6 +62,7 @@ export const BlockChrome = ({
   onToggleCollapsed,
   onSetCodeLanguage,
   onSetImageLayout,
+  onAddCollectionItem,
   children,
 }: BlockChromeProps) => {
   switch (block.type) {
@@ -123,6 +127,9 @@ export const BlockChrome = ({
 
     case PAGE_BLOCK_TYPE:
       return <PageBlock block={block} />
+
+    case COLLECTION_BLOCK_TYPE:
+      return <CollectionBlock block={block} onAddItem={onAddCollectionItem} />
 
     case 'document.paragraph':
     default:

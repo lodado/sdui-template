@@ -1,6 +1,7 @@
 import type { SduiDocumentBlock } from '@lodado/sdui-document'
 import {
   CODE_BLOCK_TYPE,
+  COLLECTION_BLOCK_TYPE,
   COLUMN_BLOCK_TYPE,
   COLUMN_LIST_BLOCK_TYPE,
   resolveBlockAlign,
@@ -118,6 +119,8 @@ const BlockRow = ({ entry, depth, readOnly }: BlockViewProps) => {
 
   // toggle collapse hides children at render time only — they stay in the document
   const isToggle = block.type === TOGGLE_BLOCK_TYPE
+  // collection renders its page-item children itself (as cards/rows), not as block rows
+  const isCollection = block.type === COLLECTION_BLOCK_TYPE
   const documentCollapsed = block.attributes?.collapsed === true
   const [readCollapsed, setReadCollapsed] = React.useState(documentCollapsed)
 
@@ -237,6 +240,7 @@ const BlockRow = ({ entry, depth, readOnly }: BlockViewProps) => {
             onToggleCollapsed={onToggleCollapsed}
             onSetCodeLanguage={readOnly ? undefined : handlers.setCodeLanguage}
             onSetImageLayout={readOnly ? undefined : handlers.setImageLayout}
+            onAddCollectionItem={readOnly ? undefined : handlers.addCollectionItem}
           >
             {isTextBlock(block) &&
               (isFocused && focus ? (
@@ -270,7 +274,7 @@ const BlockRow = ({ entry, depth, readOnly }: BlockViewProps) => {
           </BlockChrome>
         </div>
       </div>
-      {childrenIds.length > 0 && !isCollapsedToggle ? (
+      {childrenIds.length > 0 && !isCollapsedToggle && !isCollection ? (
         // one visual indent level per tree level — same unit the drag depth
         // projection uses, so the drop indicator lines up with real indents
         <div data-block-nested data-nested-toggle={isToggle || undefined} style={{ paddingLeft: DRAG_INDENT_WIDTH }}>

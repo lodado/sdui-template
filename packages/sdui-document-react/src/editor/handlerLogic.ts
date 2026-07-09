@@ -16,6 +16,7 @@ import {
   anchorAfterBlock,
   anchorAppendToParent,
   anchorBeforeBlock,
+  COLLECTION_BLOCK_TYPE,
   createBlockId,
   createDefaultBlock,
   findBlockById,
@@ -73,6 +74,44 @@ export function collectDeletedPageDocumentIds(content: SduiDocumentContent, patc
     }
   })
   return ids
+}
+
+/**
+ * Insert a page block (item) as the last child of a collection. The target
+ * document must already exist (created by the host's onCreatePage) — this only
+ * builds the block.insert patch pointing at it. Returns null when the block is
+ * missing or is not a collection.
+ */
+export function computeAddCollectionItem(
+  content: SduiDocumentContent,
+  collectionId: string,
+  item: { documentId: string; title?: string },
+  nextBlockId: () => string,
+): HandlerDecision | null {
+  const collection = findBlockById(content, collectionId)
+  if (!collection || collection.type !== COLLECTION_BLOCK_TYPE) {
+    return null
+  }
+
+  const children = collection.children ?? []
+  const lastChildId = children.length > 0 ? children[children.length - 1].id : null
+  const itemId = nextBlockId()
+
+  return {
+    patches: [
+      {
+        type: 'block.insert',
+        parentId: createBlockId(collectionId),
+        after: lastChildId ? createBlockId(lastChildId) : null,
+        block: {
+          id: createBlockId(itemId),
+          type: PAGE_BLOCK_TYPE,
+          state: { text: item.title ?? 'Untitled' },
+          attributes: { documentId: item.documentId },
+        },
+      },
+    ],
+  }
 }
 
 /** Document-order text blocks (root excluded) — the caret navigation space. */
