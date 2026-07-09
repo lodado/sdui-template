@@ -1,5 +1,5 @@
 import type { SduiDocumentBlock } from '@lodado/sdui-document'
-import { CODE_BLOCK_TYPE, TOGGLE_BLOCK_TYPE } from '@lodado/sdui-document'
+import { CODE_BLOCK_TYPE, PAGE_BLOCK_TYPE, TOGGLE_BLOCK_TYPE } from '@lodado/sdui-document'
 import React from 'react'
 
 import type { ImageLayoutPatch } from '../editor/EditorRuntimeContext'
@@ -13,6 +13,7 @@ import { HeadingBlock } from './heading/HeadingBlock'
 import { ImageBlock } from './image/ImageBlock'
 import { LinkBlock } from './link/LinkBlock'
 import { NumberedListBlock } from './numbered-list/NumberedListBlock'
+import { PageBlock } from './page/PageBlock'
 import { ParagraphBlock } from './paragraph/ParagraphBlock'
 import { QuoteBlock } from './quote/QuoteBlock'
 import { TocBlock } from './toc/TocBlock'
@@ -119,6 +120,9 @@ export const BlockChrome = ({
 
     case 'document.link':
       return <LinkBlock block={block} />
+
+    case PAGE_BLOCK_TYPE:
+      return <PageBlock block={block} />
 
     case 'document.paragraph':
     default:

@@ -1722,3 +1722,158 @@ blockquote.quote-block {
   font-size: 0.95em;
   white-space: nowrap;
 }
+
+/* --- page block (sub-page reference) --- */
+.sdui-doc-page-block {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 4px;
+}
+.sdui-doc-page-block:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+.sdui-doc-page-open {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  font: inherit;
+  color: var(--sdui-text, #37352f);
+  cursor: pointer;
+  padding: 3px 4px;
+  text-align: left;
+}
+.sdui-doc-page-open .sdui-doc-page-title,
+.sdui-doc-page-block--inert .sdui-doc-page-title {
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: rgba(55, 53, 47, 0.25);
+  text-underline-offset: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sdui-doc-page-block--inert {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 4px;
+  color: var(--sdui-text-muted, #9b9a97);
+}
+.sdui-doc-page-peek {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--sdui-text-muted, #9b9a97);
+  border-radius: 4px;
+  padding: 2px 6px;
+  opacity: 0;
+  transition: opacity var(--duration-fast, 150ms) ease;
+}
+.sdui-doc-page-block:hover .sdui-doc-page-peek,
+.sdui-doc-page-peek:focus-visible {
+  opacity: 1;
+}
+.sdui-doc-page-peek:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+/* --- peek dialog --- */
+.sdui-doc-peek-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 15, 15, 0.6);
+  z-index: 40;
+}
+.sdui-doc-peek-content {
+  position: fixed;
+  top: 48px;
+  right: 48px;
+  bottom: 48px;
+  left: max(48px, calc(50% - 420px));
+  background: var(--sdui-bg, #ffffff);
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+  z-index: 41;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.sdui-doc-peek-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+.sdui-doc-peek-open-full,
+.sdui-doc-peek-close {
+  background: none;
+  border: none;
+  font: inherit;
+  color: var(--sdui-text-muted, #9b9a97);
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 4px 8px;
+}
+.sdui-doc-peek-open-full:hover,
+.sdui-doc-peek-close:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--sdui-text, #37352f);
+}
+.sdui-doc-peek-title {
+  margin: 0;
+  padding: 12px 48px 0;
+  font-size: 1.6em;
+  font-weight: 700;
+}
+.sdui-doc-peek-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 16px 48px;
+}
+.sdui-doc-peek-status {
+  color: var(--sdui-text-muted, #9b9a97);
+  padding: 16px 32px;
+}
+
+/* --- breadcrumbs --- */
+.sdui-doc-breadcrumbs ol {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.sdui-doc-breadcrumbs li {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: var(--sdui-text-muted, #9b9a97);
+}
+.sdui-doc-breadcrumbs li + li::before {
+  content: '/';
+  margin: 0 6px;
+  color: rgba(55, 53, 47, 0.3);
+}
+.sdui-doc-breadcrumbs button {
+  background: none;
+  border: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+.sdui-doc-breadcrumbs button:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--sdui-text, #37352f);
+}
+.sdui-doc-breadcrumbs [aria-current='page'] {
+  color: var(--sdui-text, #37352f);
+}

@@ -14,6 +14,7 @@ export {
   image,
   type ImageBuilderOptions,
   nextBlockId,
+  PAGE_BLOCK_TYPE,
   paragraph,
   type ParagraphBuilderOptions,
   resetBlockIds,
