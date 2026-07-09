@@ -26,4 +26,5 @@ export {
   useResolvedDocument,
   useSduiPage,
 } from '../page/SduiPageContext'
+export { documentViewerComponent } from '../sdui-node/DocumentViewerNode'
 export { SduiDocumentViewer, type SduiDocumentViewerProps } from './SduiDocumentViewer'
