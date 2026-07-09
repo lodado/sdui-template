@@ -5,6 +5,7 @@ import type { DocumentResolver, PageOpenMode, SduiDocumentNavigator, SduiPageCon
 import { SduiPageContext } from './SduiPageContext'
 import type { SduiPeekMode } from './SduiPeekDialog'
 import { SduiPeekDialog } from './SduiPeekDialog'
+import { usePeekUrlSync } from './usePeekUrlSync'
 
 export type SduiPageProviderProps = {
   resolver: DocumentResolver
@@ -17,6 +18,12 @@ export type SduiPageProviderProps = {
   peekReadOnly?: boolean
   /** Edits made inside the fallback peek — wire to the host repository to persist. */
   onPeekContentChange?(documentId: string, next: SduiDocumentContent): void
+  /**
+   * Sync the fallback peek id to this URL search param (e.g. 'peek') so a
+   * preview is shareable/deep-linkable and the back button closes it. Omit to
+   * disable. Ignored when the host provides its own `navigator.peek`.
+   */
+  peekUrlParam?: string
   children: React.ReactNode
 }
 
@@ -32,6 +39,7 @@ export const SduiPageProvider = ({
   peekMode = 'side',
   peekReadOnly = false,
   onPeekContentChange,
+  peekUrlParam,
   children,
 }: SduiPageProviderProps) => {
   const cacheRef = useRef(new Map<string, SduiDocument | 'missing'>())
@@ -98,6 +106,10 @@ export const SduiPageProvider = ({
     () => ({ resolve, peekCache, open, defaultOpenMode }),
     [resolve, peekCache, open, defaultOpenMode],
   )
+
+  // Only sync the built-in fallback peek; when the host owns peek, its router
+  // owns the URL. Hook is called unconditionally (param undefined = no-op).
+  usePeekUrlSync(navigator?.peek ? undefined : peekUrlParam, fallbackPeekId, setFallbackPeekId)
 
   return (
     <SduiPageContext.Provider value={value}>

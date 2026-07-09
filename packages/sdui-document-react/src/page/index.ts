@@ -10,3 +10,4 @@ export {
 } from './SduiPageContext'
 export { SduiPageProvider, type SduiPageProviderProps } from './SduiPageProvider'
 export { SduiPeekDialog, type SduiPeekDialogProps, type SduiPeekMode } from './SduiPeekDialog'
+export { usePeekUrlSync } from './usePeekUrlSync'

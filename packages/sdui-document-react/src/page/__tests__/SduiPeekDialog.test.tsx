@@ -100,7 +100,7 @@ describe('SduiPeekDialog', () => {
     expect(dialog.querySelector('[data-drag-handle]')).not.toBeNull()
   })
 
-  it('as is: readOnly — to be: no edit chrome inside the peek', async () => {
+  it('as is: readOnly — to be: the lightweight viewer, no edit chrome', async () => {
     const resolver = jest.fn(async (id: string) => (id === 'doc-a' ? makeDocument('doc-a', 'Project A') : undefined))
     render(
       <SduiPageProvider resolver={resolver as never}>
@@ -108,7 +108,11 @@ describe('SduiPeekDialog', () => {
       </SduiPageProvider>,
     )
     await waitFor(() => expect(screen.getByText('Project A body')).toBeInTheDocument())
-    expect(screen.getByRole('dialog').querySelector('[data-drag-handle]')).toBeNull()
+    const dialog = screen.getByRole('dialog')
+    // read-only peek renders SduiDocumentViewer (no ProseMirror instantiation)
+    expect(dialog.querySelector('[data-sdui-document-viewer]')).not.toBeNull()
+    expect(dialog.querySelector('[data-drag-handle]')).toBeNull()
+    expect(dialog.querySelector('[contenteditable="true"]')).toBeNull()
   })
 
   it('as is: mode="center" — to be: center peek (data-mode="center" on the dialog)', () => {

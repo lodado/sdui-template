@@ -204,3 +204,37 @@ export const Editable: StoryObj = {
     },
   },
 }
+
+/** Shareable read-only peek: the ⧉ action opens a lightweight viewer preview and mirrors its id to ?peek=… */
+const SharablePeekDemo = () => {
+  const vault = useMemo(makeVault, [])
+  const home = vault.get('home')!
+
+  return (
+    <SduiPageProvider
+      resolver={async (id) => vault.get(id)}
+      navigator={{ push: () => {} }}
+      peekReadOnly
+      peekUrlParam="peek"
+    >
+      <div style={{ maxWidth: 720, margin: '0 auto' }}>
+        <SduiDocumentEditor content={home.content} readOnly />
+      </div>
+    </SduiPageProvider>
+  )
+}
+
+export const SharablePeek: StoryObj = {
+  render: () => <SharablePeekDemo />,
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Hover a page block and press ⧉: the peek opens read-only through the lightweight `SduiDocumentViewer` ' +
+          '(no ProseMirror instantiated) and its id is written to the `?peek=` URL param — reload or share the URL ' +
+          'to reopen the same preview, and the browser back button closes it. Enabled via `peekReadOnly` + ' +
+          '`peekUrlParam` on `SduiPageProvider`.',
+      },
+    },
+  },
+}

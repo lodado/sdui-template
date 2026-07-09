@@ -3,6 +3,7 @@ import * as Dialog from '@radix-ui/react-dialog'
 import React from 'react'
 
 import { SduiDocumentEditor } from '../editor/SduiDocumentEditor'
+import { SduiDocumentViewer } from '../viewer/SduiDocumentViewer'
 import { useResolvedDocument, useSduiPage } from './SduiPageContext'
 
 export type SduiPeekMode = 'side' | 'center'
@@ -83,14 +84,21 @@ export const SduiPeekDialog = ({
             )}
             {resolved.status === 'missing' && <p className="sdui-doc-peek-status">Page not found.</p>}
             {resolved.status === 'error' && <p className="sdui-doc-peek-status">Failed to load this page.</p>}
-            {resolved.status === 'ready' && (
-              <SduiDocumentEditor
-                key={documentId}
-                content={resolved.document.content}
-                readOnly={readOnly}
-                onContentChange={onContentChange ? (next) => onContentChange(documentId, next) : undefined}
-              />
-            )}
+            {resolved.status === 'ready' &&
+              // A read-only peek is a preview: the lightweight viewer renders it
+              // without instantiating ProseMirror/dnd-kit. Embedded sdui blocks
+              // still render — SduiComponentsProvider flows through Radix's
+              // portal via React context. The full editor is used only for an
+              // editable peek.
+              (readOnly ? (
+                <SduiDocumentViewer key={documentId} content={resolved.document.content} />
+              ) : (
+                <SduiDocumentEditor
+                  key={documentId}
+                  content={resolved.document.content}
+                  onContentChange={onContentChange ? (next) => onContentChange(documentId, next) : undefined}
+                />
+              ))}
           </div>
         </Dialog.Content>
       </Dialog.Portal>
