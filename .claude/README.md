@@ -1,69 +1,264 @@
-# .claude/ Directory
+# Claude Code — SDUI Template
 
-This directory contains Claude Code configuration, commands, agents, and hooks.
+**Project-local AI workflow for `@lodado/sdui-template`: parallel review, Figma sync, learning loops, and quality guardrails.**
+
+Claude Code SDUI Server-Driven UI FSD TypeScript React
+
+[Quick start](#quick-start) · [Commands](#commands) · [Agents](#agents) · [Skills](#project-skills) · [Hooks](#hooks) · [Cursor rules](#cursor-rules-cursorrules)
+
+---
+
+This directory is the **Claude Code control plane** for the SDUI monorepo. It wires custom slash commands, review agents, project skills, automation hooks, and continuous-learning data so every session follows the same quality bar.
 
 ```
-  claude --dangerously-skip-permissions
+code → /review → 4-agent report
+     → /figma-sync → SDUI component update
+     → /learn → reusable skill
+     → hooks → format · typecheck · observe
 ```
 
-## Directory Structure
+### End-to-end example
+
+> **One `/review` run** → four parallel specialist reviews → integrated verdict with evidence.
+
+| **① trigger** `/review` | →   | **② parallel agents** PM · Arch · UX · DX | →   | **③ report** Verdict + P0–P3 issues |
+| ----------------------- | --- | ----------------------------------------- | --- | ----------------------------------- |
+
+#### ① Trigger — slash command
+
+Run from any Claude Code session in this repo:
+
+```
+/review
+```
+
+The orchestrator reads [commands/review.md](commands/review.md) and dispatches all four agents **without a fixed order**.
+
+#### ② Parallel agents — evidence-first review
+
+Each agent must cite **Evidence** (file, line, snippet) and **Reasoning** (impact). Guessing is forbidden — missing proof becomes `INSUFFICIENT EVIDENCE`.
+
+| Agent              | Focus                                |
+| ------------------ | ------------------------------------ |
+| `pm-spec-enforcer` | FR/NFR compliance against specs      |
+| `toxic-architect`  | Boundaries, abstraction, testability |
+| `ux-art-obsessed`  | Responsive 320–1440, a11y, contrast  |
+| `mz-dx-rager`      | API ergonomics, errors, local dev DX |
+
+#### ③ Integrated report — actionable verdict
+
+```
+## Verdict
+⚠️ CONDITIONAL
+
+## Issues
+- P1 — Missing aria-label on Dialog close button
+  Evidence: packages/sdui-template-component/.../Dialog.tsx:42
+  Reasoning: Screen reader users cannot dismiss the dialog
+```
+
+---
+
+## Table of Contents
+
+- [Why this exists](#why-this-exists)
+- [Directory structure](#directory-structure)
+- [Quick start](#quick-start)
+- [Commands](#commands)
+- [Agents](#agents)
+- [Project skills](#project-skills)
+- [Hooks](#hooks)
+- [Continuous learning](#continuous-learning-homunculus)
+- [Marketplace skills](#marketplace-skills-everything-claude-code)
+- [Cursor rules](#cursor-rules-cursorrules)
+
+---
+
+## Why this exists
+
+The SDUI monorepo spans a core library, a component package, Storybook docs, and example apps. Without project-local Claude config, every session would re-discover:
+
+- FSD layer boundaries and SDUI compound-component patterns
+- Review dimensions (spec, architecture, UX, DX) with evidence requirements
+- Figma → component sync and worktree-based PR isolation
+- Test conventions (`as is / when / to be`, EP/BVA sampling)
+
+`.claude/` centralizes those conventions so Claude Code starts every session with the right commands, agents, and skills already loaded.
+
+## Directory structure
 
 ```text
 .claude/
-├── commands/       # Custom slash commands
-├── agents/         # Custom review agents
-├── hooks/          # Automation hooks
-├── homunculus/     # Learning observation data
-├── settings.json   # Project settings & hooks config
-└── settings.local.json  # Local permissions (gitignored)
+├── commands/           # Custom slash commands
+│   ├── review.md       # 4-agent parallel code review
+│   ├── learn.md        # Extract patterns → skills/learned/
+│   ├── figma-sync.md   # Figma → SDUI component workflow
+│   ├── figma-pr.md     # Figma sync + worktree PR
+│   └── test.md         # Behavior-focused test shim
+├── agents/             # Specialist review & PR agents
+├── skills/             # Project skills (SDUI, FSD, learned patterns)
+├── hooks/              # Automation hook scripts
+│   ├── post-tool-use.js
+│   ├── stop.js
+│   └── modules/        # prettier, tsc, file-tracker, observe
+├── homunculus/         # Continuous learning observations
+├── scripts/            # PR task helpers
+├── settings.json       # Permissions & enabled plugins
+└── settings.local.json # Local overrides (gitignored)
 ```
 
 ---
 
-## Commands (`/command-name`)
+## Quick start
 
-| Command   | File                                     | Description                                                               |
-| --------- | ---------------------------------------- | ------------------------------------------------------------------------- |
-| `/review` | [commands/review.md](commands/review.md) | 4-agent parallel code review (PM + Arch + UX + DX) with integrated report |
-| `/learn`  | [commands/learn.md](commands/learn.md)   | Extract reusable patterns to `.claude/skills/learned/`                    |
+Open Claude Code in the repo root:
 
----
+```bash
+cd /path/to/sdui-template
+claude
+```
 
-## Agents (used by `/review`)
+Optional — skip permission prompts during local dev:
 
-| Agent              | File                                                     | Role                                                     |
-| ------------------ | -------------------------------------------------------- | -------------------------------------------------------- |
-| `pm-spec-enforcer` | [agents/pm-spec-enforcer.md](agents/pm-spec-enforcer.md) | Spec-based FR/NFR verification, requirements compliance  |
-| `toxic-architect`  | [agents/toxic-architect.md](agents/toxic-architect.md)   | Boundaries/abstraction/type contracts/testability review |
-| `ux-art-obsessed`  | [agents/ux-art-obsessed.md](agents/ux-art-obsessed.md)   | Responsive(320~1440)/accessibility/color contrast/UX     |
-| `mz-dx-rager`      | [agents/mz-dx-rager.md](agents/mz-dx-rager.md)           | API usability/consistency/error messages/docs/local dev  |
+```bash
+claude --dangerously-skip-permissions
+```
 
----
+### Common workflows
 
-## Hooks (Auto-executed)
+| Goal                                      | Command                                    |
+| ----------------------------------------- | ------------------------------------------ |
+| Full parallel code review                 | `/review`                                  |
+| Save a reusable pattern from this session | `/learn`                                   |
+| Sync Figma design → SDUI component        | `/figma-sync <figma-url> <component-name>` |
+| Figma sync + isolated worktree PR         | `/figma-pr <figma-url> <component-name>`   |
+| Behavior-focused tests                    | `/test [path]`                             |
+| Check learned instincts                   | `/everything-claude-code:instinct-status`  |
+| TDD workflow                              | `/everything-claude-code:tdd`              |
 
-Configured in [settings.json](settings.json):
+After code changes, always run from the monorepo root:
 
-| Trigger      | Matcher                | Description                         |
-| ------------ | ---------------------- | ----------------------------------- |
-| PreToolUse   | `*`                    | Observation logging (observe.sh)    |
-| PreToolUse   | `git push`             | Reminder before push                |
-| PreToolUse   | `Edit \| Write`        | Suggest manual compaction           |
-| PostToolUse  | `*`                    | Observation logging                 |
-| PostToolUse  | `gh pr create`         | Log PR URL with review command      |
-| PostToolUse  | `Edit *.ts/tsx/js/jsx` | Auto-format with Prettier           |
-| PostToolUse  | `Edit *.ts/tsx`        | TypeScript check                    |
-| PostToolUse  | `Edit *.ts/tsx/js/jsx` | Warn about console.log              |
-| PostToolUse  | `Edit *.ts/tsx/js/jsx` | Run tests (30s debounce)            |
-| SessionStart | `*`                    | Load previous context               |
-| SessionEnd   | `*`                    | Persist session state               |
-| Stop         | `*`                    | Check console.log in modified files |
+```bash
+pnpm run test
+```
 
 ---
 
-## Marketplace Skills (everything-claude-code)
+## Commands
 
-### Planning & Architecture
+| Command       | File                                             | Description                                                          |
+| ------------- | ------------------------------------------------ | -------------------------------------------------------------------- |
+| `/review`     | [commands/review.md](commands/review.md)         | 4-agent parallel review (PM + Arch + UX + DX) with integrated report |
+| `/learn`      | [commands/learn.md](commands/learn.md)           | Extract reusable patterns to `skills/learned/`                       |
+| `/figma-sync` | [commands/figma-sync.md](commands/figma-sync.md) | Figma design → SDUI component (Analysis → Plan → Implement → Verify) |
+| `/figma-pr`   | [commands/figma-pr.md](commands/figma-pr.md)     | Figma sync + worktree-isolated PR workflow                           |
+| `/test`       | [commands/test.md](commands/test.md)             | Behavior-focused, a11y-aware tests (Playwright recommended)          |
+
+---
+
+## Agents
+
+### Review agents (used by `/review`)
+
+| Agent              | File                                                     | Role                                                  |
+| ------------------ | -------------------------------------------------------- | ----------------------------------------------------- |
+| `pm-spec-enforcer` | [agents/pm-spec-enforcer.md](agents/pm-spec-enforcer.md) | Spec-based FR/NFR verification                        |
+| `toxic-architect`  | [agents/toxic-architect.md](agents/toxic-architect.md)   | Boundaries, abstraction, type contracts, testability  |
+| `ux-art-obsessed`  | [agents/ux-art-obsessed.md](agents/ux-art-obsessed.md)   | Responsive (320–1440), accessibility, color contrast  |
+| `mz-dx-rager`      | [agents/mz-dx-rager.md](agents/mz-dx-rager.md)           | API usability, consistency, error messages, local dev |
+
+### PR workflow agents
+
+| Agent             | File                                                   | Role                             |
+| ----------------- | ------------------------------------------------------ | -------------------------------- |
+| `pr-orchestrator` | [agents/pr-orchestrator.md](agents/pr-orchestrator.md) | Worktree setup → delegate → push |
+| `pr-implementer`  | [agents/pr-implementer.md](agents/pr-implementer.md)   | Isolated worktree implementation |
+
+---
+
+## Project skills
+
+Auto-applied or invoked skills specific to this monorepo:
+
+| Skill              | File                                                                 | Description                                             |
+| ------------------ | -------------------------------------------------------------------- | ------------------------------------------------------- |
+| `sduiArchitecture` | [skills/sduiArchitecture/SKILL.md](skills/sduiArchitecture/SKILL.md) | Compound components in SDUI (Context + node references) |
+| `sduiComponents`   | [skills/sduiComponents/SKILL.md](skills/sduiComponents/SKILL.md)     | SDUI component implementation patterns                  |
+| `sduiFormat`       | [skills/sduiFormat/SKILL.md](skills/sduiFormat/SKILL.md)             | SDUI document/node schema conventions                   |
+| `FSD`              | [skills/FSD/SKILL.md](skills/FSD/SKILL.md)                           | Feature-Sliced Design layer placement                   |
+
+### Learned patterns (`skills/learned/`)
+
+Session-extracted patterns from `/learn`:
+
+| File                                                                                                          | Topic                            |
+| ------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| [sdui-template-patterns.md](skills/learned/sdui-template-patterns.md)                                         | Core library patterns            |
+| [fsd-shared-slice-organization.md](skills/learned/fsd-shared-slice-organization.md)                           | Shared slice utils & hooks       |
+| [component-library-reference-skill-template.md](skills/learned/component-library-reference-skill-template.md) | Component library skill template |
+
+---
+
+## Hooks
+
+Hook scripts live in [hooks/](hooks/). Wire them in [settings.json](settings.json) under the `hooks` key when you want automation.
+
+| Script                        | Trigger         | What it does                                          |
+| ----------------------------- | --------------- | ----------------------------------------------------- |
+| `post-tool-use.js`            | PostToolUse     | Log observations, track edited JS/TS files            |
+| `stop.js`                     | Stop            | Prettier format + TypeScript check on edited files    |
+| `modules/prettier-format.js`  | —               | Auto-format `*.{ts,tsx,js,jsx}`                       |
+| `modules/typescript-check.js` | —               | Run `tsc` on edited TypeScript files                  |
+| `modules/observe.js`          | Pre/PostToolUse | Append tool events to `homunculus/observations.jsonl` |
+| `modules/file-tracker.js`     | —               | Track files edited in the current session             |
+
+Example `settings.json` wiring:
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [{ "type": "command", "command": "node .claude/hooks/post-tool-use.js" }]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [{ "type": "command", "command": "node .claude/hooks/stop.js" }]
+      }
+    ]
+  }
+}
+```
+
+---
+
+## Continuous learning (`homunculus/`)
+
+Local observation and instinct system. See [homunculus/README.md](homunculus/README.md) for full details.
+
+| Stage   | What happens                                                          |
+| ------- | --------------------------------------------------------------------- |
+| Observe | Tool usage logged to `observations.jsonl`                             |
+| Detect  | Repeated patterns surface as instincts                                |
+| Evolve  | `/everything-claude-code:evolve` promotes instincts → skills/commands |
+
+| Command                                   | Description                           |
+| ----------------------------------------- | ------------------------------------- |
+| `/everything-claude-code:instinct-status` | View learned instincts                |
+| `/everything-claude-code:evolve`          | Evolve instincts into skills/commands |
+| `/everything-claude-code:instinct-export` | Export instincts for sharing          |
+| `/everything-claude-code:instinct-import` | Import external instincts             |
+
+---
+
+## Marketplace skills (`everything-claude-code`)
+
+Enabled via [settings.json](settings.json) → `enabledPlugins`.
+
+### Planning & architecture
 
 | Skill                            | Description                                              |
 | -------------------------------- | -------------------------------------------------------- |
@@ -77,7 +272,7 @@ Configured in [settings.json](settings.json):
 | `/everything-claude-code:tdd` | TDD workflow (test first, 80%+ coverage) |
 | `/everything-claude-code:e2e` | Playwright E2E test generation/execution |
 
-### Code Quality
+### Code quality
 
 | Skill                                     | Description                    |
 | ----------------------------------------- | ------------------------------ |
@@ -86,7 +281,7 @@ Configured in [settings.json](settings.json):
 | `/everything-claude-code:go-build`        | Go build error resolution      |
 | `/everything-claude-code:go-test`         | Go TDD workflow                |
 
-### Pattern Skills (Auto-applied)
+### Pattern skills (auto-applied)
 
 | Skill               | Description                            |
 | ------------------- | -------------------------------------- |
@@ -96,41 +291,55 @@ Configured in [settings.json](settings.json):
 | `coding-standards`  | TypeScript/JavaScript/React standards  |
 | `golang-patterns`   | Idiomatic Go patterns                  |
 
-### Learning & Instincts
+### Other plugins
 
-| Skill                                     | Description                       |
-| ----------------------------------------- | --------------------------------- |
-| `/everything-claude-code:instinct-status` | View learned instincts            |
-| `/everything-claude-code:instinct-export` | Export instincts for sharing      |
-| `/everything-claude-code:instinct-import` | Import external instincts         |
-| `/everything-claude-code:skill-create`    | Extract patterns from git history |
-
-### Other
-
-| Skill                              | Description                         |
-| ---------------------------------- | ----------------------------------- |
-| `/frontend-design:frontend-design` | High-quality frontend UI generation |
-| `/keybindings-help`                | Keyboard shortcut customization     |
+| Plugin            | Skill                              | Description                             |
+| ----------------- | ---------------------------------- | --------------------------------------- |
+| `frontend-design` | `/frontend-design:frontend-design` | High-quality frontend UI generation     |
+| `figma`           | MCP tools                          | Figma design context & screenshots      |
+| `playwright`      | —                                  | Playwright test tooling                 |
+| `superpowers`     | —                                  | Extended planning & execution workflows |
+| `context7`        | —                                  | Up-to-date library documentation        |
+| `github`          | —                                  | GitHub PR/issue integration             |
 
 ---
 
-## Cursor Rules (`.cursor/rules/`)
+## Cursor rules (`.cursor/rules/`)
 
-> ⚠️ These are for **Cursor IDE only**, not Claude Code.
+> These rules apply to **Cursor IDE** sessions. To use the same policies in Claude Code, convert them to commands or skills under `.claude/`.
 
-| Rule                  | Apply  | Description                              |
-| --------------------- | ------ | ---------------------------------------- |
-| `modular-abstraction` | Always | Side effect isolation, Strategy pattern  |
-| `coupling`            | Always | Single responsibility, no props drilling |
-| `cohesion`            | Always | Group by change unit                     |
-| `readability`         | Always | Top-to-bottom flow, reduce context       |
-| `predictability`      | Always | Unified returns, explicit deps           |
-| `accessibility`       | Always | WCAG compliance, keyboard navigation     |
-| `screen-reader`       | Always | alt text, ARIA attributes                |
-| `xss`                 | Always | XSS defense (JSX escape, CSP)            |
-| `doc-and-testing`     | Manual | JSDoc, Scenario-first tests              |
-| `font`                | Manual | Spoqa Han Sans Neo typography            |
-| `PR-rules`            | Manual | PR template                              |
-| `refactoring-guide`   | Manual | SOLID/Clean Code refactoring             |
+| Rule                   | Apply  | Description                              |
+| ---------------------- | ------ | ---------------------------------------- |
+| `modular-abstraction`  | Always | Side effect isolation, Strategy pattern  |
+| `coupling`             | Always | Single responsibility, no props drilling |
+| `cohesion`             | Always | Group by change unit                     |
+| `readability`          | Always | Top-to-bottom flow, reduce context       |
+| `predictability`       | Always | Unified returns, explicit deps           |
+| `accessibility`        | Always | WCAG compliance, keyboard navigation     |
+| `screen-reader`        | Always | alt text, ARIA attributes                |
+| `xss`                  | Always | XSS defense (JSX escape, CSP)            |
+| `fsd-architecture`     | Always | Feature-Sliced Design layer rules        |
+| `doc-and-testing`      | Manual | JSDoc, scenario-first tests              |
+| `font`                 | Manual | Spoqa Han Sans Neo typography            |
+| `PR-rules`             | Manual | PR template                              |
+| `refactoring-guide`    | Manual | SOLID/Clean Code refactoring             |
+| `worktree-pr-workflow` | Manual | Worktree-based PR isolation              |
 
-To use these in Claude Code, convert them to commands in `.claude/commands/`.
+---
+
+## Recommended workflow
+
+| Stage         | Check                          | Tool                         |
+| ------------- | ------------------------------ | ---------------------------- |
+| Feature work  | Implement with SDUI/FSD skills | Claude Code + project skills |
+| Before PR     | Parallel 4-agent review        | `/review`                    |
+| Design sync   | Figma → component update       | `/figma-sync` or `/figma-pr` |
+| After changes | Unit tests pass                | `pnpm run test`              |
+| Session end   | Capture reusable patterns      | `/learn`                     |
+
+```
+Project skills = domain conventions
+/review         = evidence-based quality gate
+Hooks           = format + typecheck automation
+/learn          = compounding knowledge
+```

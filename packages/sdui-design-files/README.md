@@ -1,6 +1,59 @@
 # @lodado/sdui-design-files
 
-Design system files for SDUI template - CSS variables, colors, and design tokens extracted from Jira Design System (Atlassian Design System).
+**Design tokens and CSS variables for the SDUI template — extracted from the Atlassian Design System (Jira).**
+
+Design System CSS Variables Design Tokens Figma Atlassian SDUI
+
+[Quick start](#quick-start) · [CSS variables](#css-variables) · [TypeScript tokens](#typescript-tokens) · [Color scales](#color-scales) · [Development](#development)
+
+---
+
+This package ships the visual foundation for SDUI components: CSS custom properties, layout tokens, and generated TypeScript token maps. Import once, use everywhere via `var(--token-name)`.
+
+```
+Figma / ADS source → design tokens → CSS variables + TS exports
+```
+
+### End-to-end example
+
+| **① import CSS** | →   | **② use variables** | →   | **③ consistent UI** |
+| ---------------- | --- | ------------------- | --- | ------------------- |
+
+```tsx
+// app/layout.tsx
+import '@lodado/sdui-design-files/index.css'
+```
+
+```css
+.my-card {
+  background: var(--color-background-neutral-default);
+  color: var(--color-text-default);
+  border: 1px solid var(--neutral-opaque-neutral300);
+  border-radius: var(--radius-medium);
+}
+```
+
+---
+
+## Table of Contents
+
+- [Why this exists](#why-this-exists)
+- [Installation](#installation)
+- [Quick start](#quick-start)
+- [CSS variables](#css-variables)
+- [TypeScript tokens](#typescript-tokens)
+- [Color scales](#color-scales)
+- [Development](#development)
+
+---
+
+## Why this exists
+
+SDUI components need a shared visual language. Hard-coding colors in each component creates drift between Storybook, SSR tests, and production apps. This package centralizes:
+
+- Semantic and primitive color tokens
+- Layout spacing and radius tokens
+- Vanilla Extract theme exports for type-safe styling
 
 ## Installation
 
@@ -8,75 +61,113 @@ Design system files for SDUI template - CSS variables, colors, and design tokens
 pnpm add @lodado/sdui-design-files
 ```
 
-## Usage
+---
 
-### Import CSS Variables
+## Quick start
+
+### CSS import (recommended)
 
 ```tsx
-// Import the CSS file to use design system variables
 import '@lodado/sdui-design-files/index.css'
-// or
+// or granular:
 import '@lodado/sdui-design-files/colors.css'
+import '@lodado/sdui-design-files/layout.css'
 ```
 
-### Use CSS Variables
+### Use in stylesheets
 
 ```css
-.my-component {
-  background-color: var(--color-blue-500);
-  color: var(--color-white);
-  border: 1px solid var(--color-gray-200);
+.button-primary {
+  background-color: var(--blue-blue700);
+  color: var(--color-text-inverse);
 }
 ```
 
-## Available Colors
+---
 
-### Black & White
+## CSS variables
 
-- `--color-black`: #000000 (not directly defined, use semantic tokens)
-- `--color-white`: #ffffff (via `--color-text-inverse` or `--color-background-input-default`)
+| Export path                            | Contents                         |
+| -------------------------------------- | -------------------------------- |
+| `@lodado/sdui-design-files/index.css`  | Full token set (colors + layout) |
+| `@lodado/sdui-design-files/colors.css` | Color tokens only                |
+| `@lodado/sdui-design-files/layout.css` | Spacing, radius, layout tokens   |
 
-### Gray Scale (Neutral Colors)
+Tokens follow Atlassian Design System naming:
 
-- `--color-gray-0`: #ffffff (via `--neutral-opaque-neutral0`)
-- `--color-gray-100`: #f8f8f8 (via `--neutral-opaque-neutral100`)
-- `--color-gray-200`: #f0f1f2 (via `--neutral-opaque-neutral200`)
-- `--color-gray-300`: #dddee1 (via `--neutral-opaque-neutral300`)
-- `--color-gray-400`: #b7b9be (via `--neutral-opaque-neutral400`)
-- `--color-gray-500`: #8c8f97 (via `--neutral-opaque-neutral500`)
-- `--color-gray-600`: #7d818a (via `--neutral-opaque-neutral600`)
-- `--color-gray-700`: #6b6e76 (via `--neutral-opaque-neutral700`)
-- `--color-gray-800`: #505258 (via `--neutral-opaque-neutral800`)
-- `--color-gray-900`: #3b3d42 (via `--neutral-opaque-neutral900`)
-- `--color-gray-1000`: #292a2e (via `--neutral-opaque-neutral1000`)
+- `--blue-blue500`, `--red-red600` — primitive scales
+- `--neutral-opaque-neutral300` — neutral grays
+- `--color-text-default`, `--color-background-input-default` — semantic aliases
 
-### Blue Scale (Primary Brand Colors)
+---
 
-- `--color-blue-100`: #e9f2fe (via `--blue-blue100`)
-- `--color-blue-200`: #cfe1fd (via `--blue-blue200`)
-- `--color-blue-300`: #8fb8f6 (via `--blue-blue300`)
-- `--color-blue-400`: #669df1 (via `--blue-blue400`)
-- `--color-blue-500`: #4688ec (via `--blue-blue500`)
-- `--color-blue-600`: #357de8 (via `--blue-blue600`)
-- `--color-blue-700`: #1868db (via `--blue-blue700`)
-- `--color-blue-800`: #1558bc (via `--blue-blue800`)
-- `--color-blue-900`: #123263 (via `--blue-blue900`)
+## TypeScript tokens
 
-### Red Scale
+For programmatic access (Vanilla Extract, runtime theming):
 
-- `--color-red-100`: #ffeceb (via `--red-red100`)
-- `--color-red-200`: #ffd5d2 (via `--red-red200`)
-- `--color-red-300`: #fd9891 (via `--red-red300`)
-- `--color-red-400`: #f87168 (via `--red-red400`)
-- `--color-red-500`: #f15b50 (via `--red-red500`)
-- `--color-red-600`: #e2483d (via `--red-red600`)
-- `--color-red-700`: #c9372c (via `--red-red700`)
-- `--color-red-800`: #ae2e24 (via `--red-red800`)
-- `--color-red-900`: #5d1f1a (via `--red-red900`)
+```ts
+import { tokens } from '@lodado/sdui-design-files/tokens'
+import { theme } from '@lodado/sdui-design-files/theme'
+```
+
+| Export     | Description                    |
+| ---------- | ------------------------------ |
+| `./tokens` | Generated token object         |
+| `./theme`  | Vanilla Extract theme contract |
+
+---
+
+## Color scales
+
+### Gray (neutral)
+
+| Token               | Hex       | ADS reference                  |
+| ------------------- | --------- | ------------------------------ |
+| `--color-gray-0`    | `#ffffff` | `--neutral-opaque-neutral0`    |
+| `--color-gray-100`  | `#f8f8f8` | `--neutral-opaque-neutral100`  |
+| `--color-gray-200`  | `#f0f1f2` | `--neutral-opaque-neutral200`  |
+| `--color-gray-300`  | `#dddee1` | `--neutral-opaque-neutral300`  |
+| `--color-gray-500`  | `#8c8f97` | `--neutral-opaque-neutral500`  |
+| `--color-gray-700`  | `#6b6e76` | `--neutral-opaque-neutral700`  |
+| `--color-gray-900`  | `#3b3d42` | `--neutral-opaque-neutral900`  |
+| `--color-gray-1000` | `#292a2e` | `--neutral-opaque-neutral1000` |
+
+### Blue (primary brand)
+
+| Token              | Hex       | ADS reference    |
+| ------------------ | --------- | ---------------- |
+| `--color-blue-100` | `#e9f2fe` | `--blue-blue100` |
+| `--color-blue-300` | `#8fb8f6` | `--blue-blue300` |
+| `--color-blue-500` | `#4688ec` | `--blue-blue500` |
+| `--color-blue-700` | `#1868db` | `--blue-blue700` |
+| `--color-blue-900` | `#123263` | `--blue-blue900` |
+
+### Red (danger)
+
+| Token             | Hex       | ADS reference  |
+| ----------------- | --------- | -------------- |
+| `--color-red-100` | `#ffeceb` | `--red-red100` |
+| `--color-red-500` | `#f15b50` | `--red-red500` |
+| `--color-red-700` | `#c9372c` | `--red-red700` |
+| `--color-red-900` | `#5d1f1a` | `--red-red900` |
+
+> Full scales are defined in `colors.css`. Semantic tokens (`--color-text-*`, `--color-background-*`) are preferred over raw primitives in component code.
+
+---
+
+## Development
+
+```bash
+pnpm --filter @lodado/sdui-design-files build
+pnpm --filter @lodado/sdui-design-files lint
+pnpm --filter @lodado/sdui-design-files generate:tokens  # regenerate from source
+```
+
+---
 
 ## Source
 
-Colors are extracted from the Atlassian Design System (Jira Design System).
+Colors and tokens are extracted from the [Atlassian Design System](https://atlassian.design/) (Jira Design System).
 
 ## License
 

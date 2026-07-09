@@ -1,34 +1,23 @@
 # @lodado/sdui-document-react
 
-React bindings for `@lodado/sdui-document`: a hybrid Notion-like block editor that combines block-level React rendering with focused-block ProseMirror inline editing.
+**Hybrid Notion-like block editor for React — block-level rendering with focused-block ProseMirror inline editing.**
 
-`@lodado/sdui-document` owns the document domain: block schema, tree operations, patches, markdown conversion, search, storage contracts, and SDUI mapping. `@lodado/sdui-document-react` turns that domain into an editor UI.
+React ProseMirror Block Editor SDUI Document Notion-like
 
-## What it is
+[Quick start](#quick-start) · [Architecture](#architecture) · [Editor API](#sduidocumenteditor) · [Blocks & marks](#blocks--marks) · [Development](#development)
 
-This package is not the same layer as `@lodado/sdui-template`.
+---
 
-- `@lodado/sdui-template`: renders an SDUI layout document into registered React components.
-- `@lodado/sdui-document`: models a block document and its operations.
-- `@lodado/sdui-document-react`: provides React editor components for that block document.
+`@lodado/sdui-document` owns document meaning (schema, patches, tree ops). This package turns that domain into an interactive editor UI: drag-and-drop blocks, keyboard shortcuts, inline marks, and patch-based change reporting.
 
-Think of it as the editing surface for document-like content: paragraphs, headings, checklists, callouts, dividers, images, files, and links.
-
-## Installation
-
-```bash
-pnpm add @lodado/sdui-document-react @lodado/sdui-document react react-dom
-# or
-npm install @lodado/sdui-document-react @lodado/sdui-document react react-dom
+```
+SduiDocumentContent → SduiDocumentEditor → onContentChange(next, patches)
 ```
 
-The package imports its editor CSS from the public entrypoint. If your bundler does not load package CSS automatically, import it explicitly:
+### End-to-end example
 
-```tsx
-import '@lodado/sdui-document-react/src/styles/editor.css'
-```
-
-## Quick start
+| **① content** `SduiDocumentContent` | →   | **② editor** `SduiDocumentEditor` | →   | **③ patches** autosave / persist |
+| ----------------------------------- | --- | --------------------------------- | --- | -------------------------------- |
 
 ```tsx
 'use client'
@@ -46,9 +35,7 @@ const initialContent: SduiDocumentContent = {
       {
         id: 'intro',
         type: 'document.paragraph',
-        state: {
-          content: [{ text: 'Hello document editor' }],
-        },
+        state: { content: [{ text: 'Hello document editor' }] },
       },
     ],
   },
@@ -69,25 +56,89 @@ export default function DocumentPage() {
 }
 ```
 
-## Main philosophy
+---
 
-### 1. Block structure and inline editing are separate
+## Table of Contents
 
-The document is a tree of blocks. React owns block chrome, drag handles, block selection, and block type UI. ProseMirror is only mounted for the currently focused text block.
+- [Why this exists](#why-this-exists)
+- [Layer comparison](#layer-comparison)
+- [Installation](#installation)
+- [Quick start](#quick-start)
+- [Philosophy](#philosophy)
+- [Architecture](#architecture)
+- [SduiDocumentEditor](#sduidocumenteditor)
+- [Blocks & marks](#blocks--marks)
+- [Interactions](#interactions)
+- [Exports](#exports)
+- [Development](#development)
 
-That means normal rendering stays simple, while rich inline editing still gets mature editor behavior such as marks, keyboard handling, paste handling, and selection tracking.
+---
 
-### 2. Edits are patch-based
+## Why this exists
 
-The editor reports changes through `onContentChange(next, patches)`. Consumers can persist the full `next` content, or use patches for autosave, collaboration, audit logs, or undo/redo integration.
+Block documents need a React editing surface, but bolting ProseMirror onto the entire tree is heavy and brittle. This package splits concerns:
 
-### 3. The domain remains headless
+- **React** owns block chrome, drag handles, selection, and block type UI
+- **ProseMirror** mounts only on the **focused text block** for inline editing
+- **Patches** express all edits — ready for autosave, undo, or collaboration adapters
 
-Document rules live in `@lodado/sdui-document`; React UI lives here. This keeps tree transforms, block schemas, markdown import, and patch application testable without React.
+## Layer comparison
 
-### 4. Read mode and edit mode share the same document model
+| Package                       | Responsibility                                            |
+| ----------------------------- | --------------------------------------------------------- |
+| `@lodado/sdui-template`       | Renders SDUI layout JSON into registered React components |
+| `@lodado/sdui-document`       | Block schema, patches, tree ops, markdown, permissions    |
+| `@lodado/sdui-document-react` | **This package** — React editor UI for block documents    |
 
-`readOnly` disables editing affordances while still rendering the same block content. The same persisted document can power editor screens and read-only previews.
+Use both document packages when your product has a block editor that maps content into SDUI layouts or read-only previews.
+
+---
+
+## Installation
+
+```bash
+pnpm add @lodado/sdui-document-react @lodado/sdui-document react react-dom
+```
+
+Import editor CSS (bundlers may not auto-load package CSS):
+
+```tsx
+import '@lodado/sdui-document-react/src/styles/editor.css'
+```
+
+---
+
+## Quick start
+
+See the [end-to-end example](#end-to-end-example) above.
+
+Read-only preview:
+
+```tsx
+<SduiDocumentEditor content={content} readOnly />
+```
+
+---
+
+## Philosophy
+
+### 1. Block structure ≠ inline editing
+
+The document is a tree of blocks. React handles block-level UI; ProseMirror handles only the focused text block — marks, keyboard, paste, and selection.
+
+### 2. Patch-based edits
+
+`onContentChange(next, patches)` lets consumers persist full content or individual patches for autosave, audit logs, or undo/redo.
+
+### 3. Domain stays headless
+
+Tree transforms, schema validation, and patch application live in `@lodado/sdui-document` — testable without React.
+
+### 4. Shared document model for read and edit
+
+`readOnly` disables editing affordances while rendering the same block content. One persisted document powers editor and preview screens.
+
+---
 
 ## Architecture
 
@@ -102,25 +153,20 @@ Document rules live in `@lodado/sdui-document`; React UI lives here. This keeps 
 @lodado/sdui-document-react
   ├─ SduiDocumentEditor
   │   ├─ block tree rendering
-  │   ├─ block selection
-  │   ├─ drag and drop via dnd-kit
+  │   ├─ block selection + dnd-kit drag/drop
   │   ├─ patch publishing
-  │   └─ readOnly/edit mode switching
+  │   └─ readOnly / edit mode
   ├─ BlockChrome
-  │   ├─ paragraph / heading / checklist
-  │   ├─ callout / divider
-  │   └─ image / file / link
+  │   └─ paragraph / heading / checklist / callout / divider / image / file / link
   ├─ FocusedBlockEditor
-  │   ├─ ProseMirror editor state
-  │   ├─ keymap delegation
-  │   ├─ input rules
-  │   ├─ paste handling
-  │   └─ selection toolbar bridge
+  │   └─ ProseMirror state, keymap, input rules, paste, toolbar bridge
   ├─ InlineContentView
   └─ MARK_DEFINITIONS
 ```
 
-## `SduiDocumentEditor`
+---
+
+## SduiDocumentEditor
 
 ```tsx
 <SduiDocumentEditor
@@ -133,96 +179,81 @@ Document rules live in `@lodado/sdui-document`; React UI lives here. This keeps 
 />
 ```
 
-Props:
+| Prop              | Type                              | Description                    |
+| ----------------- | --------------------------------- | ------------------------------ |
+| `content`         | `SduiDocumentContent`             | Current document content       |
+| `onContentChange` | `(next, patches) => void`         | Called after editor changes    |
+| `onTurnInto`      | `(blockId, type, attrs?) => void` | Block type conversion callback |
+| `readOnly`        | `boolean`                         | Disable editing controls       |
+| `generateBlockId` | `() => string`                    | Custom block ID generator      |
+| `className`       | `string`                          | Root class name                |
 
-| Prop              | Type                              | Description                                                           |
-| ----------------- | --------------------------------- | --------------------------------------------------------------------- |
-| `content`         | `SduiDocumentContent`             | Current document content.                                             |
-| `onContentChange` | `(next, patches) => void`         | Called after editor changes are applied.                              |
-| `onTurnInto`      | `(blockId, type, attrs?) => void` | Optional callback for block type conversion flows.                    |
-| `readOnly`        | `boolean`                         | Renders content without editing controls.                             |
-| `generateBlockId` | `() => string`                    | Custom block id generator. Useful when ids must be server-compatible. |
-| `className`       | `string`                          | Class name for the editor root.                                       |
+---
 
-## Block rendering
+## Blocks & marks
 
-`BlockChrome` maps document block types to React wrappers:
+### Block types (`BlockChrome`)
 
-- `document.paragraph`
-- `document.heading`
-- `document.checklist`
-- `document.callout`
-- `document.divider`
-- `document.image`
-- `document.file`
-- `document.link`
+| Type                 | Description          |
+| -------------------- | -------------------- |
+| `document.paragraph` | Body text            |
+| `document.heading`   | Heading (levels 1–3) |
+| `document.checklist` | Checkbox item        |
+| `document.callout`   | Highlighted callout  |
+| `document.divider`   | Horizontal rule      |
+| `document.image`     | Image block          |
+| `document.file`      | File attachment      |
+| `document.link`      | Document link        |
 
-Text-like blocks render static inline content until focused. Once focused, the editor swaps in `FocusedBlockEditor` for ProseMirror-powered editing.
+Text blocks render static inline content until focused, then swap in `FocusedBlockEditor`.
 
-## Inline content and marks
+### Inline marks (`MARK_DEFINITIONS`)
 
-Inline text is rendered through `InlineContentView`. The package exports mark definitions for:
+| Mark                                   | Description          |
+| -------------------------------------- | -------------------- |
+| bold, italic, underline, strikethrough | Text styling         |
+| code                                   | Inline code          |
+| link                                   | Hyperlink            |
+| highlight                              | Background highlight |
 
-- bold
-- italic
-- underline
-- strikethrough
-- code
-- link
-- highlight
+---
 
-The focused editor uses these definitions to keep the ProseMirror representation aligned with the document model.
+## Interactions
 
-## Drag, selection, and keyboard behavior
+| Feature               | Implementation                                   |
+| --------------------- | ------------------------------------------------ |
+| Block drag & drop     | `@dnd-kit/core` with nested projection           |
+| Block range selection | Editor-layer selection state                     |
+| Keyboard shortcuts    | Split, merge, indent, outdent, navigation        |
+| Selection toolbar     | Inline marks and link editing                    |
+| Patch output          | Semantic patches only — no DOM leakage to domain |
 
-The editor includes:
-
-- block drag handles via `@dnd-kit/core`
-- nested block drag/drop projection
-- block range selection
-- focused block keyboard delegation
-- split, merge backward, indent, outdent, and navigation hooks
-- selection toolbar for inline marks and links
-
-These behaviors are intentionally concentrated in the editor layer. The document package only receives semantic patches.
-
-## Read-only rendering
-
-```tsx
-<SduiDocumentEditor content={content} readOnly />
-```
-
-Use `readOnly` for previews, published pages, or review screens. Editing controls, drag handles, focused ProseMirror editing, and patch-producing interactions are disabled.
+---
 
 ## Exports
-
-The package exports:
 
 - `SduiDocumentEditor`
 - `BlockChrome`
 - `FocusedBlockEditor`
 - ProseMirror helpers from `focused-block/pm/*`
 - `InlineContentView`
-- mark definitions via `MARK_DEFINITIONS`
-- selection toolbar utilities
+- `MARK_DEFINITIONS`
+- Selection toolbar utilities
+
+---
 
 ## Development
 
-From the repository root:
-
 ```bash
-pnpm install
 pnpm --filter @lodado/sdui-document-react test
 pnpm --filter @lodado/sdui-document-react lint
 pnpm --filter @lodado/sdui-document-react build
 ```
 
-Storybook examples live in `apps/docs`.
+Storybook examples: `apps/docs/`
 
-## When to use this package
+---
 
-Use `@lodado/sdui-document-react` when you need a React editing surface for document-like block content.
+## License
 
-Use `@lodado/sdui-template` when you need to render server-driven layout JSON into your own registered React components.
-
-Use both when your product has a document editor that eventually maps block content into SDUI layouts or previews.
+MIT
