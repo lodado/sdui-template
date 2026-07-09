@@ -1,4 +1,4 @@
-import type { SduiDocument, SduiDocumentContent } from '@lodado/sdui-document'
+import type { SduiDocumentContent } from '@lodado/sdui-document'
 import {
   BOOKMARK_BLOCK_TYPE,
   BUTTON_BLOCK_TYPE,
@@ -21,37 +21,12 @@ import {
   TOGGLE_BLOCK_TYPE,
   VIDEO_BLOCK_TYPE,
 } from '@lodado/sdui-document'
-import { SduiDocumentEditor, SduiEmbedConfigProvider, SduiPageProvider } from '@lodado/sdui-document-react'
-import type { Meta, StoryObj } from '@storybook/react-vite'
 
-// Constants not re-exported from the package barrel — use the literal type strings.
 const BULLETED_LIST_BLOCK_TYPE = 'document.bulleted-list'
 const NUMBERED_LIST_BLOCK_TYPE = 'document.numbered-list'
 const QUOTE_BLOCK_TYPE = 'document.quote'
 const TOC_BLOCK_TYPE = 'document.toc'
 
-const meta: Meta = {
-  title: 'Document/All Blocks',
-  parameters: {
-    layout: 'padded',
-    docs: {
-      description: {
-        component:
-          'Catalog of every built-in `document.*` block, rendered read-only in a single document. ' +
-          'One meaningful example per block type — the same JSON the server would send. Embed-family ' +
-          'blocks are wrapped in `SduiEmbedConfigProvider`; page/collection cards resolve through ' +
-          '`SduiPageProvider`.',
-      },
-    },
-  },
-  tags: ['autodocs'],
-  // `allBlocksContent` is a shared fixture (DocumentViewer story), not a story
-  excludeStories: ['allBlocksContent'],
-}
-
-export default meta
-
-/** Section label — a level-3 heading that also feeds the ToC example. */
 const section = (id: string, text: string) => ({
   id,
   type: HEADING_BLOCK_TYPE,
@@ -69,6 +44,7 @@ const STATUS = {
   ],
 }
 
+/** Canonical block catalog — one example per built-in `document.*` type. */
 export const allBlocksContent: SduiDocumentContent = {
   schemaVersion: '1.0',
   root: createDocumentBlock({
@@ -85,11 +61,39 @@ export const allBlocksContent: SduiDocumentContent = {
             { type: 'text', text: 'bold', marks: [{ type: 'bold' }] },
             { type: 'text', text: ', ' },
             { type: 'text', text: 'italic', marks: [{ type: 'italic' }] },
-            { type: 'text', text: ', and ' },
+            { type: 'text', text: ', ' },
             { type: 'text', text: 'code', marks: [{ type: 'code' }] },
+            { type: 'text', text: ', ' },
+            { type: 'text', text: 'link', marks: [{ type: 'link', attrs: { href: 'https://example.com' } }] },
+            { type: 'text', text: ', ' },
+            { type: 'text', text: 'strikethrough', marks: [{ type: 'strikethrough' }] },
+            { type: 'text', text: ', and ' },
+            { type: 'text', text: 'underline', marks: [{ type: 'underline' }] },
             { type: 'text', text: ' marks.' },
           ],
-          text: 'Paragraph text supports bold, italic, and code marks.',
+          text: 'Paragraph text supports bold, italic, code, link, strikethrough, and underline marks.',
+        },
+      },
+      {
+        id: 'highlights',
+        type: PARAGRAPH_BLOCK_TYPE,
+        state: {
+          content: [
+            { type: 'text', text: 'Highlight palette: ' },
+            { type: 'text', text: 'Coral', marks: [{ type: 'highlight', attrs: { color: '#FDEA9B' } }] },
+            { type: 'text', text: ' ' },
+            { type: 'text', text: 'Apricot', marks: [{ type: 'highlight', attrs: { color: '#FED46A' } }] },
+            { type: 'text', text: ' ' },
+            { type: 'text', text: 'Sunset', marks: [{ type: 'highlight', attrs: { color: '#FA551E' } }] },
+            { type: 'text', text: ' ' },
+            { type: 'text', text: 'Smoothie', marks: [{ type: 'highlight', attrs: { color: '#B4DC19' } }] },
+            { type: 'text', text: ' ' },
+            { type: 'text', text: 'Bubblegum', marks: [{ type: 'highlight', attrs: { color: '#C8AFF0' } }] },
+            { type: 'text', text: ' ' },
+            { type: 'text', text: 'Neon', marks: [{ type: 'highlight', attrs: { color: '#3CBEFC' } }] },
+            { type: 'text', text: ' — drag-select text in edit mode to open the formatting toolbar.' },
+          ],
+          text: 'Highlight palette: Coral Apricot Sunset Smoothie Bubblegum Neon — drag-select text in edit mode to open the formatting toolbar.',
         },
       },
 
@@ -133,6 +137,7 @@ export const allBlocksContent: SduiDocumentContent = {
 
       section('s-divider', 'Divider'),
       { id: 'divider', type: DIVIDER_BLOCK_TYPE },
+      { id: 'page-break', type: DIVIDER_BLOCK_TYPE, attributes: { markup: '***' } },
 
       section('s-code', 'Code'),
       {
@@ -146,7 +151,7 @@ export const allBlocksContent: SduiDocumentContent = {
       {
         id: 'image',
         type: IMAGE_BLOCK_TYPE,
-        state: { text: '' },
+        state: { text: 'Caption from state.text' },
         attributes: { src: 'https://picsum.photos/seed/sdui/640/280', alt: 'Sample image', width: 640, height: 280 },
       },
       {
@@ -264,19 +269,4 @@ export const allBlocksContent: SduiDocumentContent = {
       },
     ],
   }),
-}
-
-const vault = new Map<string, SduiDocument>()
-
-/** All blocks in one read-only document — the full built-in catalog. */
-export const AllBlocks: StoryObj = {
-  render: () => (
-    <SduiEmbedConfigProvider value={{ allowedHosts: ['codepen.io', 'codesandbox.io'] }}>
-      <SduiPageProvider resolver={async (docId) => vault.get(docId)} navigator={{ push: () => {} }}>
-        <div style={{ maxWidth: 820, margin: '0 auto' }}>
-          <SduiDocumentEditor content={allBlocksContent} readOnly />
-        </div>
-      </SduiPageProvider>
-    </SduiEmbedConfigProvider>
-  ),
 }

@@ -1,5 +1,4 @@
 import type { SduiDocumentContent } from '@lodado/sdui-document'
-import { createDocumentBlock, SDUI_BLOCK_TYPE } from '@lodado/sdui-document'
 import { SduiComponentsProvider, SduiDocumentBridgeProvider, SduiDocumentEditor } from '@lodado/sdui-document-react'
 import { SduiDocumentViewer } from '@lodado/sdui-document-react/viewer'
 import { useSduiVariable } from '@lodado/sdui-template'
@@ -7,8 +6,10 @@ import { sduiComponents } from '@lodado/sdui-template-component'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import React, { useState } from 'react'
 
+import { hybridSduiContent, stateBridgeContent } from './fixtures'
+
 const meta: Meta = {
-  title: 'Document/SDUI Layout Block',
+  title: 'Document/Hybrid/SDUI Layout Block',
   parameters: {
     layout: 'padded',
     docs: {
@@ -22,59 +23,15 @@ const meta: Meta = {
     },
   },
   tags: ['autodocs'],
-  excludeStories: ['hybridContent'],
 }
 
 export default meta
-
-const widgetDocument = {
-  version: '1.0',
-  root: {
-    id: 'promo-card',
-    type: 'Card',
-    attributes: { className: 'shadow-md' },
-    children: [
-      { id: 'promo-title', type: 'Text', state: { text: 'Server-driven widget' } },
-      {
-        id: 'promo-body',
-        type: 'Text',
-        state: { text: 'This card is an SDUI layout document rendered inside a document block.' },
-      },
-      { id: 'promo-cta', type: 'Button', state: { text: 'Server-defined CTA' } },
-    ],
-  },
-}
-
-export const hybridContent: SduiDocumentContent = {
-  schemaVersion: '1.0',
-  root: createDocumentBlock({
-    id: 'root',
-    type: 'document.root',
-    children: [
-      createDocumentBlock({
-        id: 'h',
-        type: 'document.heading',
-        state: { text: 'Hybrid document' },
-        attributes: { level: 1 },
-      }),
-      createDocumentBlock({
-        id: 'p1',
-        type: 'document.paragraph',
-        state: {
-          text: 'Everything above and below is a normal editable block. The card in the middle is server-driven UI.',
-        },
-      }),
-      createDocumentBlock({ id: 'widget', type: SDUI_BLOCK_TYPE, attributes: { document: widgetDocument } }),
-      createDocumentBlock({ id: 'p2', type: 'document.paragraph', state: { text: 'Text after the widget.' } }),
-    ],
-  }),
-}
 
 export const InEditor: StoryObj = {
   render: () => (
     <SduiComponentsProvider value={sduiComponents}>
       <div style={{ maxWidth: 760, margin: '0 auto' }}>
-        <SduiDocumentEditor content={hybridContent} onContentChange={() => {}} />
+        <SduiDocumentEditor content={hybridSduiContent} onContentChange={() => {}} />
       </div>
     </SduiComponentsProvider>
   ),
@@ -84,7 +41,7 @@ export const InViewer: StoryObj = {
   render: () => (
     <SduiComponentsProvider value={sduiComponents}>
       <div style={{ maxWidth: 760, margin: '0 auto' }}>
-        <SduiDocumentViewer content={hybridContent} />
+        <SduiDocumentViewer content={hybridSduiContent} />
       </div>
     </SduiComponentsProvider>
   ),
@@ -93,12 +50,10 @@ export const InViewer: StoryObj = {
 export const BlockedWithoutProvider: StoryObj = {
   render: () => (
     <div style={{ maxWidth: 760, margin: '0 auto' }}>
-      <SduiDocumentViewer content={hybridContent} />
+      <SduiDocumentViewer content={hybridSduiContent} />
     </div>
   ),
 }
-
-// ---- State bridge demo: document checklist → live progress widget ----
 
 function countChecked(content: SduiDocumentContent): number {
   return (content.root.children ?? []).filter((child) => child.attributes?.checked === true).length
@@ -117,49 +72,9 @@ const ProgressWidget = () => {
 
 const bridgeComponents = { ...sduiComponents, Progress: () => <ProgressWidget /> }
 
-const bridgeContent: SduiDocumentContent = {
-  schemaVersion: '1.0',
-  root: createDocumentBlock({
-    id: 'root',
-    type: 'document.root',
-    children: [
-      createDocumentBlock({
-        id: 'h',
-        type: 'document.heading',
-        state: { text: 'Checklist with live widget' },
-        attributes: { level: 2 },
-      }),
-      createDocumentBlock({
-        id: 't1',
-        type: 'document.checklist',
-        state: { text: 'Write the doc' },
-        attributes: { checked: true },
-      }),
-      createDocumentBlock({
-        id: 't2',
-        type: 'document.checklist',
-        state: { text: 'Review it' },
-        attributes: { checked: false },
-      }),
-      createDocumentBlock({
-        id: 't3',
-        type: 'document.checklist',
-        state: { text: 'Ship it' },
-        attributes: { checked: false },
-      }),
-      createDocumentBlock({
-        id: 'progress',
-        type: SDUI_BLOCK_TYPE,
-        attributes: { document: { version: '1.0', root: { id: 'progress-root', type: 'Progress' } } },
-      }),
-    ],
-  }),
-}
-
-/** Toggle the checklists — the embedded widget updates through the document→layout variable bridge. */
 export const StateBridge: StoryObj = {
   render: () => {
-    const [content, setContent] = useState(bridgeContent)
+    const [content, setContent] = useState(stateBridgeContent)
 
     return (
       <SduiComponentsProvider value={bridgeComponents}>
