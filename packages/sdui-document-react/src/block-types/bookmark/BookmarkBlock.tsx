@@ -35,7 +35,11 @@ export const BookmarkBlock = ({ block }: { block: SduiDocumentBlock }) => {
         <span className="sdui-doc-bookmark-title">{title}</span>
         {description ? <span className="sdui-doc-bookmark-desc">{description}</span> : null}
         <span className="sdui-doc-bookmark-host">
-          {faviconUrl ? <img src={faviconUrl} alt="" width={16} height={16} loading="lazy" /> : null}
+          {faviconUrl ? (
+            <img src={faviconUrl} alt="" width={16} height={16} loading="lazy" />
+          ) : (
+            <span aria-hidden>🌐</span>
+          )}
           {hostname(url)}
         </span>
       </span>

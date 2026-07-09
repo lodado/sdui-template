@@ -96,10 +96,10 @@ describe('collection value editing + sort', () => {
   })
 
   describe('as is: timeline view (EP: renders period from date property)', () => {
-    it('to be: shows the date period per item', () => {
+    it('to be: shows the compact yyyy.mm period per item', () => {
       renderEditor('timeline', { readOnly: true })
-      expect(screen.getByText('2022-01-01')).toBeInTheDocument()
-      expect(screen.getByText('2020-01-01')).toBeInTheDocument()
+      expect(screen.getByText('2022.01')).toBeInTheDocument()
+      expect(screen.getByText('2020.01')).toBeInTheDocument()
     })
   })
 })

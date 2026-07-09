@@ -64,6 +64,13 @@ export const CollectionBlock = ({ block, editor }: CollectionBlockProps) => {
         />
       ) : null}
 
+      {sorted.length === 0 && (
+        <div className="sdui-doc-collection-empty">
+          <span aria-hidden>🗂️</span>
+          <p>No items yet.{editor ? ' Add one below.' : ''}</p>
+        </div>
+      )}
+
       {config.view === 'list' && (
         <ListView items={sorted} properties={config.properties} onOpen={open} onEditProperty={onEditProperty} />
       )}

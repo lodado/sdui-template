@@ -5,9 +5,10 @@ import React from 'react'
 import { type EditPropertyFn, ItemProperties } from './ItemProperties'
 import type { CollectionItem } from './items'
 
+/** Compact `yyyy.mm` label so ranges stay on one line in the period column. */
 function formatDate(iso: string): string {
   const parsed = Date.parse(iso)
-  return Number.isNaN(parsed) ? iso : new Date(parsed).toISOString().slice(0, 10)
+  return Number.isNaN(parsed) ? iso : new Date(parsed).toISOString().slice(0, 7).replace('-', '.')
 }
 
 /** Resolve an item's period label from its first date / dateRange property. */

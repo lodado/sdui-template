@@ -59,6 +59,26 @@
   --sdui-doc-menu-background: #ffffff;
   --sdui-doc-menu-shadow:
     0 0 0 1px rgb(0 0 0 / 2%), 0 4px 8px rgb(0 0 0 / 8%), 0 2px 4px rgb(0 0 0 / 0%), 0 30px 40px rgb(0 0 0 / 8%);
+
+  /* surface system — Notion's 3-step surface grammar (page bg, tinted panel,
+     hover wash) + hairline borders */
+  --sdui-doc-surface-1: #f7f7f5;
+  --sdui-doc-surface-hover: rgba(55, 53, 47, 0.06);
+  --sdui-doc-border-light: rgba(55, 53, 47, 0.09);
+  --sdui-doc-border-mid: rgba(55, 53, 47, 0.16);
+
+  /* elevation — Notion card / card-hover / popover shadows */
+  --sdui-doc-shadow-card: rgba(15, 15, 15, 0.04) 0 0 0 1px, rgba(15, 15, 15, 0.03) 0 2px 4px;
+  --sdui-doc-shadow-card-hover: rgba(15, 15, 15, 0.05) 0 0 0 1px, rgba(15, 15, 15, 0.08) 0 4px 12px;
+  --sdui-doc-shadow-popover:
+    rgba(15, 15, 15, 0.05) 0 0 0 1px, rgba(15, 15, 15, 0.1) 0 3px 6px, rgba(15, 15, 15, 0.2) 0 9px 24px;
+
+  /* motion + radii (compositor-only transitions; Notion chips are 4px, not pill) */
+  --sdui-doc-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --sdui-doc-dur-fast: 120ms;
+  --sdui-doc-dur-med: 200ms;
+  --sdui-doc-radius-card: 10px;
+  --sdui-doc-radius-chip: 4px;
 }
 
 [data-theme='dark'] {
@@ -86,6 +106,16 @@
 
   --sdui-doc-menu-background: #181c25;
   --sdui-doc-menu-shadow: 0 0 0 1px rgb(34 40 52), 0 8px 16px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.08);
+
+  --sdui-doc-surface-1: #202020;
+  --sdui-doc-surface-hover: rgba(255, 255, 255, 0.055);
+  --sdui-doc-border-light: rgba(255, 255, 255, 0.094);
+  --sdui-doc-border-mid: rgba(255, 255, 255, 0.16);
+
+  --sdui-doc-shadow-card: rgba(255, 255, 255, 0.094) 0 0 0 1px, rgba(0, 0, 0, 0.2) 0 2px 4px;
+  --sdui-doc-shadow-card-hover: rgba(255, 255, 255, 0.13) 0 0 0 1px, rgba(0, 0, 0, 0.4) 0 4px 12px;
+  --sdui-doc-shadow-popover:
+    rgba(255, 255, 255, 0.094) 0 0 0 1px, rgba(0, 0, 0, 0.3) 0 3px 6px, rgba(0, 0, 0, 0.5) 0 9px 24px;
 }
 
 /* ---------------------------------------------------------------- base */
@@ -885,6 +915,26 @@
 
   [data-sdui-document-editor] .sdui-doc-block-actions {
     animation: none;
+  }
+
+  /* portfolio/collection blocks: show final state immediately */
+  .sdui-doc-gallery-slot,
+  .sdui-doc-collection-props-panel,
+  .sdui-doc-tags-edit {
+    animation: none;
+  }
+
+  .sdui-doc-gallery-card,
+  .sdui-doc-gallery-cover img,
+  .sdui-doc-gallery-cover-fill,
+  .sdui-doc-bookmark-thumb img,
+  .sdui-doc-timeline-row,
+  .sdui-doc-timeline-row::before,
+  .sdui-doc-video-play,
+  .sdui-doc-button,
+  .sdui-doc-collection-view-tab,
+  .sdui-doc-collection-view-tab::after {
+    transition: none;
   }
 }
 
@@ -1900,7 +1950,7 @@ blockquote.quote-block {
 /* gallery */
 .sdui-doc-gallery {
   display: grid;
-  gap: 12px;
+  gap: 16px;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 }
 .sdui-doc-gallery[data-size='small'] {
@@ -1909,45 +1959,96 @@ blockquote.quote-block {
 .sdui-doc-gallery[data-size='large'] {
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 }
+/* mount reveal: opacity/transform only, staggered per card (capped at 8) */
+.sdui-doc-gallery-slot {
+  display: flex;
+  animation: sdui-doc-card-in var(--sdui-doc-dur-med, 200ms) var(--sdui-doc-ease-out, ease-out) both;
+  animation-delay: calc(var(--card-i, 0) * 30ms);
+}
+@keyframes sdui-doc-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 .sdui-doc-gallery-card {
   display: flex;
   flex-direction: column;
+  flex: 1;
   text-align: left;
   padding: 0;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 8px;
-  background: var(--sdui-bg, #fff);
+  border: none;
+  border-radius: var(--sdui-doc-radius-card, 10px);
+  background: var(--sdui-doc-background, #fff);
+  box-shadow: var(--sdui-doc-shadow-card);
   cursor: pointer;
   overflow: hidden;
-  transition: box-shadow var(--duration-fast, 150ms) ease, transform var(--duration-fast, 150ms) ease;
+  transition:
+    box-shadow var(--sdui-doc-dur-med, 200ms) var(--sdui-doc-ease-out, ease-out),
+    transform var(--sdui-doc-dur-med, 200ms) var(--sdui-doc-ease-out, ease-out);
 }
 .sdui-doc-gallery-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transform: translateY(-1px);
+  box-shadow: var(--sdui-doc-shadow-card-hover);
+  transform: translateY(-2px);
 }
 .sdui-doc-gallery-cover {
   aspect-ratio: 16 / 9;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.03);
+  align-items: stretch;
+  justify-content: stretch;
+  background: var(--sdui-doc-surface-1, #f7f7f5);
+  overflow: hidden;
 }
-.sdui-doc-gallery-cover img {
+.sdui-doc-gallery-cover img,
+.sdui-doc-gallery-cover-fill {
   width: 100%;
   height: 100%;
+  transition: transform var(--sdui-doc-dur-med, 200ms) var(--sdui-doc-ease-out, ease-out);
+}
+.sdui-doc-gallery-cover img {
   object-fit: cover;
 }
+.sdui-doc-gallery-card:hover .sdui-doc-gallery-cover img,
+.sdui-doc-gallery-card:hover .sdui-doc-gallery-cover-fill {
+  transform: scale(1.04);
+}
+.sdui-doc-gallery-cover-fill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .sdui-doc-gallery-cover-icon {
-  font-size: 32px;
+  font-size: 44px;
+  filter: drop-shadow(0 2px 4px rgba(15, 15, 15, 0.12));
+}
+.sdui-doc-gallery-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px 0;
 }
 .sdui-doc-gallery-body {
-  padding: 10px 12px;
+  padding: 8px 12px 10px;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 .sdui-doc-gallery-title {
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--sdui-doc-text, #37352f);
+}
+.sdui-doc-gallery-desc {
+  font-size: 12px;
+  color: var(--sdui-doc-text-secondary, #787774);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .sdui-doc-gallery-props,
 .sdui-doc-list-props {
@@ -1975,16 +2076,18 @@ blockquote.quote-block {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 8px 4px;
+  padding: 8px 8px;
   border: none;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid var(--sdui-doc-border-light, rgba(55, 53, 47, 0.09));
   background: none;
   font: inherit;
   text-align: left;
   cursor: pointer;
+  border-radius: 4px;
+  transition: background var(--sdui-doc-dur-fast, 120ms) ease;
 }
 .sdui-doc-list-row:hover {
-  background: rgba(0, 0, 0, 0.03);
+  background: var(--sdui-doc-surface-hover, rgba(55, 53, 47, 0.06));
 }
 .sdui-doc-list-title {
   font-weight: 500;
@@ -2002,26 +2105,36 @@ blockquote.quote-block {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  background: var(--sdui-doc-surface-1, #f7f7f5);
+  border-radius: 8px;
+  padding: 8px;
 }
 .sdui-doc-board-column-header {
   font-size: 13px;
   font-weight: 600;
-  color: var(--sdui-text-muted, #9b9a97);
+  color: var(--sdui-doc-text-secondary, #787774);
   padding: 4px;
 }
 
-/* timeline */
+/* timeline — dots sit on the rail with a background-colored ring so they read
+   as punched-through (no mask here: it would clip the dots, which hang outside
+   the border box) */
 .sdui-doc-timeline {
   display: flex;
   flex-direction: column;
-  border-left: 2px solid rgba(0, 0, 0, 0.1);
+  border-left: 2px solid var(--sdui-doc-border-light, rgba(55, 53, 47, 0.09));
   padding-left: 16px;
 }
 .sdui-doc-timeline-row {
   display: flex;
   gap: 16px;
-  padding: 10px 0;
+  padding: 10px 8px;
   position: relative;
+  border-radius: 6px;
+  transition: background var(--sdui-doc-dur-fast, 120ms) ease;
+}
+.sdui-doc-timeline-row:hover {
+  background: var(--sdui-doc-surface-hover, rgba(55, 53, 47, 0.06));
 }
 .sdui-doc-timeline-row::before {
   content: '';
@@ -2031,12 +2144,19 @@ blockquote.quote-block {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--sdui-accent, #2383e2);
+  background: var(--sdui-doc-accent, #2383e2);
+  box-shadow: 0 0 0 3px var(--sdui-doc-background, #fff);
+  transition: transform var(--sdui-doc-dur-fast, 120ms) var(--sdui-doc-ease-out, ease-out);
+}
+.sdui-doc-timeline-row:hover::before {
+  transform: scale(1.3);
 }
 .sdui-doc-timeline-period {
   flex: 0 0 140px;
   font-size: 13px;
-  color: var(--sdui-text-muted, #9b9a97);
+  font-variant-numeric: tabular-nums;
+  color: var(--sdui-doc-text-tertiary, #9b9a97);
+  padding-top: 1px;
 }
 .sdui-doc-timeline-card {
   flex: 1;
@@ -2047,21 +2167,23 @@ blockquote.quote-block {
   cursor: pointer;
   padding: 0;
 }
-.sdui-doc-timeline-card:hover .sdui-doc-timeline-title {
-  text-decoration: underline;
-}
 .sdui-doc-timeline-title {
   font-weight: 500;
 }
 
-/* property chips */
+/* property chips — Notion chips are 4px squares, not pills */
 .sdui-doc-chip {
   display: inline-block;
-  padding: 1px 8px;
-  border-radius: 10px;
+  padding: 0 6px;
+  border-radius: var(--sdui-doc-radius-chip, 4px);
   font-size: 12px;
-  background: rgba(0, 0, 0, 0.06);
-  color: var(--sdui-text, #37352f);
+  line-height: 1.5;
+  background: var(--sdui-doc-background-secondary, rgba(55, 53, 47, 0.06));
+  color: var(--sdui-doc-text, #37352f);
+  transition: filter var(--sdui-doc-dur-fast, 120ms) ease;
+}
+button.sdui-doc-chip:hover {
+  filter: brightness(0.96);
 }
 .sdui-doc-chip[data-color='blue'] { background: rgba(35, 131, 226, 0.15); color: #1a73c7; }
 .sdui-doc-chip[data-color='green'] { background: rgba(68, 178, 116, 0.18); color: #2a7d52; }
@@ -2075,6 +2197,31 @@ blockquote.quote-block {
   flex-wrap: wrap;
   gap: 4px;
 }
+
+/* unified focus ring for portfolio/collection interactive elements. The
+   gallery trigger sits inside an overflow:hidden card, so its ring is drawn
+   on the card via :focus-within instead. */
+.sdui-doc-list-row:focus-visible,
+.sdui-doc-timeline-card:focus-visible,
+.sdui-doc-bookmark:focus-visible,
+button.sdui-doc-chip:focus-visible,
+.sdui-doc-collection-view-tab:focus-visible,
+.sdui-doc-collection-props-btn:focus-visible,
+.sdui-doc-tags-input:focus-visible,
+.sdui-doc-tags-remove:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--sdui-doc-background, #fff),
+    0 0 0 4px var(--sdui-doc-accent, #2383e6);
+}
+.sdui-doc-gallery-open:focus-visible {
+  outline: none;
+}
+.sdui-doc-gallery-card:focus-within {
+  box-shadow:
+    0 0 0 2px var(--sdui-doc-background, #fff),
+    0 0 0 4px var(--sdui-doc-accent, #2383e6);
+}
 .sdui-doc-prop-date,
 .sdui-doc-prop-text {
   font-size: 12px;
@@ -2085,6 +2232,25 @@ blockquote.quote-block {
   color: #1a73c7;
 }
 
+/* collection empty state */
+.sdui-doc-collection-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 28px 12px;
+  border: 1px dashed var(--sdui-doc-border-light, rgba(55, 53, 47, 0.09));
+  border-radius: var(--sdui-doc-radius-card, 10px);
+  color: var(--sdui-doc-text-tertiary, #9b9a97);
+  font-size: 13px;
+}
+.sdui-doc-collection-empty span {
+  font-size: 24px;
+}
+.sdui-doc-collection-empty p {
+  margin: 0;
+}
+
 /* --- collection toolbar (editor only) --- */
 .sdui-doc-collection-toolbar {
   display: flex;
@@ -2093,27 +2259,48 @@ blockquote.quote-block {
   margin-bottom: 10px;
   flex-wrap: wrap;
 }
+/* Notion-style underline tabs: transparent chrome, hover wash, active accent
+   underline that slides in via transform */
 .sdui-doc-collection-views {
   display: inline-flex;
   gap: 2px;
-  background: rgba(0, 0, 0, 0.04);
-  border-radius: 6px;
-  padding: 2px;
 }
 .sdui-doc-collection-view-tab {
+  position: relative;
   background: none;
   border: none;
   font: inherit;
   font-size: 13px;
-  color: var(--sdui-text-muted, #6b6b6b);
+  font-weight: 500;
+  color: var(--sdui-doc-text-secondary, #787774);
   cursor: pointer;
   border-radius: 4px;
-  padding: 3px 10px;
+  padding: 4px 8px;
+  transition:
+    background var(--sdui-doc-dur-fast, 120ms) ease,
+    color var(--sdui-doc-dur-fast, 120ms) ease;
+}
+.sdui-doc-collection-view-tab:hover {
+  background: var(--sdui-doc-surface-hover, rgba(55, 53, 47, 0.06));
+  color: var(--sdui-doc-text, #37352f);
+}
+.sdui-doc-collection-view-tab::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--sdui-doc-text, #37352f);
+  transform: scaleX(0);
+  transition: transform var(--sdui-doc-dur-med, 200ms) var(--sdui-doc-ease-out, ease-out);
 }
 .sdui-doc-collection-view-tab[data-active] {
-  background: var(--sdui-bg, #fff);
-  color: var(--sdui-text, #37352f);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  color: var(--sdui-doc-text, #37352f);
+}
+.sdui-doc-collection-view-tab[data-active]::after {
+  transform: scaleX(1);
 }
 .sdui-doc-collection-groupby {
   font-size: 13px;
@@ -2124,25 +2311,37 @@ blockquote.quote-block {
 }
 .sdui-doc-collection-props-btn {
   background: none;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 6px;
+  border: none;
+  border-radius: 4px;
   font: inherit;
   font-size: 13px;
   cursor: pointer;
-  padding: 3px 10px;
-  color: var(--sdui-text-muted, #6b6b6b);
+  padding: 4px 8px;
+  color: var(--sdui-doc-text-secondary, #787774);
+  transition: background var(--sdui-doc-dur-fast, 120ms) ease;
 }
 .sdui-doc-collection-props-btn:hover {
-  background: rgba(0, 0, 0, 0.03);
+  background: var(--sdui-doc-surface-hover, rgba(55, 53, 47, 0.06));
+  color: var(--sdui-doc-text, #37352f);
 }
 .sdui-doc-collection-props-panel {
-  background: var(--sdui-bg, #fff);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: var(--sdui-doc-background, #fff);
   border-radius: 8px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--sdui-doc-shadow-popover, 0 6px 24px rgba(0, 0, 0, 0.15));
   padding: 10px;
   width: 280px;
   z-index: 45;
+  animation: sdui-doc-pop-in var(--sdui-doc-dur-fast, 120ms) var(--sdui-doc-ease-out, ease-out) both;
+}
+@keyframes sdui-doc-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 .sdui-doc-collection-props-row {
   display: flex;
@@ -2300,16 +2499,19 @@ blockquote.quote-block {
 .sdui-doc-bookmark {
   display: flex;
   align-items: stretch;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--sdui-doc-border-light, rgba(55, 53, 47, 0.09));
   border-radius: 8px;
   overflow: hidden;
   text-decoration: none;
   color: inherit;
   margin: 4px 0;
-  transition: background var(--duration-fast, 150ms) ease;
+  transition: border-color var(--sdui-doc-dur-fast, 120ms) ease;
 }
 .sdui-doc-bookmark:hover {
-  background: rgba(0, 0, 0, 0.02);
+  border-color: var(--sdui-doc-border-mid, rgba(55, 53, 47, 0.16));
+}
+.sdui-doc-bookmark:hover .sdui-doc-bookmark-thumb img {
+  transform: scale(1.03);
 }
 .sdui-doc-bookmark-text {
   flex: 1;
@@ -2349,6 +2551,7 @@ blockquote.quote-block {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform var(--sdui-doc-dur-med, 200ms) var(--sdui-doc-ease-out, ease-out);
 }
 .sdui-doc-bookmark--invalid,
 .sdui-doc-video--invalid,
@@ -2411,8 +2614,14 @@ blockquote.quote-block {
   font-size: 22px;
   padding-left: 4px;
 }
+.sdui-doc-video-play {
+  transition:
+    transform var(--sdui-doc-dur-fast, 120ms) var(--sdui-doc-ease-out, ease-out),
+    background var(--sdui-doc-dur-fast, 120ms) ease;
+}
 .sdui-doc-video-facade:hover .sdui-doc-video-play {
   background: rgba(226, 40, 40, 0.85);
+  transform: translate(-50%, -50%) scale(1.08);
 }
 
 /* --- embed --- */
@@ -2470,18 +2679,27 @@ blockquote.quote-block {
   background: none;
   font: inherit;
   font-size: 13px;
-  color: var(--sdui-text, #37352f);
+  color: var(--sdui-doc-text, #37352f);
   padding: 2px 4px;
   min-width: 60px;
   outline: none;
+  border-radius: 4px;
+  caret-color: var(--sdui-doc-accent, #2383e6);
+  transition: background var(--sdui-doc-dur-fast, 120ms) ease;
+}
+.sdui-doc-tags-input::placeholder {
+  color: var(--sdui-doc-text-tertiary, #9b9a97);
+}
+.sdui-doc-tags-input:focus {
+  background: var(--sdui-doc-surface-hover, rgba(55, 53, 47, 0.06));
 }
 .sdui-doc-tags-edit {
-  background: var(--sdui-bg, #fff);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: var(--sdui-doc-background, #fff);
   border-radius: 8px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--sdui-doc-shadow-popover, 0 6px 24px rgba(0, 0, 0, 0.15));
   padding: 8px;
   z-index: 45;
+  animation: sdui-doc-pop-in var(--sdui-doc-dur-fast, 120ms) var(--sdui-doc-ease-out, ease-out) both;
 }
 .sdui-doc-tags-colors {
   display: grid;
@@ -2529,23 +2747,38 @@ blockquote.quote-block {
   text-decoration: none;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: filter var(--duration-fast, 150ms) ease, background var(--duration-fast, 150ms) ease;
+  transition:
+    filter var(--sdui-doc-dur-fast, 120ms) ease,
+    background var(--sdui-doc-dur-fast, 120ms) ease,
+    transform var(--sdui-doc-dur-fast, 120ms) ease;
 }
 .sdui-doc-button[data-variant='primary'] {
-  background: var(--sdui-accent, #2383e2);
-  color: #fff;
+  background: var(--sdui-doc-accent, #2383e2);
+  color: var(--sdui-doc-accent-text, #fff);
 }
 .sdui-doc-button[data-variant='secondary'] {
-  background: rgba(0, 0, 0, 0.06);
-  color: var(--sdui-text, #37352f);
+  background: var(--sdui-doc-background-secondary, rgba(55, 53, 47, 0.06));
+  color: var(--sdui-doc-text, #37352f);
 }
 .sdui-doc-button[data-variant='outline'] {
   background: transparent;
-  border-color: rgba(0, 0, 0, 0.25);
-  color: var(--sdui-text, #37352f);
+  border-color: var(--sdui-doc-border-mid, rgba(55, 53, 47, 0.16));
+  color: var(--sdui-doc-text, #37352f);
+}
+.sdui-doc-button[data-variant='outline']:hover {
+  background: var(--sdui-doc-surface-hover, rgba(55, 53, 47, 0.06));
 }
 .sdui-doc-button:hover {
   filter: brightness(0.96);
+}
+.sdui-doc-button:active {
+  transform: scale(0.98);
+}
+.sdui-doc-button:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--sdui-doc-background, #fff),
+    0 0 0 4px var(--sdui-doc-accent, #2383e6);
 }
 .sdui-doc-button[data-inert] {
   opacity: 0.6;

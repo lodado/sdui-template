@@ -8,6 +8,7 @@ export type CollectionItem = {
   title: string
   icon?: string
   coverUrl?: string
+  description?: string
   properties: PropertyValueMap
 }
 
@@ -25,6 +26,7 @@ export function collectionItems(block: SduiDocumentBlock): CollectionItem[] {
       title: (typeof child.state?.text === 'string' && child.state.text) || 'Untitled',
       icon: stringAttr(child.attributes?.icon),
       coverUrl: stringAttr(child.attributes?.coverUrl),
+      description: stringAttr(child.attributes?.description),
       properties: (child.attributes?.properties as PropertyValueMap) ?? {},
     }))
 }
