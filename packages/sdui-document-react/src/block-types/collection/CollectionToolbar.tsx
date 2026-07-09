@@ -29,20 +29,45 @@ function slug(name: string): string {
   )
 }
 
+export type CollectionSort = { propertyId: string; direction: 'asc' | 'desc' }
+
 export type CollectionToolbarProps = {
   collectionId: string
   view: CollectionView
   properties: PropertyDef[]
   groupBy?: string
+  sortBy?: CollectionSort
   onSetAttrs(collectionId: string, partial: Record<string, unknown>): void
 }
 
-/** Editor-only header: view switcher + property manager (add/remove, groupBy). */
-export const CollectionToolbar = ({ collectionId, view, properties, groupBy, onSetAttrs }: CollectionToolbarProps) => {
+/** Editor-only header: view switcher + sort + property manager (add/remove, groupBy). */
+export const CollectionToolbar = ({
+  collectionId,
+  view,
+  properties,
+  groupBy,
+  sortBy,
+  onSetAttrs,
+}: CollectionToolbarProps) => {
   const [newName, setNewName] = useState('')
   const [newType, setNewType] = useState<PropertyType>('text')
 
   const selectProps = properties.filter((property) => property.type === 'select')
+
+  const setSort = (propertyId: string) => {
+    if (!propertyId) {
+      onSetAttrs(collectionId, { sortBy: undefined })
+      return
+    }
+    onSetAttrs(collectionId, { sortBy: { propertyId, direction: sortBy?.direction ?? 'asc' } })
+  }
+
+  const toggleDirection = () => {
+    if (!sortBy) {
+      return
+    }
+    onSetAttrs(collectionId, { sortBy: { ...sortBy, direction: sortBy.direction === 'asc' ? 'desc' : 'asc' } })
+  }
 
   const addProperty = () => {
     const name = newName.trim()
@@ -103,6 +128,23 @@ export const CollectionToolbar = ({ collectionId, view, properties, groupBy, onS
           </select>
         </span>
       )}
+
+      <span className="sdui-doc-collection-sort">
+        <span aria-hidden>Sort:</span>
+        <select aria-label="Sort by" value={sortBy?.propertyId ?? ''} onChange={(event) => setSort(event.target.value)}>
+          <option value="">None</option>
+          {properties.map((property) => (
+            <option key={property.id} value={property.id}>
+              {property.name}
+            </option>
+          ))}
+        </select>
+        {sortBy ? (
+          <button type="button" aria-label="Toggle sort direction" onClick={toggleDirection}>
+            {sortBy.direction === 'asc' ? '↑' : '↓'}
+          </button>
+        ) : null}
+      </span>
 
       <Popover.Root>
         <Popover.Trigger asChild>

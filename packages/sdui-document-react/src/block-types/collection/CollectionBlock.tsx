@@ -49,6 +49,7 @@ export const CollectionBlock = ({ block, editor }: CollectionBlockProps) => {
   }, [items, config.sortBy, config.properties])
 
   const open = (documentId: string) => page?.open(documentId)
+  const onEditProperty = editor?.onSetItemProperty
 
   return (
     <div className="sdui-doc-collection" data-view={config.view} contentEditable={false}>
@@ -58,17 +59,34 @@ export const CollectionBlock = ({ block, editor }: CollectionBlockProps) => {
           view={config.view}
           properties={config.properties}
           groupBy={config.groupBy}
+          sortBy={config.sortBy}
           onSetAttrs={editor.onSetCollectionAttrs}
         />
       ) : null}
 
-      {config.view === 'list' && <ListView items={sorted} properties={config.properties} onOpen={open} />}
-      {config.view === 'board' && (
-        <BoardView items={sorted} properties={config.properties} groupBy={config.groupBy} onOpen={open} />
+      {config.view === 'list' && (
+        <ListView items={sorted} properties={config.properties} onOpen={open} onEditProperty={onEditProperty} />
       )}
-      {config.view === 'timeline' && <TimelineView items={sorted} properties={config.properties} onOpen={open} />}
+      {config.view === 'board' && (
+        <BoardView
+          items={sorted}
+          properties={config.properties}
+          groupBy={config.groupBy}
+          onOpen={open}
+          onEditProperty={onEditProperty}
+        />
+      )}
+      {config.view === 'timeline' && (
+        <TimelineView items={sorted} properties={config.properties} onOpen={open} onEditProperty={onEditProperty} />
+      )}
       {config.view === 'gallery' && (
-        <GalleryView items={sorted} properties={config.properties} onOpen={open} cardSize={config.cardSize} />
+        <GalleryView
+          items={sorted}
+          properties={config.properties}
+          onOpen={open}
+          onEditProperty={onEditProperty}
+          cardSize={config.cardSize}
+        />
       )}
 
       {editor ? (

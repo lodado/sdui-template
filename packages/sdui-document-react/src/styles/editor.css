@@ -2190,3 +2190,108 @@ blockquote.quote-block {
   font: inherit;
   font-size: 13px;
 }
+
+/* --- collection sort + gallery/list restructure --- */
+.sdui-doc-collection-sort {
+  font-size: 13px;
+  color: var(--sdui-text-muted, #6b6b6b);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.sdui-doc-collection-sort button,
+.sdui-doc-collection-groupby button {
+  background: none;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 0 6px;
+  font: inherit;
+}
+.sdui-doc-gallery-open {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+  width: 100%;
+}
+.sdui-doc-list-open {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  border: none;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+.sdui-doc-timeline-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* property value editor */
+.sdui-doc-prop-cell {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+}
+.sdui-doc-prop-empty {
+  color: var(--sdui-text-muted, #b8b8b8);
+  font-size: 12px;
+  font-style: italic;
+}
+.sdui-doc-prop-editor {
+  background: var(--sdui-bg, #fff);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+  padding: 10px;
+  width: 240px;
+  z-index: 45;
+}
+.sdui-doc-prop-editor-name {
+  font-size: 12px;
+  color: var(--sdui-text-muted, #9b9a97);
+  margin-bottom: 8px;
+}
+.sdui-doc-prop-editor-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.sdui-doc-prop-editor-options .sdui-doc-chip {
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.sdui-doc-prop-editor-options .sdui-doc-chip[data-active] {
+  border-color: rgba(0, 0, 0, 0.35);
+}
+.sdui-doc-prop-editor-clear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--sdui-text-muted, #9b9a97);
+}
+.sdui-doc-prop-editor-input {
+  width: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  padding: 4px 6px;
+  font: inherit;
+  font-size: 13px;
+}
+.sdui-doc-prop-editor-range {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}

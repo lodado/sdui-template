@@ -2,8 +2,8 @@ import type { DateRangeValue, PropertyDef } from '@lodado/sdui-document'
 import { parsePropertyValue } from '@lodado/sdui-document'
 import React from 'react'
 
+import { type EditPropertyFn, ItemProperties } from './ItemProperties'
 import type { CollectionItem } from './items'
-import { PropertyChip } from './PropertyChip'
 
 function formatDate(iso: string): string {
   const parsed = Date.parse(iso)
@@ -35,10 +35,12 @@ export const TimelineView = ({
   items,
   properties,
   onOpen,
+  onEditProperty,
 }: {
   items: CollectionItem[]
   properties: PropertyDef[]
   onOpen(documentId: string): void
+  onEditProperty?: EditPropertyFn
 }) => {
   const dateDef = properties.find((property) => property.type === 'dateRange' || property.type === 'date')
   const otherProps = properties.filter((property) => property.id !== dateDef?.id)
@@ -48,26 +50,31 @@ export const TimelineView = ({
       {items.map((item) => (
         <div key={item.id} className="sdui-doc-timeline-row">
           <span className="sdui-doc-timeline-period">{periodLabel(item, dateDef)}</span>
-          <button
-            type="button"
-            className="sdui-doc-timeline-card"
-            onClick={(event) => {
-              event.stopPropagation()
-              if (item.documentId) {
-                onOpen(item.documentId)
-              }
-            }}
-          >
-            <span className="sdui-doc-timeline-title">
-              <span aria-hidden>{item.icon ?? '📄'} </span>
-              {item.title}
-            </span>
-            <span className="sdui-doc-list-props">
-              {otherProps.map((def) => (
-                <PropertyChip key={def.id} def={def} value={item.properties[def.id]} />
-              ))}
-            </span>
-          </button>
+          <div className="sdui-doc-timeline-body">
+            <button
+              type="button"
+              className="sdui-doc-timeline-card"
+              onClick={(event) => {
+                event.stopPropagation()
+                if (item.documentId) {
+                  onOpen(item.documentId)
+                }
+              }}
+            >
+              <span className="sdui-doc-timeline-title">
+                <span aria-hidden>{item.icon ?? '📄'} </span>
+                {item.title}
+              </span>
+            </button>
+            {otherProps.length > 0 && (
+              <ItemProperties
+                item={item}
+                properties={otherProps}
+                onEdit={onEditProperty}
+                className="sdui-doc-list-props"
+              />
+            )}
+          </div>
         </div>
       ))}
     </div>

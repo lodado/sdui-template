@@ -3,6 +3,7 @@ import { groupByProperty } from '@lodado/sdui-document'
 import React from 'react'
 
 import { GalleryCard } from './GalleryView'
+import type { EditPropertyFn } from './ItemProperties'
 import type { CollectionItem } from './items'
 
 /**
@@ -14,11 +15,13 @@ export const BoardView = ({
   properties,
   groupBy,
   onOpen,
+  onEditProperty,
 }: {
   items: CollectionItem[]
   properties: PropertyDef[]
   groupBy?: string
   onOpen(documentId: string): void
+  onEditProperty?: EditPropertyFn
 }) => {
   const groupDef = properties.find((property) => property.id === groupBy && property.type === 'select')
   const columns = groupDef
@@ -33,7 +36,13 @@ export const BoardView = ({
             {column.option?.label ?? (groupDef ? 'No value' : 'All')} · {column.items.length}
           </div>
           {column.items.map((item) => (
-            <GalleryCard key={item.id} item={item} properties={properties} onOpen={onOpen} />
+            <GalleryCard
+              key={item.id}
+              item={item}
+              properties={properties}
+              onOpen={onOpen}
+              onEditProperty={onEditProperty}
+            />
           ))}
         </div>
       ))}
