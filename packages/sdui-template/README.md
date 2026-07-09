@@ -2,7 +2,16 @@
 
 **Server-Driven UI template library for React — subscription-based rendering, normalized documents, and type-safe node references.**
 
-React SDUI Server-Driven UI TypeScript Next.js Zod
+[![npm version](https://img.shields.io/npm/v/@lodado/sdui-template.svg)](https://www.npmjs.com/package/@lodado/sdui-template)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![React](https://img.shields.io/badge/React-18%2B-61DAFB?logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5%2B-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![GitHub stars](https://img.shields.io/github/stars/lodado/sdui-template?style=social)](https://github.com/lodado/sdui-template/stargazers)
+
+[![SDUI](https://img.shields.io/badge/SDUI-Server--Driven%20UI-2563EB)](https://github.com/lodado/sdui-template)
+[![Next.js](https://img.shields.io/badge/Next.js-App%20Router-000000?logo=next.js&logoColor=white)](https://nextjs.org/)
+[![Zod](https://img.shields.io/badge/Zod-v4-3E63DD)](https://zod.dev/)
 
 [Quick start](#quick-start) · [Features](#features) · [Hooks](#hooks) · [Store API](#store) · [Architecture](#architecture) · [Next.js](#nextjs-app-router)
 

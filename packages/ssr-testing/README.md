@@ -2,7 +2,14 @@
 
 **Next.js SSR integration testbed for the SDUI monorepo — layout rendering, document editor, and Playwright E2E.**
 
-Next.js SSR SDUI Playwright E2E React Testing
+[![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=next.js&logoColor=white)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
+[![Playwright](https://img.shields.io/badge/E2E-Playwright-2EAD33?logo=playwright&logoColor=white)](https://playwright.dev/)
+[![Private](https://img.shields.io/badge/npm-private-red)](https://github.com/lodado/sdui-template/tree/main/packages/ssr-testing)
+[![GitHub](https://img.shields.io/github/stars/lodado/sdui-template?style=social&label=Star)](https://github.com/lodado/sdui-template)
+
+[![SSR](https://img.shields.io/badge/Test-SSR%20Hydration-2563EB)](https://github.com/lodado/sdui-template/tree/main/packages/ssr-testing)
+[![SDUI](https://img.shields.io/badge/Scope-SDUI%20Monorepo-7C3AED)](https://github.com/lodado/sdui-template)
 
 [Quick start](#quick-start) · [Routes](#routes) · [E2E tests](#e2e-tests) · [Stack](#stack) · [Development](#development)
 

@@ -2,7 +2,13 @@
 
 **Design tokens and CSS variables for the SDUI template — extracted from the Atlassian Design System (Jira).**
 
-Design System CSS Variables Design Tokens Figma Atlassian SDUI
+[![npm version](https://img.shields.io/npm/v/@lodado/sdui-design-files.svg)](https://www.npmjs.com/package/@lodado/sdui-design-files)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![GitHub](https://img.shields.io/github/stars/lodado/sdui-template?style=social&label=Star)](https://github.com/lodado/sdui-template)
+
+[![Atlassian DS](https://img.shields.io/badge/Source-Atlassian%20DS-0052CC?logo=atlassian&logoColor=white)](https://atlassian.design/)
+[![CSS Variables](https://img.shields.io/badge/Tokens-CSS%20Variables-1572B6?logo=css3&logoColor=white)](https://github.com/lodado/sdui-template/tree/main/packages/sdui-design-files)
+[![Figma](https://img.shields.io/badge/Design-Figma-F24E1E?logo=figma&logoColor=white)](https://www.figma.com/)
 
 [Quick start](#quick-start) · [CSS variables](#css-variables) · [TypeScript tokens](#typescript-tokens) · [Color scales](#color-scales) · [Development](#development)
 

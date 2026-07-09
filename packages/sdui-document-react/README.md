@@ -2,7 +2,15 @@
 
 **Hybrid Notion-like block editor for React — block-level rendering with focused-block ProseMirror inline editing.**
 
-React ProseMirror Block Editor SDUI Document Notion-like
+[![npm version](https://img.shields.io/npm/v/@lodado/sdui-document-react.svg)](https://www.npmjs.com/package/@lodado/sdui-document-react)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![React](https://img.shields.io/badge/React-18%2B-61DAFB?logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5%2B-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![GitHub](https://img.shields.io/github/stars/lodado/sdui-template?style=social&label=Star)](https://github.com/lodado/sdui-template)
+
+[![ProseMirror](https://img.shields.io/badge/Editor-ProseMirror-F93)](https://prosemirror.net/)
+[![Block Editor](https://img.shields.io/badge/UI-Notion--like-2563EB)](https://github.com/lodado/sdui-template/tree/main/packages/sdui-document-react)
+[![dnd-kit](https://img.shields.io/badge/Drag-dnd--kit-8B5CF6)](https://dndkit.com/)
 
 [Quick start](#quick-start) · [Architecture](#architecture) · [Editor API](#sduidocumenteditor) · [Blocks & marks](#blocks--marks) · [Development](#development)
 

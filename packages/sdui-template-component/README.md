@@ -2,7 +2,15 @@
 
 **Radix UI-based component library for Server-Driven UI — drop-in `sduiComponents` map for `SduiLayoutRenderer`.**
 
-React SDUI Radix UI TypeScript FSD Component Library
+[![npm version](https://img.shields.io/npm/v/@lodado/sdui-template-component.svg)](https://www.npmjs.com/package/@lodado/sdui-template-component)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![React](https://img.shields.io/badge/React-18%2B-61DAFB?logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5%2B-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![GitHub](https://img.shields.io/github/stars/lodado/sdui-template?style=social&label=Star)](https://github.com/lodado/sdui-template)
+
+[![Radix UI](https://img.shields.io/badge/UI-Radix%20UI-161618?logo=radixui&logoColor=white)](https://www.radix-ui.com/)
+[![SDUI](https://img.shields.io/badge/SDUI-Component%20Map-2563EB)](https://github.com/lodado/sdui-template/tree/main/packages/sdui-template-component)
+[![FSD](https://img.shields.io/badge/Arch-FSD-0EA5E9)](https://feature-sliced.design/)
 
 [Quick start](#quick-start) · [Components](#components) · [SDUI map](#sdui-component-map) · [Architecture](#architecture) · [Development](#development)
 

@@ -2,7 +2,13 @@
 
 **Project-local AI workflow for `@lodado/sdui-template`: parallel review, Figma sync, learning loops, and quality guardrails.**
 
-Claude Code SDUI Server-Driven UI FSD TypeScript React
+[![GitHub](https://img.shields.io/github/stars/lodado/sdui-template?style=social&label=Star)](https://github.com/lodado/sdui-template)
+[![Claude Code](https://img.shields.io/badge/Tool-Claude%20Code-D97757)](https://claude.ai/code)
+[![SDUI](https://img.shields.io/badge/Project-SDUI%20Template-2563EB)](https://github.com/lodado/sdui-template)
+
+[![Review](https://img.shields.io/badge/Command-%2Freview-059669)](commands/review.md)
+[![Figma Sync](https://img.shields.io/badge/Command-%2Ffigma--sync-8B5CF6)](commands/figma-sync.md)
+[![FSD](https://img.shields.io/badge/Skill-FSD-0EA5E9)](skills/FSD/SKILL.md)
 
 [Quick start](#quick-start) · [Commands](#commands) · [Agents](#agents) · [Skills](#project-skills) · [Hooks](#hooks) · [Cursor rules](#cursor-rules-cursorrules)
 

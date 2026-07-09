@@ -2,7 +2,14 @@
 
 **Headless block document domain for SDUI — schema, patches, permissions, and SDUI adapter without editor or database coupling.**
 
-TypeScript Block Document SDUI Headless Notion-like Patches
+[![npm version](https://img.shields.io/npm/v/@lodado/sdui-document.svg)](https://www.npmjs.com/package/@lodado/sdui-document)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5%2B-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![GitHub](https://img.shields.io/github/stars/lodado/sdui-template?style=social&label=Star)](https://github.com/lodado/sdui-template)
+
+[![Block Document](https://img.shields.io/badge/Block-Document-7C3AED)](https://github.com/lodado/sdui-template/tree/main/packages/sdui-document)
+[![Headless](https://img.shields.io/badge/Headless-No%20React-64748B)](https://github.com/lodado/sdui-template/tree/main/packages/sdui-document)
+[![Patches](https://img.shields.io/badge/Edits-Patch--based-059669)](https://github.com/lodado/sdui-template/tree/main/packages/sdui-document)
 
 [Quick start](#quick-start) · [Philosophy](#philosophy) · [Architecture](#architecture) · [Patches](#applying-block-patches) · [Adapters](#adapter-contracts) · [Development](#development)
 
