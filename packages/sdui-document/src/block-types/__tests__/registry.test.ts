@@ -15,6 +15,7 @@ import {
   IMAGE_BLOCK_TYPE,
   LINK_BLOCK_TYPE,
   NUMBERED_LIST_BLOCK_TYPE,
+  PAGE_BLOCK_TYPE,
   PARAGRAPH_BLOCK_TYPE,
   QUOTE_BLOCK_TYPE,
   ROOT_BLOCK_TYPE,
@@ -44,6 +45,7 @@ describe('block-type constants', () => {
       COLUMN_LIST_BLOCK_TYPE,
       COLUMN_BLOCK_TYPE,
       TOC_BLOCK_TYPE,
+      PAGE_BLOCK_TYPE,
     ])
     const moduleTypes = new Set(BLOCK_TYPE_MODULES.map((blockModule) => blockModule.type))
     expect(moduleTypes).toEqual(constants)

@@ -12,6 +12,7 @@ import { headingBlockModule } from './heading/heading'
 import { imageBlockModule } from './image/image'
 import { linkBlockModule } from './link/link'
 import { numberedListBlockModule } from './numbered-list/numberedList'
+import { pageBlockModule } from './page/page'
 import { paragraphBlockModule } from './paragraph/paragraph'
 import { quoteBlockModule } from './quote/quote'
 import { rootBlockModule } from './root/root'
@@ -48,6 +49,7 @@ export const BLOCK_TYPE_MODULES: readonly SduiBlockTypeModule[] = [
   columnListBlockModule,
   columnBlockModule,
   tocBlockModule,
+  pageBlockModule,
 ]
 
 export const blockModuleByType: Record<string, SduiBlockTypeModule> = BLOCK_TYPE_MODULES.reduce(
@@ -85,6 +87,7 @@ export { HEADING_BLOCK_TYPE } from './heading/heading.type'
 export { IMAGE_BLOCK_TYPE } from './image/image.type'
 export { LINK_BLOCK_TYPE } from './link/link.type'
 export { NUMBERED_LIST_BLOCK_TYPE } from './numbered-list/numberedList.type'
+export { PAGE_BLOCK_TYPE } from './page/page.type'
 export { PARAGRAPH_BLOCK_TYPE } from './paragraph/paragraph.type'
 export { QUOTE_BLOCK_TYPE } from './quote/quote.type'
 export { ROOT_BLOCK_TYPE } from './root/root.type'

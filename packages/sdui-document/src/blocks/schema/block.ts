@@ -10,6 +10,7 @@ import { HEADING_BLOCK_TYPE } from '../../block-types/heading/heading.type'
 import { IMAGE_BLOCK_TYPE } from '../../block-types/image/image.type'
 import { LINK_BLOCK_TYPE } from '../../block-types/link/link.type'
 import { NUMBERED_LIST_BLOCK_TYPE } from '../../block-types/numbered-list/numberedList.type'
+import { PAGE_BLOCK_TYPE } from '../../block-types/page/page.type'
 import { PARAGRAPH_BLOCK_TYPE } from '../../block-types/paragraph/paragraph.type'
 import { QUOTE_BLOCK_TYPE } from '../../block-types/quote/quote.type'
 import { ROOT_BLOCK_TYPE } from '../../block-types/root/root.type'
@@ -46,6 +47,7 @@ export type SduiDocumentBlockType =
   | typeof COLUMN_LIST_BLOCK_TYPE
   | typeof COLUMN_BLOCK_TYPE
   | typeof TOC_BLOCK_TYPE
+  | typeof PAGE_BLOCK_TYPE
 
 export type SduiDocumentBlock = {
   id: SduiDocumentBlockId
