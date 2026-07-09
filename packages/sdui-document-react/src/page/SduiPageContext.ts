@@ -50,8 +50,26 @@ export function useSduiPage(): SduiPageContextValue | null {
  */
 export function useResolvedDocument(id: string | null, options?: { refresh?: boolean }): ResolvedDocumentState {
   const page = useSduiPage()
-  const [state, setState] = useState<ResolvedDocumentState>({ status: 'loading' })
   const refresh = options?.refresh === true
+
+  // State is keyed by the id it was resolved for and reset DURING render when
+  // the id changes (React's derived-state reset pattern). Without the reset
+  // there is an intermediate render where the new id is paired with the
+  // previous document — a consumer keying children by id (the peek dialog keys
+  // its editor that way) would mount them with stale content and, the key now
+  // being final, never remount.
+  const [snapshot, setSnapshot] = useState<{ id: string | null; value: ResolvedDocumentState }>(() => ({
+    id,
+    value: { status: 'loading' },
+  }))
+  // refresh mode never serves the cache — not even for the first paint. The
+  // cached object can be stale relative to the host store (e.g. edits saved
+  // from a previous peek), and an uncontrolled consumer seeded from it would
+  // keep the stale content after the fresh document arrives under the same id.
+  if (snapshot.id !== id) {
+    const cached = !refresh && page && id !== null ? page.peekCache(id) : undefined
+    setSnapshot({ id, value: cached ? { status: 'ready', document: cached } : { status: 'loading' } })
+  }
 
   useEffect(() => {
     if (!page || id === null) {
@@ -59,21 +77,21 @@ export function useResolvedDocument(id: string | null, options?: { refresh?: boo
     }
 
     let alive = true
-    setState(() => {
-      const cached = page.peekCache(id)
-      return cached ? { status: 'ready', document: cached } : { status: 'loading' }
+    setSnapshot(() => {
+      const cached = refresh ? undefined : page.peekCache(id)
+      return { id, value: cached ? { status: 'ready', document: cached } : { status: 'loading' } }
     })
 
     page
       .resolve(id, { refresh })
       .then((document) => {
         if (alive) {
-          setState(document ? { status: 'ready', document } : { status: 'missing' })
+          setSnapshot({ id, value: document ? { status: 'ready', document } : { status: 'missing' } })
         }
       })
       .catch((error: unknown) => {
         if (alive) {
-          setState({ status: 'error', error })
+          setSnapshot({ id, value: { status: 'error', error } })
         }
       })
 
@@ -86,5 +104,5 @@ export function useResolvedDocument(id: string | null, options?: { refresh?: boo
     return { status: 'missing' }
   }
 
-  return state
+  return snapshot.value
 }

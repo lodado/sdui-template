@@ -1,8 +1,9 @@
-import type { SduiDocument } from '@lodado/sdui-document'
+import type { SduiDocument, SduiDocumentContent } from '@lodado/sdui-document'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 
 import type { DocumentResolver, PageOpenMode, SduiDocumentNavigator, SduiPageContextValue } from './SduiPageContext'
 import { SduiPageContext } from './SduiPageContext'
+import type { SduiPeekMode } from './SduiPeekDialog'
 import { SduiPeekDialog } from './SduiPeekDialog'
 
 export type SduiPageProviderProps = {
@@ -10,6 +11,12 @@ export type SduiPageProviderProps = {
   navigator?: SduiDocumentNavigator
   /** What a plain click on a page block does. Default 'push'. */
   defaultOpenMode?: PageOpenMode
+  /** Presentation of the built-in fallback peek dialog. Default 'side'. */
+  peekMode?: SduiPeekMode
+  /** Render the fallback peek read-only. Default false — the peek is a full editor. */
+  peekReadOnly?: boolean
+  /** Edits made inside the fallback peek — wire to the host repository to persist. */
+  onPeekContentChange?(documentId: string, next: SduiDocumentContent): void
   children: React.ReactNode
 }
 
@@ -22,6 +29,9 @@ export const SduiPageProvider = ({
   resolver,
   navigator,
   defaultOpenMode = 'push',
+  peekMode = 'side',
+  peekReadOnly = false,
+  onPeekContentChange,
   children,
 }: SduiPageProviderProps) => {
   const cacheRef = useRef(new Map<string, SduiDocument | 'missing'>())
@@ -92,7 +102,15 @@ export const SduiPageProvider = ({
   return (
     <SduiPageContext.Provider value={value}>
       {children}
-      {navigator?.peek ? null : <SduiPeekDialog documentId={fallbackPeekId} onClose={() => setFallbackPeekId(null)} />}
+      {navigator?.peek ? null : (
+        <SduiPeekDialog
+          documentId={fallbackPeekId}
+          mode={peekMode}
+          readOnly={peekReadOnly}
+          onContentChange={onPeekContentChange}
+          onClose={() => setFallbackPeekId(null)}
+        />
+      )}
     </SduiPageContext.Provider>
   )
 }

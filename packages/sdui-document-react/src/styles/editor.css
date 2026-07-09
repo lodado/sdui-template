@@ -920,7 +920,11 @@
   /* portfolio/collection blocks: show final state immediately */
   .sdui-doc-gallery-slot,
   .sdui-doc-collection-props-panel,
-  .sdui-doc-tags-edit {
+  .sdui-doc-tags-edit,
+  .sdui-doc-peek-overlay,
+  .sdui-doc-peek-content[data-mode='center'],
+  .sdui-doc-peek-content[data-mode='side'],
+  .sdui-doc-peek-skeleton span {
     animation: none;
   }
 
@@ -1832,54 +1836,121 @@ blockquote.quote-block {
   background: rgba(0, 0, 0, 0.08);
 }
 
-/* --- peek dialog --- */
+/* --- peek dialog ---
+   Notion grammar: side peek slides in from the right and does NOT dim the page
+   behind (the transparent overlay only catches outside clicks); center peek is
+   a classic dimmed modal. Entrance only — the dialog unmounts on close, so an
+   exit animation can't run. */
 .sdui-doc-peek-overlay {
   position: fixed;
   inset: 0;
   background: rgba(15, 15, 15, 0.6);
   z-index: 40;
+  animation: sdui-doc-fade-in var(--sdui-doc-dur-med, 200ms) ease both;
+}
+.sdui-doc-peek-overlay[data-mode='side'] {
+  background: transparent;
+  animation: none;
+}
+@keyframes sdui-doc-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 .sdui-doc-peek-content {
   position: fixed;
-  top: 48px;
-  right: 48px;
-  bottom: 48px;
-  left: max(48px, calc(50% - 420px));
-  background: var(--sdui-bg, #ffffff);
-  border-radius: 8px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+  background: var(--sdui-doc-background, #ffffff);
   z-index: 41;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+.sdui-doc-peek-content[data-mode='center'] {
+  top: 48px;
+  right: 48px;
+  bottom: 48px;
+  left: max(48px, calc(50% - 420px));
+  border-radius: var(--sdui-doc-radius-card, 10px);
+  box-shadow: var(--sdui-doc-shadow-popover, 0 10px 40px rgba(0, 0, 0, 0.25));
+  animation: sdui-doc-peek-center-in var(--sdui-doc-dur-med, 200ms) var(--sdui-doc-ease-out, ease-out) both;
+}
+@keyframes sdui-doc-peek-center-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.sdui-doc-peek-content[data-mode='side'] {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(50vw, 720px);
+  border-left: 1px solid var(--sdui-doc-border-light, rgba(55, 53, 47, 0.09));
+  box-shadow: rgba(15, 15, 15, 0.06) -1px 0 0, rgba(15, 15, 15, 0.2) -8px 0 24px;
+  animation: sdui-doc-peek-side-in var(--sdui-doc-dur-med, 200ms) var(--sdui-doc-ease-out, ease-out) both;
+}
+@keyframes sdui-doc-peek-side-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@media (max-width: 768px) {
+  .sdui-doc-peek-content[data-mode='side'] {
+    width: 100vw;
+    border-left: none;
+  }
 }
 .sdui-doc-peek-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid var(--sdui-doc-border-light, rgba(55, 53, 47, 0.09));
 }
 .sdui-doc-peek-open-full,
 .sdui-doc-peek-close {
   background: none;
   border: none;
   font: inherit;
-  color: var(--sdui-text-muted, #9b9a97);
+  font-size: 15px;
+  line-height: 1;
+  color: var(--sdui-doc-text-secondary, #9b9a97);
   cursor: pointer;
   border-radius: 4px;
-  padding: 4px 8px;
+  padding: 6px;
+  transition:
+    background var(--sdui-doc-dur-fast, 120ms) ease,
+    color var(--sdui-doc-dur-fast, 120ms) ease;
 }
 .sdui-doc-peek-open-full:hover,
 .sdui-doc-peek-close:hover {
-  background: rgba(0, 0, 0, 0.05);
-  color: var(--sdui-text, #37352f);
+  background: var(--sdui-doc-surface-hover, rgba(55, 53, 47, 0.06));
+  color: var(--sdui-doc-text, #37352f);
+}
+.sdui-doc-peek-open-full:focus-visible,
+.sdui-doc-peek-close:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--sdui-doc-background, #fff),
+    0 0 0 4px var(--sdui-doc-accent, #2383e6);
 }
 .sdui-doc-peek-title {
   margin: 0;
-  padding: 12px 48px 0;
-  font-size: 1.6em;
+  padding: 20px 48px 0;
+  font-size: 26px;
   font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--sdui-doc-text, #37352f);
 }
 .sdui-doc-peek-body {
   flex: 1;
@@ -1887,8 +1958,38 @@ blockquote.quote-block {
   padding: 8px 16px 48px;
 }
 .sdui-doc-peek-status {
-  color: var(--sdui-text-muted, #9b9a97);
+  color: var(--sdui-doc-text-tertiary, #9b9a97);
   padding: 16px 32px;
+}
+.sdui-doc-peek-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 32px;
+}
+.sdui-doc-peek-skeleton span {
+  height: 14px;
+  border-radius: 4px;
+  background: var(--sdui-doc-surface-1, #f7f7f5);
+  animation: sdui-doc-skeleton-pulse 1.2s ease-in-out infinite;
+}
+.sdui-doc-peek-skeleton span:nth-child(1) {
+  width: 60%;
+}
+.sdui-doc-peek-skeleton span:nth-child(2) {
+  width: 90%;
+}
+.sdui-doc-peek-skeleton span:nth-child(3) {
+  width: 75%;
+}
+@keyframes sdui-doc-skeleton-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
 }
 
 /* --- breadcrumbs --- */

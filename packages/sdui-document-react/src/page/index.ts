@@ -9,4 +9,4 @@ export {
   useSduiPage,
 } from './SduiPageContext'
 export { SduiPageProvider, type SduiPageProviderProps } from './SduiPageProvider'
-export { SduiPeekDialog, type SduiPeekDialogProps } from './SduiPeekDialog'
+export { SduiPeekDialog, type SduiPeekDialogProps, type SduiPeekMode } from './SduiPeekDialog'

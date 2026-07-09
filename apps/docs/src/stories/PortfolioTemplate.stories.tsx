@@ -162,6 +162,14 @@ const home: SduiDocumentContent = {
   }),
 }
 
+/** Cross-links between detail pages — clicking one inside the peek recursively opens the next document. */
+const RELATED: Record<string, { id: string; title: string; icon: string } | undefined> = {
+  'proj-sdui': { id: 'proj-editor', title: 'Notion-style editor', icon: '📝' },
+  'proj-editor': { id: 'proj-design', title: 'Design token pipeline', icon: '🎨' },
+  'proj-design': { id: 'proj-embed', title: 'Embed sandbox', icon: '🔗' },
+  'proj-embed': { id: 'proj-sdui', title: 'SDUI template', icon: '🧩' },
+}
+
 const projectDetail = (id: string, title: string): SduiDocument => ({
   id: createDocumentId(id),
   workspaceId: createWorkspaceId('storybook'),
@@ -174,7 +182,7 @@ const projectDetail = (id: string, title: string): SduiDocument => ({
       id: `${id}-root`,
       type: 'document.root',
       children: [
-        { id: `${id}-h`, type: 'document.heading', state: { text: title }, attributes: { level: 1 } },
+        // no H1 — the peek chrome renders the document title (Notion grammar)
         { id: `${id}-p`, type: 'document.paragraph', state: { text: `Detail page for ${title}.` } },
         {
           id: `${id}-vid`,
@@ -186,6 +194,22 @@ const projectDetail = (id: string, title: string): SduiDocument => ({
             aspectRatio: '16:9',
           },
         },
+        ...(RELATED[id]
+          ? [
+              {
+                id: `${id}-rel-h`,
+                type: 'document.heading',
+                state: { text: 'Related' },
+                attributes: { level: 3 },
+              },
+              {
+                id: `${id}-rel`,
+                type: PAGE_BLOCK_TYPE,
+                state: { text: RELATED[id]!.title },
+                attributes: { documentId: RELATED[id]!.id, icon: RELATED[id]!.icon },
+              },
+            ]
+          : []),
       ],
     }),
   },
@@ -236,7 +260,18 @@ const PortfolioDemo = ({ readOnly }: { readOnly?: boolean }) => {
 
   return (
     <SduiEmbedConfigProvider value={{ allowedHosts: [] }}>
-      <SduiPageProvider resolver={async (docId) => vault.get(docId)} navigator={{ push: () => {} }}>
+      <SduiPageProvider
+        resolver={async (docId) => vault.get(docId)}
+        navigator={{ push: () => {} }}
+        defaultOpenMode="peek"
+        peekMode="center"
+        onPeekContentChange={(docId, next) => {
+          const doc = vault.get(docId)
+          if (doc) {
+            vault.set(docId, { ...doc, content: next })
+          }
+        }}
+      >
         <div style={{ maxWidth: 820, margin: '0 auto' }}>
           <PortfolioHero />
           <SduiDocumentEditor
