@@ -2,9 +2,11 @@ import type { CollisionDetection } from '@dnd-kit/core'
 import { pointerWithin, rectIntersection } from '@dnd-kit/core'
 import {
   BOOKMARK_BLOCK_TYPE,
+  BUTTON_BLOCK_TYPE,
   COLLECTION_BLOCK_TYPE,
   EMBED_BLOCK_TYPE,
   PAGE_BLOCK_TYPE,
+  TAGS_BLOCK_TYPE,
   TOGGLE_BLOCK_TYPE,
   VIDEO_BLOCK_TYPE,
 } from '@lodado/sdui-document'
@@ -38,6 +40,8 @@ export const NON_TEXT_BLOCK_TYPES = new Set([
   BOOKMARK_BLOCK_TYPE,
   VIDEO_BLOCK_TYPE,
   EMBED_BLOCK_TYPE,
+  TAGS_BLOCK_TYPE,
+  BUTTON_BLOCK_TYPE,
 ])
 
 /** Blocks with Notion list semantics: empty+Enter → paragraph, Backspace-at-start → paragraph. */

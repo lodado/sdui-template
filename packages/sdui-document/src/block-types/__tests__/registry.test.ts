@@ -3,6 +3,7 @@ import {
   BLOCK_TYPE_MODULES,
   BOOKMARK_BLOCK_TYPE,
   BULLETED_LIST_BLOCK_TYPE,
+  BUTTON_BLOCK_TYPE,
   CALLOUT_BLOCK_TYPE,
   canHostInlineText,
   CHECKLIST_BLOCK_TYPE,
@@ -22,6 +23,7 @@ import {
   PARAGRAPH_BLOCK_TYPE,
   QUOTE_BLOCK_TYPE,
   ROOT_BLOCK_TYPE,
+  TAGS_BLOCK_TYPE,
   TOC_BLOCK_TYPE,
   TOGGLE_BLOCK_TYPE,
   VIDEO_BLOCK_TYPE,
@@ -54,6 +56,8 @@ describe('block-type constants', () => {
       BOOKMARK_BLOCK_TYPE,
       VIDEO_BLOCK_TYPE,
       EMBED_BLOCK_TYPE,
+      TAGS_BLOCK_TYPE,
+      BUTTON_BLOCK_TYPE,
     ])
     const moduleTypes = new Set(BLOCK_TYPE_MODULES.map((blockModule) => blockModule.type))
     expect(moduleTypes).toEqual(constants)

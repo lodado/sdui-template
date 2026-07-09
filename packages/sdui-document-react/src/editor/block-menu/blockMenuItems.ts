@@ -5,10 +5,12 @@
  */
 import {
   BOOKMARK_BLOCK_TYPE,
+  BUTTON_BLOCK_TYPE,
   CODE_BLOCK_TYPE,
   COLLECTION_BLOCK_TYPE,
   EMBED_BLOCK_TYPE,
   PAGE_BLOCK_TYPE,
+  TAGS_BLOCK_TYPE,
   TOGGLE_BLOCK_TYPE,
   VIDEO_BLOCK_TYPE,
 } from '@lodado/sdui-document'
@@ -248,6 +250,26 @@ export const BLOCK_MENU_ITEMS: readonly BlockMenuItem[] = [
     action: 'link',
     group: 'media',
     keywords: ['embed', 'iframe', 'codepen', 'codesandbox', '임베드'],
+  },
+  {
+    id: 'tags',
+    type: TAGS_BLOCK_TYPE,
+    title: 'Tags',
+    glyph: '🏷',
+    action: 'insert',
+    group: 'advanced',
+    attributes: { items: [] },
+    keywords: ['tags', 'skills', 'chips', 'stack', '태그', '기술', '스킬'],
+  },
+  {
+    id: 'button',
+    type: BUTTON_BLOCK_TYPE,
+    title: 'Button',
+    glyph: '🔘',
+    action: 'link',
+    group: 'advanced',
+    attributes: { variant: 'primary' },
+    keywords: ['button', 'cta', 'link button', '버튼', '링크버튼'],
   },
 ]
 

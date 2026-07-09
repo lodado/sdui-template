@@ -25,6 +25,8 @@ describe('blockMenuItems', () => {
       'bookmark',
       'video',
       'embed',
+      'tags',
+      'button',
     ])
   })
 

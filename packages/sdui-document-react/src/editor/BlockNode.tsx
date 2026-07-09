@@ -249,6 +249,19 @@ const BlockRow = ({ entry, depth, readOnly }: BlockViewProps) => {
                     onSetItemProperty: handlers.setItemProperty,
                   }
             }
+            tagsEditor={
+              readOnly
+                ? undefined
+                : {
+                    onSetItems: (blockId, items) => handlers.updateBlockAttributes(blockId, { items }),
+                    generateId: handlers.generateId,
+                  }
+            }
+            buttonEditor={
+              readOnly
+                ? undefined
+                : { onSetLabel: handlers.updateBlockText, onSetAttrs: handlers.updateBlockAttributes }
+            }
           >
             {isTextBlock(block) &&
               (isFocused && focus ? (

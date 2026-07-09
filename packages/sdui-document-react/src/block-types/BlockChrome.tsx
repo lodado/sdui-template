@@ -1,10 +1,12 @@
 import type { SduiDocumentBlock } from '@lodado/sdui-document'
 import {
   BOOKMARK_BLOCK_TYPE,
+  BUTTON_BLOCK_TYPE,
   CODE_BLOCK_TYPE,
   COLLECTION_BLOCK_TYPE,
   EMBED_BLOCK_TYPE,
   PAGE_BLOCK_TYPE,
+  TAGS_BLOCK_TYPE,
   TOGGLE_BLOCK_TYPE,
   VIDEO_BLOCK_TYPE,
 } from '@lodado/sdui-document'
@@ -13,6 +15,7 @@ import React from 'react'
 import type { ImageLayoutPatch } from '../editor/EditorRuntimeContext'
 import { BookmarkBlock } from './bookmark/BookmarkBlock'
 import { BulletedListBlock } from './bulleted-list/BulletedListBlock'
+import { ButtonBlock, type ButtonEditor } from './button/ButtonBlock'
 import { CalloutBlock } from './callout/CalloutBlock'
 import { ChecklistBlock } from './checklist/ChecklistBlock'
 import { CodeBlock } from './code/CodeBlock'
@@ -27,6 +30,7 @@ import { NumberedListBlock } from './numbered-list/NumberedListBlock'
 import { PageBlock } from './page/PageBlock'
 import { ParagraphBlock } from './paragraph/ParagraphBlock'
 import { QuoteBlock } from './quote/QuoteBlock'
+import { TagsBlock, type TagsEditor } from './tags/TagsBlock'
 import { TocBlock } from './toc/TocBlock'
 import { ToggleBlock } from './toggle/ToggleBlock'
 import { VideoBlock } from './video/VideoBlock'
@@ -47,6 +51,10 @@ export type BlockChromeProps = {
   onSetImageLayout?(blockId: string, layout: ImageLayoutPatch): void
   /** Collection editor handlers — omitted (readOnly) hides all editing affordances. */
   collectionEditor?: CollectionEditorHandlers
+  /** Tags editor handlers — omitted (readOnly) renders static chips. */
+  tagsEditor?: TagsEditor
+  /** Button editor handlers — omitted (readOnly) renders the CTA link only. */
+  buttonEditor?: ButtonEditor
   /** Inline content: static InlineContentView or the focused ProseMirror editor. */
   children?: React.ReactNode
 }
@@ -74,6 +82,8 @@ export const BlockChrome = ({
   onSetCodeLanguage,
   onSetImageLayout,
   collectionEditor,
+  tagsEditor,
+  buttonEditor,
   children,
 }: BlockChromeProps) => {
   switch (block.type) {
@@ -150,6 +160,12 @@ export const BlockChrome = ({
 
     case EMBED_BLOCK_TYPE:
       return <EmbedBlock block={block} />
+
+    case TAGS_BLOCK_TYPE:
+      return <TagsBlock block={block} editor={tagsEditor} />
+
+    case BUTTON_BLOCK_TYPE:
+      return <ButtonBlock block={block} editor={buttonEditor} />
 
     case 'document.paragraph':
     default:

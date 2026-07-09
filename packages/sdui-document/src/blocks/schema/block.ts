@@ -1,5 +1,6 @@
 import { BOOKMARK_BLOCK_TYPE } from '../../block-types/bookmark/bookmark.type'
 import { BULLETED_LIST_BLOCK_TYPE } from '../../block-types/bulleted-list/bulletedList.type'
+import { BUTTON_BLOCK_TYPE } from '../../block-types/button/button.type'
 import { CALLOUT_BLOCK_TYPE } from '../../block-types/callout/callout.type'
 import { CHECKLIST_BLOCK_TYPE } from '../../block-types/checklist/checklist.type'
 import { CODE_BLOCK_TYPE } from '../../block-types/code/code.type'
@@ -17,6 +18,7 @@ import { PAGE_BLOCK_TYPE } from '../../block-types/page/page.type'
 import { PARAGRAPH_BLOCK_TYPE } from '../../block-types/paragraph/paragraph.type'
 import { QUOTE_BLOCK_TYPE } from '../../block-types/quote/quote.type'
 import { ROOT_BLOCK_TYPE } from '../../block-types/root/root.type'
+import { TAGS_BLOCK_TYPE } from '../../block-types/tags/tags.type'
 import { TOC_BLOCK_TYPE } from '../../block-types/toc/toc.type'
 import { TOGGLE_BLOCK_TYPE } from '../../block-types/toggle/toggle.type'
 import { VIDEO_BLOCK_TYPE } from '../../block-types/video/video.type'
@@ -56,6 +58,8 @@ export type SduiDocumentBlockType =
   | typeof BOOKMARK_BLOCK_TYPE
   | typeof VIDEO_BLOCK_TYPE
   | typeof EMBED_BLOCK_TYPE
+  | typeof TAGS_BLOCK_TYPE
+  | typeof BUTTON_BLOCK_TYPE
 
 export type SduiDocumentBlock = {
   id: SduiDocumentBlockId

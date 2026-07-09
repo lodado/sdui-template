@@ -54,6 +54,12 @@ export type EditorHandlers = {
   setCollectionAttrs(collectionId: string, partial: Record<string, unknown>): void
   /** Set one property value on a collection item (page block); undefined clears it. */
   setItemProperty(itemId: string, propertyId: string, value: unknown): void
+  /** Merge attributes into any block (tags items, button href/variant, …). */
+  updateBlockAttributes(blockId: string, partial: Record<string, unknown>): void
+  /** Set a block's `state.text` (button label). */
+  updateBlockText(blockId: string, text: string): void
+  /** Fresh id (tags chips, etc.) — same generator as block ids. */
+  generateId(): string
   blockMenuFilePicked(file: File): void
   insertBlockBelow(blockId: string): void
   /** Insert (and focus) a paragraph as a toggle's first child; expands it if collapsed. */

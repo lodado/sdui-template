@@ -11,6 +11,19 @@ export function isSafeHttpUrl(value: unknown): boolean {
   }
 }
 
+/** http/https plus mailto — the scheme whitelist for CTA buttons. */
+export function isSafeCtaUrl(value: unknown): boolean {
+  if (typeof value !== 'string') {
+    return false
+  }
+  try {
+    const url = new URL(value)
+    return url.protocol === 'http:' || url.protocol === 'https:' || url.protocol === 'mailto:'
+  } catch {
+    return false
+  }
+}
+
 export type VideoProvider = 'youtube' | 'vimeo'
 export type ParsedVideo = { provider: VideoProvider; videoId: string }
 

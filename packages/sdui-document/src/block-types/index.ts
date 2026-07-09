@@ -2,6 +2,7 @@
 import type { SduiDocumentBlock } from '../blocks/schema/block'
 import { bookmarkBlockModule } from './bookmark/bookmark'
 import { bulletedListBlockModule } from './bulleted-list/bulletedList'
+import { buttonBlockModule } from './button/button'
 import { calloutBlockModule } from './callout/callout'
 import { checklistBlockModule } from './checklist/checklist'
 import { codeBlockModule } from './code/code'
@@ -19,6 +20,7 @@ import { pageBlockModule } from './page/page'
 import { paragraphBlockModule } from './paragraph/paragraph'
 import { quoteBlockModule } from './quote/quote'
 import { rootBlockModule } from './root/root'
+import { tagsBlockModule } from './tags/tags'
 import { tocBlockModule } from './toc/toc'
 import { toggleBlockModule } from './toggle/toggle'
 import type { BlockLinkRef, SduiBlockTypeModule } from './types'
@@ -58,6 +60,8 @@ export const BLOCK_TYPE_MODULES: readonly SduiBlockTypeModule[] = [
   bookmarkBlockModule,
   videoBlockModule,
   embedBlockModule,
+  tagsBlockModule,
+  buttonBlockModule,
 ]
 
 export const blockModuleByType: Record<string, SduiBlockTypeModule> = BLOCK_TYPE_MODULES.reduce(
@@ -85,6 +89,7 @@ export { paragraphBlockModule }
 // documents/patches without hardcoding magic strings.
 export { BOOKMARK_BLOCK_TYPE, type BookmarkBlockAttributes } from './bookmark/bookmark'
 export { BULLETED_LIST_BLOCK_TYPE } from './bulleted-list/bulletedList.type'
+export { BUTTON_BLOCK_TYPE, type ButtonBlockAttributes } from './button/button'
 export { CALLOUT_BLOCK_TYPE } from './callout/callout.type'
 export { CHECKLIST_BLOCK_TYPE } from './checklist/checklist.type'
 export { CODE_BLOCK_TYPE } from './code/code.type'
@@ -122,6 +127,7 @@ export { QUOTE_BLOCK_TYPE } from './quote/quote.type'
 export { ROOT_BLOCK_TYPE } from './root/root.type'
 export { type BlockAlign, blockAlignSchema, resolveBlockAlign } from './shared/align'
 export {
+  isSafeCtaUrl,
   isSafeHttpUrl,
   type ParsedVideo,
   parseVideoUrl,
@@ -129,6 +135,7 @@ export {
   type VideoProvider,
   videoThumbnailUrl,
 } from './shared/url'
+export { type TagItem, TAGS_BLOCK_TYPE, type TagsBlockAttributes } from './tags/tags'
 export { TOC_BLOCK_TYPE } from './toc/toc.type'
 export { TOGGLE_BLOCK_TYPE } from './toggle/toggle.type'
 export type {

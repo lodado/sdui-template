@@ -166,6 +166,14 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
       applyDecision(computeSetItemProperty(docRef.current, itemId, propertyId, value))
     }
 
+    const updateBlockAttributes = (blockId: string, partial: Record<string, unknown>) => {
+      latest.current.applyPatches([blockAttrsPatch(blockId, partial)])
+    }
+
+    const updateBlockText = (blockId: string, text: string) => {
+      latest.current.applyPatches([{ type: 'block.update', blockId: createBlockId(blockId), state: { text } }])
+    }
+
     const addCollectionItem = (collectionId: string) => {
       // Document first, item block second — a failed creation touches nothing.
       const createPage = latest.current.onCreatePage
@@ -500,6 +508,9 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
       addCollectionItem,
       setCollectionAttrs,
       setItemProperty,
+      updateBlockAttributes,
+      updateBlockText,
+      generateId: () => nextBlockId(),
 
       insertBlockBelow: (blockId) => {
         applyDecision(computeInsertBlockBelow(docRef.current, blockId, nextBlockId))

@@ -2448,3 +2448,151 @@ blockquote.quote-block {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* --- tags block --- */
+.sdui-doc-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0;
+}
+.sdui-doc-tags .sdui-doc-chip {
+  border: none;
+  cursor: default;
+  font: inherit;
+}
+.sdui-doc-tags button.sdui-doc-chip {
+  cursor: pointer;
+}
+.sdui-doc-tags-input {
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--sdui-text, #37352f);
+  padding: 2px 4px;
+  min-width: 60px;
+  outline: none;
+}
+.sdui-doc-tags-edit {
+  background: var(--sdui-bg, #fff);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+  padding: 8px;
+  z-index: 45;
+}
+.sdui-doc-tags-colors {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin-bottom: 6px;
+}
+.sdui-doc-tags-colors .sdui-doc-chip {
+  cursor: pointer;
+  border: 1px solid transparent;
+  text-align: center;
+}
+.sdui-doc-tags-colors .sdui-doc-chip[data-active] {
+  border-color: rgba(0, 0, 0, 0.4);
+}
+.sdui-doc-tags-remove {
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: #c23b3b;
+  padding: 4px;
+}
+
+/* --- button block --- */
+.sdui-doc-button-wrap {
+  margin: 6px 0;
+  display: flex;
+}
+.sdui-doc-button-wrap[data-align='center'] {
+  justify-content: center;
+}
+.sdui-doc-button-wrap[data-align='right'] {
+  justify-content: flex-end;
+}
+.sdui-doc-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: filter var(--duration-fast, 150ms) ease, background var(--duration-fast, 150ms) ease;
+}
+.sdui-doc-button[data-variant='primary'] {
+  background: var(--sdui-accent, #2383e2);
+  color: #fff;
+}
+.sdui-doc-button[data-variant='secondary'] {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--sdui-text, #37352f);
+}
+.sdui-doc-button[data-variant='outline'] {
+  background: transparent;
+  border-color: rgba(0, 0, 0, 0.25);
+  color: var(--sdui-text, #37352f);
+}
+.sdui-doc-button:hover {
+  filter: brightness(0.96);
+}
+.sdui-doc-button[data-inert] {
+  opacity: 0.6;
+  cursor: default;
+}
+.sdui-doc-button-edit {
+  background: var(--sdui-bg, #fff);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+  padding: 10px;
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 45;
+}
+.sdui-doc-button-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 12px;
+  color: var(--sdui-text-muted, #6b6b6b);
+}
+.sdui-doc-button-field input {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  padding: 4px 6px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--sdui-text, #37352f);
+}
+.sdui-doc-button-variants {
+  display: flex;
+  gap: 4px;
+}
+.sdui-doc-button-variants button {
+  flex: 1;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  padding: 4px;
+}
+.sdui-doc-button-variants button[data-active] {
+  border-color: var(--sdui-accent, #2383e2);
+  color: var(--sdui-accent, #2383e2);
+}
