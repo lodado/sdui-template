@@ -43,6 +43,8 @@ export {
   useSduiLayoutAction,
   useSduiNodeReference,
   useSduiNodeSubscription,
+  useSduiVariable,
+  useSduiVariables,
 } from './react-wrapper/hooks'
 export type { UseSduiNodeSubscriptionParams } from './react-wrapper/hooks/useSduiNodeSubscription'
 export type { GetNodeSubscriptionDataReturn } from './react-wrapper/hooks/useSduiNodeSubscriptionSync'

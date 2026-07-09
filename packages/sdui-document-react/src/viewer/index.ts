@@ -12,6 +12,11 @@ export {
   useSduiComponents,
 } from '../block-types/sdui/SduiComponentsContext'
 export {
+  SduiDocumentBridgeProvider,
+  type SduiDocumentVariablesSelector,
+  useSduiDocumentVariablesSelector,
+} from '../block-types/sdui/SduiDocumentBridgeContext'
+export {
   type DocumentResolver,
   type PageOpenMode,
   type ResolvedDocumentState,

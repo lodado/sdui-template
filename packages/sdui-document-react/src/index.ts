@@ -12,6 +12,11 @@ export {
   type SduiLayoutComponents,
   useSduiComponents,
 } from './block-types/sdui/SduiComponentsContext'
+export {
+  SduiDocumentBridgeProvider,
+  type SduiDocumentVariablesSelector,
+  useSduiDocumentVariablesSelector,
+} from './block-types/sdui/SduiDocumentBridgeContext'
 export * from './editor'
 export { EmojiPicker, type EmojiPickerProps } from './emoji/EmojiPicker'
 export * from './focused-block'

@@ -53,6 +53,12 @@ interface SduiLayoutRendererProps {
   onError?: (error: Error) => void
   /** Rendered inside SduiLayoutProvider — useful for debug panels such as SduiLayoutStateInspector. */
   children?: React.ReactNode
+  /**
+   * Non-visual children rendered inside SduiLayoutProvider with no layout
+   * wrapper (unlike `children`, which opens the side-panel grid) — for
+   * store-effect components such as variable bridges.
+   */
+  effects?: React.ReactNode
 }
 
 /**
@@ -67,6 +73,7 @@ export const SduiLayoutRenderer: React.FC<SduiLayoutRendererProps> = ({
   onLayoutChange,
   onError,
   children,
+  effects,
 }) => {
   const storeRef = useRef<SduiLayoutStore | null>(null)
   // Create store instance and update the document
@@ -125,6 +132,7 @@ export const SduiLayoutRenderer: React.FC<SduiLayoutRendererProps> = ({
 
   return (
     <SduiLayoutProvider store={store}>
+      {effects}
       {children ? (
         <div
           style={{
