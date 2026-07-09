@@ -1,6 +1,13 @@
 import type { CollisionDetection } from '@dnd-kit/core'
 import { pointerWithin, rectIntersection } from '@dnd-kit/core'
-import { COLLECTION_BLOCK_TYPE, PAGE_BLOCK_TYPE, TOGGLE_BLOCK_TYPE } from '@lodado/sdui-document'
+import {
+  BOOKMARK_BLOCK_TYPE,
+  COLLECTION_BLOCK_TYPE,
+  EMBED_BLOCK_TYPE,
+  PAGE_BLOCK_TYPE,
+  TOGGLE_BLOCK_TYPE,
+  VIDEO_BLOCK_TYPE,
+} from '@lodado/sdui-document'
 
 /** Pixel width of one indentation level for drag depth projection. */
 export const DRAG_INDENT_WIDTH = 24
@@ -28,6 +35,9 @@ export const NON_TEXT_BLOCK_TYPES = new Set([
   'document.link',
   PAGE_BLOCK_TYPE,
   COLLECTION_BLOCK_TYPE,
+  BOOKMARK_BLOCK_TYPE,
+  VIDEO_BLOCK_TYPE,
+  EMBED_BLOCK_TYPE,
 ])
 
 /** Blocks with Notion list semantics: empty+Enter → paragraph, Backspace-at-start → paragraph. */

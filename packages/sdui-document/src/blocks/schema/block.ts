@@ -1,3 +1,4 @@
+import { BOOKMARK_BLOCK_TYPE } from '../../block-types/bookmark/bookmark.type'
 import { BULLETED_LIST_BLOCK_TYPE } from '../../block-types/bulleted-list/bulletedList.type'
 import { CALLOUT_BLOCK_TYPE } from '../../block-types/callout/callout.type'
 import { CHECKLIST_BLOCK_TYPE } from '../../block-types/checklist/checklist.type'
@@ -6,6 +7,7 @@ import { COLLECTION_BLOCK_TYPE } from '../../block-types/collection/collection.t
 import { COLUMN_BLOCK_TYPE } from '../../block-types/column/column.type'
 import { COLUMN_LIST_BLOCK_TYPE } from '../../block-types/column-list/columnList.type'
 import { DIVIDER_BLOCK_TYPE } from '../../block-types/divider/divider.type'
+import { EMBED_BLOCK_TYPE } from '../../block-types/embed/embed.type'
 import { FILE_BLOCK_TYPE } from '../../block-types/file/file.type'
 import { HEADING_BLOCK_TYPE } from '../../block-types/heading/heading.type'
 import { IMAGE_BLOCK_TYPE } from '../../block-types/image/image.type'
@@ -17,6 +19,7 @@ import { QUOTE_BLOCK_TYPE } from '../../block-types/quote/quote.type'
 import { ROOT_BLOCK_TYPE } from '../../block-types/root/root.type'
 import { TOC_BLOCK_TYPE } from '../../block-types/toc/toc.type'
 import { TOGGLE_BLOCK_TYPE } from '../../block-types/toggle/toggle.type'
+import { VIDEO_BLOCK_TYPE } from '../../block-types/video/video.type'
 import { createBlockId, type SduiDocumentBlockId } from './ids'
 
 /** Tie-break metadata for deterministic sibling ordering when fractional keys collide. */
@@ -50,6 +53,9 @@ export type SduiDocumentBlockType =
   | typeof TOC_BLOCK_TYPE
   | typeof PAGE_BLOCK_TYPE
   | typeof COLLECTION_BLOCK_TYPE
+  | typeof BOOKMARK_BLOCK_TYPE
+  | typeof VIDEO_BLOCK_TYPE
+  | typeof EMBED_BLOCK_TYPE
 
 export type SduiDocumentBlock = {
   id: SduiDocumentBlockId

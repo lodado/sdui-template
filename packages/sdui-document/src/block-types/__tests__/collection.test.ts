@@ -1,8 +1,8 @@
 import { createDocumentBlock } from '../../blocks/schema'
 import { createBlockId } from '../../blocks/schema/ids'
-import { blockModuleByType, COLLECTION_BLOCK_TYPE, PAGE_BLOCK_TYPE } from '../index'
 import { collectionBlockModule, isCollectionBlock } from '../collection/collection'
 import { collectionAttributesSchema } from '../collection/collection.schema'
+import { blockModuleByType, COLLECTION_BLOCK_TYPE, PAGE_BLOCK_TYPE } from '../index'
 
 const collection = (view: string, children: Parameters<typeof createDocumentBlock>[0][] = []) =>
   createDocumentBlock({ id: 'col-1', type: COLLECTION_BLOCK_TYPE, attributes: { view }, children })

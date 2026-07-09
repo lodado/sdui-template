@@ -22,7 +22,16 @@ describe('blockMenuItems', () => {
       'page',
       'collection-gallery',
       'collection-list',
+      'bookmark',
+      'video',
+      'embed',
     ])
+  })
+
+  test('embed-family items are inserted via the link (URL) flow', () => {
+    expect(filterBlockMenuItems('bookmark').map((item) => item.id)).toEqual(['bookmark'])
+    expect(filterBlockMenuItems('youtube').map((item) => item.id)).toEqual(['video'])
+    expect(filterBlockMenuItems('iframe').map((item) => item.id)).toEqual(['embed'])
   })
 
   test('offers a table of contents item', () => {

@@ -1,5 +1,6 @@
 // packages/sdui-document/src/block-types/index.ts
 import type { SduiDocumentBlock } from '../blocks/schema/block'
+import { bookmarkBlockModule } from './bookmark/bookmark'
 import { bulletedListBlockModule } from './bulleted-list/bulletedList'
 import { calloutBlockModule } from './callout/callout'
 import { checklistBlockModule } from './checklist/checklist'
@@ -8,6 +9,7 @@ import { collectionBlockModule } from './collection/collection'
 import { columnBlockModule } from './column/column'
 import { columnListBlockModule } from './column-list/columnList'
 import { dividerBlockModule } from './divider/divider'
+import { embedBlockModule } from './embed/embed'
 import { fileBlockModule } from './file/file'
 import { headingBlockModule } from './heading/heading'
 import { imageBlockModule } from './image/image'
@@ -20,6 +22,7 @@ import { rootBlockModule } from './root/root'
 import { tocBlockModule } from './toc/toc'
 import { toggleBlockModule } from './toggle/toggle'
 import type { BlockLinkRef, SduiBlockTypeModule } from './types'
+import { videoBlockModule } from './video/video'
 
 /**
  * Block-type registry — the single source that drives SDUI mapping, defaults,
@@ -52,6 +55,9 @@ export const BLOCK_TYPE_MODULES: readonly SduiBlockTypeModule[] = [
   tocBlockModule,
   pageBlockModule,
   collectionBlockModule,
+  bookmarkBlockModule,
+  videoBlockModule,
+  embedBlockModule,
 ]
 
 export const blockModuleByType: Record<string, SduiBlockTypeModule> = BLOCK_TYPE_MODULES.reduce(
@@ -77,15 +83,16 @@ export function blockToPlainText(block: SduiDocumentBlock): string | undefined {
 export { paragraphBlockModule }
 // Per-folder block-type identity constants — public so consumers can build
 // documents/patches without hardcoding magic strings.
+export { BOOKMARK_BLOCK_TYPE, type BookmarkBlockAttributes } from './bookmark/bookmark'
 export { BULLETED_LIST_BLOCK_TYPE } from './bulleted-list/bulletedList.type'
 export { CALLOUT_BLOCK_TYPE } from './callout/callout.type'
 export { CHECKLIST_BLOCK_TYPE } from './checklist/checklist.type'
 export { CODE_BLOCK_TYPE } from './code/code.type'
 export {
   COLLECTION_BLOCK_TYPE,
+  COLLECTION_VIEWS,
   type CollectionBlockAttributes,
   type CollectionView,
-  COLLECTION_VIEWS,
   collectionViewSchema,
   type DateRangeValue,
   findPropertyOption,
@@ -103,6 +110,7 @@ export {
 export { COLUMN_BLOCK_TYPE } from './column/column.type'
 export { COLUMN_LIST_BLOCK_TYPE } from './column-list/columnList.type'
 export { DIVIDER_BLOCK_TYPE } from './divider/divider.type'
+export { EMBED_BLOCK_TYPE, type EmbedBlockAttributes } from './embed/embed'
 export { FILE_BLOCK_TYPE } from './file/file.type'
 export { HEADING_BLOCK_TYPE } from './heading/heading.type'
 export { IMAGE_BLOCK_TYPE } from './image/image.type'
@@ -113,6 +121,14 @@ export { PARAGRAPH_BLOCK_TYPE } from './paragraph/paragraph.type'
 export { QUOTE_BLOCK_TYPE } from './quote/quote.type'
 export { ROOT_BLOCK_TYPE } from './root/root.type'
 export { type BlockAlign, blockAlignSchema, resolveBlockAlign } from './shared/align'
+export {
+  isSafeHttpUrl,
+  type ParsedVideo,
+  parseVideoUrl,
+  videoEmbedUrl,
+  type VideoProvider,
+  videoThumbnailUrl,
+} from './shared/url'
 export { TOC_BLOCK_TYPE } from './toc/toc.type'
 export { TOGGLE_BLOCK_TYPE } from './toggle/toggle.type'
 export type {
@@ -126,6 +142,7 @@ export type {
   SduiLayoutLikeDocument,
   SduiLayoutLikeNode,
 } from './types'
+export { VIDEO_BLOCK_TYPE, type VideoBlockAttributes } from './video/video'
 
 // Authoring builders — terse helpers for hand-writing documents (colocated per block folder).
 export { nextBlockId, resetBlockIds } from './authoring/blockId'

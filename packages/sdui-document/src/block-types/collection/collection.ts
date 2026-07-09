@@ -1,15 +1,15 @@
 import type { SduiDocumentBlock } from '../../blocks/schema/block'
 import type { SduiBlockTypeModule } from '../types'
-import { collectionAttributesSchema, type CollectionBlockAttributes } from './collection.schema'
 import { createDefaultCollection } from './collection.default'
 import { collectionToMarkdown } from './collection.markdown'
+import { collectionAttributesSchema, type CollectionBlockAttributes } from './collection.schema'
 import { COLLECTION_BLOCK_TYPE } from './collection.type'
 
 export {
+  COLLECTION_VIEWS,
   type CollectionBlockAttributes,
   type CollectionView,
   collectionViewSchema,
-  COLLECTION_VIEWS,
 } from './collection.schema'
 export { COLLECTION_BLOCK_TYPE } from './collection.type'
 export * from './property'

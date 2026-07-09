@@ -6,6 +6,7 @@ import type {
 } from '@lodado/sdui-document'
 import {
   anchorAfterBlock,
+  BOOKMARK_BLOCK_TYPE,
   clearBlockSelection,
   createBlockId,
   createBlockSelection,
@@ -14,7 +15,9 @@ import {
   findBlockById,
   flattenDocumentBlocks,
   PAGE_BLOCK_TYPE,
+  parseVideoUrl,
   TOGGLE_BLOCK_TYPE,
+  VIDEO_BLOCK_TYPE,
 } from '@lodado/sdui-document'
 import React, { useMemo, useRef } from 'react'
 
@@ -43,6 +46,14 @@ import {
 } from '../handlerLogic'
 import type { EditorUIStore } from '../uiStore'
 
+/** Metadata a host's unfurl adapter may return for a bookmark. */
+export type UnfurlResult = {
+  title?: string
+  description?: string
+  imageUrl?: string
+  faviconUrl?: string
+}
+
 export type UseEditorHandlersInput = {
   store: EditorUIStore
   docRef: React.MutableRefObject<SduiDocumentContent>
@@ -54,6 +65,7 @@ export type UseEditorHandlersInput = {
   onTurnInto?: (blockId: string, type: string, attrs?: Record<string, unknown>) => void
   onUploadFile?: (file: File) => Promise<{ url: string }>
   onCreatePage?: () => Promise<{ documentId: string; title?: string }>
+  onUnfurl?: (url: string) => Promise<UnfurlResult | undefined>
 }
 
 export type UseEditorHandlersResult = {
@@ -80,11 +92,12 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
     onTurnInto,
     onUploadFile,
     onCreatePage,
+    onUnfurl,
   } = input
 
   // Live values behind a ref so the once-created handlers never go stale.
-  const latest = useRef({ applyPatches, generateBlockId, onHistory, onTurnInto, onUploadFile, onCreatePage })
-  latest.current = { applyPatches, generateBlockId, onHistory, onTurnInto, onUploadFile, onCreatePage }
+  const latest = useRef({ applyPatches, generateBlockId, onHistory, onTurnInto, onUploadFile, onCreatePage, onUnfurl })
+  latest.current = { applyPatches, generateBlockId, onHistory, onTurnInto, onUploadFile, onCreatePage, onUnfurl }
 
   // Block-menu file picking: the hidden input is clicked for image/file items,
   // and the target block/item wait here until the user chooses a file.
@@ -371,7 +384,20 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
           return
         }
 
-        const merged = { ...item.attributes, ...extraAttributes }
+        let merged: Record<string, unknown> = { ...item.attributes, ...extraAttributes }
+
+        // Video: the URL must parse to a known provider — otherwise reject the
+        // insert (the host should offer bookmark/embed instead).
+        if (item.type === VIDEO_BLOCK_TYPE) {
+          const parsed = typeof merged.url === 'string' ? parseVideoUrl(merged.url) : undefined
+          if (!parsed) {
+            // eslint-disable-next-line no-console
+            console.warn('[sdui-document-react] not a YouTube/Vimeo URL — video block not inserted')
+            return
+          }
+          merged = { ...merged, provider: parsed.provider, videoId: parsed.videoId, aspectRatio: '16:9' }
+        }
+
         const attributes = Object.keys(merged).length > 0 ? merged : undefined
         const applied = computeApplyMenuType(docRef.current, {
           blockId,
@@ -388,6 +414,26 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
           selectBlocks(createBlockSelection(applied.targetId))
         } else {
           refocus(applied.targetId, 'start', true)
+        }
+
+        // Bookmark: optimistically insert the URL-only card, then fill metadata
+        // when the host's unfurl adapter resolves (attributes patch).
+        if (item.type === BOOKMARK_BLOCK_TYPE && typeof merged.url === 'string') {
+          const unfurl = latest.current.onUnfurl
+          const { targetId } = applied
+          const { url } = merged
+          unfurl?.(url).then(
+            (meta) => {
+              if (meta) {
+                latest.current.applyPatches([
+                  blockAttrsPatch(targetId, { ...meta, unfurledAt: new Date().toISOString() }),
+                ])
+              }
+            },
+            () => {
+              /* unfurl failure leaves the URL-only card */
+            },
+          )
         }
       },
 

@@ -1,14 +1,24 @@
 import type { SduiDocumentBlock } from '@lodado/sdui-document'
-import { CODE_BLOCK_TYPE, COLLECTION_BLOCK_TYPE, PAGE_BLOCK_TYPE, TOGGLE_BLOCK_TYPE } from '@lodado/sdui-document'
+import {
+  BOOKMARK_BLOCK_TYPE,
+  CODE_BLOCK_TYPE,
+  COLLECTION_BLOCK_TYPE,
+  EMBED_BLOCK_TYPE,
+  PAGE_BLOCK_TYPE,
+  TOGGLE_BLOCK_TYPE,
+  VIDEO_BLOCK_TYPE,
+} from '@lodado/sdui-document'
 import React from 'react'
 
 import type { ImageLayoutPatch } from '../editor/EditorRuntimeContext'
+import { BookmarkBlock } from './bookmark/BookmarkBlock'
 import { BulletedListBlock } from './bulleted-list/BulletedListBlock'
 import { CalloutBlock } from './callout/CalloutBlock'
 import { ChecklistBlock } from './checklist/ChecklistBlock'
 import { CodeBlock } from './code/CodeBlock'
 import { CollectionBlock, type CollectionEditorHandlers } from './collection/CollectionBlock'
 import { DividerBlock } from './divider/DividerBlock'
+import { EmbedBlock } from './embed/EmbedBlock'
 import { FileBlock } from './file/FileBlock'
 import { HeadingBlock } from './heading/HeadingBlock'
 import { ImageBlock } from './image/ImageBlock'
@@ -19,6 +29,7 @@ import { ParagraphBlock } from './paragraph/ParagraphBlock'
 import { QuoteBlock } from './quote/QuoteBlock'
 import { TocBlock } from './toc/TocBlock'
 import { ToggleBlock } from './toggle/ToggleBlock'
+import { VideoBlock } from './video/VideoBlock'
 
 export type BlockChromeProps = {
   block: SduiDocumentBlock
@@ -130,6 +141,15 @@ export const BlockChrome = ({
 
     case COLLECTION_BLOCK_TYPE:
       return <CollectionBlock block={block} editor={collectionEditor} />
+
+    case BOOKMARK_BLOCK_TYPE:
+      return <BookmarkBlock block={block} />
+
+    case VIDEO_BLOCK_TYPE:
+      return <VideoBlock block={block} />
+
+    case EMBED_BLOCK_TYPE:
+      return <EmbedBlock block={block} />
 
     case 'document.paragraph':
     default:

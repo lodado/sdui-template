@@ -1,6 +1,7 @@
 import { createDocumentBlock } from '../../blocks/schema'
 import {
   BLOCK_TYPE_MODULES,
+  BOOKMARK_BLOCK_TYPE,
   BULLETED_LIST_BLOCK_TYPE,
   CALLOUT_BLOCK_TYPE,
   canHostInlineText,
@@ -10,6 +11,7 @@ import {
   COLUMN_BLOCK_TYPE,
   COLUMN_LIST_BLOCK_TYPE,
   DIVIDER_BLOCK_TYPE,
+  EMBED_BLOCK_TYPE,
   extractBlockLinks,
   FILE_BLOCK_TYPE,
   HEADING_BLOCK_TYPE,
@@ -22,6 +24,7 @@ import {
   ROOT_BLOCK_TYPE,
   TOC_BLOCK_TYPE,
   TOGGLE_BLOCK_TYPE,
+  VIDEO_BLOCK_TYPE,
 } from '../index'
 
 const make = (type: string, attributes?: Record<string, unknown>) => createDocumentBlock({ id: 'b', type, attributes })
@@ -48,6 +51,9 @@ describe('block-type constants', () => {
       TOC_BLOCK_TYPE,
       PAGE_BLOCK_TYPE,
       COLLECTION_BLOCK_TYPE,
+      BOOKMARK_BLOCK_TYPE,
+      VIDEO_BLOCK_TYPE,
+      EMBED_BLOCK_TYPE,
     ])
     const moduleTypes = new Set(BLOCK_TYPE_MODULES.map((blockModule) => blockModule.type))
     expect(moduleTypes).toEqual(constants)

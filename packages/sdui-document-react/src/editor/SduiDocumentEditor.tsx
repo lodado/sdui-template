@@ -23,7 +23,7 @@ import { type EditorRuntime, EditorRuntimeContext, useEditorRuntime } from './Ed
 import { collectDeletedPageDocumentIds } from './handlerLogic'
 import { useBlockPointerDrag } from './hooks/useBlockPointerDrag'
 import { useDocumentPatches } from './hooks/useDocumentPatches'
-import { useEditorHandlers } from './hooks/useEditorHandlers'
+import { type UnfurlResult,useEditorHandlers } from './hooks/useEditorHandlers'
 import { useInlineTextDragDrop } from './hooks/useInlineTextDragDrop'
 import { useRangeOperations } from './hooks/useRangeOperations'
 import { useSelectionKeyboard } from './hooks/useSelectionKeyboard'
@@ -63,6 +63,11 @@ export type SduiDocumentEditorProps = {
    * included) so the host can archive the target document — orphan prevention.
    */
   onArchivePage?(documentId: string): void | Promise<void>
+  /**
+   * Fetches link-preview metadata for a bookmark URL (host server route — the
+   * browser can't fetch cross-origin). Omitted → bookmarks stay URL-only cards.
+   */
+  onUnfurl?(url: string): Promise<UnfurlResult | undefined>
   readOnly?: boolean
   /** Injectable for deterministic tests; defaults to a random id. */
   generateBlockId?(): string
@@ -112,6 +117,7 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     onUploadFile,
     onCreatePage,
     onArchivePage,
+    onUnfurl,
     readOnly = false,
     generateBlockId = defaultGenerateBlockId,
     className,
@@ -207,6 +213,7 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     onTurnInto,
     onUploadFile,
     onCreatePage,
+    onUnfurl,
   })
   const canCreatePage = onCreatePage !== undefined
   const runtime = useMemo<EditorRuntime>(

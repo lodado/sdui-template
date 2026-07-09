@@ -1,6 +1,12 @@
 import './styles/editor.css'
 
 export * from './block-types'
+export {
+  isEmbedAllowed,
+  type SduiEmbedConfig,
+  SduiEmbedConfigProvider,
+  useEmbedConfig,
+} from './block-types/embed/EmbedConfigContext'
 export * from './editor'
 export { EmojiPicker, type EmojiPickerProps } from './emoji/EmojiPicker'
 export * from './focused-block'

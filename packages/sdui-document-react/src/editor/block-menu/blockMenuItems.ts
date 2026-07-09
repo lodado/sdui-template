@@ -3,7 +3,15 @@
  * `action` decides the select flow: 'insert' patches immediately, 'file'
  * opens the file picker first, 'link' switches the menu to a URL input.
  */
-import { CODE_BLOCK_TYPE, COLLECTION_BLOCK_TYPE, PAGE_BLOCK_TYPE, TOGGLE_BLOCK_TYPE } from '@lodado/sdui-document'
+import {
+  BOOKMARK_BLOCK_TYPE,
+  CODE_BLOCK_TYPE,
+  COLLECTION_BLOCK_TYPE,
+  EMBED_BLOCK_TYPE,
+  PAGE_BLOCK_TYPE,
+  TOGGLE_BLOCK_TYPE,
+  VIDEO_BLOCK_TYPE,
+} from '@lodado/sdui-document'
 
 export type BlockMenuGroup = 'basic' | 'media' | 'advanced'
 
@@ -174,7 +182,7 @@ export const BLOCK_MENU_ITEMS: readonly BlockMenuItem[] = [
     glyph: '⇗',
     action: 'link',
     group: 'media',
-    keywords: ['link', 'url', 'bookmark', '링크', '주소'],
+    keywords: ['link', 'url', '링크', '주소'],
   },
   {
     id: 'toc',
@@ -213,6 +221,33 @@ export const BLOCK_MENU_ITEMS: readonly BlockMenuItem[] = [
     group: 'advanced',
     attributes: { view: 'list', properties: [] },
     keywords: ['list', 'collection', 'database', '리스트', '목록', '컬렉션'],
+  },
+  {
+    id: 'bookmark',
+    type: BOOKMARK_BLOCK_TYPE,
+    title: 'Bookmark',
+    glyph: '🔖',
+    action: 'link',
+    group: 'media',
+    keywords: ['bookmark', 'link preview', 'url', '북마크', '링크', '미리보기'],
+  },
+  {
+    id: 'video',
+    type: VIDEO_BLOCK_TYPE,
+    title: 'Video',
+    glyph: '▶',
+    action: 'link',
+    group: 'media',
+    keywords: ['video', 'youtube', 'vimeo', '영상', '비디오', '유튜브'],
+  },
+  {
+    id: 'embed',
+    type: EMBED_BLOCK_TYPE,
+    title: 'Embed',
+    glyph: '🖼',
+    action: 'link',
+    group: 'media',
+    keywords: ['embed', 'iframe', 'codepen', 'codesandbox', '임베드'],
   },
 ]
 
