@@ -50,6 +50,10 @@ export type EditorHandlers = {
   blockMenuSelect(blockId: string, item: BlockMenuItem, extraAttributes?: Record<string, unknown>): void
   /** Collection "+ New": create a page document (host) and insert it as a collection item. */
   addCollectionItem(collectionId: string): void
+  /** Merge attributes into a collection block (view / properties / groupBy / sortBy). */
+  setCollectionAttrs(collectionId: string, partial: Record<string, unknown>): void
+  /** Set one property value on a collection item (page block); undefined clears it. */
+  setItemProperty(itemId: string, propertyId: string, value: unknown): void
   blockMenuFilePicked(file: File): void
   insertBlockBelow(blockId: string): void
   /** Insert (and focus) a paragraph as a toggle's first child; expands it if collapsed. */

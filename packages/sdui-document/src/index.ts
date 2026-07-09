@@ -6,6 +6,7 @@ export {
   COLLECTION_BLOCK_TYPE,
   type CollectionBlockAttributes,
   type CollectionView,
+  COLLECTION_VIEWS,
   collectionViewSchema,
   column,
   type ColumnBuilderOptions,

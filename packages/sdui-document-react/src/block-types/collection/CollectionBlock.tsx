@@ -4,14 +4,23 @@ import React from 'react'
 
 import { useDocumentContent } from '../../editor/DocumentContentContext'
 import { useSduiPage } from '../../page/SduiPageContext'
+import { BoardView } from './BoardView'
+import { CollectionToolbar } from './CollectionToolbar'
 import { GalleryView } from './GalleryView'
 import { collectionConfig, collectionItems } from './items'
 import { ListView } from './ListView'
+import { TimelineView } from './TimelineView'
+
+/** Editor-only mutation handlers; omitted entirely in read mode. */
+export type CollectionEditorHandlers = {
+  onAddItem(collectionId: string): void
+  onSetCollectionAttrs(collectionId: string, partial: Record<string, unknown>): void
+  onSetItemProperty(itemId: string, propertyId: string, value: unknown): void
+}
 
 export type CollectionBlockProps = {
   block: SduiDocumentBlock
-  /** Editor-only: add a new page item to this collection (omitted in read mode). */
-  onAddItem?(collectionId: string): void
+  editor?: CollectionEditorHandlers
 }
 
 /**
@@ -19,7 +28,7 @@ export type CollectionBlockProps = {
  * entry-reconstructed `block` is childless — so the live children are read from
  * the document-content store and rendered by the selected view.
  */
-export const CollectionBlock = ({ block, onAddItem }: CollectionBlockProps) => {
+export const CollectionBlock = ({ block, editor }: CollectionBlockProps) => {
   const content = useDocumentContent()
   const page = useSduiPage()
 
@@ -43,13 +52,27 @@ export const CollectionBlock = ({ block, onAddItem }: CollectionBlockProps) => {
 
   return (
     <div className="sdui-doc-collection" data-view={config.view} contentEditable={false}>
-      {config.view === 'list' ? (
-        <ListView items={sorted} properties={config.properties} onOpen={open} />
-      ) : (
+      {editor ? (
+        <CollectionToolbar
+          collectionId={block.id}
+          view={config.view}
+          properties={config.properties}
+          groupBy={config.groupBy}
+          onSetAttrs={editor.onSetCollectionAttrs}
+        />
+      ) : null}
+
+      {config.view === 'list' && <ListView items={sorted} properties={config.properties} onOpen={open} />}
+      {config.view === 'board' && (
+        <BoardView items={sorted} properties={config.properties} groupBy={config.groupBy} onOpen={open} />
+      )}
+      {config.view === 'timeline' && <TimelineView items={sorted} properties={config.properties} onOpen={open} />}
+      {config.view === 'gallery' && (
         <GalleryView items={sorted} properties={config.properties} onOpen={open} cardSize={config.cardSize} />
       )}
-      {onAddItem ? (
-        <button type="button" className="sdui-doc-collection-add" onClick={() => onAddItem(block.id)}>
+
+      {editor ? (
+        <button type="button" className="sdui-doc-collection-add" onClick={() => editor.onAddItem(block.id)}>
           + New
         </button>
       ) : null}

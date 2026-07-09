@@ -7,7 +7,7 @@ import { BulletedListBlock } from './bulleted-list/BulletedListBlock'
 import { CalloutBlock } from './callout/CalloutBlock'
 import { ChecklistBlock } from './checklist/ChecklistBlock'
 import { CodeBlock } from './code/CodeBlock'
-import { CollectionBlock } from './collection/CollectionBlock'
+import { CollectionBlock, type CollectionEditorHandlers } from './collection/CollectionBlock'
 import { DividerBlock } from './divider/DividerBlock'
 import { FileBlock } from './file/FileBlock'
 import { HeadingBlock } from './heading/HeadingBlock'
@@ -34,8 +34,8 @@ export type BlockChromeProps = {
   onSetCodeLanguage?(blockId: string, language: string): void
   /** Image size/position controls — omitted (readOnly) renders the image without controls. */
   onSetImageLayout?(blockId: string, layout: ImageLayoutPatch): void
-  /** Collection "+ New" — omitted (readOnly) hides the add-item button. */
-  onAddCollectionItem?(collectionId: string): void
+  /** Collection editor handlers — omitted (readOnly) hides all editing affordances. */
+  collectionEditor?: CollectionEditorHandlers
   /** Inline content: static InlineContentView or the focused ProseMirror editor. */
   children?: React.ReactNode
 }
@@ -62,7 +62,7 @@ export const BlockChrome = ({
   onToggleCollapsed,
   onSetCodeLanguage,
   onSetImageLayout,
-  onAddCollectionItem,
+  collectionEditor,
   children,
 }: BlockChromeProps) => {
   switch (block.type) {
@@ -129,7 +129,7 @@ export const BlockChrome = ({
       return <PageBlock block={block} />
 
     case COLLECTION_BLOCK_TYPE:
-      return <CollectionBlock block={block} onAddItem={onAddCollectionItem} />
+      return <CollectionBlock block={block} editor={collectionEditor} />
 
     case 'document.paragraph':
     default:

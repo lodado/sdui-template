@@ -36,6 +36,8 @@ import {
   computeMoveBlock,
   computeNavigate,
   computeOutdent,
+  computeSetCollectionAttrs,
+  computeSetItemProperty,
   computeSplit,
   computeTurnInto,
 } from '../handlerLogic'
@@ -141,6 +143,14 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
 
     const insertToggleChild = (blockId: string) => {
       applyDecision(computeInsertToggleChild(docRef.current, blockId, nextBlockId))
+    }
+
+    const setCollectionAttrs = (collectionId: string, partial: Record<string, unknown>) => {
+      applyDecision(computeSetCollectionAttrs(docRef.current, collectionId, partial))
+    }
+
+    const setItemProperty = (itemId: string, propertyId: string, value: unknown) => {
+      applyDecision(computeSetItemProperty(docRef.current, itemId, propertyId, value))
     }
 
     const addCollectionItem = (collectionId: string) => {
@@ -442,6 +452,8 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
       insertToggleChild,
 
       addCollectionItem,
+      setCollectionAttrs,
+      setItemProperty,
 
       insertBlockBelow: (blockId) => {
         applyDecision(computeInsertBlockBelow(docRef.current, blockId, nextBlockId))

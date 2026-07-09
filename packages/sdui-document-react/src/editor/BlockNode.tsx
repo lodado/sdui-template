@@ -240,7 +240,15 @@ const BlockRow = ({ entry, depth, readOnly }: BlockViewProps) => {
             onToggleCollapsed={onToggleCollapsed}
             onSetCodeLanguage={readOnly ? undefined : handlers.setCodeLanguage}
             onSetImageLayout={readOnly ? undefined : handlers.setImageLayout}
-            onAddCollectionItem={readOnly ? undefined : handlers.addCollectionItem}
+            collectionEditor={
+              readOnly
+                ? undefined
+                : {
+                    onAddItem: handlers.addCollectionItem,
+                    onSetCollectionAttrs: handlers.setCollectionAttrs,
+                    onSetItemProperty: handlers.setItemProperty,
+                  }
+            }
           >
             {isTextBlock(block) &&
               (isFocused && focus ? (

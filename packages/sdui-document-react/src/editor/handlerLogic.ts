@@ -114,6 +114,51 @@ export function computeAddCollectionItem(
   }
 }
 
+/**
+ * Merge partial attributes into a collection block (view/properties/groupBy/
+ * sortBy). Shallow merge — pass the full `properties` array to replace it.
+ * Returns null when the block is missing or not a collection.
+ */
+export function computeSetCollectionAttrs(
+  content: SduiDocumentContent,
+  collectionId: string,
+  partial: Record<string, unknown>,
+): HandlerDecision | null {
+  const collection = findBlockById(content, collectionId)
+  if (!collection || collection.type !== COLLECTION_BLOCK_TYPE) {
+    return null
+  }
+  return { patches: [blockAttrsPatch(collectionId, partial)] }
+}
+
+/**
+ * Set a single property value on a collection item (page block). Rebuilds the
+ * whole `properties` map (block.update merges attributes shallowly, so the map
+ * must be replaced wholesale). `value === undefined` removes the key.
+ * Returns null when the item is missing or not a page block.
+ */
+export function computeSetItemProperty(
+  content: SduiDocumentContent,
+  itemId: string,
+  propertyId: string,
+  value: unknown,
+): HandlerDecision | null {
+  const item = findBlockById(content, itemId)
+  if (!item || item.type !== PAGE_BLOCK_TYPE) {
+    return null
+  }
+
+  const current = (item.attributes?.properties as Record<string, unknown> | undefined) ?? {}
+  const nextProps = { ...current }
+  if (value === undefined) {
+    delete nextProps[propertyId]
+  } else {
+    nextProps[propertyId] = value
+  }
+
+  return { patches: [blockAttrsPatch(itemId, { properties: nextProps })] }
+}
+
 /** Document-order text blocks (root excluded) — the caret navigation space. */
 export function orderedTextBlocks(content: SduiDocumentContent) {
   return flattenDocumentBlocks(content)
