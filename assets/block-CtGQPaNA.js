@@ -1,0 +1,1 @@
+function r(e){return e}function t(e){return e}function a(e){return e}function o(e){return{...e,id:e.id,...e.position!==void 0?{position:e.position}:{},...e.origin?{origin:{...e.origin}}:{},state:e.state?{...e.state}:void 0,attributes:e.attributes?{...e.attributes}:void 0,children:e.children?e.children.map(o):void 0}}export{t as a,r as b,o as c,a as d};
