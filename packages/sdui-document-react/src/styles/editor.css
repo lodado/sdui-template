@@ -5,23 +5,29 @@
  * [data-sdui-document-editor] so nothing leaks outside the editor container.
  *
  * Do not invent values here — every color/size/spacing traces back to Outline.
+ *
+ * Design-system bridge: hybrid-visible tokens (text, link, background, borders)
+ * reference @lodado/sdui-design-files semantic vars (--color-*) with the Outline
+ * value as fallback. On a hybrid page the editor and SDUI components share one
+ * palette; standalone (design-files not loaded) the fallback keeps the editor
+ * intact, including dark mode (each theme block carries its own fallback).
  */
 
 :root,
 [data-theme='light'] {
   /* base — Notion light palette (warm near-black text #37352f, Notion blue
      accent rgb(35,131,226), tinted-alpha dividers) */
-  --sdui-doc-text: #37352f;
-  --sdui-doc-text-secondary: #787774;
-  --sdui-doc-text-tertiary: #9b9a97;
-  --sdui-doc-background: #ffffff;
+  --sdui-doc-text: var(--color-text-default, #37352f);
+  --sdui-doc-text-secondary: var(--color-text-subtle, #787774);
+  --sdui-doc-text-tertiary: var(--color-text-subtlest, #9b9a97);
+  --sdui-doc-background: var(--elevation-surface-default, #ffffff);
   --sdui-doc-background-secondary: rgba(55, 53, 47, 0.06);
-  --sdui-doc-accent: #2383e6;
-  --sdui-doc-accent-text: #ffffff;
-  --sdui-doc-link: #2383e6;
+  --sdui-doc-accent: var(--color-link-default, #2383e6);
+  --sdui-doc-accent-text: var(--color-text-inverse, #ffffff);
+  --sdui-doc-link: var(--color-link-default, #2383e6);
   --sdui-doc-quote: rgba(55, 53, 47, 0.16);
-  --sdui-doc-divider: rgba(55, 53, 47, 0.09);
-  --sdui-doc-hr: rgba(55, 53, 47, 0.09);
+  --sdui-doc-divider: var(--color-border-default, rgba(55, 53, 47, 0.09));
+  --sdui-doc-hr: var(--color-border-default, rgba(55, 53, 47, 0.09));
 
   /* code — Notion inline code (warm-gray tint, red text, no border)
      + code block surface (rgb(247,246,243)) */
@@ -62,10 +68,10 @@
 
   /* surface system — Notion's 3-step surface grammar (page bg, tinted panel,
      hover wash) + hairline borders */
-  --sdui-doc-surface-1: #f7f7f5;
+  --sdui-doc-surface-1: var(--elevation-surface-sunken-default, #f7f7f5);
   --sdui-doc-surface-hover: rgba(55, 53, 47, 0.06);
-  --sdui-doc-border-light: rgba(55, 53, 47, 0.09);
-  --sdui-doc-border-mid: rgba(55, 53, 47, 0.16);
+  --sdui-doc-border-light: var(--color-border-default, rgba(55, 53, 47, 0.09));
+  --sdui-doc-border-mid: var(--color-border-bold, rgba(55, 53, 47, 0.16));
 
   /* elevation — Notion card / card-hover / popover shadows */
   --sdui-doc-shadow-card: rgba(15, 15, 15, 0.04) 0 0 0 1px, rgba(15, 15, 15, 0.03) 0 2px 4px;
@@ -83,17 +89,17 @@
 
 [data-theme='dark'] {
   /* base — Notion dark palette (white-alpha text, Notion-blue link #529cca) */
-  --sdui-doc-text: rgba(255, 255, 255, 0.81);
-  --sdui-doc-text-secondary: rgba(255, 255, 255, 0.46);
-  --sdui-doc-text-tertiary: rgba(255, 255, 255, 0.28);
-  --sdui-doc-background: #191919;
+  --sdui-doc-text: var(--color-text-default, rgba(255, 255, 255, 0.81));
+  --sdui-doc-text-secondary: var(--color-text-subtle, rgba(255, 255, 255, 0.46));
+  --sdui-doc-text-tertiary: var(--color-text-subtlest, rgba(255, 255, 255, 0.28));
+  --sdui-doc-background: var(--elevation-surface-default, #191919);
   --sdui-doc-background-secondary: rgba(255, 255, 255, 0.055);
-  --sdui-doc-accent: #2383e6;
-  --sdui-doc-accent-text: #ffffff;
-  --sdui-doc-link: #529cca;
+  --sdui-doc-accent: var(--color-link-default, #2383e6);
+  --sdui-doc-accent-text: var(--color-text-inverse, #ffffff);
+  --sdui-doc-link: var(--color-link-default, #529cca);
   --sdui-doc-quote: rgba(255, 255, 255, 0.16);
-  --sdui-doc-divider: rgba(255, 255, 255, 0.13);
-  --sdui-doc-hr: rgba(255, 255, 255, 0.13);
+  --sdui-doc-divider: var(--color-border-default, rgba(255, 255, 255, 0.13));
+  --sdui-doc-hr: var(--color-border-default, rgba(255, 255, 255, 0.13));
 
   --sdui-doc-code: #e6e6e6;
   --sdui-doc-code-background: rgba(135, 131, 120, 0.15);
@@ -107,10 +113,10 @@
   --sdui-doc-menu-background: #181c25;
   --sdui-doc-menu-shadow: 0 0 0 1px rgb(34 40 52), 0 8px 16px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.08);
 
-  --sdui-doc-surface-1: #202020;
+  --sdui-doc-surface-1: var(--elevation-surface-sunken-default, #202020);
   --sdui-doc-surface-hover: rgba(255, 255, 255, 0.055);
-  --sdui-doc-border-light: rgba(255, 255, 255, 0.094);
-  --sdui-doc-border-mid: rgba(255, 255, 255, 0.16);
+  --sdui-doc-border-light: var(--color-border-default, rgba(255, 255, 255, 0.094));
+  --sdui-doc-border-mid: var(--color-border-bold, rgba(255, 255, 255, 0.16));
 
   --sdui-doc-shadow-card: rgba(255, 255, 255, 0.094) 0 0 0 1px, rgba(0, 0, 0, 0.2) 0 2px 4px;
   --sdui-doc-shadow-card-hover: rgba(255, 255, 255, 0.13) 0 0 0 1px, rgba(0, 0, 0, 0.4) 0 4px 12px;
