@@ -63,6 +63,8 @@ export type EditorRuntime = {
   handlers: EditorHandlers
   /** Per-id render-model store: block rows subscribe to their own entry for O(1) re-render. */
   renderStore: RenderModelStore
+  /** Host-adapter availability flags (e.g. Page menu item needs onCreatePage). */
+  capabilities: { canCreatePage: boolean }
 }
 
 export const EditorRuntimeContext = React.createContext<EditorRuntime | null>(null)

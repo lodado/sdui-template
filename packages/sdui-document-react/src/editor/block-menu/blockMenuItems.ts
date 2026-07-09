@@ -3,7 +3,7 @@
  * `action` decides the select flow: 'insert' patches immediately, 'file'
  * opens the file picker first, 'link' switches the menu to a URL input.
  */
-import { CODE_BLOCK_TYPE, TOGGLE_BLOCK_TYPE } from '@lodado/sdui-document'
+import { CODE_BLOCK_TYPE, PAGE_BLOCK_TYPE, TOGGLE_BLOCK_TYPE } from '@lodado/sdui-document'
 
 export type BlockMenuGroup = 'basic' | 'media' | 'advanced'
 
@@ -185,15 +185,25 @@ export const BLOCK_MENU_ITEMS: readonly BlockMenuItem[] = [
     group: 'advanced',
     keywords: ['toc', 'contents', 'outline', 'table of contents', '목차', '개요'],
   },
+  {
+    id: 'page',
+    type: PAGE_BLOCK_TYPE,
+    title: 'Page',
+    glyph: '📄',
+    action: 'insert',
+    group: 'basic',
+    keywords: ['page', 'subpage', 'document', '페이지', '하위', '문서'],
+  },
 ]
 
 /**
  * Turn-into targets = the insertable block types, minus the ones with no text
  * content to carry over (divider / image / file / link). Turning an existing
- * text block into those would silently drop its content.
+ * text block into those would silently drop its content. Page is excluded
+ * too: turn-into-page implies moving content to a new document (backlog).
  */
 export const TURN_INTO_ITEMS: readonly BlockMenuItem[] = BLOCK_MENU_ITEMS.filter(
-  (item) => item.action === 'insert' && item.type !== 'document.divider',
+  (item) => item.action === 'insert' && item.type !== 'document.divider' && item.type !== PAGE_BLOCK_TYPE,
 )
 
 /** Menu item matching a live block (heading levels disambiguated via attrs). */
@@ -210,13 +220,21 @@ export function blockMenuItemIdFor(type: string, attributes?: Record<string, unk
   return match?.id ?? null
 }
 
-export function filterBlockMenuItems(query: string): BlockMenuItem[] {
+export type BlockMenuCapabilities = {
+  /** Page insertion needs a host document factory (onCreatePage) — hidden without one. */
+  canCreatePage?: boolean
+}
+
+export function filterBlockMenuItems(query: string, capabilities?: BlockMenuCapabilities): BlockMenuItem[] {
   const needle = query.trim().toLowerCase()
+  const available = BLOCK_MENU_ITEMS.filter(
+    (item) => item.type !== PAGE_BLOCK_TYPE || capabilities?.canCreatePage === true,
+  )
   if (!needle) {
-    return [...BLOCK_MENU_ITEMS]
+    return available
   }
 
-  return BLOCK_MENU_ITEMS.filter(
+  return available.filter(
     (item) =>
       item.title.toLowerCase().includes(needle) ||
       item.keywords.some((keyword) => keyword.toLowerCase().includes(needle)),

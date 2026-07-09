@@ -49,7 +49,6 @@ function entryToBlock(entry: RenderEntry): SduiDocumentBlock {
   }
 }
 
-
 /**
  * Layout-only containers for horizontal splits — no row chrome (drag handle /
  * plus button / BlockChrome): only the content rows inside the columns are
@@ -108,7 +107,7 @@ export const BlockNode = React.memo(({ id, depth, readOnly }: BlockNodeProps) =>
 BlockNode.displayName = 'BlockNode'
 
 const BlockRow = ({ entry, depth, readOnly }: BlockViewProps) => {
-  const { store, handlers } = useEditorRuntime()
+  const { store, handlers, capabilities } = useEditorRuntime()
   const block = React.useMemo(() => entryToBlock(entry), [entry])
   const { id } = entry
   const { childrenIds, listOrdinal } = entry
@@ -262,6 +261,7 @@ const BlockRow = ({ entry, depth, readOnly }: BlockViewProps) => {
                   onBlockAction={() => handlers.blockAction(block.id)}
                   onEscape={() => handlers.escape(block.id)}
                   onBlockMenuSelect={(item, extra) => handlers.blockMenuSelect(block.id, item, extra)}
+                  canCreatePage={capabilities.canCreatePage}
                   onToolbarPropsChange={(toolbarProps) => store.set({ selectionToolbar: toolbarProps })}
                 />
               ) : (

@@ -13,6 +13,7 @@ import {
   extendBlockSelection,
   findBlockById,
   flattenDocumentBlocks,
+  PAGE_BLOCK_TYPE,
   TOGGLE_BLOCK_TYPE,
 } from '@lodado/sdui-document'
 import React, { useMemo, useRef } from 'react'
@@ -49,6 +50,7 @@ export type UseEditorHandlersInput = {
   onHistory: (direction: 'undo' | 'redo') => void
   onTurnInto?: (blockId: string, type: string, attrs?: Record<string, unknown>) => void
   onUploadFile?: (file: File) => Promise<{ url: string }>
+  onCreatePage?: () => Promise<{ documentId: string; title?: string }>
 }
 
 export type UseEditorHandlersResult = {
@@ -65,11 +67,21 @@ export type UseEditorHandlersResult = {
  * stay stable and memoized rows keep bailing out of re-render.
  */
 export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandlersResult {
-  const { store, docRef, containerRef, applyPatches, generateBlockId, onHistory, onTurnInto, onUploadFile } = input
+  const {
+    store,
+    docRef,
+    containerRef,
+    applyPatches,
+    generateBlockId,
+    onHistory,
+    onTurnInto,
+    onUploadFile,
+    onCreatePage,
+  } = input
 
   // Live values behind a ref so the once-created handlers never go stale.
-  const latest = useRef({ applyPatches, generateBlockId, onHistory, onTurnInto, onUploadFile })
-  latest.current = { applyPatches, generateBlockId, onHistory, onTurnInto, onUploadFile }
+  const latest = useRef({ applyPatches, generateBlockId, onHistory, onTurnInto, onUploadFile, onCreatePage })
+  latest.current = { applyPatches, generateBlockId, onHistory, onTurnInto, onUploadFile, onCreatePage }
 
   // Block-menu file picking: the hidden input is clicked for image/file items,
   // and the target block/item wait here until the user chooses a file.
@@ -298,6 +310,39 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
           return
         }
 
+        if (item.type === PAGE_BLOCK_TYPE) {
+          // Document first, block second: no patch until the host created the
+          // target, so a failed creation leaves the document untouched.
+          const createPage = latest.current.onCreatePage
+          if (!createPage) {
+            return
+          }
+
+          createPage().then(
+            ({ documentId, title }) => {
+              const applied = computeApplyMenuType(docRef.current, {
+                blockId,
+                type: item.type,
+                attributes: { ...item.attributes, documentId },
+                ...(title ? { extraState: { text: title } } : {}),
+                nextBlockId,
+              })
+              if (!applied) {
+                return
+              }
+
+              latest.current.applyPatches(applied.patches)
+              selectBlocks(createBlockSelection(applied.targetId))
+            },
+            (error: unknown) => {
+              // eslint-disable-next-line no-console
+              console.warn('[sdui-document-react] onCreatePage failed — page block not inserted', error)
+            },
+          )
+
+          return
+        }
+
         const merged = { ...item.attributes, ...extraAttributes }
         const attributes = Object.keys(merged).length > 0 ? merged : undefined
         const applied = computeApplyMenuType(docRef.current, {
@@ -340,7 +385,7 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
         }
 
         latest.current.applyPatches(applied.patches)
-        const {targetId} = applied
+        const { targetId } = applied
         selectBlocks(createBlockSelection(targetId))
 
         // The upload resolves after arbitrary user edits — the block may be

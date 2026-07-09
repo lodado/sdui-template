@@ -11,7 +11,7 @@
  * Import direction is one-way: hooks import this module, this module must
  * never import from `hooks/` (or anything effectful).
  */
-import type { SduiDocumentContent, SduiDocumentPatch } from '@lodado/sdui-document'
+import type { SduiDocumentBlock, SduiDocumentContent, SduiDocumentPatch } from '@lodado/sdui-document'
 import {
   anchorAfterBlock,
   anchorAppendToParent,
@@ -21,6 +21,7 @@ import {
   findBlockById,
   flattenDocumentBlocks,
   getInlineContentLength,
+  PAGE_BLOCK_TYPE,
   TOGGLE_BLOCK_TYPE,
 } from '@lodado/sdui-document'
 
@@ -46,6 +47,32 @@ export type HandlerDecision = {
 /** Single `block.update` patch setting attributes — shared by the attribute toggles. */
 export function blockAttrsPatch(blockId: string, attributes: Record<string, unknown>): SduiDocumentPatch {
   return { type: 'block.update', blockId: createBlockId(blockId), attributes }
+}
+
+function collectPageDocumentIds(block: SduiDocumentBlock, into: string[]): void {
+  if (block.type === PAGE_BLOCK_TYPE && typeof block.attributes?.documentId === 'string') {
+    into.push(block.attributes.documentId)
+  }
+  ;(block.children ?? []).forEach((child) => collectPageDocumentIds(child, into))
+}
+
+/**
+ * Target documents of every page block removed by the given patches (subtrees
+ * included). Read BEFORE the patches are applied — the archive side effect
+ * fires per collected id after apply. Every deletion path funnels through
+ * applyPatches, so this is the single choke point for orphan prevention.
+ */
+export function collectDeletedPageDocumentIds(content: SduiDocumentContent, patches: SduiDocumentPatch[]): string[] {
+  const ids: string[] = []
+  patches.forEach((patch) => {
+    if (patch.type === 'block.delete') {
+      const block = findBlockById(content, patch.blockId)
+      if (block) {
+        collectPageDocumentIds(block, ids)
+      }
+    }
+  })
+  return ids
 }
 
 /** Document-order text blocks (root excluded) — the caret navigation space. */

@@ -59,6 +59,8 @@ export type FocusedBlockEditorProps = Omit<
    * entry in the toolbar's turn-into dropdown. `undefined` hides the dropdown.
    */
   turnIntoActiveId?: string | null
+  /** Shows the Page menu item (the host provided a document factory). */
+  canCreatePage?: boolean
   className?: string
 }
 
@@ -86,7 +88,16 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
   // latestProps so late prop swaps still land (react/no-unused-prop-types).
   // onToolbarPropsChange is safe to destructure: the publish hook tracks the
   // latest value through its own ref.
-  const { content, autoFocus, className, blockAlign, onSetAlign, turnIntoActiveId, onToolbarPropsChange } = props
+  const {
+    content,
+    autoFocus,
+    className,
+    blockAlign,
+    onSetAlign,
+    turnIntoActiveId,
+    onToolbarPropsChange,
+    canCreatePage,
+  } = props
   const containerRef = useRef<HTMLSpanElement>(null)
   const viewRef = useRef<EditorView>()
   const latestProps = useRef(props)
@@ -201,7 +212,7 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
           return false
         }
 
-        const items = filterBlockMenuItems(current.query)
+        const items = filterBlockMenuItems(current.query, { canCreatePage: latestProps.current.canCreatePage })
         if (key === 'escape') {
           // close the menu only — the typed /query text stays (Notion behavior)
           updateMenu(null)
@@ -428,7 +439,7 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
       {menu ? (
         <BlockMenu
           anchor={menu.anchor}
-          items={filterBlockMenuItems(menu.query)}
+          items={filterBlockMenuItems(menu.query, { canCreatePage })}
           activeIndex={menu.activeIndex}
           view={menu.view}
           onSelect={(item) => selectItemRef.current?.(item)}

@@ -19,6 +19,7 @@ describe('blockMenuItems', () => {
       'file',
       'link',
       'toc',
+      'page',
     ])
   })
 
@@ -45,8 +46,16 @@ describe('blockMenuItems', () => {
     expect(filterBlockMenuItems('코드').map((item) => item.type)).toContain('document.code')
   })
 
-  test('empty query returns everything', () => {
-    expect(filterBlockMenuItems('')).toHaveLength(BLOCK_MENU_ITEMS.length)
+  test('empty query returns everything except capability-gated items', () => {
+    // page needs onCreatePage — hidden by default
+    expect(filterBlockMenuItems('')).toHaveLength(BLOCK_MENU_ITEMS.length - 1)
+    expect(filterBlockMenuItems('', { canCreatePage: true })).toHaveLength(BLOCK_MENU_ITEMS.length)
+  })
+
+  test('page item is capability-gated', () => {
+    expect(filterBlockMenuItems('page').map((item) => item.id)).toEqual([])
+    expect(filterBlockMenuItems('page', { canCreatePage: true }).map((item) => item.id)).toContain('page')
+    expect(filterBlockMenuItems('페이지', { canCreatePage: true }).map((item) => item.id)).toContain('page')
   })
 
   test('filters by english keyword, case-insensitive', () => {

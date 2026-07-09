@@ -3,6 +3,7 @@ import { clearBlockSelection } from '@lodado/sdui-document'
 import {
   type MouseEvent as ReactMouseEvent,
   type Ref,
+  useCallback,
   useEffect,
   useImperativeHandle,
   useMemo,
@@ -19,6 +20,7 @@ import { DocEmptyFlag } from './DocEmptyFlag'
 import { createDocContentStore, DocumentContentProvider, type MutableDocContentStore } from './DocumentContentContext'
 import { DRAG_INDENT_WIDTH } from './editorConstants'
 import { type EditorRuntime, EditorRuntimeContext, useEditorRuntime } from './EditorRuntimeContext'
+import { collectDeletedPageDocumentIds } from './handlerLogic'
 import { useBlockPointerDrag } from './hooks/useBlockPointerDrag'
 import { useDocumentPatches } from './hooks/useDocumentPatches'
 import { useEditorHandlers } from './hooks/useEditorHandlers'
@@ -51,6 +53,16 @@ export type SduiDocumentEditorProps = {
    * falls back to URL.createObjectURL (local-only, lost on reload).
    */
   onUploadFile?(file: File): Promise<{ url: string }>
+  /**
+   * Creates an empty sub-page document for the "Page" menu item (host wires
+   * its repository). Omitted → the Page item is hidden from the block menu.
+   */
+  onCreatePage?(): Promise<{ documentId: string; title?: string }>
+  /**
+   * Fired for every page block removed from the document (subtree deletions
+   * included) so the host can archive the target document — orphan prevention.
+   */
+  onArchivePage?(documentId: string): void | Promise<void>
   readOnly?: boolean
   /** Injectable for deterministic tests; defaults to a random id. */
   generateBlockId?(): string
@@ -98,6 +110,8 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     onContentChange,
     onTurnInto,
     onUploadFile,
+    onCreatePage,
+    onArchivePage,
     readOnly = false,
     generateBlockId = defaultGenerateBlockId,
     className,
@@ -124,7 +138,12 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
   }
   const docStore = docStoreRef.current
 
-  const { docRef, applyPatches, undo, redo } = useDocumentPatches({
+  const {
+    docRef,
+    applyPatches: applyPatchesRaw,
+    undo,
+    redo,
+  } = useDocumentPatches({
     content,
     onContentChange,
     onPublish: (prev, next) => {
@@ -134,6 +153,26 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     generateBlockId,
     readOnly,
   })
+
+  // Archive choke point: every deletion path (block actions, backspace, range
+  // delete) funnels through applyPatches, so removed page blocks are collected
+  // here — BEFORE apply — and their target documents reported to the host.
+  const onArchivePageRef = useRef(onArchivePage)
+  onArchivePageRef.current = onArchivePage
+  const applyPatches = useCallback(
+    (patches: SduiDocumentPatch[]) => {
+      const archive = onArchivePageRef.current
+      const removedPageDocIds = archive ? collectDeletedPageDocumentIds(docRef.current, patches) : []
+      applyPatchesRaw(patches)
+      removedPageDocIds.forEach((documentId) => {
+        Promise.resolve(archive?.(documentId)).catch((error: unknown) => {
+          // eslint-disable-next-line no-console
+          console.warn('[sdui-document-react] onArchivePage failed', documentId, error)
+        })
+      })
+    },
+    [applyPatchesRaw, docRef],
+  )
 
   // Seed both derived stores once, before children first render.
   const seededRef = useRef(false)
@@ -167,8 +206,13 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     onHistory: (direction) => historyStepRef.current(direction),
     onTurnInto,
     onUploadFile,
+    onCreatePage,
   })
-  const runtime = useMemo<EditorRuntime>(() => ({ store, handlers, renderStore }), [store, handlers, renderStore])
+  const canCreatePage = onCreatePage !== undefined
+  const runtime = useMemo<EditorRuntime>(
+    () => ({ store, handlers, renderStore, capabilities: { canCreatePage } }),
+    [store, handlers, renderStore, canCreatePage],
+  )
 
   useInlineTextDragDrop({
     docRef,
