@@ -108,12 +108,16 @@ the export flow must expand toggles first.
    - ReadOnly story: same button in a minimal chrome, same flow.
 2. **Library print CSS** (`packages/sdui-document-react/src/styles/editor.css`,
    one `@media print` block — reusable by every consumer):
+   - `@page { size: A4; margin: 15mm }` — output must fit A4 exactly.
+   - Editor content width pinned to the A4 printable area (210mm − margins) in print,
+     overriding any screen max-width/padding, so nothing overflows or shrinks oddly.
    - Hide interactive chrome: drag handles, toggle triangles, slash-menu artifacts,
      placeholder text.
    - `print-color-adjust: exact` on callout backgrounds, tag chips, highlights so the
      Notion colors survive printing.
    - Page-break hygiene: `break-inside: avoid` on callout/toggle/image blocks,
-     `break-after: avoid` on headings.
+     `break-after: avoid` on headings, `orphans: 3; widows: 3` on paragraphs — blocks
+     land cleanly on A4 page boundaries instead of splitting mid-block.
 3. **Story print CSS** (story-scoped `<style>`): hide the story toolbar and Storybook
    padding in print.
 
