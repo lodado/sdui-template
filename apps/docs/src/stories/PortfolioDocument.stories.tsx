@@ -336,13 +336,14 @@ const SysmasterShowcase = () => {
             style={{ display: 'block', width: '100%', height: 'auto', borderRadius: 8, marginBottom: 16 }}
           />
 
-          {/* TODO: Notion 내용 붙여주면 이 목록을 그대로 교체 */}
+          <p style={{ margin: '0 0 12px', color: META_GRAY }}>
+            Tibero DB 모니터링 프로그램 SysmasterDB8의 실시간 Dashboard·Realtime Monitoring 화면을 구현했습니다.
+            모니터링 항목을 drag &amp; drop으로 자유롭게 배치하고 관제할 수 있습니다.
+          </p>
           <ul style={{ margin: '0 0 16px', paddingLeft: 20, lineHeight: 1.7 }}>
-            <li>Grafana와 유사한 복잡한 DB 모니터링 플랫폼의 프론트엔드 아키텍처 설계·구축</li>
-            <li>대시보드 — 드래그 앤 드롭 기반 Server-Driven UI 설계</li>
-            <li>사용자가 모듈을 자유롭게 배치하는 커스터마이징 경험 제공</li>
-            <li>Feature-Sliced Design(FSD) 기반 폴더 구조 재설계</li>
-            <li>[TODO: Notion 상세 내용 추가]</li>
+            <li>드래그 앤 드롭으로 레이아웃을 조정하는 인터랙션과 progress 애니메이션 구현</li>
+            <li>breakpoint 기반 반응형 대시보드</li>
+            <li>차트 렌더링: Chart.js · Recharts · Canvas</li>
           </ul>
 
           <a href={SYSMASTER_NOTION_URL} target="_blank" rel="noreferrer">
