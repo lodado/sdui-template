@@ -23,6 +23,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { type CSSProperties, useEffect, useRef, useState } from 'react'
 
 import profilePhoto from './assets/resume-profile.jpg'
+// TODO: 실제 Sysmaster 화면 녹화 gif로 교체 (같은 경로/파일명 sysmaster-demo.gif).
+import sysmasterDemo from './assets/sysmaster-demo.gif'
 
 // Colors from the built-in Notion palette (marks/color/notionColors).
 /** Notion Purple — section-heading accent. */
@@ -243,12 +245,114 @@ const badgeStyle: CSSProperties = {
   color: '#9065B0',
 }
 
-/** Hides Storybook chrome/padding while printing. */
+/** Hides Storybook chrome/padding while printing; the gif showcase is screen-only. */
 const printResetCss = `
 @media print {
   body { padding: 0 !important; margin: 0 !important; background: #fff !important; }
+  .sysmaster-showcase { display: none !important; }
 }
 `
+
+/* -------------------------------------------------------------------------- */
+/* Sysmaster DB 8 showcase — an embedded, autoplaying gif preview with a       */
+/* click-to-open detail dialog. Story-level React (not a document block): the  */
+/* gif animates natively as an <img>, the dialog is the native <dialog>        */
+/* element (no dependency). Screen-only; the PDF carries the résumé text.      */
+/* Reference: https://silver-blue-23c.notion.site/Sysmaster-DB-8-6af5a3a52a6b42cda8fa227869ac8e1a */
+/* -------------------------------------------------------------------------- */
+
+const SYSMASTER_NOTION_URL = 'https://silver-blue-23c.notion.site/Sysmaster-DB-8-6af5a3a52a6b42cda8fa227869ac8e1a'
+
+const showcaseStyle: CSSProperties = {
+  margin: '24px 0',
+  border: '1px solid var(--sdui-doc-divider, #e5e7eb)',
+  borderRadius: 12,
+  overflow: 'hidden',
+  background: '#fafafa',
+}
+
+const showcaseHeaderStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 12,
+  padding: '12px 16px',
+  borderBottom: '1px solid var(--sdui-doc-divider, #e5e7eb)',
+}
+
+const previewButtonStyle: CSSProperties = {
+  display: 'block',
+  width: '100%',
+  padding: 0,
+  border: 'none',
+  background: '#000',
+  cursor: 'zoom-in',
+}
+
+const dialogStyle: CSSProperties = {
+  border: 'none',
+  borderRadius: 12,
+  padding: 0,
+  width: 'min(900px, 92vw)',
+  maxWidth: '92vw',
+}
+
+const SysmasterShowcase = () => {
+  const dialogRef = useRef<HTMLDialogElement>(null)
+
+  return (
+    <section className="sysmaster-showcase" style={showcaseStyle} aria-label="Sysmaster DB 8 데모">
+      <div style={showcaseHeaderStyle}>
+        <div>
+          <strong>Sysmaster DB 8 — 실시간 DB 모니터링</strong>
+          <div style={{ fontSize: 12, color: META_GRAY }}>드래그 앤 드롭 Server-Driven UI 대시보드</div>
+        </div>
+        <button type="button" onClick={() => dialogRef.current?.showModal()}>
+          상세 보기
+        </button>
+      </div>
+
+      {/* Embedded autoplaying preview (gif). Click opens the detail dialog. */}
+      <button type="button" style={previewButtonStyle} onClick={() => dialogRef.current?.showModal()}>
+        <img
+          src={sysmasterDemo}
+          alt="Sysmaster DB 8 대시보드 데모"
+          style={{ display: 'block', width: '100%', height: 'auto' }}
+        />
+      </button>
+
+      <dialog ref={dialogRef} style={dialogStyle}>
+        <div style={{ padding: 20 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <h3 style={{ margin: 0 }}>Sysmaster DB 8</h3>
+            <button type="button" onClick={() => dialogRef.current?.close()} aria-label="닫기">
+              ✕
+            </button>
+          </div>
+
+          <img
+            src={sysmasterDemo}
+            alt="Sysmaster DB 8 대시보드 데모 (확대)"
+            style={{ display: 'block', width: '100%', height: 'auto', borderRadius: 8, marginBottom: 16 }}
+          />
+
+          {/* TODO: Notion 내용 붙여주면 이 목록을 그대로 교체 */}
+          <ul style={{ margin: '0 0 16px', paddingLeft: 20, lineHeight: 1.7 }}>
+            <li>Grafana와 유사한 복잡한 DB 모니터링 플랫폼의 프론트엔드 아키텍처 설계·구축</li>
+            <li>대시보드 — 드래그 앤 드롭 기반 Server-Driven UI 설계</li>
+            <li>사용자가 모듈을 자유롭게 배치하는 커스터마이징 경험 제공</li>
+            <li>Feature-Sliced Design(FSD) 기반 폴더 구조 재설계</li>
+            <li>[TODO: Notion 상세 내용 추가]</li>
+          </ul>
+
+          <a href={SYSMASTER_NOTION_URL} target="_blank" rel="noreferrer">
+            Notion에서 전체 보기 →
+          </a>
+        </div>
+      </dialog>
+    </section>
+  )
+}
 
 /**
  * Storybook-only chrome: undo/redo/reset/export-JSON plus "PDF 저장". Printing
@@ -334,6 +438,7 @@ const PortfolioFrame = ({ editable }: { editable: boolean }) => {
         </button>
       </div>
       <SduiDocumentEditor key={instanceKey} content={seedContent} apiRef={apiRef} readOnly={!editable} />
+      <SysmasterShowcase />
     </div>
   )
 }
