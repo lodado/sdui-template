@@ -102,54 +102,45 @@ const portfolioContent: SduiDocumentContent = {
         { label: 'Radix UI', color: 'purple' },
       ]),
 
-      // Work experience — the core of the portfolio, placed first
+      // Work experience — verbatim from the source resume, placed first
       section('Work Experience'),
 
       // ── Korea Deep Learning ──────────────────────────────────────────────
-      heading('Korea Deep Learning Inc. — 프론트엔드', 3),
-      paragraph([colored('정규직 · 2026.02 – 현재 · 6개월', META_GRAY)]),
+      heading('프론트엔드', 3),
+      paragraph([colored('Korea Deep Learning Inc. · 정규직', META_GRAY)]),
+      paragraph([colored('2026년 2월 - 현재 · 6개월', META_GRAY)]),
       paragraph(
         '시리즈 A 120억 원 투자를 유치한 AI OCR/VLM 스타트업에서 Next.js 기반 글로벌 AI SaaS의 ' +
           '프론트엔드 아키텍처, 결제, 품질 자동화 및 성능 최적화를 담당하고 있습니다.',
       ),
-      bulletedList([bold('AI 기반 개발 워크플로 구축')], {
-        children: [
-          bulletedList([
-            text('Playwright 테스트 명세를 AI Agent가 자율 실행·판정하는 QA 도구를 '),
-            bold('오픈소스로 개발'),
-            text('하고, 사내 테스트 프로세스에 도입해 반복적인 수동 QA 검증을 자동화'),
-          ]),
-          bulletedList([
-            text('→ '),
-            link(
-              'github.com/lodado/playwright-spec-for-AI-Agent',
-              'https://github.com/lodado/playwright-spec-for-AI-Agent',
-            ),
-          ]),
-          bulletedList(
-            '디자인 시스템 컴포넌트와 사용 규칙을 AI Agent에 제공하는 Design System MCP를 구축, ' +
-              'AI 생성 코드가 사내 컨벤션과 디자인 시스템을 준수하도록 개발 워크플로에 적용',
-          ),
-        ],
-      }),
-      bulletedList([bold('품질 자동화')], {
-        children: [
-          bulletedList([
-            text('사용자 시나리오와 BVA(경계값 분석) 기반으로 '),
-            bold('E2E 테스트 400+, 단위 테스트 400+'),
-            text(' 구축 — 배포 후 프론트엔드 프로덕션 버그 [TODO: 사용자 확인] 수준으로 유지'),
-          ]),
-        ],
-      }),
-      bulletedList([bold('결제 · 성능 · 온보딩')], {
-        children: [
-          bulletedList('Paddle.js 기반 글로벌 구독 결제 연동 및 플랜별 기능 노출/제한 로직 설계'),
-          bulletedList([text('입사 2개월 내 '), bold('350+ 커밋'), text(' — 빠른 온보딩과 높은 실행력 입증')]),
-        ],
-      }),
+      paragraph([bold('AI 기반 개발 워크플로 구축')]),
+      bulletedList(
+        'Playwright 테스트 명세를 AI Agent가 자율 실행·판정하는 QA 도구를 오픈소스로 개발하고, ' +
+          '사내 테스트 프로세스에 도입해 반복적인 수동 QA 검증을 자동화',
+        {
+          children: [
+            bulletedList([
+              text('→ '),
+              link(
+                'https://github.com/lodado/playwright-spec-for-AI-Agent',
+                'https://github.com/lodado/playwright-spec-for-AI-Agent',
+              ),
+            ]),
+          ],
+        },
+      ),
+      bulletedList(
+        '디자인 시스템 컴포넌트와 사용 규칙을 AI Agent에 제공하는 Design System MCP를 구축, ' +
+          'AI 생성 코드가 사내 컨벤션과 디자인 시스템을 준수하도록 개발 워크플로에 적용',
+      ),
+      paragraph([bold('품질 자동화')]),
+      bulletedList(
+        '사용자 시나리오와 BVA(경계값 분석) 기반으로 E2E 테스트 400+, 단위 테스트 400+ 구축 — ' +
+          '배포 후 프론트엔드 [TODO: 사용자 확인 — 원문 잘림]',
+      ),
       paragraph([
         colored(
-          'React.js · TypeScript · Next.js · Zustand · TanStack Query · Playwright · Vitest · Storybook · Paddle.js · Vercel · Sentry',
+          'React.js · Zustand · TanStack Query · Playwright · Vitest · Storybook · Paddle.js · Vercel · Sentry · Front-end 개발 외 보유기술 +1개',
           META_GRAY,
         ),
       ]),
@@ -157,32 +148,21 @@ const portfolioContent: SduiDocumentContent = {
       divider(),
 
       // ── Tmax Data ────────────────────────────────────────────────────────
-      heading('티맥스데이터 — Frontend Web Developer', 3),
-      paragraph([colored('정규직 · 2022.10 – 2026.01 · 3년 4개월 · 성남시 · 대면근무', META_GRAY)]),
+      heading('Frontend Web Developer', 3),
+      paragraph([colored('티맥스데이터 · 정규직', META_GRAY)]),
+      paragraph([colored('2022년 10월 - 2026년 1월 · 3년 4개월 · 성남시 · 대면근무', META_GRAY)]),
       paragraph(
         '제품 전반에서 재사용할 수 있는 사내 디자인 시스템과 DB 모니터링 플랫폼의 프론트엔드 ' +
           '아키텍처를 설계하고 구축했습니다.',
       ),
-      bulletedList([bold('사내 디자인 시스템 구축')], {
-        children: [
-          bulletedList('디자인 시스템을 제안하고 아키텍처 설계부터 컴포넌트 개발·배포 체계 구축까지 주도'),
-          bulletedList('Turborepo, Changesets, Rollup 기반 ESM 모노레포 및 패키지 버전 관리 구조 설계'),
-          bulletedList('Storybook 기반 컴포넌트 문서화 및 UI 개발 협업 표준 정립'),
-          bulletedList('Jest, React Testing Library, GitLab Runner 기반 컴포넌트 테스트·배포 CI/CD 구축'),
-          bulletedList('가상화 기반 렌더링을 적용한 공통 대용량 Table 컴포넌트 설계'),
-          bulletedList('Radix UI 기반 Compound Component Pattern을 적용해 확장 가능한 컴포넌트 API 구현'),
-        ],
-      }),
-      bulletedList([bold('SysMasterDB 8 — 실시간 DB 모니터링 플랫폼')], {
-        children: [
-          bulletedList('Grafana와 유사한 복잡한 DB 모니터링 플랫폼의 프론트엔드 아키텍처 설계·구축'),
-          bulletedList('대시보드 — 드래그 앤 드롭 기반 Server-Driven UI 설계 (본 sdui-template 레포가 예시 구현)'),
-          bulletedList('Feature-Sliced Design(FSD) 기반 폴더 구조 재설계'),
-        ],
-      }),
-      paragraph([
-        colored('React.js · TypeScript · JavaScript · HTML · Storybook · Jest · Rollup · Turborepo', META_GRAY),
-      ]),
+      paragraph([bold('사내 디자인 시스템 구축')]),
+      bulletedList('디자인 시스템을 제안하고 아키텍처 설계부터 컴포넌트 개발·배포 체계 구축까지 주도'),
+      bulletedList('Turborepo, Changesets, Rollup 기반 ESM 모노레포 및 패키지 버전 관리 구조 설계'),
+      bulletedList('Storybook 기반 컴포넌트 문서화 및 UI 개발 협업 표준 정립'),
+      bulletedList('Jest, React Testing Library, GitLab Runner 기반 컴포넌트 테스트·배포 CI/CD 구축'),
+      bulletedList('가상화 기반 렌더링을 적용한 공통 대용량 Table 컴포넌트 설계'),
+      bulletedList('Radix UI 기반 Compound Component Pattern을 적용해 확장 가능한 컴포넌트 API 구현'),
+      paragraph([colored('React.js · JavaScript · HTML 외 보유기술 +4개', META_GRAY)]),
 
       divider(),
 
