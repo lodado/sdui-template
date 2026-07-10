@@ -3300,3 +3300,58 @@ button.sdui-doc-chip:focus-visible,
   border-color: var(--sdui-accent, #2383e2);
   color: var(--sdui-accent, #2383e2);
 }
+
+/* ------------------------------------------------------------- print/PDF */
+
+/* A4 export: the host triggers window.print() (see the portfolio story for
+   the toggle-expansion contract — collapsed toggle children are not in the
+   DOM, so hosts must expand toggles before printing). */
+@media print {
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+
+  /* Pin content to the A4 printable width (210mm − 2×15mm). */
+  [data-sdui-document-editor] {
+    width: 180mm;
+    max-width: 180mm;
+    margin: 0;
+    padding: 0;
+    /* Keep Notion tint/chip/highlight colors in the PDF. Inherited. */
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* Interactive chrome has no place on paper. visibility (not display) on the
+     toggle triangle preserves the summary row's indent geometry. */
+  [data-sdui-document-editor] [data-drag-handle],
+  [data-sdui-document-editor] [data-plus-handle] {
+    display: none !important;
+  }
+
+  [data-sdui-document-editor] .toggle-triangle {
+    visibility: hidden;
+  }
+
+  /* Blocks land whole on a page instead of splitting across the A4 boundary. */
+  [data-sdui-document-editor] .notice-block,
+  [data-sdui-document-editor] .toggle-block,
+  [data-sdui-document-editor] .sdui-doc-bookmark,
+  [data-sdui-document-editor] .toc-block,
+  [data-sdui-document-editor] img {
+    break-inside: avoid;
+  }
+
+  /* A heading never strands at the bottom of a page. */
+  [data-sdui-document-editor] h1,
+  [data-sdui-document-editor] h2,
+  [data-sdui-document-editor] h3 {
+    break-after: avoid;
+  }
+
+  [data-sdui-document-editor] p {
+    orphans: 3;
+    widows: 3;
+  }
+}
