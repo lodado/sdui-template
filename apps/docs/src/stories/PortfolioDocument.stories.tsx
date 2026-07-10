@@ -263,90 +263,230 @@ const printResetCss = `
 
 const SYSMASTER_NOTION_URL = 'https://silver-blue-23c.notion.site/Sysmaster-DB-8-6af5a3a52a6b42cda8fa227869ac8e1a'
 
-const showcaseStyle: CSSProperties = {
-  margin: '24px 0',
-  border: '1px solid var(--sdui-doc-divider, #e5e7eb)',
-  borderRadius: 12,
-  overflow: 'hidden',
-  background: '#fafafa',
-}
+const SYSMASTER_BULLETS = [
+  '드래그 앤 드롭으로 레이아웃을 조정하는 인터랙션과 progress 애니메이션 구현',
+  'breakpoint 기반 반응형 대시보드',
+  '차트 렌더링 — Chart.js · Recharts · Canvas',
+]
 
-const showcaseHeaderStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: 12,
-  padding: '12px 16px',
-  borderBottom: '1px solid var(--sdui-doc-divider, #e5e7eb)',
-}
+const SYSMASTER_CHIPS = ['React', 'Chart.js', 'Recharts', 'Canvas', 'Server-Driven UI']
 
-const previewButtonStyle: CSSProperties = {
-  display: 'block',
-  width: '100%',
-  padding: 0,
-  border: 'none',
-  background: '#000',
-  cursor: 'zoom-in',
+/** Scoped styling for the showcase card: two-column, hover, responsive, print-hidden. */
+const sysmasterCss = `
+.sm-card {
+  --sm-accent: #9065b0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 0;
+  margin: 28px 0;
+  border: 1px solid #ececf1;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(16, 15, 24, 0.04), 0 12px 32px -18px rgba(144, 101, 176, 0.35);
 }
+.sm-media {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  border-right: 1px solid #f0eef5;
+  background: radial-gradient(120% 120% at 20% 0%, #201a2b 0%, #0c0a12 100%);
+  cursor: zoom-in;
+  overflow: hidden;
+}
+.sm-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+  object-fit: cover;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.sm-media:hover img { transform: scale(1.04); }
+.sm-media__tag {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(12, 10, 18, 0.66);
+  backdrop-filter: blur(6px);
+}
+.sm-media__tag::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #4ade80;
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.25);
+}
+.sm-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px 24px;
+}
+.sm-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sm-accent);
+}
+.sm-title { margin: 0; font-size: 19px; font-weight: 700; color: #1c1b22; }
+.sm-lede { margin: 0; font-size: 13.5px; line-height: 1.6; color: #6b6875; }
+.sm-bullets { margin: 4px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.sm-bullets li {
+  position: relative;
+  padding-left: 20px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #37343f;
+}
+.sm-bullets li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--sm-accent);
+}
+.sm-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.sm-chip {
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #6d5389;
+  background: #f3edf9;
+}
+.sm-cta {
+  align-self: flex-start;
+  margin-top: 6px;
+  padding: 9px 16px;
+  border: none;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--sm-accent);
+  cursor: pointer;
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+.sm-cta:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.sm-dialog {
+  border: none;
+  border-radius: 16px;
+  padding: 0;
+  width: min(880px, 92vw);
+  max-width: 92vw;
+  box-shadow: 0 24px 70px -20px rgba(16, 15, 24, 0.55);
+}
+.sm-dialog::backdrop { background: rgba(16, 15, 24, 0.55); backdrop-filter: blur(2px); }
+.sm-dialog__inner { padding: 22px 24px 26px; }
+.sm-dialog__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.sm-dialog__head h3 { margin: 0; font-size: 20px; }
+.sm-dialog__close {
+  border: none;
+  background: #f2f1f5;
+  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #6b6875;
+}
+.sm-dialog__close:hover { background: #e7e5ec; }
+.sm-dialog img { display: block; width: 100%; height: auto; border-radius: 10px; margin-bottom: 16px; }
+.sm-link { color: var(--sm-accent); font-weight: 600; text-decoration: none; }
+.sm-link:hover { text-decoration: underline; }
 
-const dialogStyle: CSSProperties = {
-  border: 'none',
-  borderRadius: 12,
-  padding: 0,
-  width: 'min(900px, 92vw)',
-  maxWidth: '92vw',
+@media (max-width: 640px) {
+  .sm-card { grid-template-columns: 1fr; }
+  .sm-media { border-right: none; border-bottom: 1px solid #f0eef5; }
+  .sm-media img { min-height: 180px; }
 }
+@media print { .sysmaster-showcase { display: none !important; } }
+`
 
 const SysmasterShowcase = () => {
   const dialogRef = useRef<HTMLDialogElement>(null)
+  const openDialog = () => dialogRef.current?.showModal()
 
   return (
-    <section className="sysmaster-showcase" style={showcaseStyle} aria-label="Sysmaster DB 8 데모">
-      <div style={showcaseHeaderStyle}>
-        <div>
-          <strong>Sysmaster DB 8 — 실시간 DB 모니터링</strong>
-          <div style={{ fontSize: 12, color: META_GRAY }}>드래그 앤 드롭 Server-Driven UI 대시보드</div>
-        </div>
-        <button type="button" onClick={() => dialogRef.current?.showModal()}>
-          상세 보기
+    <section className="sysmaster-showcase" aria-label="Sysmaster DB 8 데모">
+      <style>{sysmasterCss}</style>
+
+      <article className="sm-card">
+        {/* Left — embedded autoplaying gif. Click opens the detail dialog. */}
+        <button type="button" className="sm-media" onClick={openDialog} aria-label="Sysmaster 데모 크게 보기">
+          <img src={sysmasterDemo} alt="Sysmaster DB 8 대시보드 데모" />
+          <span className="sm-media__tag">Live Demo</span>
         </button>
-      </div>
 
-      {/* Embedded autoplaying preview (gif). Click opens the detail dialog. */}
-      <button type="button" style={previewButtonStyle} onClick={() => dialogRef.current?.showModal()}>
-        <img
-          src={sysmasterDemo}
-          alt="Sysmaster DB 8 대시보드 데모"
-          style={{ display: 'block', width: '100%', height: 'auto' }}
-        />
-      </button>
+        {/* Right — concise bullets. */}
+        <div className="sm-body">
+          <span className="sm-eyebrow">Featured · Tmax Data</span>
+          <h3 className="sm-title">Sysmaster DB 8 — 실시간 DB 모니터링</h3>
+          <p className="sm-lede">
+            Tibero DB 모니터링 프로그램의 실시간 Dashboard를 구현. 모니터링 항목을 drag &amp; drop으로 자유롭게
+            배치·관제.
+          </p>
+          <ul className="sm-bullets">
+            {SYSMASTER_BULLETS.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+          <div className="sm-chips">
+            {SYSMASTER_CHIPS.map((chip) => (
+              <span key={chip} className="sm-chip">
+                {chip}
+              </span>
+            ))}
+          </div>
+          <button type="button" className="sm-cta" onClick={openDialog}>
+            상세 보기 →
+          </button>
+        </div>
+      </article>
 
-      <dialog ref={dialogRef} style={dialogStyle}>
-        <div style={{ padding: 20 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <h3 style={{ margin: 0 }}>Sysmaster DB 8</h3>
-            <button type="button" onClick={() => dialogRef.current?.close()} aria-label="닫기">
+      <dialog ref={dialogRef} className="sm-dialog">
+        <div className="sm-dialog__inner">
+          <div className="sm-dialog__head">
+            <h3>Sysmaster DB 8</h3>
+            <button
+              type="button"
+              className="sm-dialog__close"
+              onClick={() => dialogRef.current?.close()}
+              aria-label="닫기"
+            >
               ✕
             </button>
           </div>
 
-          <img
-            src={sysmasterDemo}
-            alt="Sysmaster DB 8 대시보드 데모 (확대)"
-            style={{ display: 'block', width: '100%', height: 'auto', borderRadius: 8, marginBottom: 16 }}
-          />
+          <img src={sysmasterDemo} alt="Sysmaster DB 8 대시보드 데모 (확대)" />
 
           <p style={{ margin: '0 0 12px', color: META_GRAY }}>
             Tibero DB 모니터링 프로그램 SysmasterDB8의 실시간 Dashboard·Realtime Monitoring 화면을 구현했습니다.
             모니터링 항목을 drag &amp; drop으로 자유롭게 배치하고 관제할 수 있습니다.
           </p>
           <ul style={{ margin: '0 0 16px', paddingLeft: 20, lineHeight: 1.7 }}>
-            <li>드래그 앤 드롭으로 레이아웃을 조정하는 인터랙션과 progress 애니메이션 구현</li>
-            <li>breakpoint 기반 반응형 대시보드</li>
-            <li>차트 렌더링: Chart.js · Recharts · Canvas</li>
+            {SYSMASTER_BULLETS.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
           </ul>
 
-          <a href={SYSMASTER_NOTION_URL} target="_blank" rel="noreferrer">
+          <a className="sm-link" href={SYSMASTER_NOTION_URL} target="_blank" rel="noreferrer">
             Notion에서 전체 보기 →
           </a>
         </div>
