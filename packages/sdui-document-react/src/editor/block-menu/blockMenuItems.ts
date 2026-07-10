@@ -309,6 +309,67 @@ export type BlockMenuCapabilities = {
   canCreatePage?: boolean
 }
 
+/**
+ * One-line descriptions shown under each item's title (Notion-style menu row).
+ * Kept as a keyed map — a single source that never forces per-item edits.
+ */
+export const BLOCK_MENU_DESCRIPTIONS: Record<string, string> = {
+  paragraph: 'Just start writing with plain text.',
+  'heading-1': 'Big section heading.',
+  'heading-2': 'Medium section heading.',
+  'heading-3': 'Small section heading.',
+  checklist: 'Track tasks with a to-do list.',
+  'bulleted-list': 'Create a simple bulleted list.',
+  'numbered-list': 'Create a numbered list.',
+  toggle: 'Collapsible content you can expand.',
+  quote: 'Capture a quote.',
+  callout: 'Make text stand out in a box.',
+  divider: 'Visually divide sections.',
+  code: 'Capture a code snippet.',
+  image: 'Upload or embed an image.',
+  file: 'Attach a file.',
+  link: 'Add an inline link.',
+  toc: 'Auto-generated table of contents.',
+  page: 'Embed a sub-page inside this one.',
+  'collection-gallery': 'Card gallery backed by a collection.',
+  'collection-list': 'List view backed by a collection.',
+  bookmark: 'Save a link as a visual bookmark.',
+  video: 'Embed a video from a URL.',
+  embed: 'Embed an iframe (CodePen, etc.).',
+  tags: 'A row of tag / skill chips.',
+  button: 'A call-to-action button.',
+}
+
+/** Description for a menu item id, or empty string when none is registered. */
+export function blockMenuDescription(id: string): string {
+  return BLOCK_MENU_DESCRIPTIONS[id] ?? ''
+}
+
+/**
+ * Relevance score for `item` against `needle` (already lowercased, non-empty).
+ * Lower = better. null when the item does not match at all.
+ *
+ *   0 title starts with needle   1 title contains needle
+ *   2 a keyword starts with it   3 a keyword contains it
+ */
+function scoreMenuItem(item: BlockMenuItem, needle: string): number | null {
+  const title = item.title.toLowerCase()
+  if (title.startsWith(needle)) {
+    return 0
+  }
+  if (title.includes(needle)) {
+    return 1
+  }
+
+  if (item.keywords.some((keyword) => keyword.toLowerCase().startsWith(needle))) {
+    return 2
+  }
+  if (item.keywords.some((keyword) => keyword.toLowerCase().includes(needle))) {
+    return 3
+  }
+  return null
+}
+
 export function filterBlockMenuItems(query: string, capabilities?: BlockMenuCapabilities): BlockMenuItem[] {
   const needle = query.trim().toLowerCase()
   const available = BLOCK_MENU_ITEMS.filter(
@@ -318,9 +379,45 @@ export function filterBlockMenuItems(query: string, capabilities?: BlockMenuCapa
     return available
   }
 
-  return available.filter(
-    (item) =>
-      item.title.toLowerCase().includes(needle) ||
-      item.keywords.some((keyword) => keyword.toLowerCase().includes(needle)),
-  )
+  // Score, drop non-matches, then STABLE-sort by score so equal-score items
+  // keep registry order (heading 1/2/3 stay in level order, etc.).
+  return available
+    .map((item, index) => ({ item, index, score: scoreMenuItem(item, needle) }))
+    .filter((entry): entry is { item: BlockMenuItem; index: number; score: number } => entry.score !== null)
+    .sort((a, b) => a.score - b.score || a.index - b.index)
+    .map((entry) => entry.item)
+}
+
+export type BlockMenuList = {
+  /** Final ordered items: recent (when query empty) followed by the main list. */
+  items: BlockMenuItem[]
+  /** How many leading items belong to the "Recent" section (0 when searching). */
+  recentCount: number
+}
+
+/**
+ * Builds the ordered slash-menu list. With an empty query, up to 3 recent items
+ * (resolved from `recentIds`) are prepended as a "Recent" section above the
+ * full grouped list; while searching, only the relevance-sorted matches show.
+ *
+ * The keyboard owner and the renderer MUST both consume this single ordering so
+ * `activeIndex` stays aligned with what the user sees.
+ */
+export function buildBlockMenuList(
+  query: string,
+  capabilities?: BlockMenuCapabilities,
+  recentIds: readonly string[] = [],
+): BlockMenuList {
+  const main = filterBlockMenuItems(query, capabilities)
+  if (query.trim() !== '') {
+    return { items: main, recentCount: 0 }
+  }
+
+  const byId = new Map(main.map((item) => [item.id, item]))
+  const recent = recentIds
+    .map((id) => byId.get(id))
+    .filter((item): item is BlockMenuItem => item !== undefined)
+    .slice(0, 3)
+
+  return { items: [...recent, ...main], recentCount: recent.length }
 }

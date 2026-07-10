@@ -12,6 +12,7 @@ import React from 'react'
 import { BlockChrome } from '../block-types/BlockChrome'
 import { FocusedBlockEditor } from '../focused-block/FocusedBlockEditor'
 import { InlineContentView } from '../inline/InlineContentView'
+import { blockColorAttr } from './block-menu/blockColors'
 import { blockMenuItemIdFor } from './block-menu/blockMenuItems'
 import { blockInlineContent, isTextBlock } from './blockContent'
 import { attributeRatio, ColumnResizeGutter } from './ColumnResizeGutter'
@@ -180,6 +181,8 @@ const BlockRow = ({ entry, depth, readOnly }: BlockViewProps) => {
       data-selected={isSelected || undefined}
       data-focused={isFocused || undefined}
       data-just-inserted={focus?.justInserted || undefined}
+      data-block-text-color={blockColorAttr(block.attributes?.textColor)}
+      data-block-bg-color={blockColorAttr(block.attributes?.backgroundColor)}
     >
       {/* row layout (flex + vertical centering + Notion block height) lives in editor.css */}
       {/* the ROW is the droppable — not the subtree wrapper — so the drop
@@ -200,7 +203,14 @@ const BlockRow = ({ entry, depth, readOnly }: BlockViewProps) => {
             aria-label={`Add block below ${block.id}`}
             aria-hidden="true"
             tabIndex={-1}
-            onClick={() => handlers.insertBlockBelow(block.id)}
+            onClick={(event) => {
+              // Notion parity: plain click adds below, Alt/Option+click adds above.
+              if (event.altKey) {
+                handlers.insertBlockAbove(block.id)
+                return
+              }
+              handlers.insertBlockBelow(block.id)
+            }}
           />
         )}
         {!readOnly && (
@@ -239,6 +249,7 @@ const BlockRow = ({ entry, depth, readOnly }: BlockViewProps) => {
             onToggleChecked={readOnly ? undefined : handlers.toggleChecked}
             onToggleCollapsed={onToggleCollapsed}
             onSetCodeLanguage={readOnly ? undefined : handlers.setCodeLanguage}
+            onSetCodeWrap={readOnly ? undefined : handlers.setCodeWrap}
             onSetCalloutIcon={readOnly ? undefined : handlers.setCalloutIcon}
             onSetImageLayout={readOnly ? undefined : handlers.setImageLayout}
             collectionEditor={

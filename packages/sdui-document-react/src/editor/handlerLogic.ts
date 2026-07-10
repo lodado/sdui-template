@@ -460,10 +460,11 @@ export function computeMoveBlock(
 }
 
 /** '+' button: insert an empty paragraph below and open its block menu. Null = no insert position. */
-export function computeInsertBlockBelow(
+function computeInsertBlockSibling(
   content: SduiDocumentContent,
   blockId: string,
   nextBlockId: () => string,
+  side: 'above' | 'below',
 ): HandlerDecision | null {
   const flattened = flattenDocumentBlocks(content)
   const location = flattened.find((candidate) => candidate.id === blockId)
@@ -472,16 +473,36 @@ export function computeInsertBlockBelow(
   }
 
   const newId = nextBlockId()
+  const anchor =
+    side === 'above'
+      ? anchorBeforeBlock(content, location.parentId, blockId)
+      : anchorAfterBlock(content, location.parentId, blockId)
 
   return {
     patches: [
       {
         type: 'block.insert',
         parentId: createBlockId(location.parentId),
-        ...anchorAfterBlock(content, location.parentId, blockId),
+        ...anchor,
         block: createDefaultBlock('document.paragraph', newId),
       },
     ],
     focus: { blockId: newId, caret: 'start', openBlockMenu: true, justInserted: true },
   }
+}
+
+export function computeInsertBlockBelow(
+  content: SduiDocumentContent,
+  blockId: string,
+  nextBlockId: () => string,
+): HandlerDecision | null {
+  return computeInsertBlockSibling(content, blockId, nextBlockId, 'below')
+}
+
+export function computeInsertBlockAbove(
+  content: SduiDocumentContent,
+  blockId: string,
+  nextBlockId: () => string,
+): HandlerDecision | null {
+  return computeInsertBlockSibling(content, blockId, nextBlockId, 'above')
 }

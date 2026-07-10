@@ -13,10 +13,13 @@ function clampHeadingLevel(level: unknown): number {
 }
 
 export const HeadingBlock = ({ block, children }: BlockChromeProps) => {
-  const Tag = `h${clampHeadingLevel(block.attributes?.level)}` as 'h1' | 'h2' | 'h3' | 'h4'
+  const level = clampHeadingLevel(block.attributes?.level)
+  const Tag = `h${level}` as 'h1' | 'h2' | 'h3' | 'h4'
 
+  // data-level drives the per-level empty placeholder ("Heading N") in
+  // editor.css — shown in both the static and focused (ProseMirror) views.
   return (
-    <Tag dir="auto" className="heading-content">
+    <Tag dir="auto" className="heading-content" data-level={level}>
       {children}
     </Tag>
   )

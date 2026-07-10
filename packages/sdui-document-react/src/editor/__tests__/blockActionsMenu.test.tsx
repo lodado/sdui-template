@@ -47,6 +47,37 @@ describe('block-actions menu (⠿ handle)', () => {
     expect(screen.getByRole('menuitem', { name: 'Duplicate' })).toBeInTheDocument()
   })
 
+  test('Copy link to block writes a fragment URL to the clipboard', () => {
+    const writeText = jest.fn().mockResolvedValue(undefined)
+    Object.defineProperty(window.navigator, 'clipboard', { value: { writeText }, configurable: true })
+    renderEditor(twoParagraphs())
+
+    openMenu('p1')
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Copy link to block' }))
+
+    expect(writeText).toHaveBeenCalledWith(expect.stringContaining('#p1'))
+  })
+
+  test('Color submenu applies a text color to the block', () => {
+    const container = renderEditor(twoParagraphs())
+
+    openMenu('p1')
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Color' }))
+    fireEvent.click(screen.getByRole('menuitemradio', { name: 'Red' }))
+
+    expect(container.querySelector('[data-block-id="p1"]')).toHaveAttribute('data-block-text-color', 'red')
+  })
+
+  test('Color submenu applies a background color to the block', () => {
+    const container = renderEditor(twoParagraphs())
+
+    openMenu('p1')
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Color' }))
+    fireEvent.click(screen.getByRole('menuitemradio', { name: 'Blue background' }))
+
+    expect(container.querySelector('[data-block-id="p1"]')).toHaveAttribute('data-block-bg-color', 'blue')
+  })
+
   test('Duplicate inserts a clone directly below the source block', () => {
     const container = renderEditor(twoParagraphs())
 

@@ -4,20 +4,43 @@ import React, { useEffect, useRef, useState } from 'react'
 import { turnIntoShortcutEntries } from '../../block-types/turnInto'
 import ShortcutTooltip, { formatShortcut } from '../ShortcutTooltip'
 import type { BlockMenuItem } from './blockMenuItems'
-import { BLOCK_MENU_GROUP_LABELS } from './blockMenuItems'
+import { BLOCK_MENU_GROUP_LABELS, blockMenuDescription } from './blockMenuItems'
 
 export type BlockMenuAnchorRect = { left: number; top: number; bottom: number }
 
 export type BlockMenuProps = {
   anchor: BlockMenuAnchorRect
-  /** Already filtered by the owner (FocusedBlockEditor). */
+  /** Already filtered/ordered by the owner (FocusedBlockEditor). */
   items: BlockMenuItem[]
   /** Keyboard highlight, owned by the parent — key events arrive via PM delegation. */
   activeIndex: number
   view: 'menu' | 'link'
+  /** Active query — when non-empty, section labels are hidden (flat result list). */
+  query?: string
+  /** Leading item count belonging to the "Recent" section (0 when searching). */
+  recentCount?: number
   onSelect(item: BlockMenuItem): void
   onSubmitLink(url: string): void
   onClose(): void
+}
+
+/**
+ * Section label shown above `items[index]`, or null when none belongs there.
+ * While searching (query set) the list is flat — no labels. Otherwise the first
+ * `recentCount` items sit under a "Recent" label and the rest under group labels
+ * that appear whenever the group changes.
+ */
+function sectionLabelAt(items: BlockMenuItem[], index: number, query: string, recentCount: number): string | null {
+  if (query.trim() !== '') {
+    return null
+  }
+  if (index < recentCount) {
+    return index === 0 ? 'Recent' : null
+  }
+  if (index === recentCount) {
+    return BLOCK_MENU_GROUP_LABELS[items[index].group]
+  }
+  return items[index - 1].group !== items[index].group ? BLOCK_MENU_GROUP_LABELS[items[index].group] : null
 }
 
 /**
@@ -50,7 +73,17 @@ const blockMenuShortcut = (item: BlockMenuItem) => {
   return turnInto ? formatShortcut(turnInto.key) : item.hint
 }
 
-export const BlockMenu = ({ anchor, items, activeIndex, view, onSelect, onSubmitLink, onClose }: BlockMenuProps) => {
+export const BlockMenu = ({
+  anchor,
+  items,
+  activeIndex,
+  view,
+  query = '',
+  recentCount = 0,
+  onSelect,
+  onSubmitLink,
+  onClose,
+}: BlockMenuProps) => {
   const anchorRef = useRef<HTMLSpanElement>(null)
   const [linkValue, setLinkValue] = useState('')
 
@@ -93,31 +126,41 @@ export const BlockMenu = ({ anchor, items, activeIndex, view, onSelect, onSubmit
               {items.length === 0 ? (
                 <div className="sdui-doc-block-menu-empty">No results</div>
               ) : (
-                items.map((item, index) => (
-                  <React.Fragment key={item.id}>
-                    {(index === 0 || items[index - 1].group !== item.group) && (
-                      <div className="sdui-doc-block-menu-group-label" aria-hidden="true">
-                        {BLOCK_MENU_GROUP_LABELS[item.group]}
-                      </div>
-                    )}
-                    <ShortcutTooltip label={item.title} shortcut={blockMenuShortcut(item)}>
-                      <button
-                        type="button"
-                        role="option"
-                        aria-selected={index === activeIndex}
-                        data-active={index === activeIndex || undefined}
-                        className="sdui-doc-block-menu-option"
-                        onMouseDown={(event) => event.preventDefault()}
-                        onClick={() => onSelect(item)}
-                      >
-                        <span className="sdui-doc-block-menu-glyph" aria-hidden>
-                          {item.glyph}
-                        </span>
-                        {item.title}
-                      </button>
-                    </ShortcutTooltip>
-                  </React.Fragment>
-                ))
+                items.map((item, index) => {
+                  const label = sectionLabelAt(items, index, query, recentCount)
+                  const description = blockMenuDescription(item.id)
+                  // Recent items duplicate their main-list entry, so the id alone
+                  // isn't unique — prefix by section (not by array index).
+                  const rowKey = index < recentCount ? `recent-${item.id}` : `block-${item.id}`
+                  return (
+                    <React.Fragment key={rowKey}>
+                      {label !== null && (
+                        <div className="sdui-doc-block-menu-group-label" aria-hidden="true">
+                          {label}
+                        </div>
+                      )}
+                      <ShortcutTooltip label={item.title} shortcut={blockMenuShortcut(item)}>
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={index === activeIndex}
+                          data-active={index === activeIndex || undefined}
+                          className="sdui-doc-block-menu-option"
+                          onMouseDown={(event) => event.preventDefault()}
+                          onClick={() => onSelect(item)}
+                        >
+                          <span className="sdui-doc-block-menu-glyph" aria-hidden>
+                            {item.glyph}
+                          </span>
+                          <span className="sdui-doc-block-menu-body">
+                            <span className="sdui-doc-block-menu-title">{item.title}</span>
+                            {description && <span className="sdui-doc-block-menu-desc">{description}</span>}
+                          </span>
+                        </button>
+                      </ShortcutTooltip>
+                    </React.Fragment>
+                  )
+                })
               )}
             </div>
           ) : (

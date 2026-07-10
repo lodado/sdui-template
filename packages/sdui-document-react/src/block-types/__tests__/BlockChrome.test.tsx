@@ -40,6 +40,8 @@ describe('BlockChrome', () => {
 
       const heading = container.querySelector('.heading-content')
       expect(heading?.tagName).toBe(tag)
+      // data-level drives the per-level empty placeholder in editor.css
+      expect(heading?.getAttribute('data-level')).toBe(String(Number(tag.slice(1))))
     })
 
     describe('when level is missing (EP: default partition)', () => {

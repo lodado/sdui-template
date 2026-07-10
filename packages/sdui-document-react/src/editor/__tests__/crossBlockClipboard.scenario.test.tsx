@@ -116,6 +116,21 @@ describe('SduiDocumentEditor cross-block clipboard', () => {
     })
   })
 
+  describe('as is: a bare URL is pasted', () => {
+    it('to be: over a text selection, the selection is linkified (text kept)', () => {
+      const onContentChange = jest.fn()
+      const { container } = render(<SduiDocumentEditor content={threeParagraphs()} onContentChange={onContentChange} />)
+
+      selectAcross(container, ['a', 0], ['a', 3]) // whole "aaa"
+      dispatchClipboard('paste', 'https://example.com')
+
+      const next = onContentChange.mock.calls.at(-1)?.[0] as SduiDocumentContent
+      expect(blockText(next, 'a')).toBe('aaa') // text unchanged
+      const pasted = blockContent(next, 'a') as Array<InlineNode & { marks?: Array<{ type: string }> }>
+      expect(pasted[0].marks?.map((mark) => mark.type)).toContain('link')
+    })
+  })
+
   describe('as is: no cross-block selection (collapsed caret)', () => {
     describe('when copy is dispatched', () => {
       it('to be: the handler defers to the browser (event not consumed)', () => {

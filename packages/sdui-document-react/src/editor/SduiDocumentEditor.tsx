@@ -1,5 +1,5 @@
 import type { SduiDocumentContent, SduiDocumentPatch } from '@lodado/sdui-document'
-import { clearBlockSelection } from '@lodado/sdui-document'
+import { clearBlockSelection, findBlockById } from '@lodado/sdui-document'
 import {
   type MouseEvent as ReactMouseEvent,
   type Ref,
@@ -23,7 +23,7 @@ import { type EditorRuntime, EditorRuntimeContext, useEditorRuntime } from './Ed
 import { collectDeletedPageDocumentIds } from './handlerLogic'
 import { useBlockPointerDrag } from './hooks/useBlockPointerDrag'
 import { useDocumentPatches } from './hooks/useDocumentPatches'
-import { type UnfurlResult,useEditorHandlers } from './hooks/useEditorHandlers'
+import { type UnfurlResult, useEditorHandlers } from './hooks/useEditorHandlers'
 import { useInlineTextDragDrop } from './hooks/useInlineTextDragDrop'
 import { useRangeOperations } from './hooks/useRangeOperations'
 import { useSelectionKeyboard } from './hooks/useSelectionKeyboard'
@@ -235,6 +235,9 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     },
   })
 
+  // Selection at drag start, captured before onDragStart clears it — lets a drag
+  // that began on a selected block move the whole selection together.
+  const dragSelectionRef = useRef<string[]>([])
   useBlockPointerDrag({
     docRef,
     indentWidth: DRAG_INDENT_WIDTH,
@@ -242,12 +245,14 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     indicatorRef,
     applyPatches,
     onDragStart: () => {
+      dragSelectionRef.current = store.get().selection.selectedIds
       // Editing/selection state must not survive a drag: unmount commits the PM editor.
       store.set({ focus: null, selection: clearBlockSelection() })
     },
+    getSelectedIds: () => dragSelectionRef.current,
   })
 
-  const { handleSelectionKeyDown, handlePaddingClick, historyStep } = useSelectionKeyboard({
+  const { handleSelectionKeyDown, handlePaddingClick, historyStep, handleBlockClipboard } = useSelectionKeyboard({
     store,
     docRef,
     readOnly,
@@ -299,6 +304,14 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     }
   }, [isLinkPopoverOpen])
   const blockActions = useEditorUISelector(store, (state) => state.blockActions)
+  // Current colors of the block whose actions menu is open (for the check mark).
+  const blockActionsColors = (() => {
+    const attrs = blockActions ? findBlockById(docRef.current, blockActions.blockId)?.attributes : undefined
+    return {
+      textColor: typeof attrs?.textColor === 'string' ? attrs.textColor : undefined,
+      backgroundColor: typeof attrs?.backgroundColor === 'string' ? attrs.backgroundColor : undefined,
+    }
+  })()
 
   // Cross-block native selections have no focused PM to own them, so their
   // keyboard ops (delete, mark toggles) are handled at the document level.
@@ -318,11 +331,18 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
   rangeKeyRef.current = handleRangeKeyDown
   const clipboardRef = useRef(handleClipboard)
   clipboardRef.current = handleClipboard
+  const blockClipboardRef = useRef(handleBlockClipboard)
+  blockClipboardRef.current = handleBlockClipboard
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       rangeKeyRef.current(event)
     }
     const onClipboard = (event: ClipboardEvent) => {
+      // Block-selection copy/cut owns the event first; otherwise fall through to
+      // the cross-block range clipboard (which no-ops when blocks are selected).
+      if (blockClipboardRef.current(event)) {
+        return
+      }
       clipboardRef.current(event)
     }
     document.addEventListener('keydown', onKeyDown)
@@ -470,6 +490,19 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
                 runtime.handlers.closeBlockActions()
               }}
               onDelete={() => runtime.handlers.deleteBlock(blockActions.blockId)}
+              onCopyLink={() => {
+                // Deep link to the block via a URL fragment (BlockNode renders data-block-id).
+                if (typeof window !== 'undefined') {
+                  const { origin, pathname } = window.location
+                  window.navigator?.clipboard
+                    ?.writeText(`${origin}${pathname}#${blockActions.blockId}`)
+                    ?.catch(() => {})
+                }
+                runtime.handlers.closeBlockActions()
+              }}
+              onSetColor={(change) => runtime.handlers.setBlockColor(blockActions.blockId, change)}
+              currentTextColor={blockActionsColors.textColor}
+              currentBackgroundColor={blockActionsColors.backgroundColor}
               onClose={() => runtime.handlers.closeBlockActions()}
               onCancel={() => store.set({ selection: clearBlockSelection(), blockActions: null })}
             />

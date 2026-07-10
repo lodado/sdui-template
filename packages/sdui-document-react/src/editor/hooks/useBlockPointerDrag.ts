@@ -14,6 +14,7 @@ import {
 import { type MutableRefObject, type RefObject, useEffect, useRef } from 'react'
 
 import { type DropIndicatorProjection, positionDropIndicatorOverlay } from './dropIndicatorOverlay'
+import { appendMultiBlockMovePatches } from './multiBlockMove'
 
 /** Pointer travel (px) before a mouse/pen press becomes a drag — below this it stays a click. */
 export const ACTIVATION_DISTANCE = 4
@@ -164,6 +165,8 @@ type BlockPointerDragOptions = {
   indicatorRef: RefObject<HTMLElement>
   applyPatches(patches: SduiDocumentPatch[]): void
   onDragStart(): void
+  /** Current block-selection ids — a drag on a selected block moves them all. */
+  getSelectedIds?(): string[]
 }
 
 /**
@@ -425,8 +428,11 @@ export function useBlockPointerDrag(options: BlockPointerDragOptions): void {
       if (activated && dropId && event.type === 'pointerup') {
         const hit = hitTest(event.clientX, event.clientY)
         if (hit && hit.overId !== dropId) {
-          const patches = buildBlockDropPatches(dropInput(hit, event.clientX, event.clientY))
-          if (patches && patches.length > 0) {
+          const base = buildBlockDropPatches(dropInput(hit, event.clientX, event.clientY))
+          if (base && base.length > 0) {
+            // A drag that starts on a selected block moves the whole selection.
+            const selectedIds = optsRef.current.getSelectedIds?.() ?? []
+            const patches = appendMultiBlockMovePatches(base, dropId, selectedIds, optsRef.current.docRef.current)
             optsRef.current.applyPatches(patches)
           }
         }

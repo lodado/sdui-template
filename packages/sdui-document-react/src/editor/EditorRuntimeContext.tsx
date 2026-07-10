@@ -21,12 +21,16 @@ export type EditorHandlers = {
   toggleCollapsed(blockId: string, collapsed: boolean): void
   /** Code block language picker — block.update on attributes.language. */
   setCodeLanguage(blockId: string, language: string): void
+  /** Toggle code-block line wrapping (default wrapped). */
+  setCodeWrap(blockId: string, wrap: boolean): void
   /** Callout emoji icon — block.update on attributes.icon. */
   setCalloutIcon(blockId: string, icon: string): void
   /** Horizontal alignment for a text block — block.update on attributes.align (null clears). */
   setBlockAlign(blockId: string, align: BlockAlign | null): void
   /** Image size/position — block.update merging attributes.width / attributes.align. */
   setImageLayout(blockId: string, layout: ImageLayoutPatch): void
+  /** Block text / background color (named palette); 'default' or omit clears. */
+  setBlockColor(blockId: string, color: { textColor?: string; backgroundColor?: string }): void
   focusBlock(blockId: string, caret: FocusTarget['caret']): void
   commit(blockId: string, commit: FocusedBlockCommit): void
   split(blockId: string, offset: number): void
@@ -62,6 +66,8 @@ export type EditorHandlers = {
   generateId(): string
   blockMenuFilePicked(file: File): void
   insertBlockBelow(blockId: string): void
+  /** Insert (and focus) an empty paragraph above the block; opens the slash menu. */
+  insertBlockAbove(blockId: string): void
   /** Insert (and focus) a paragraph as a toggle's first child; expands it if collapsed. */
   insertToggleChild(blockId: string): void
   /** Gutter resize between two sibling columns; delta is a fraction of the pair width. */

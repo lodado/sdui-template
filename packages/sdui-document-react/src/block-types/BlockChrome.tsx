@@ -49,6 +49,8 @@ export type BlockChromeProps = {
   onToggleCollapsed?(blockId: string, collapsed: boolean): void
   /** Code language picker — omitted (readOnly) renders a static label. */
   onSetCodeLanguage?(blockId: string, language: string): void
+  /** Code line-wrap toggle — omitted (readOnly) hides the control. */
+  onSetCodeWrap?(blockId: string, wrap: boolean): void
   /** Callout icon picker — omitted (readOnly) renders the icon without the change button. */
   onSetCalloutIcon?(blockId: string, icon: string): void
   /** Image size/position controls — omitted (readOnly) renders the image without controls. */
@@ -84,6 +86,7 @@ export const BlockChrome = ({
   onToggleChecked,
   onToggleCollapsed,
   onSetCodeLanguage,
+  onSetCodeWrap,
   onSetCalloutIcon,
   onSetImageLayout,
   collectionEditor,
@@ -128,7 +131,7 @@ export const BlockChrome = ({
 
     case CODE_BLOCK_TYPE:
       return (
-        <CodeBlock block={block} onSetCodeLanguage={onSetCodeLanguage}>
+        <CodeBlock block={block} onSetCodeLanguage={onSetCodeLanguage} onSetCodeWrap={onSetCodeWrap}>
           {children}
         </CodeBlock>
       )

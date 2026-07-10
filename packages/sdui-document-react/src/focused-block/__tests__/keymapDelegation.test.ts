@@ -293,10 +293,17 @@ describe('rawTextMode (code block)', () => {
       const callbacks = createCallbacks()
       const dispatched: Transaction[] = []
 
-      const consumed = pressChord(callbacks, 'ab', 1, 'Enter', {}, {
-        options: { rawTextMode: true },
-        onDispatch: (tr) => dispatched.push(tr),
-      })
+      const consumed = pressChord(
+        callbacks,
+        'ab',
+        1,
+        'Enter',
+        {},
+        {
+          options: { rawTextMode: true },
+          onDispatch: (tr) => dispatched.push(tr),
+        },
+      )
 
       expect(consumed).toBe(true)
       expect(callbacks.onSplit).not.toHaveBeenCalled()
@@ -310,10 +317,17 @@ describe('rawTextMode (code block)', () => {
       const callbacks = createCallbacks()
       const dispatched: Transaction[] = []
 
-      const consumed = pressChord(callbacks, 'ab', 1, 'Tab', {}, {
-        options: { rawTextMode: true },
-        onDispatch: (tr) => dispatched.push(tr),
-      })
+      const consumed = pressChord(
+        callbacks,
+        'ab',
+        1,
+        'Tab',
+        {},
+        {
+          options: { rawTextMode: true },
+          onDispatch: (tr) => dispatched.push(tr),
+        },
+      )
 
       expect(consumed).toBe(true)
       expect(callbacks.onIndent).not.toHaveBeenCalled()
@@ -339,6 +353,17 @@ describe('rawTextMode (code block)', () => {
       pressChord(callbacks, 'ab', 0, 'Backspace', {}, { options: { rawTextMode: true } })
 
       expect(callbacks.onMergeBackward).toHaveBeenCalled()
+    })
+  })
+
+  describe('when ArrowDown is pressed at the block end (vertical boundary)', () => {
+    it('to be: onNavigate("down") — a code block still exits downward like any text block', () => {
+      const callbacks = createCallbacks()
+
+      const consumed = pressChord(callbacks, 'code', 4, 'ArrowDown', {}, { options: { rawTextMode: true } })
+
+      expect(consumed).toBe(true)
+      expect(callbacks.onNavigate).toHaveBeenCalledWith('down', 4)
     })
   })
 })

@@ -1,4 +1,4 @@
-import type { SduiDocumentContent, SduiDocumentPatch } from '@lodado/sdui-document'
+import type { SduiDocumentBlock,SduiDocumentContent, SduiDocumentPatch  } from '@lodado/sdui-document'
 import {
   anchorAfterBlock,
   clearBlockSelection,
@@ -8,10 +8,13 @@ import {
   extendBlockSelection,
   findBlockById,
   flattenDocumentBlocks,
+  markdownToSduiDocumentContent,
 } from '@lodado/sdui-document'
 import type React from 'react'
 
+import { blocksToMarkdown } from '../blockClipboard'
 import { cloneBlockWithNewIds, isTextBlock } from '../blockContent'
+import { computeInsertBlockBelow } from '../handlerLogic'
 import type { EditorUIStore, FocusTarget } from '../uiStore'
 
 export type UseSelectionKeyboardInput = {
@@ -34,6 +37,13 @@ export type UseSelectionKeyboardResult = {
    * keydown path can't fire while PM owns Mod-Z).
    */
   historyStep: (direction: 'undo' | 'redo') => void
+  /**
+   * Native copy/cut for an active block selection. Returns true when consumed,
+   * so the caller can fall through to the cross-block range clipboard otherwise.
+   * Writes markdown (round-trips back to blocks on paste, also the external
+   * payload); cut additionally deletes the selected blocks.
+   */
+  handleBlockClipboard: (event: ClipboardEvent) => boolean
 }
 
 /**
@@ -165,6 +175,15 @@ export function useSelectionKeyboard(input: UseSelectionKeyboardInput): UseSelec
           selection: clearBlockSelection(),
           focus: { blockId: targetId, caret: 'end', session: (previous?.session ?? 0) + 1 },
         })
+      } else if (target && !readOnly) {
+        // A non-text (media) block can't be edited inline — Enter drops a fresh
+        // paragraph below it and moves the caret there.
+        const decision = computeInsertBlockBelow(docRef.current, targetId, generateBlockId)
+        if (decision?.focus) {
+          store.set({ selection: clearBlockSelection() })
+          applyPatches(decision.patches)
+          focusBlock(decision.focus.blockId, 'start')
+        }
       }
 
       return
@@ -244,5 +263,78 @@ export function useSelectionKeyboard(input: UseSelectionKeyboardInput): UseSelec
     }
   }
 
-  return { handleSelectionKeyDown, handlePaddingClick, historyStep: handleHistoryStep }
+  const handleBlockClipboard = (event: ClipboardEvent): boolean => {
+    const { selection } = store.get()
+    if (selection.selectedIds.length === 0) {
+      return false
+    }
+
+    // Document-order helper (selectedIds order is not guaranteed).
+    const orderIndex = new Map(flattenDocumentBlocks(docRef.current).map((item, index) => [item.id, index]))
+    const orderedIds = [...selection.selectedIds].sort((a, b) => (orderIndex.get(a) ?? 0) - (orderIndex.get(b) ?? 0))
+
+    if (event.type === 'paste') {
+      if (readOnly) {
+        return false
+      }
+      const text = event.clipboardData?.getData('text/plain') ?? ''
+      const parsed = markdownToSduiDocumentContent(text, { generateId: generateBlockId })
+      const incoming = parsed.root.children ?? []
+      if (incoming.length === 0) {
+        return false
+      }
+
+      // Insert the pasted blocks after the last selected block, chaining each
+      // `after` anchor to the previous insert so they land in order.
+      const lastId = orderedIds[orderedIds.length - 1]
+      const parentId = flattenDocumentBlocks(docRef.current).find((item) => item.id === lastId)?.parentId
+      if (!parentId) {
+        return false
+      }
+
+      event.preventDefault()
+      let previousId = lastId
+      const insertedIds: string[] = []
+      const patches: SduiDocumentPatch[] = incoming.map((block) => {
+        insertedIds.push(block.id)
+        const patch: SduiDocumentPatch = {
+          type: 'block.insert',
+          parentId: createBlockId(parentId),
+          ...anchorAfterBlock(docRef.current, parentId, previousId),
+          block,
+        }
+        previousId = block.id
+        return patch
+      })
+      applyPatches(patches)
+      store.set({ selection: { selectedIds: insertedIds, anchorId: insertedIds[0] } })
+      return true
+    }
+
+    if (event.type !== 'copy' && event.type !== 'cut') {
+      return false
+    }
+    if (event.type === 'cut' && readOnly) {
+      return false
+    }
+
+    const blocks = orderedIds
+      .map((id) => findBlockById(docRef.current, id))
+      .filter((block): block is SduiDocumentBlock => block !== undefined)
+    if (blocks.length === 0) {
+      return false
+    }
+
+    event.preventDefault()
+    event.clipboardData?.setData('text/plain', blocksToMarkdown(blocks))
+
+    if (event.type === 'cut') {
+      applyPatches(orderedIds.map((id) => ({ type: 'block.delete', blockId: createBlockId(id) })))
+      store.set({ selection: clearBlockSelection() })
+    }
+
+    return true
+  }
+
+  return { handleSelectionKeyDown, handlePaddingClick, historyStep: handleHistoryStep, handleBlockClipboard }
 }

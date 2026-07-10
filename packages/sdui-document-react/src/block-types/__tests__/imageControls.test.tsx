@@ -30,6 +30,28 @@ async function openControls() {
   return user
 }
 
+describe('image lightbox', () => {
+  test('clicking the image opens a full-view preview, Escape closes it', async () => {
+    const user = userEvent.setup()
+    render(<SduiDocumentEditor content={imageContent({ alt: 'Cat' })} onContentChange={jest.fn()} />)
+
+    await user.click(screen.getByRole('button', { name: /Open image preview/ }))
+    expect(screen.getByRole('dialog', { name: 'Cat' })).toBeInTheDocument()
+
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('dialog', { name: 'Cat' })).not.toBeInTheDocument()
+  })
+
+  test('clicking the backdrop closes the preview', async () => {
+    const user = userEvent.setup()
+    render(<SduiDocumentEditor content={imageContent({ alt: 'Cat' })} onContentChange={jest.fn()} />)
+
+    await user.click(screen.getByRole('button', { name: /Open image preview/ }))
+    await user.click(screen.getByRole('button', { name: 'Dismiss image preview' }))
+    expect(screen.queryByRole('dialog', { name: 'Cat' })).not.toBeInTheDocument()
+  })
+})
+
 describe('image layout controls', () => {
   test('alt text commits on blur', async () => {
     const onContentChange = jest.fn()

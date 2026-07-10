@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { safeHref } from '../../inline/safeHref'
 import type { BlockChromeProps } from '../BlockChrome'
 import { blockText } from '../blockText'
+import { ImageLightbox } from './ImageLightbox'
 
 const MIN_IMAGE_WIDTH = 40
 
@@ -221,6 +222,7 @@ export const ImageBlock = ({ block, onSetImageLayout }: BlockChromeProps) => {
 
   const frameRef = useRef<HTMLSpanElement>(null)
   const imgRef = useRef<HTMLImageElement>(null)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
 
   // block-menu upload lifecycle: placeholder while uploading, alert on failure
   if (upload === 'uploading') {
@@ -243,7 +245,15 @@ export const ImageBlock = ({ block, onSetImageLayout }: BlockChromeProps) => {
     <div className="image" style={align ? { textAlign: align } : undefined}>
       {src && (
         <span className="image-frame" ref={frameRef}>
-          <img ref={imgRef} src={src} alt={alt} draggable={false} width={width} height={height} />
+          <button
+            type="button"
+            className="image-openable"
+            aria-label={`Open image preview${alt ? `: ${alt}` : ''}`}
+            onClick={() => setLightboxOpen(true)}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element -- editor renders arbitrary user image URLs, next/image is not applicable here */}
+            <img ref={imgRef} src={src} alt={alt} draggable={false} width={width} height={height} />
+          </button>
           {onSetImageLayout && (
             <>
               <ImageResizeHandle
@@ -273,6 +283,7 @@ export const ImageBlock = ({ block, onSetImageLayout }: BlockChromeProps) => {
         </span>
       )}
       {caption && <p className="caption">{caption}</p>}
+      {lightboxOpen && src && <ImageLightbox src={src} alt={alt} onClose={() => setLightboxOpen(false)} />}
     </div>
   )
 }

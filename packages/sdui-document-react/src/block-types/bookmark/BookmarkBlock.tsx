@@ -29,6 +29,21 @@ export const BookmarkBlock = ({ block }: { block: SduiDocumentBlock }) => {
   const imageUrl = str(block.attributes?.imageUrl)
   const faviconUrl = str(block.attributes?.faviconUrl)
 
+  // Skeleton while the first unfurl is in flight (no metadata yet).
+  const isUnfurling = block.attributes?.unfurling === true
+  const hasMetadata = Boolean(str(block.attributes?.title) || description || imageUrl)
+  if (isUnfurling && !hasMetadata) {
+    return (
+      <div className="sdui-doc-bookmark sdui-doc-bookmark--loading" contentEditable={false} aria-busy="true">
+        <span className="sdui-doc-bookmark-text">
+          <span className="sdui-doc-bookmark-skeleton sdui-doc-bookmark-skeleton--title" />
+          <span className="sdui-doc-bookmark-skeleton sdui-doc-bookmark-skeleton--host" />
+        </span>
+        <span className="sdui-doc-bookmark-thumb sdui-doc-bookmark-skeleton" aria-hidden />
+      </div>
+    )
+  }
+
   return (
     <a className="sdui-doc-bookmark" href={url} target="_blank" rel="noopener noreferrer" contentEditable={false}>
       <span className="sdui-doc-bookmark-text">

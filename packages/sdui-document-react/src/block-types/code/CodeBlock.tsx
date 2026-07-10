@@ -39,8 +39,9 @@ function codeBlockText(block: BlockChromeProps['block']): string {
   return typeof text === 'string' ? text : ''
 }
 
-export const CodeBlock = ({ block, onSetCodeLanguage, children }: BlockChromeProps) => {
+export const CodeBlock = ({ block, onSetCodeLanguage, onSetCodeWrap, children }: BlockChromeProps) => {
   const language = typeof block.attributes?.language === 'string' ? block.attributes.language : 'plain text'
+  const wrap = block.attributes?.wrap !== false
   const codeText = codeBlockText(block)
   const [copied, setCopied] = React.useState(false)
 
@@ -86,6 +87,19 @@ export const CodeBlock = ({ block, onSetCodeLanguage, children }: BlockChromePro
           language
         )}
       </span>
+      {onSetCodeWrap ? (
+        <button
+          type="button"
+          className="code-wrap-button"
+          role="switch"
+          aria-checked={wrap}
+          aria-label="Wrap lines"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() => onSetCodeWrap(block.id, !wrap)}
+        >
+          {wrap ? 'Wrap' : 'No wrap'}
+        </button>
+      ) : null}
       {codeText ? (
         <button
           type="button"
@@ -97,7 +111,7 @@ export const CodeBlock = ({ block, onSetCodeLanguage, children }: BlockChromePro
           {copied ? 'Copied' : 'Copy'}
         </button>
       ) : null}
-      <pre className="code-block">
+      <pre className={`code-block${wrap ? '' : ' code-block--nowrap'}`}>
         <code>{children}</code>
       </pre>
     </div>

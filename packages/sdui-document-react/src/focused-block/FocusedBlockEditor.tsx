@@ -5,7 +5,8 @@ import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useSta
 
 import { BlockMenu } from '../editor/block-menu/BlockMenu'
 import type { BlockMenuItem } from '../editor/block-menu/blockMenuItems'
-import { filterBlockMenuItems } from '../editor/block-menu/blockMenuItems'
+import { buildBlockMenuList } from '../editor/block-menu/blockMenuItems'
+import { getRecentBlockIds, recordRecentBlock } from '../editor/block-menu/recentBlocks'
 import type { SelectionToolbarProps } from '../selection-toolbar/SelectionToolbar'
 import { rafThrottle } from '../shared/rafThrottle'
 import { resolveCaretOffset } from './caret'
@@ -212,7 +213,11 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
           return false
         }
 
-        const items = filterBlockMenuItems(current.query, { canCreatePage: latestProps.current.canCreatePage })
+        const { items } = buildBlockMenuList(
+          current.query,
+          { canCreatePage: latestProps.current.canCreatePage },
+          getRecentBlockIds(),
+        )
         if (key === 'escape') {
           // close the menu only — the typed /query text stays (Notion behavior)
           updateMenu(null)
@@ -273,6 +278,7 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
       updateMenu(null)
       commitNow()
       retired.current = true
+      recordRecentBlock(item.id)
       latestProps.current.onBlockMenuSelect(item)
     }
 
@@ -287,6 +293,7 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
       updateMenu(null)
       commitNow()
       retired.current = true
+      recordRecentBlock(item.id)
       latestProps.current.onBlockMenuSelect(item, { url: normalized })
     }
 
@@ -436,17 +443,24 @@ export const FocusedBlockEditor = (props: FocusedBlockEditorProps) => {
   return (
     <>
       <span ref={containerRef} className={className} data-inline-root data-testid="focused-block-editor" />
-      {menu ? (
-        <BlockMenu
-          anchor={menu.anchor}
-          items={filterBlockMenuItems(menu.query, { canCreatePage })}
-          activeIndex={menu.activeIndex}
-          view={menu.view}
-          onSelect={(item) => selectItemRef.current?.(item)}
-          onSubmitLink={(url) => submitLinkRef.current?.(url)}
-          onClose={() => updateMenu(null)}
-        />
-      ) : null}
+      {menu
+        ? (() => {
+            const list = buildBlockMenuList(menu.query, { canCreatePage }, getRecentBlockIds())
+            return (
+              <BlockMenu
+                anchor={menu.anchor}
+                items={list.items}
+                recentCount={list.recentCount}
+                query={menu.query}
+                activeIndex={menu.activeIndex}
+                view={menu.view}
+                onSelect={(item) => selectItemRef.current?.(item)}
+                onSubmitLink={(url) => submitLinkRef.current?.(url)}
+                onClose={() => updateMenu(null)}
+              />
+            )
+          })()
+        : null}
     </>
   )
 }

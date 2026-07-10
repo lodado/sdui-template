@@ -27,6 +27,25 @@ function renderEditor(children: SduiDocumentBlock[]) {
   return { ...utils, onContentChange, allPatches }
 }
 
+describe('media block Enter', () => {
+  it('to be: Enter on a selected image inserts a paragraph below and focuses it', async () => {
+    const user = userEvent.setup()
+    const { container, allPatches } = renderEditor([
+      createDocumentBlock({ id: 'img', type: 'document.image', attributes: { src: 'https://x/y.png' } }),
+      createDocumentBlock({ id: 'p', type: 'document.paragraph', state: { text: 'after' } }),
+    ])
+
+    await user.click(screen.getByLabelText('Drag block img')) // select the image block
+    await user.keyboard('{Enter}')
+
+    expect(allPatches()).toEqual(
+      expect.arrayContaining([expect.objectContaining({ type: 'block.insert', parentId: 'root' })]),
+    )
+    // a focused editor mounted on the new paragraph
+    expect(container.querySelector('[contenteditable="true"]')).toBeInTheDocument()
+  })
+})
+
 describe('notion keyboard semantics', () => {
   describe('as is: bulleted item "hello" (non-empty)', () => {
     it('to be: Enter splits and the continuation keeps the list type', async () => {

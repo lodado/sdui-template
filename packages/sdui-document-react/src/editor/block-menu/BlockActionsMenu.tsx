@@ -2,7 +2,10 @@ import React, { useEffect, useRef, useState } from 'react'
 
 import { turnIntoShortcutEntries } from '../../block-types/turnInto'
 import ShortcutTooltip, { formatShortcut } from '../ShortcutTooltip'
+import { BLOCK_COLOR_LABELS, BLOCK_COLOR_NAMES, type BlockColorName } from './blockColors'
 import { TURN_INTO_ITEMS } from './blockMenuItems'
+
+export type BlockColorChange = { textColor?: BlockColorName } | { backgroundColor?: BlockColorName }
 
 export type BlockActionsMenuProps = {
   /** Handle rect the menu positions against (viewport coords). */
@@ -12,6 +15,13 @@ export type BlockActionsMenuProps = {
   onMoveUp(): void
   onMoveDown(): void
   onDelete(): void
+  /** Copy a deep link to this block. Row is hidden when not provided. */
+  onCopyLink?(): void
+  /** Set block text/background color. Color row is hidden when not provided. */
+  onSetColor?(change: BlockColorChange): void
+  /** Current colors, for the check mark in the color submenu. */
+  currentTextColor?: string
+  currentBackgroundColor?: string
   onClose(): void
   onCancel(): void
 }
@@ -53,10 +63,14 @@ export const BlockActionsMenu = ({
   onMoveUp,
   onMoveDown,
   onDelete,
+  onCopyLink,
+  onSetColor,
+  currentTextColor,
+  currentBackgroundColor,
   onClose,
   onCancel,
 }: BlockActionsMenuProps) => {
-  const [view, setView] = useState<'root' | 'turn-into'>('root')
+  const [view, setView] = useState<'root' | 'turn-into' | 'color'>('root')
   const firstItemRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
@@ -88,6 +102,8 @@ export const BlockActionsMenu = ({
   const rootRows: ActionRow[] = [
     { key: 'turn-into', label: 'Turn into', glyph: '⇄', run: () => setView('turn-into') },
     { key: 'duplicate', label: 'Duplicate', glyph: '⧉', shortcut: 'Ctrl/Cmd+D', run: onDuplicate },
+    ...(onCopyLink ? [{ key: 'copy-link', label: 'Copy link to block', glyph: '🔗', run: onCopyLink }] : []),
+    ...(onSetColor ? [{ key: 'color', label: 'Color', glyph: '🎨', run: () => setView('color') }] : []),
     { key: 'move-up', label: 'Move up', glyph: '↑', shortcut: 'Ctrl/Cmd+Alt+↑', run: onMoveUp },
     { key: 'move-down', label: 'Move down', glyph: '↓', shortcut: 'Ctrl/Cmd+Alt+↓', run: onMoveDown },
     { key: 'delete', label: 'Delete', glyph: '✕', shortcut: 'Backspace', danger: true, run: onDelete },
@@ -101,7 +117,7 @@ export const BlockActionsMenu = ({
       aria-label="Block actions"
       style={{ position: 'fixed', top: rect.bottom + 6, left: rect.left, zIndex: 40 }}
     >
-      {view === 'root' ? (
+      {view === 'root' &&
         rootRows.map((row, index) => (
           <ShortcutTooltip key={row.key} label={row.label} shortcut={row.shortcut}>
             <button
@@ -113,8 +129,8 @@ export const BlockActionsMenu = ({
               aria-haspopup={row.key === 'turn-into' ? 'menu' : undefined}
               onClick={() => {
                 row.run()
-                // "Turn into" navigates; every other row is terminal and closes.
-                if (row.key !== 'turn-into') onClose()
+                // Submenu rows navigate; every other row is terminal and closes.
+                if (row.key !== 'turn-into' && row.key !== 'color') onClose()
               }}
             >
               <span className="sdui-doc-block-menu-glyph" aria-hidden="true">
@@ -128,8 +144,8 @@ export const BlockActionsMenu = ({
               ) : null}
             </button>
           </ShortcutTooltip>
-        ))
-      ) : (
+        ))}
+      {view === 'turn-into' && (
         <>
           <button
             ref={firstItemRef}
@@ -160,6 +176,79 @@ export const BlockActionsMenu = ({
                 <span>{item.title}</span>
               </button>
             </ShortcutTooltip>
+          ))}
+        </>
+      )}
+      {view === 'color' && (
+        <>
+          <button
+            ref={firstItemRef}
+            type="button"
+            className="sdui-doc-block-menu-option sdui-doc-block-actions-back"
+            onClick={() => setView('root')}
+          >
+            <span className="sdui-doc-block-menu-glyph" aria-hidden="true">
+              ‹
+            </span>
+            <span>Color</span>
+          </button>
+          <div className="sdui-doc-block-actions-separator" role="separator" />
+          <div className="sdui-doc-block-actions-section-label" aria-hidden="true">
+            Text
+          </div>
+          {BLOCK_COLOR_NAMES.map((name) => (
+            <button
+              key={`text-${name}`}
+              type="button"
+              role="menuitemradio"
+              aria-checked={(currentTextColor ?? 'default') === name}
+              className="sdui-doc-block-menu-option"
+              onClick={() => {
+                onSetColor?.({ textColor: name })
+                onClose()
+              }}
+            >
+              <span
+                className={`sdui-doc-block-color-swatch sdui-doc-block-color-swatch--text-${name}`}
+                aria-hidden="true"
+              >
+                A
+              </span>
+              <span>{BLOCK_COLOR_LABELS[name]}</span>
+              {(currentTextColor ?? 'default') === name ? (
+                <span className="sdui-doc-block-actions-chevron" aria-hidden="true">
+                  ✓
+                </span>
+              ) : null}
+            </button>
+          ))}
+          <div className="sdui-doc-block-actions-separator" role="separator" />
+          <div className="sdui-doc-block-actions-section-label" aria-hidden="true">
+            Background
+          </div>
+          {BLOCK_COLOR_NAMES.map((name) => (
+            <button
+              key={`bg-${name}`}
+              type="button"
+              role="menuitemradio"
+              aria-checked={(currentBackgroundColor ?? 'default') === name}
+              className="sdui-doc-block-menu-option"
+              onClick={() => {
+                onSetColor?.({ backgroundColor: name })
+                onClose()
+              }}
+            >
+              <span
+                className={`sdui-doc-block-color-swatch sdui-doc-block-color-swatch--bg-${name}`}
+                aria-hidden="true"
+              />
+              <span>{BLOCK_COLOR_LABELS[name]} background</span>
+              {(currentBackgroundColor ?? 'default') === name ? (
+                <span className="sdui-doc-block-actions-chevron" aria-hidden="true">
+                  ✓
+                </span>
+              ) : null}
+            </button>
           ))}
         </>
       )}

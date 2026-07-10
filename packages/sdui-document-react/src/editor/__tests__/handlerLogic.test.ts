@@ -5,6 +5,7 @@ import {
   blockAttrsPatch,
   computeApplyMenuType,
   computeIndent,
+  computeInsertBlockAbove,
   computeInsertBlockBelow,
   computeInsertToggleChild,
   computeMergeBackward,
@@ -271,6 +272,17 @@ describe('computeInsertToggleChild / computeInsertBlockBelow', () => {
     const decision = computeInsertBlockBelow(doc([paragraph('p0', 'a')]), 'p0', idSeq('n1'))
 
     expect(decision?.patches).toEqual([expect.objectContaining({ type: 'block.insert', parentId: 'root' })])
+    expect(decision?.focus).toEqual({ blockId: 'n1', caret: 'start', openBlockMenu: true, justInserted: true })
+  })
+
+  it('insertBlockAbove: new paragraph anchors before the block, menu open', () => {
+    const decision = computeInsertBlockAbove(doc([paragraph('p0', 'a'), paragraph('p1', 'b')]), 'p1', idSeq('n1'))
+
+    const patch = decision?.patches[0] as { type: string; parentId: string; before?: string; after?: string }
+    expect(patch.type).toBe('block.insert')
+    expect(patch.parentId).toBe('root')
+    // anchored relative to the target's previous sibling, not after it
+    expect(patch.after).not.toBe('p1')
     expect(decision?.focus).toEqual({ blockId: 'n1', caret: 'start', openBlockMenu: true, justInserted: true })
   })
 })

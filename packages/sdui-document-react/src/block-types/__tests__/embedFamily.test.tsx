@@ -36,6 +36,24 @@ describe('BookmarkBlock', () => {
     render(<BlockChrome block={block(BOOKMARK_BLOCK_TYPE, { url: 'ftp://x.dev' })} />)
     expect(screen.getByText(/Invalid bookmark/)).toBeInTheDocument()
   })
+
+  it('shows a skeleton while unfurling with no metadata yet', () => {
+    const { container } = render(
+      <BlockChrome block={block(BOOKMARK_BLOCK_TYPE, { url: 'https://example.com', unfurling: true })} />,
+    )
+    expect(container.querySelector('.sdui-doc-bookmark--loading')).toBeInTheDocument()
+    expect(container.querySelector('.sdui-doc-bookmark-skeleton--title')).toBeInTheDocument()
+  })
+
+  it('shows the card (not skeleton) once metadata arrives even if unfurling flag lingers', () => {
+    const { container } = render(
+      <BlockChrome
+        block={block(BOOKMARK_BLOCK_TYPE, { url: 'https://example.com', unfurling: true, title: 'Example' })}
+      />,
+    )
+    expect(container.querySelector('.sdui-doc-bookmark--loading')).not.toBeInTheDocument()
+    expect(screen.getByText('Example')).toBeInTheDocument()
+  })
 })
 
 describe('VideoBlock (facade)', () => {

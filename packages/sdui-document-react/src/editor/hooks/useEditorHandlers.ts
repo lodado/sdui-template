@@ -33,6 +33,7 @@ import {
   computeAddCollectionItem,
   computeApplyMenuType,
   computeIndent,
+  computeInsertBlockAbove,
   computeInsertBlockBelow,
   computeInsertToggleChild,
   computeMergeBackward,
@@ -215,6 +216,11 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
         latest.current.applyPatches([blockAttrsPatch(blockId, { language })])
       },
 
+      setCodeWrap: (blockId, wrap) => {
+        // wrap defaults to true (current behavior); store the flag only when off.
+        latest.current.applyPatches([blockAttrsPatch(blockId, { wrap: wrap ? undefined : false })])
+      },
+
       setCalloutIcon: (blockId, icon) => {
         latest.current.applyPatches([blockAttrsPatch(blockId, { icon })])
       },
@@ -225,6 +231,19 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
 
       setImageLayout: (blockId, layout) => {
         latest.current.applyPatches([blockAttrsPatch(blockId, { ...layout })])
+      },
+
+      setBlockColor: (blockId, color) => {
+        // Merge partial: pass { textColor } or { backgroundColor }; 'default' clears.
+        const normalize = (value?: string) => (value && value !== 'default' ? value : undefined)
+        const patch: Record<string, unknown> = {}
+        if ('textColor' in color) {
+          patch.textColor = normalize(color.textColor)
+        }
+        if ('backgroundColor' in color) {
+          patch.backgroundColor = normalize(color.backgroundColor)
+        }
+        latest.current.applyPatches([blockAttrsPatch(blockId, patch)])
       },
 
       updateLink: (blockId, href, nextHref) => {
@@ -430,18 +449,25 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
           const unfurl = latest.current.onUnfurl
           const { targetId } = applied
           const { url } = merged
-          unfurl?.(url).then(
-            (meta) => {
-              if (meta) {
+          if (unfurl) {
+            // Flag the in-flight fetch so the card renders a skeleton until it lands.
+            latest.current.applyPatches([blockAttrsPatch(targetId, { unfurling: true })])
+            unfurl(url).then(
+              (meta) => {
                 latest.current.applyPatches([
-                  blockAttrsPatch(targetId, { ...meta, unfurledAt: new Date().toISOString() }),
+                  blockAttrsPatch(targetId, {
+                    ...(meta ?? {}),
+                    unfurling: false,
+                    unfurledAt: new Date().toISOString(),
+                  }),
                 ])
-              }
-            },
-            () => {
-              /* unfurl failure leaves the URL-only card */
-            },
-          )
+              },
+              () => {
+                // Unfurl failure clears the skeleton, leaving the URL-only card.
+                latest.current.applyPatches([blockAttrsPatch(targetId, { unfurling: false })])
+              },
+            )
+          }
         }
       },
 
@@ -514,6 +540,10 @@ export function useEditorHandlers(input: UseEditorHandlersInput): UseEditorHandl
 
       insertBlockBelow: (blockId) => {
         applyDecision(computeInsertBlockBelow(docRef.current, blockId, nextBlockId))
+      },
+
+      insertBlockAbove: (blockId) => {
+        applyDecision(computeInsertBlockAbove(docRef.current, blockId, nextBlockId))
       },
 
       resizeColumnPair: (leftColumnId, rightColumnId, deltaFraction) => {

@@ -29,6 +29,9 @@ import {
 import type { EditorUIStore, FocusTarget } from '../uiStore'
 
 /** Mark names the cross-block toolbar reflects an active state for. */
+/** A single bare http(s) URL (no surrounding whitespace) — pasted → linkified. */
+const URL_PASTE_RE = /^https?:\/\/\S+$/i
+
 const TOOLBAR_MARK_NAMES = ['bold', 'italic', 'strikethrough', 'code', 'underline'] as const
 
 function key(event: KeyboardEvent): string {
@@ -332,9 +335,22 @@ export function useRangeOperations(input: UseRangeOperationsInput): UseRangeOper
         mutateRange(range, rich)
         return true
       }
+
+      // Pasting a bare URL over a text selection linkifies the selection (keeps
+      // the text) — Notion behavior. ponytail: the collapsed-caret case (insert
+      // URL as a link) overlaps autolink-on-type and fights the focused-PM paste
+      // routing; add it there if a request lands.
+      const plain = event.clipboardData?.getData('text/plain') ?? ''
+      const url = plain.trim()
+      const hasSelection = range.isCrossBlock || range.start.offset !== range.end.offset
+      if (hasSelection && URL_PASTE_RE.test(url)) {
+        setRangeMark(range, 'link', { type: 'link', attrs: { href: url } } as unknown as SduiInlineMark)
+        return true
+      }
+
       // ponytail: multi-line plain paste collapses newlines to spaces (single block);
       // splitting into blocks per line can come later.
-      const text = (event.clipboardData?.getData('text/plain') ?? '').replace(/\r?\n/g, ' ')
+      const text = plain.replace(/\r?\n/g, ' ')
       mutateRange(range, text)
       return true
     }
