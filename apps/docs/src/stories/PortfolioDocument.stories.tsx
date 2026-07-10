@@ -70,10 +70,10 @@ const portfolioContent: SduiDocumentContent = {
 
       // Highlights — metric-led callouts
       section('Highlights'),
-      callout(
-        'E2E 테스트 400+ / 단위 테스트 400+ 구축 — 배포 후 프론트엔드 프로덕션 버그 [TODO: 사용자 확인] 수준으로 유지',
-        { tone: 'success', icon: '✅' },
-      ),
+      callout('E2E 테스트 400+ / 단위 테스트 400+ 구축 — 배포 후 프론트엔드 프로덕션 버그 월 1~2회로 감소', {
+        tone: 'success',
+        icon: '✅',
+      }),
       callout('시리즈 A 120억 투자 AI OCR/VLM 스타트업에서 글로벌 AI SaaS 프론트엔드 아키텍처·결제·품질 자동화 담당', {
         tone: 'info',
         icon: '🚀',
@@ -136,7 +136,7 @@ const portfolioContent: SduiDocumentContent = {
       paragraph([bold('품질 자동화')]),
       bulletedList(
         '사용자 시나리오와 BVA(경계값 분석) 기반으로 E2E 테스트 400+, 단위 테스트 400+ 구축 — ' +
-          '배포 후 프론트엔드 [TODO: 사용자 확인 — 원문 잘림]',
+          '배포 후 프론트엔드 프로덕션 버그를 월 1~2회로 감소',
       ),
       paragraph([
         colored(
