@@ -102,38 +102,7 @@ const portfolioContent: SduiDocumentContent = {
         { label: 'Radix UI', color: 'purple' },
       ]),
 
-      // Featured projects — the portfolio core
-      section('Featured Projects'),
-
-      heading('1. AI Agent 자율 QA 도구 (오픈소스)', 3),
-      paragraph([colored('Korea Deep Learning · 2026', META_GRAY)]),
-      paragraph(
-        'Playwright 테스트 명세를 AI Agent가 자율 실행·판정하는 QA 도구를 오픈소스로 개발하고, 사내 테스트 프로세스에 도입해 반복적인 수동 QA 검증을 자동화했습니다.',
-      ),
-      toggle('상세 보기 — 문제 · 접근 · 임팩트', [
-        bulletedList('문제: 릴리즈마다 반복되는 수동 QA 시나리오 검증에 개발/QA 리소스가 소모'),
-        bulletedList('접근: 테스트 명세를 AI Agent가 읽고 Playwright로 자율 실행 → 결과 판정까지 자동화'),
-        bulletedList('임팩트: 사내 테스트 프로세스에 정식 도입, 반복 수동 검증 제거'),
-      ]),
-      bookmark('https://github.com/lodado/playwright-spec-for-AI-Agent', {
-        title: 'playwright-spec-for-AI-Agent',
-        description: 'Playwright spec runner for autonomous AI QA agents',
-      }),
-
-      heading('2. Design System MCP', 3),
-      paragraph([colored('Korea Deep Learning · 2026', META_GRAY)]),
-      paragraph(
-        '디자인 시스템 컴포넌트와 사용 규칙을 AI Agent에 제공하는 MCP 서버를 구축, AI 생성 코드가 사내 컨벤션과 디자인 시스템을 준수하도록 개발 워크플로에 적용했습니다.',
-      ),
-      toggle('상세 보기 — 문제 · 접근 · 임팩트', [
-        bulletedList('문제: AI 생성 코드가 사내 컴포넌트/토큰 대신 임의 구현을 생산 → 리뷰 비용 증가'),
-        bulletedList('접근: 컴포넌트 목록·사용 규칙·토큰을 MCP 리소스로 노출해 Agent 컨텍스트에 주입'),
-        bulletedList('임팩트: AI 생성 코드의 디자인 시스템 준수가 워크플로 차원에서 보장'),
-      ]),
-
-      divider(),
-
-      // Work experience — the core of the portfolio, deliberately detailed
+      // Work experience — the core of the portfolio, placed first
       section('Work Experience'),
 
       // ── Korea Deep Learning ──────────────────────────────────────────────
@@ -217,15 +186,42 @@ const portfolioContent: SduiDocumentContent = {
 
       divider(),
 
-      // Open source
-      section('Open Source'),
+      // Projects & Open Source — project writeups and their repos, unified
+      section('Projects & Open Source'),
+
+      heading('AI Agent 자율 QA 도구 (오픈소스)', 3),
+      paragraph([colored('Korea Deep Learning · 2026', META_GRAY)]),
+      paragraph(
+        'Playwright 테스트 명세를 AI Agent가 자율 실행·판정하는 QA 도구를 오픈소스로 개발하고, ' +
+          '사내 테스트 프로세스에 도입해 반복적인 수동 QA 검증을 자동화했습니다.',
+      ),
+      toggle('상세 보기 — 문제 · 접근 · 임팩트', [
+        bulletedList('문제: 릴리즈마다 반복되는 수동 QA 시나리오 검증에 개발/QA 리소스가 소모'),
+        bulletedList('접근: 테스트 명세를 AI Agent가 읽고 Playwright로 자율 실행 → 결과 판정까지 자동화'),
+        bulletedList('임팩트: 사내 테스트 프로세스에 정식 도입, 반복 수동 검증 제거'),
+      ]),
       bookmark('https://github.com/lodado/playwright-spec-for-AI-Agent', {
         title: 'playwright-spec-for-AI-Agent',
         description: 'AI Agent가 자율 실행·판정하는 Playwright QA 도구',
       }),
+
+      heading('Design System MCP', 3),
+      paragraph([colored('Korea Deep Learning · 2026', META_GRAY)]),
+      paragraph(
+        '디자인 시스템 컴포넌트와 사용 규칙을 AI Agent에 제공하는 MCP 서버를 구축, ' +
+          'AI 생성 코드가 사내 컨벤션과 디자인 시스템을 준수하도록 개발 워크플로에 적용했습니다.',
+      ),
+      toggle('상세 보기 — 문제 · 접근 · 임팩트', [
+        bulletedList('문제: AI 생성 코드가 사내 컴포넌트/토큰 대신 임의 구현을 생산 → 리뷰 비용 증가'),
+        bulletedList('접근: 컴포넌트 목록·사용 규칙·토큰을 MCP 리소스로 노출해 Agent 컨텍스트에 주입'),
+        bulletedList('임팩트: AI 생성 코드의 디자인 시스템 준수가 워크플로 차원에서 보장'),
+      ]),
+
+      heading('sdui-template (오픈소스)', 3),
+      paragraph('Server-Driven UI 템플릿 라이브러리 — 이 포트폴리오 문서 자체가 이 라이브러리로 렌더링됩니다.'),
       bookmark('https://github.com/lodado/sdui-template', {
         title: 'sdui-template',
-        description: 'Server-Driven UI 템플릿 라이브러리 — 이 포트폴리오 문서 자체가 이 라이브러리로 렌더링됩니다',
+        description: 'Server-Driven UI 템플릿 라이브러리 (Notion 스타일 문서 에디터 포함)',
       }),
 
       divider(),
