@@ -4,6 +4,11 @@
   "version": "0.1.0",
   "license": "MIT",
   "author": "lodado",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lodado/sdui-template.git",
+    "directory": "packages/sdui-document-react"
+  },
   "sideEffects": [
     "**/*.css"
   ],
