@@ -1,0 +1,13 @@
+/* Aggregate stylesheet for the read-only viewer — same as index.css minus
+   editing chrome (drag handles, toolbars, menus, upload states). */
+@layer sdui-doc.tokens, sdui-doc.base, sdui-doc.blocks, sdui-doc.print;
+
+@import './tokens.css';
+@import './base.css';
+@import './blocks/typography.css';
+@import './blocks/callout.css';
+@import './blocks/media.css';
+@import './blocks/attachments.css';
+@import './blocks/collection.css';
+@import './blocks/misc.css';
+@import './print.css';

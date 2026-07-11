@@ -1,0 +1,171 @@
+@layer sdui-doc.tokens {
+/**
+ * Block editor chrome — design values ported verbatim from the Outline editor
+ * (github.com/outline/outline): shared/editor/components/Styles.ts and
+ * shared/styles/theme.ts. Structural selectors are scoped under
+ * [data-sdui-document-editor] so nothing leaks outside the editor container.
+ *
+ * Do not invent values here — every color/size/spacing traces back to Outline.
+ *
+ * Design-system bridge: hybrid-visible tokens (text, link, background, borders)
+ * reference @lodado/sdui-design-files semantic vars (--color-*) with the Outline
+ * value as fallback. On a hybrid page the editor and SDUI components share one
+ * palette; standalone (design-files not loaded) the fallback keeps the editor
+ * intact, including dark mode (each theme block carries its own fallback).
+ */
+
+:root,
+[data-theme='light'] {
+  /* base — Notion light palette (warm near-black text #37352f, Notion blue
+     accent rgb(35,131,226), tinted-alpha dividers) */
+  --sdui-doc-text: var(--color-text-default, #37352f);
+  --sdui-doc-text-secondary: var(--color-text-subtle, #787774);
+  --sdui-doc-text-tertiary: var(--color-text-subtlest, #9b9a97);
+  --sdui-doc-background: var(--elevation-surface-default, #ffffff);
+  --sdui-doc-background-secondary: rgba(55, 53, 47, 0.06);
+  --sdui-doc-accent: var(--color-link-default, #2383e6);
+  --sdui-doc-accent-text: var(--color-text-inverse, #ffffff);
+  --sdui-doc-link: var(--color-link-default, #2383e6);
+  --sdui-doc-quote: rgba(55, 53, 47, 0.16);
+  --sdui-doc-divider: var(--color-border-default, rgba(55, 53, 47, 0.09));
+  --sdui-doc-hr: var(--color-border-default, rgba(55, 53, 47, 0.09));
+
+  /* code — Notion inline code (warm-gray tint, red text, no border)
+     + code block surface (rgb(247,246,243)) */
+  --sdui-doc-code: #2f3336;
+  --sdui-doc-code-background: rgba(135, 131, 120, 0.15);
+  --sdui-doc-code-border: transparent;
+  --sdui-doc-code-keyword: #eb5757;
+  --sdui-doc-code-block-background: #f7f6f3;
+  --sdui-doc-code-block-text: rgba(55, 53, 47, 0.5);
+
+  /* notice variants (Outline notice*Background/notice*Text) */
+  --sdui-doc-notice-info: #3633ff;
+  --sdui-doc-notice-tip: #f5be31;
+  --sdui-doc-notice-warning: #d73a49;
+  --sdui-doc-notice-success: #3ad984;
+  --sdui-doc-notice-text: #37352f;
+
+  /* typography (Outline fontFamily/fontFamilyMono) */
+  --sdui-doc-font: -apple-system, BlinkMacSystemFont, Inter, 'Segoe UI', Roboto, Oxygen, sans-serif;
+  --sdui-doc-font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+
+  /* heading scale — Notion (1.875 / 1.5 / 1.25 / 1em on a 16px base) */
+  --sdui-doc-font-size-h1: 30px;
+  --sdui-doc-font-size-h2: 24px;
+  --sdui-doc-font-size-h3: 20px;
+  --sdui-doc-font-size-h4: 16px;
+
+  /* block row metrics (Notion text block: 24px line + 3px vertical padding
+     on each side = 30px row; 2px horizontal padding) */
+  --sdui-doc-block-min-height: 32px;
+  --sdui-doc-block-padding-y: 5px;
+  --sdui-doc-block-padding-x: 2px;
+
+  /* floating menu chrome (Outline theme.ts menuBackground/menuShadow) */
+  --sdui-doc-menu-background: #ffffff;
+  --sdui-doc-menu-shadow:
+    0 0 0 1px rgb(0 0 0 / 2%), 0 4px 8px rgb(0 0 0 / 8%), 0 2px 4px rgb(0 0 0 / 0%), 0 30px 40px rgb(0 0 0 / 8%);
+
+  /* surface system — Notion's 3-step surface grammar (page bg, tinted panel,
+     hover wash) + hairline borders */
+  /* alias: code-copy-button rules referenced --sdui-doc-surface, which was
+     never defined (rendered invalid). Points at the document background. */
+  --sdui-doc-surface: var(--sdui-doc-background);
+  --sdui-doc-surface-1: var(--elevation-surface-sunken-default, #f7f7f5);
+  --sdui-doc-surface-hover: rgba(55, 53, 47, 0.06);
+  --sdui-doc-border-light: var(--color-border-default, rgba(55, 53, 47, 0.09));
+  --sdui-doc-border-mid: var(--color-border-bold, rgba(55, 53, 47, 0.16));
+
+  /* elevation — Notion card / card-hover / popover shadows */
+  --sdui-doc-shadow-card: rgba(15, 15, 15, 0.04) 0 0 0 1px, rgba(15, 15, 15, 0.03) 0 2px 4px;
+  --sdui-doc-shadow-card-hover: rgba(15, 15, 15, 0.05) 0 0 0 1px, rgba(15, 15, 15, 0.08) 0 4px 12px;
+  --sdui-doc-shadow-popover:
+    rgba(15, 15, 15, 0.05) 0 0 0 1px, rgba(15, 15, 15, 0.1) 0 3px 6px, rgba(15, 15, 15, 0.2) 0 9px 24px;
+
+  /* motion + radii (compositor-only transitions; Notion chips are 4px, not pill) */
+  --sdui-doc-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --sdui-doc-dur-fast: 120ms;
+  --sdui-doc-dur-med: 200ms;
+  --sdui-doc-radius-card: 10px;
+  --sdui-doc-radius-chip: 4px;
+
+  /* accent & status (values lifted verbatim from previous per-rule literals;
+     theme-agnostic today — override per [data-theme] to remap) */
+  --sdui-doc-accent-strong: #1a73c7;
+  --sdui-doc-accent-wash: rgba(35, 131, 226, 0.1);
+  --sdui-doc-danger: #c23b3b;
+  --sdui-doc-file-icon: #eb5757;
+  --sdui-doc-selection-handle: rgba(35, 131, 226, 0.5);
+  --sdui-doc-selection-handle-idle: rgba(35, 131, 226, 0.3);
+
+  /* neutral hairlines & washes (black-alpha, used on popover/card surfaces) */
+  --sdui-doc-border-hairline: rgba(0, 0, 0, 0.1);
+  --sdui-doc-border-hairline-strong: rgba(0, 0, 0, 0.12);
+  --sdui-doc-wash: rgba(0, 0, 0, 0.05);
+  --sdui-doc-wash-strong: rgba(0, 0, 0, 0.08);
+
+  /* collection chip palette (Notion-tinted bg + readable text per data-color) */
+  --sdui-doc-chip-blue-bg: rgba(35, 131, 226, 0.15);
+  --sdui-doc-chip-blue-text: #1a73c7;
+  --sdui-doc-chip-green-bg: rgba(68, 178, 116, 0.18);
+  --sdui-doc-chip-green-text: #2a7d52;
+  --sdui-doc-chip-yellow-bg: rgba(240, 201, 80, 0.25);
+  --sdui-doc-chip-yellow-text: #8a6d1a;
+  --sdui-doc-chip-orange-bg: rgba(245, 150, 70, 0.2);
+  --sdui-doc-chip-orange-text: #b25f1a;
+  --sdui-doc-chip-red-bg: rgba(226, 85, 85, 0.15);
+  --sdui-doc-chip-red-text: #c23b3b;
+  --sdui-doc-chip-purple-bg: rgba(150, 100, 226, 0.15);
+  --sdui-doc-chip-purple-text: #7a4bc2;
+  --sdui-doc-chip-pink-bg: rgba(226, 100, 170, 0.15);
+  --sdui-doc-chip-pink-text: #c23b8a;
+
+  /* media overlay */
+  --sdui-doc-lightbox-scrim: rgba(15, 15, 15, 0.85);
+
+  /* stacking (Outline depths.editorToolbar = 750) */
+  --sdui-doc-z-popover: 45;
+  --sdui-doc-z-toolbar: 750;
+  --sdui-doc-z-tooltip: 900;
+  --sdui-doc-z-lightbox: 2147483000;
+}
+
+[data-theme='dark'] {
+  /* base — Notion dark palette (white-alpha text, Notion-blue link #529cca) */
+  --sdui-doc-text: var(--color-text-default, rgba(255, 255, 255, 0.81));
+  --sdui-doc-text-secondary: var(--color-text-subtle, rgba(255, 255, 255, 0.46));
+  --sdui-doc-text-tertiary: var(--color-text-subtlest, rgba(255, 255, 255, 0.28));
+  --sdui-doc-background: var(--elevation-surface-default, #191919);
+  --sdui-doc-background-secondary: rgba(255, 255, 255, 0.055);
+  --sdui-doc-accent: var(--color-link-default, #2383e6);
+  --sdui-doc-accent-text: var(--color-text-inverse, #ffffff);
+  --sdui-doc-link: var(--color-link-default, #529cca);
+  --sdui-doc-quote: rgba(255, 255, 255, 0.16);
+  --sdui-doc-divider: var(--color-border-default, rgba(255, 255, 255, 0.13));
+  --sdui-doc-hr: var(--color-border-default, rgba(255, 255, 255, 0.13));
+
+  --sdui-doc-code: #e6e6e6;
+  --sdui-doc-code-background: rgba(135, 131, 120, 0.15);
+  --sdui-doc-code-border: transparent;
+  --sdui-doc-code-keyword: #eb5757;
+  --sdui-doc-code-block-background: #252525;
+  --sdui-doc-code-block-text: rgba(255, 255, 255, 0.44);
+
+  --sdui-doc-notice-text: #ffffff;
+
+  --sdui-doc-menu-background: #181c25;
+  --sdui-doc-menu-shadow: 0 0 0 1px rgb(34 40 52), 0 8px 16px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.08);
+
+  --sdui-doc-surface-1: var(--elevation-surface-sunken-default, #202020);
+  --sdui-doc-surface-hover: rgba(255, 255, 255, 0.055);
+  --sdui-doc-border-light: var(--color-border-default, rgba(255, 255, 255, 0.094));
+  --sdui-doc-border-mid: var(--color-border-bold, rgba(255, 255, 255, 0.16));
+
+  --sdui-doc-shadow-card: rgba(255, 255, 255, 0.094) 0 0 0 1px, rgba(0, 0, 0, 0.2) 0 2px 4px;
+  --sdui-doc-shadow-card-hover: rgba(255, 255, 255, 0.13) 0 0 0 1px, rgba(0, 0, 0, 0.4) 0 4px 12px;
+  --sdui-doc-shadow-popover:
+    rgba(255, 255, 255, 0.094) 0 0 0 1px, rgba(0, 0, 0, 0.3) 0 3px 6px, rgba(0, 0, 0, 0.5) 0 9px 24px;
+}
+
+}

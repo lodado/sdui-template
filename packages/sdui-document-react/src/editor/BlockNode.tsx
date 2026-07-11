@@ -62,7 +62,7 @@ const ColumnContainers = ({ entry, depth, readOnly }: BlockViewProps) => {
 
   if (entry.type === COLUMN_LIST_BLOCK_TYPE) {
     return (
-      <div data-block-id={entry.id} data-depth={depth} data-column-list>
+      <div data-block-id={entry.id} data-block-type={entry.type} data-depth={depth} data-column-list>
         {childrenIds.map((childId, index) => (
           <React.Fragment key={childId}>
             {index > 0 && !readOnly && <ColumnResizeGutter leftId={childrenIds[index - 1]} rightId={childId} />}
@@ -77,7 +77,12 @@ const ColumnContainers = ({ entry, depth, readOnly }: BlockViewProps) => {
   const ratio = attributeRatio(entry.attributes)
 
   return (
-    <div data-block-id={entry.id} data-column style={ratio !== undefined ? { flexGrow: ratio } : undefined}>
+    <div
+      data-block-id={entry.id}
+      data-block-type={entry.type}
+      data-column
+      style={ratio !== undefined ? { flexGrow: ratio } : undefined}
+    >
       {childrenIds.map((childId) => (
         // eslint-disable-next-line no-use-before-define -- mutual recursion: containers render nested BlockNodes
         <BlockNode key={childId} id={childId} depth={depth} readOnly={readOnly} />
@@ -177,6 +182,7 @@ const BlockRow = ({ entry, depth, readOnly }: BlockViewProps) => {
   return (
     <div
       data-block-id={block.id}
+      data-block-type={block.type}
       data-depth={depth}
       data-selected={isSelected || undefined}
       data-focused={isFocused || undefined}

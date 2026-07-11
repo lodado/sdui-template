@@ -1,0 +1,430 @@
+@layer sdui-doc.blocks {
+/* --- collection (database-like) block --- */
+.sdui-doc-collection {
+  margin: 4px 0;
+}
+.sdui-doc-collection-add {
+  margin-top: 8px;
+  background: none;
+  border: none;
+  color: var(--sdui-text-muted, #9b9a97);
+  font: inherit;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 4px 8px;
+}
+.sdui-doc-collection-add:hover {
+  background: var(--sdui-doc-wash);
+  color: var(--sdui-text, #37352f);
+}
+
+/* gallery */
+.sdui-doc-gallery {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+.sdui-doc-gallery[data-size='small'] {
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+}
+.sdui-doc-gallery[data-size='large'] {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+/* mount reveal: opacity/transform only, staggered per card (capped at 8) */
+.sdui-doc-gallery-slot {
+  display: flex;
+  animation: sdui-doc-card-in var(--sdui-doc-dur-med, 200ms) var(--sdui-doc-ease-out, ease-out) both;
+  animation-delay: calc(var(--card-i, 0) * 30ms);
+}
+@keyframes sdui-doc-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.sdui-doc-gallery-card {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  text-align: left;
+  padding: 0;
+  border: none;
+  border-radius: var(--sdui-doc-radius-card, 10px);
+  background: var(--sdui-doc-background, #fff);
+  box-shadow: var(--sdui-doc-shadow-card);
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    box-shadow var(--sdui-doc-dur-med, 200ms) var(--sdui-doc-ease-out, ease-out),
+    transform var(--sdui-doc-dur-med, 200ms) var(--sdui-doc-ease-out, ease-out);
+}
+.sdui-doc-gallery-card:hover {
+  box-shadow: var(--sdui-doc-shadow-card-hover);
+  transform: translateY(-2px);
+}
+.sdui-doc-gallery-cover {
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  background: var(--sdui-doc-surface-1, #f7f7f5);
+  overflow: hidden;
+}
+.sdui-doc-gallery-cover img,
+.sdui-doc-gallery-cover-fill {
+  width: 100%;
+  height: 100%;
+  transition: transform var(--sdui-doc-dur-med, 200ms) var(--sdui-doc-ease-out, ease-out);
+}
+.sdui-doc-gallery-cover img {
+  object-fit: cover;
+}
+.sdui-doc-gallery-card:hover .sdui-doc-gallery-cover img,
+.sdui-doc-gallery-card:hover .sdui-doc-gallery-cover-fill {
+  transform: scale(1.04);
+}
+.sdui-doc-gallery-cover-fill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sdui-doc-gallery-cover-icon {
+  font-size: 44px;
+  filter: drop-shadow(0 2px 4px rgba(15, 15, 15, 0.12));
+}
+.sdui-doc-gallery-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px 0;
+}
+.sdui-doc-gallery-body {
+  padding: 8px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.sdui-doc-gallery-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--sdui-doc-text, #37352f);
+}
+.sdui-doc-gallery-desc {
+  font-size: 12px;
+  color: var(--sdui-doc-text-secondary, #787774);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.sdui-doc-gallery-props,
+.sdui-doc-list-props {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* list */
+.sdui-doc-list {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.sdui-doc-list > li {
+  display: flex;
+}
+.sdui-doc-list-row {
+  width: 100%;
+}
+.sdui-doc-list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 8px;
+  border: none;
+  border-bottom: 1px solid var(--sdui-doc-border-light, rgba(55, 53, 47, 0.09));
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background var(--sdui-doc-dur-fast, 120ms) ease;
+}
+.sdui-doc-list-row:hover {
+  background: var(--sdui-doc-surface-hover, rgba(55, 53, 47, 0.06));
+}
+.sdui-doc-list-title {
+  font-weight: 500;
+}
+
+/* board */
+.sdui-doc-board {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+.sdui-doc-board-column {
+  flex: 0 0 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--sdui-doc-surface-1, #f7f7f5);
+  border-radius: 8px;
+  padding: 8px;
+}
+.sdui-doc-board-column-header {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sdui-doc-text-secondary, #787774);
+  padding: 4px;
+}
+
+/* timeline — dots sit on the rail with a background-colored ring so they read
+   as punched-through (no mask here: it would clip the dots, which hang outside
+   the border box) */
+.sdui-doc-timeline {
+  display: flex;
+  flex-direction: column;
+  border-left: 2px solid var(--sdui-doc-border-light, rgba(55, 53, 47, 0.09));
+  padding-left: 16px;
+}
+.sdui-doc-timeline-row {
+  display: flex;
+  gap: 16px;
+  padding: 10px 8px;
+  position: relative;
+  border-radius: 6px;
+  transition: background var(--sdui-doc-dur-fast, 120ms) ease;
+}
+.sdui-doc-timeline-row:hover {
+  background: var(--sdui-doc-surface-hover, rgba(55, 53, 47, 0.06));
+}
+.sdui-doc-timeline-row::before {
+  content: '';
+  position: absolute;
+  left: -22px;
+  top: 16px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--sdui-doc-accent, #2383e2);
+  box-shadow: 0 0 0 3px var(--sdui-doc-background, #fff);
+  transition: transform var(--sdui-doc-dur-fast, 120ms) var(--sdui-doc-ease-out, ease-out);
+}
+.sdui-doc-timeline-row:hover::before {
+  transform: scale(1.3);
+}
+.sdui-doc-timeline-period {
+  flex: 0 0 140px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--sdui-doc-text-tertiary, #9b9a97);
+  padding-top: 1px;
+}
+.sdui-doc-timeline-card {
+  flex: 1;
+  background: none;
+  border: none;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+.sdui-doc-timeline-title {
+  font-weight: 500;
+}
+
+/* property chips — Notion chips are 4px squares, not pills */
+.sdui-doc-chip {
+  display: inline-block;
+  padding: 0 6px;
+  border-radius: var(--sdui-doc-radius-chip, 4px);
+  font-size: 12px;
+  line-height: 1.5;
+  background: var(--sdui-doc-background-secondary, rgba(55, 53, 47, 0.06));
+  color: var(--sdui-doc-text, #37352f);
+  transition: filter var(--sdui-doc-dur-fast, 120ms) ease;
+}
+button.sdui-doc-chip:hover {
+  filter: brightness(0.96);
+}
+.sdui-doc-chip[data-color='blue'] { background: var(--sdui-doc-chip-blue-bg); color: var(--sdui-doc-chip-blue-text); }
+.sdui-doc-chip[data-color='green'] { background: var(--sdui-doc-chip-green-bg); color: var(--sdui-doc-chip-green-text); }
+.sdui-doc-chip[data-color='yellow'] { background: var(--sdui-doc-chip-yellow-bg); color: var(--sdui-doc-chip-yellow-text); }
+.sdui-doc-chip[data-color='orange'] { background: var(--sdui-doc-chip-orange-bg); color: var(--sdui-doc-chip-orange-text); }
+.sdui-doc-chip[data-color='red'] { background: var(--sdui-doc-chip-red-bg); color: var(--sdui-doc-chip-red-text); }
+.sdui-doc-chip[data-color='purple'] { background: var(--sdui-doc-chip-purple-bg); color: var(--sdui-doc-chip-purple-text); }
+.sdui-doc-chip[data-color='pink'] { background: var(--sdui-doc-chip-pink-bg); color: var(--sdui-doc-chip-pink-text); }
+.sdui-doc-chip-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* unified focus ring for portfolio/collection interactive elements. The
+   gallery trigger sits inside an overflow:hidden card, so its ring is drawn
+   on the card via :focus-within instead. */
+.sdui-doc-list-row:focus-visible,
+.sdui-doc-timeline-card:focus-visible,
+.sdui-doc-bookmark:focus-visible,
+button.sdui-doc-chip:focus-visible,
+.sdui-doc-collection-view-tab:focus-visible,
+.sdui-doc-collection-props-btn:focus-visible,
+.sdui-doc-tags-input:focus-visible,
+.sdui-doc-tags-remove:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--sdui-doc-background, #fff),
+    0 0 0 4px var(--sdui-doc-accent, #2383e6);
+}
+.sdui-doc-gallery-open:focus-visible {
+  outline: none;
+}
+.sdui-doc-gallery-card:focus-within {
+  box-shadow:
+    0 0 0 2px var(--sdui-doc-background, #fff),
+    0 0 0 4px var(--sdui-doc-accent, #2383e6);
+}
+.sdui-doc-prop-date,
+.sdui-doc-prop-text {
+  font-size: 12px;
+  color: var(--sdui-text-muted, #6b6b6b);
+}
+.sdui-doc-prop-url {
+  font-size: 12px;
+  color: var(--sdui-doc-accent-strong);
+}
+
+/* collection empty state */
+.sdui-doc-collection-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 28px 12px;
+  border: 1px dashed var(--sdui-doc-border-light, rgba(55, 53, 47, 0.09));
+  border-radius: var(--sdui-doc-radius-card, 10px);
+  color: var(--sdui-doc-text-tertiary, #9b9a97);
+  font-size: 13px;
+}
+.sdui-doc-collection-empty span {
+  font-size: 24px;
+}
+.sdui-doc-collection-empty p {
+  margin: 0;
+}
+
+/* --- collection sort + gallery/list restructure --- */
+.sdui-doc-collection-sort {
+  font-size: 13px;
+  color: var(--sdui-text-muted, #6b6b6b);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.sdui-doc-collection-sort button,
+.sdui-doc-collection-groupby button {
+  background: none;
+  border: 1px solid var(--sdui-doc-border-hairline);
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 0 6px;
+  font: inherit;
+}
+.sdui-doc-gallery-open {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+  width: 100%;
+}
+.sdui-doc-list-open {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  border: none;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+.sdui-doc-timeline-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* property value editor */
+.sdui-doc-prop-cell {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+}
+.sdui-doc-prop-empty {
+  color: var(--sdui-text-muted, #b8b8b8);
+  font-size: 12px;
+  font-style: italic;
+}
+.sdui-doc-prop-editor {
+  background: var(--sdui-bg, #fff);
+  border: 1px solid var(--sdui-doc-border-hairline);
+  border-radius: 8px;
+  box-shadow: var(--sdui-doc-shadow-popover, 0 6px 24px rgba(0, 0, 0, 0.15));
+  padding: 10px;
+  width: 240px;
+  z-index: var(--sdui-doc-z-popover);
+}
+.sdui-doc-prop-editor-name {
+  font-size: 12px;
+  color: var(--sdui-text-muted, #9b9a97);
+  margin-bottom: 8px;
+}
+.sdui-doc-prop-editor-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.sdui-doc-prop-editor-options .sdui-doc-chip {
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.sdui-doc-prop-editor-options .sdui-doc-chip[data-active] {
+  border-color: rgba(0, 0, 0, 0.35);
+}
+.sdui-doc-prop-editor-clear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--sdui-text-muted, #9b9a97);
+}
+.sdui-doc-prop-editor-input {
+  width: 100%;
+  border: 1px solid var(--sdui-doc-border-hairline-strong);
+  border-radius: 4px;
+  padding: 4px 6px;
+  font: inherit;
+  font-size: 13px;
+}
+.sdui-doc-prop-editor-range {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+}

@@ -16,8 +16,8 @@ export interface SduiDocumentViewerProps {
  * it from `@lodado/sdui-document-react/viewer` to keep editor code out of the
  * bundle (published pages, SSR).
  *
- * `data-sdui-document-editor` is load-bearing: every rule in styles/editor.css
- * is scoped under it.
+ * `data-sdui-document-editor` is load-bearing: every rule in the src/styles
+ * stylesheets is scoped under it.
  */
 export const SduiDocumentViewer = ({ content, className }: SduiDocumentViewerProps) => {
   const docStoreRef = React.useRef<ReturnType<typeof createDocContentStore> | null>(null)

@@ -1,0 +1,160 @@
+@layer sdui-doc.base {
+/* ---------------------------------------------------------------- base */
+
+[data-sdui-document-editor] {
+  color: var(--sdui-doc-text);
+  font-family: var(--sdui-doc-font);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* the focused-block ProseMirror root inherits the wrapper typography.
+   Both the PM root and the static view are <span> (valid inside <p>/<h1>) —
+   display:block restores the row layout. */
+[data-sdui-document-editor] .ProseMirror,
+[data-sdui-document-editor] .sdui-doc-static {
+  display: block;
+  margin: 0;
+  outline: none;
+  white-space: pre-wrap;
+}
+
+/* ------------------------------------------------------------ block row */
+
+/* handle + content on one line inside a row that is never shorter than a
+   Notion text block (30px). flex-start (not center) pins the handles to the
+   FIRST text line — with center, a Shift-Enter multiline block would drag
+   them down to the block's vertical middle (Notion pins to line 1) */
+[data-sdui-document-editor] [data-block-row] {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  min-height: var(--sdui-doc-block-min-height);
+}
+
+[data-sdui-document-editor] [data-block-content] {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Block alignment from the selection toolbar (attributes.align → data-align).
+   text-align covers text blocks and inline media flow. */
+[data-sdui-document-editor] [data-block-content][data-align='left'] {
+  text-align: left;
+}
+[data-sdui-document-editor] [data-block-content][data-align='center'] {
+  text-align: center;
+}
+[data-sdui-document-editor] [data-block-content][data-align='right'] {
+  text-align: right;
+}
+
+/* re-center the 24px handles on the first line box: text starts after the
+   block's 3px top padding and a paragraph line box is exactly 24px, so this
+   reproduces the old single-line centered position pixel for pixel */
+[data-sdui-document-editor] [data-block-row] > [data-drag-handle],
+[data-sdui-document-editor] [data-block-row] > [data-plus-handle] {
+  margin-top: var(--sdui-doc-block-padding-y);
+}
+
+/* heading first lines are taller than 24px (font-size × 1.5 line-height) —
+   push the handles down by half the difference to stay line-1 centered */
+[data-sdui-document-editor] [data-block-row]:has(h1) > [data-drag-handle],
+[data-sdui-document-editor] [data-block-row]:has(h1) > [data-plus-handle] {
+  margin-top: calc(var(--sdui-doc-block-padding-y) + (var(--sdui-doc-font-size-h1) * 1.5 - 24px) / 2);
+}
+
+[data-sdui-document-editor] [data-block-row]:has(h2) > [data-drag-handle],
+[data-sdui-document-editor] [data-block-row]:has(h2) > [data-plus-handle] {
+  margin-top: calc(var(--sdui-doc-block-padding-y) + (var(--sdui-doc-font-size-h2) * 1.5 - 24px) / 2);
+}
+
+[data-sdui-document-editor] [data-block-row]:has(h3) > [data-drag-handle],
+[data-sdui-document-editor] [data-block-row]:has(h3) > [data-plus-handle] {
+  margin-top: calc(var(--sdui-doc-block-padding-y) + (var(--sdui-doc-font-size-h3) * 1.5 - 24px) / 2);
+}
+
+/* ------------------------------------------------------- column splits */
+
+/* horizontal split container — columns sit side by side; the gap doubles as
+   the visual gutter (and, during drags, the left/right drop landing zone) */
+[data-sdui-document-editor] [data-column-list] {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  gap: 24px;
+}
+
+/* each column is an equal-width vertical stack by default; a weighted column
+   overrides flex-grow via its inline style (attributes.ratio) */
+[data-sdui-document-editor] [data-column] {
+  flex: 1 1 0%;
+  min-width: 0;
+}
+
+/* resize gutter between two columns — a slim col-resize strip that reveals a
+   center line on hover/focus (Notion-style); sits inside the flex gap */
+[data-sdui-document-editor] [data-column-resize] {
+  flex: 0 0 12px;
+  align-self: stretch;
+  margin: 0 -12px;
+  cursor: col-resize;
+  position: relative;
+  outline: none;
+  /* the gutter drag is a pointer gesture — stop touch from scrolling the page so
+     the resize actually tracks the finger (matches the block drag handle) */
+  touch-action: none;
+}
+
+[data-sdui-document-editor] [data-column-resize]::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  border-radius: 1px;
+  background: transparent;
+  transition: background 120ms ease;
+}
+
+[data-sdui-document-editor] [data-column-resize]:hover::after,
+[data-sdui-document-editor] [data-column-resize]:active::after,
+[data-sdui-document-editor] [data-column-resize]:focus-visible::after {
+  background: var(--sdui-doc-selection-handle);
+}
+
+/* Touch/pen: there is no hover to reveal the gutter, so it reads as a hidden
+   strip that steals taps near the column edge. Widen the target and show the
+   grab line faintly so it's visibly a control, not dead space. */
+@media (pointer: coarse) {
+  [data-sdui-document-editor] [data-column-resize] {
+    flex-basis: 20px;
+    margin: 0 -16px;
+  }
+
+  [data-sdui-document-editor] [data-column-resize]::after {
+    background: var(--sdui-doc-selection-handle-idle);
+  }
+}
+
+/* Live percentage readout appended to the gutter during a drag. */
+[data-sdui-document-editor] [data-column-resize] [data-resize-tooltip] {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--sdui-doc-accent);
+  color: var(--sdui-doc-accent-text);
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 2;
+}
+
+}

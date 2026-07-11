@@ -1,6 +1,6 @@
 import '@lodado/sdui-design-files/index.css'
 import '@lodado/sdui-design-files/layout.css'
-import '@lodado/sdui-document-react/src/styles/editor.css'
+import '@lodado/sdui-document-react/styles/index.css'
 import '../src/globals.css'
 
 // Define process for browser environment (Storybook)

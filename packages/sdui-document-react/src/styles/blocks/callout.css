@@ -1,0 +1,58 @@
+@layer sdui-doc.blocks {
+/* ------------------------------------------------------ callout/notice */
+
+/* Notion callouts: soft full-tint fill + hairline ring, no left accent bar.
+   Tint is mixed into --background so it stays opaque over the focused-block
+   wash instead of stacking translucent layers. */
+[data-sdui-document-editor] .notice-block {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: color-mix(in srgb, var(--sdui-doc-notice-info) 8%, var(--sdui-doc-background));
+  border: 1px solid color-mix(in srgb, var(--sdui-doc-notice-info) 22%, transparent);
+  color: var(--sdui-doc-notice-text);
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin: 6px 0;
+}
+
+[data-sdui-document-editor] .notice-block .content {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+[data-sdui-document-editor] .notice-block .icon {
+  width: 24px;
+  height: 24px;
+  align-self: flex-start;
+  color: var(--sdui-doc-notice-info);
+}
+
+[data-sdui-document-editor] .notice-block.tip {
+  background: color-mix(in srgb, var(--sdui-doc-notice-tip) 9%, var(--sdui-doc-background));
+  border-color: color-mix(in srgb, var(--sdui-doc-notice-tip) 26%, transparent);
+}
+
+[data-sdui-document-editor] .notice-block.tip .icon {
+  color: var(--sdui-doc-notice-tip);
+}
+
+[data-sdui-document-editor] .notice-block.warning {
+  background: color-mix(in srgb, var(--sdui-doc-notice-warning) 9%, var(--sdui-doc-background));
+  border-color: color-mix(in srgb, var(--sdui-doc-notice-warning) 26%, transparent);
+}
+
+[data-sdui-document-editor] .notice-block.warning .icon {
+  color: var(--sdui-doc-notice-warning);
+}
+
+[data-sdui-document-editor] .notice-block.success {
+  background: color-mix(in srgb, var(--sdui-doc-notice-success) 9%, var(--sdui-doc-background));
+  border-color: color-mix(in srgb, var(--sdui-doc-notice-success) 26%, transparent);
+}
+
+[data-sdui-document-editor] .notice-block.success .icon {
+  color: var(--sdui-doc-notice-success);
+}
+
+}

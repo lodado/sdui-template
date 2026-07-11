@@ -76,6 +76,7 @@ export default function DocumentPage() {
 - [Architecture](#architecture)
 - [SduiDocumentEditor](#sduidocumenteditor)
 - [Blocks & marks](#blocks--marks)
+- [Styling & customization](#styling--customization)
 - [Interactions](#interactions)
 - [Exports](#exports)
 - [Development](#development)
@@ -111,7 +112,9 @@ pnpm add @lodado/sdui-document-react @lodado/sdui-document react react-dom
 Import editor CSS (bundlers may not auto-load package CSS):
 
 ```tsx
-import '@lodado/sdui-document-react/src/styles/editor.css'
+import '@lodado/sdui-document-react/styles/index.css' // full editor
+// or, for the read-only viewer (no editing chrome):
+import '@lodado/sdui-document-react/styles/viewer.css'
 ```
 
 ---
@@ -223,6 +226,71 @@ Text blocks render static inline content until focused, then swap in `FocusedBlo
 | code                                   | Inline code          |
 | link                                   | Hyperlink            |
 | highlight                              | Background highlight |
+
+---
+
+## Styling & customization
+
+All package CSS ships inside `sdui-doc.*` [cascade layers](https://developer.mozilla.org/docs/Web/CSS/@layer), so **any unlayered rule you write wins over package styles regardless of specificity** — no `!important`, no selector escalation.
+
+### Entry points
+
+| Import                                            | Contents                                                                           |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `@lodado/sdui-document-react/styles/index.css`    | Everything (viewer styles + editing chrome)                                        |
+| `@lodado/sdui-document-react/styles/viewer.css`   | Read-only viewer (no drag handles/toolbars/menus)                                  |
+| `@lodado/sdui-document-react/styles/tokens.css`   | CSS custom properties only (`--sdui-doc-*`)                                        |
+| `@lodado/sdui-document-react/styles/base.css`     | Block layout scaffolding (rows, columns, alignment)                                |
+| `@lodado/sdui-document-react/styles/blocks/*.css` | Per-block-group styles (typography, callout, media, attachments, collection, misc) |
+| `@lodado/sdui-document-react/styles/chrome.css`   | Editor-only UI (drag handles, toolbars, popovers)                                  |
+| `@lodado/sdui-document-react/styles/print.css`    | A4 print/PDF rules                                                                 |
+
+Layer order: `sdui-doc.tokens` → `sdui-doc.base` → `sdui-doc.blocks` → `sdui-doc.chrome` → `sdui-doc.print`.
+
+### Recipe 1 — retheme with tokens
+
+`styles/tokens.css` is the source of truth for every `--sdui-doc-*` token (colors, surfaces, borders, shadows, radii, chips, z-index). Override them in plain CSS:
+
+```css
+:root {
+  --sdui-doc-accent: #7c3aed;
+  --sdui-doc-accent-strong: #6d28d9;
+  --sdui-doc-radius-card: 4px;
+}
+
+[data-theme='dark'] {
+  --sdui-doc-background: #101014;
+}
+```
+
+Scope to `:root` (app-wide), `[data-theme='...']` (per theme), or any wrapper class around the editor (per instance — the editor/viewer accept `className`).
+
+Key token groups: `--sdui-doc-text*`, `--sdui-doc-background*`, `--sdui-doc-surface*`, `--sdui-doc-border*`, `--sdui-doc-accent*`, `--sdui-doc-shadow-*`, `--sdui-doc-radius-*`, `--sdui-doc-chip-<color>-{bg,text}`, `--sdui-doc-code-*`, `--sdui-doc-z-*`.
+
+### Recipe 2 — restyle one block type
+
+Every block wrapper carries `data-block-type` (e.g. `document.callout`, `document.code`, `document.collection`). Because package styles are layered, a plain rule is enough:
+
+```css
+[data-block-type='document.callout'] .notice-block {
+  border-left: 3px solid var(--sdui-doc-accent);
+  border-radius: 0;
+  background: transparent;
+}
+```
+
+### Recipe 3 — partial imports (near-headless)
+
+Skip block groups you restyle entirely and keep only what you need:
+
+```tsx
+import '@lodado/sdui-document-react/styles/tokens.css'
+import '@lodado/sdui-document-react/styles/base.css'
+import '@lodado/sdui-document-react/styles/blocks/typography.css'
+// your own callout/media styles here
+```
+
+Note: partial entry files don't declare the `@layer` order statement — if you cherry-pick, declare it once yourself: `@layer sdui-doc.tokens, sdui-doc.base, sdui-doc.blocks, sdui-doc.chrome, sdui-doc.print;`
 
 ---
 
