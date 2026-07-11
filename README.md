@@ -4,7 +4,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@lodado/sdui-template.svg)](https://www.npmjs.com/package/@lodado/sdui-template)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-24%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![React](https://img.shields.io/badge/React-18%2B-61DAFB?logo=react&logoColor=white)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5%2B-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![GitHub stars](https://img.shields.io/github/stars/lodado/sdui-template?style=social)](https://github.com/lodado/sdui-template/stargazers)
@@ -15,7 +15,7 @@
 [![Zod](https://img.shields.io/badge/Zod-v4-3E63DD)](https://zod.dev/)
 [![Turborepo](https://img.shields.io/badge/Turborepo-monorepo-EF4444?logo=turborepo&logoColor=white)](https://turbo.build/)
 
-[Quick start](#quick-start) · [Packages](#packages) · [Philosophy](#philosophy) · [Architecture](#architecture) · [Document model](#document-model) · [Development](#development)
+[Quick start](#quick-start) · [Packages](#packages) · [MCP & AI assistants](#mcp--ai-assistants) · [Philosophy](#philosophy) · [Architecture](#architecture) · [Document model](#document-model) · [Development](#development)
 
 ---
 
@@ -138,6 +138,7 @@ export default function Page() {
 - [Installation](#installation)
 - [Quick start](#quick-start)
 - [Packages](#packages)
+- [MCP & AI assistants](#mcp--ai-assistants)
 - [Philosophy](#philosophy)
 - [Architecture](#architecture)
 - [Document model](#document-model)
@@ -224,6 +225,7 @@ The server owns `document`. The client maps `type: 'Card'` to `components.Card`.
 | [`@lodado/sdui-design-files`](packages/sdui-design-files)             | [![npm](https://img.shields.io/npm/v/@lodado/sdui-design-files.svg)](https://www.npmjs.com/package/@lodado/sdui-design-files)             | Design tokens and CSS variables (Atlassian DS)       |
 | [`@lodado/sdui-document`](packages/sdui-document)                     | [![npm](https://img.shields.io/npm/v/@lodado/sdui-document.svg)](https://www.npmjs.com/package/@lodado/sdui-document)                     | Headless block document domain, patches, permissions |
 | [`@lodado/sdui-document-react`](packages/sdui-document-react)         | [![npm](https://img.shields.io/npm/v/@lodado/sdui-document-react.svg)](https://www.npmjs.com/package/@lodado/sdui-document-react)         | Notion-like block editor (React + ProseMirror)       |
+| [`@lodado/sdui-mcp`](packages/sdui-mcp)                               | [![npm](https://img.shields.io/npm/v/@lodado/sdui-mcp.svg)](https://www.npmjs.com/package/@lodado/sdui-mcp)                               | MCP server — compressed SDUI authoring knowledge     |
 | `ssr-testing`                                                         | —                                                                                                                                         | Next.js SSR + Playwright E2E integration testbed     |
 | `apps/docs`                                                           | —                                                                                                                                         | Storybook documentation (port 6006)                  |
 
@@ -233,6 +235,149 @@ The server owns `document`. The client maps `type: 'Card'` to `components.Card`.
 - Ready-made Button/Dialog/Form map → `@lodado/sdui-template-component`
 - Block document editing → `@lodado/sdui-document-react`
 - Document domain only (no React) → `@lodado/sdui-document`
+- AI assistant pulls component guides at runtime → `@lodado/sdui-mcp`
+
+---
+
+## MCP & AI assistants
+
+This monorepo ships **[@lodado/sdui-mcp](packages/sdui-mcp)** — an MCP (Model Context Protocol) server that feeds compressed authoring knowledge to AI coding tools. It covers **SDUI layout JSON** (`@lodado/sdui-template` + `@lodado/sdui-template-component`). For **block documents** (`@lodado/sdui-document`, `@lodado/sdui-document-react`), use the [AI Assistant Guide](docs/AI-ASSISTANT-GUIDE.md) and package READMEs.
+
+### Prerequisites
+
+- **Node.js 24+** (same as CI)
+- An MCP-capable client: **Cursor**, **Claude Code**, **Claude Desktop**, Windsurf, Cline, etc.
+
+### Connect MCP — Cursor
+
+**Option A — UI (recommended)**
+
+1. Open **Cursor Settings** → **MCP** (or **Features → MCP**)
+2. Click **Add MCP Server**
+3. Name: `sdui`
+4. Command: `npx`
+5. Args: `-y`, `@lodado/sdui-mcp`
+6. Save and confirm the server shows **connected** (green)
+
+**Option B — project config** (share with your team)
+
+Create `.cursor/mcp.json` in your app repo root:
+
+```json
+{
+  "mcpServers": {
+    "sdui": {
+      "command": "npx",
+      "args": ["-y", "@lodado/sdui-mcp"]
+    }
+  }
+}
+```
+
+Restart Cursor or reload MCP servers from settings.
+
+### Connect MCP — Claude Code
+
+One command:
+
+```bash
+claude mcp add sdui -- npx -y @lodado/sdui-mcp
+```
+
+Or commit `.mcp.json` at the repo root (same JSON shape as Cursor above) so the team shares one config.
+
+### Connect MCP — Claude Desktop
+
+Edit `claude_desktop_config.json`:
+
+| OS      | Config path                                                       |
+| ------- | ----------------------------------------------------------------- |
+| macOS   | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+| Windows | `%APPDATA%\Claude\claude_desktop_config.json`                     |
+
+Add under `mcpServers`:
+
+```json
+{
+  "mcpServers": {
+    "sdui": {
+      "command": "npx",
+      "args": ["-y", "@lodado/sdui-mcp"]
+    }
+  }
+}
+```
+
+Restart Claude Desktop.
+
+### Verify the connection
+
+Ask your assistant:
+
+> List SDUI components using the sdui MCP server.
+
+It should call `sdui_list_components` and return component names (Button, Dialog, Card, …). If tools are missing:
+
+1. Confirm Node 24+ is on your `PATH` in the IDE's environment
+2. Run manually: `npx -y @lodado/sdui-mcp` — should start without errors (Ctrl+C to stop)
+3. Reload MCP in your client after config changes
+
+### MCP tools reference
+
+| Tool                   | When to use                                                                         |
+| ---------------------- | ----------------------------------------------------------------------------------- |
+| `sdui_list_components` | Discover available `@lodado/sdui-template-component` entries                        |
+| `sdui_get_guide`       | Fetch `syntax`, `architecture`, `types`, `components-overview`, or a component name |
+| `sdui_get_examples`    | Real Storybook `SduiLayoutDocument` JSON for a component                            |
+| `sdui_get_snapshot`    | Delta-sync knowledge into `.ai/sdui/` in consumer repos                             |
+
+**Prompt:** `sdui-author-document` — guided SDUI **layout** JSON authoring (not block documents).
+
+**Resource:** `sdui://knowledge/{path}` — direct access to each knowledge file.
+
+Full details: [packages/sdui-mcp/README.md](packages/sdui-mcp/README.md)
+
+### Workflow A — call MCP tools directly
+
+Best for one-off SDUI layout tasks:
+
+```text
+User: "Build an SDUI document with a Dialog confirming account deletion."
+
+Assistant calls:
+  sdui_get_guide  { topic: "syntax" }
+  sdui_get_guide  { topic: "Dialog" }
+  sdui_get_examples { component: "Dialog" }
+→ writes SduiLayoutDocument JSON following those patterns
+```
+
+### Workflow B — snapshot into your repo (teams)
+
+For frequent SDUI work, sync knowledge locally so the assistant reads files instead of calling MCP every task:
+
+```bash
+mkdir -p .claude/skills/sdui-sync
+cp node_modules/@lodado/sdui-mcp/consumer/sdui-sync/SKILL.md .claude/skills/sdui-sync/SKILL.md
+```
+
+Run `/sdui-sync` in Claude Code. It writes `.ai/sdui/` (syntax, components, examples + manifest) and re-syncs only changed files when older than 7 days.
+
+### AI guide for all packages (including block documents)
+
+| Task                                             | Read first                                                                       |
+| ------------------------------------------------ | -------------------------------------------------------------------------------- |
+| SDUI layout JSON + components                    | MCP tools above                                                                  |
+| Block document domain (patches, permissions)     | [packages/sdui-document/README.md](packages/sdui-document/README.md)             |
+| Block editor UI (React)                          | [packages/sdui-document-react/README.md](packages/sdui-document-react/README.md) |
+| End-to-end AI workflows, block types, checklists | **[docs/AI-ASSISTANT-GUIDE.md](docs/AI-ASSISTANT-GUIDE.md)**                     |
+| Monorepo conventions for agents                  | [CLAUDE.md](CLAUDE.md)                                                           |
+| Live examples                                    | `pnpm storybook` → `apps/docs` (port 6006)                                       |
+
+Storybook paths for block documents:
+
+- `Document/Adapter` — `toSduiLayoutDocument` + renderer
+- `Document/Catalog` — every block type
+- `DocumentEditor` — interactive editor stories
 
 ---
 

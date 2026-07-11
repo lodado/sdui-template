@@ -86,6 +86,7 @@ export function DocumentPreview() {
 - [Content helpers](#content-helpers)
 - [Adapter contracts](#adapter-contracts)
 - [Recommended flow](#recommended-application-flow)
+- [For AI assistants](#for-ai-assistants)
 - [Development](#development)
 - [Design constraints](#design-constraints)
 
@@ -215,17 +216,39 @@ const content: SduiDocumentContent = {
 
 ### Supported block types
 
+All types are defined in `src/block-types/` and registered in `BLOCK_TYPE_MODULES`:
+
+| Type                                      | Description                                      |
+| ----------------------------------------- | ------------------------------------------------ |
+| `document.root`                           | Document root                                    |
+| `document.paragraph`                      | Body text (`state.text`)                         |
+| `document.heading`                        | Heading levels 1–3 (`state.level`, `state.text`) |
+| `document.bulletedList`                   | Bulleted list item                               |
+| `document.numberedList`                   | Numbered list item                               |
+| `document.checklist`                      | Checkbox item (`state.checked`, `state.text`)    |
+| `document.quote`                          | Block quote                                      |
+| `document.callout`                        | Callout / notice block                           |
+| `document.code`                           | Code block                                       |
+| `document.divider`                        | Horizontal rule                                  |
+| `document.toggle`                         | Collapsible section (children nested inside)     |
+| `document.image`                          | Image                                            |
+| `document.video`                          | Video                                            |
+| `document.embed`                          | Embed / iframe                                   |
+| `document.file`                           | File attachment                                  |
+| `document.link`                           | Link to another document                         |
+| `document.bookmark`                       | URL bookmark preview                             |
+| `document.columnList` / `document.column` | Multi-column layout                              |
+| `document.collection`                     | Database / table / gallery                       |
+| `document.page`                           | Sub-page link                                    |
+| `document.toc`                            | Table of contents                                |
+| `document.tags`                           | Tag chips                                        |
+| `document.button`                         | Action button                                    |
+| `document.sdui`                           | Embedded SDUI layout inside a block              |
+
 ```ts
-type SduiDocumentBlockType =
-  | 'document.root'
-  | 'document.paragraph'
-  | 'document.heading'
-  | 'document.checklist'
-  | 'document.divider'
-  | 'document.callout'
-  | 'document.image'
-  | 'document.file'
-  | 'document.link'
+// Legacy union excerpt — see blocks/schema/block.ts for the authoritative list
+type SduiDocumentBlockType = 'document.root' | 'document.paragraph' | 'document.heading'
+// … see table above for full set
 ```
 
 ---
@@ -268,6 +291,29 @@ applyDocumentPatch(next, {
 applyDocumentPatch(next, {
   type: 'block.delete',
   blockId: 'new-paragraph',
+})
+
+// Split text block at inline offset
+applyDocumentPatch(next, {
+  type: 'block.split',
+  blockId: 'new-paragraph',
+  offset: 5,
+  newBlockId: 'split-block',
+})
+
+// Merge into previous block
+applyDocumentPatch(next, {
+  type: 'block.merge',
+  blockId: 'split-block',
+  intoBlockId: 'new-paragraph',
+})
+
+// Turn into another block type
+applyDocumentPatch(next, {
+  type: 'block.setType',
+  blockId: 'new-paragraph',
+  blockType: 'document.heading',
+  attributes: { level: 2 },
 })
 ```
 
@@ -399,6 +445,67 @@ Implement for REST, Next.js routes, IndexedDB, Postgres, S3, or search providers
 ```
 
 Storybook: `apps/docs/src/stories/SduiDocument.stories.tsx`
+
+---
+
+## For AI assistants
+
+> MCP (`@lodado/sdui-mcp`) covers **SDUI layout JSON**, not this package. Read this README and [docs/AI-ASSISTANT-GUIDE.md](../../docs/AI-ASSISTANT-GUIDE.md) for block document work.
+
+### When to use this package
+
+- Server-side or client-side **patch validation** before save
+- **Headless** document transforms (no React, no ProseMirror)
+- **Permission checks** with `canPerformDocumentAction`
+- **Autosave state machine** with `reduceAutosaveState`
+- Converting block content → SDUI layout with `toSduiLayoutDocument`
+
+### Do not use this package for
+
+- React editor UI → `@lodado/sdui-document-react`
+- Rendering SDUI JSON → `@lodado/sdui-template`
+- Arbitrary rich-text engine APIs → patches + block schema only
+
+### Authoring checklist
+
+1. Root block is always `type: 'document.root'`
+2. Unique `id` on every block
+3. Text blocks: `state.text` (string) for initial/simple content
+4. Use anchor placement (`after` / `before`), not array indices
+5. Apply patches immutably — never mutate `content` in place
+6. Re-validate permissions on the server before persisting
+
+### Key exports
+
+```ts
+// Content
+createDocumentBlock, type SduiDocumentContent, type SduiDocumentBlock
+
+// Patches
+applyDocumentPatch, type SduiDocumentPatch
+
+// Tree (documents, not blocks)
+moveDocument, archiveDocumentSubtree, restoreDocumentSubtree
+
+// Permissions & autosave
+canPerformDocumentAction, getDocumentAccessMode
+createInitialAutosaveState, reduceAutosaveState
+
+// Content helpers
+extractPlainText, extractDocumentLinks, walkDocumentBlocks
+
+// SDUI bridge
+toSduiLayoutDocument
+
+// Contracts (implement in your app)
+type SduiDocumentRepository
+type SduiDocumentAttachmentStorage
+type SduiDocumentSearchIndexer
+```
+
+### MCP connection (for SDUI layout inside `document.sdui` blocks)
+
+If your block document embeds SDUI widgets (`document.sdui` blocks), connect `@lodado/sdui-mcp` for layout JSON authoring — see [root README MCP section](../../README.md#mcp--ai-assistants).
 
 ---
 
