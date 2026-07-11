@@ -9,6 +9,7 @@ import {
   divider,
   heading,
   image,
+  inlineCode,
   link,
   paragraph,
   resetBlockIds,
@@ -70,49 +71,70 @@ const portfolioContent: SduiDocumentContent = {
 
       // Highlights — metric-led callouts
       section('Highlights'),
-      callout('E2E 테스트 400+ / 단위 테스트 400+ 구축 — 배포 후 프론트엔드 프로덕션 버그 월 1~2회로 감소', {
-        tone: 'success',
-        icon: '✅',
-      }),
-      callout('시리즈 A 120억 투자 AI OCR/VLM 스타트업에서 글로벌 AI SaaS 프론트엔드 아키텍처·결제·품질 자동화 담당', {
-        tone: 'info',
-        icon: '🚀',
-      }),
-      callout('사내 디자인 시스템을 제안부터 아키텍처 설계·배포 체계까지 주도 (티맥스데이터)', {
-        tone: 'tip',
-        icon: '🧱',
-      }),
+      callout(
+        [
+          text('E2E 테스트 '),
+          inlineCode('400+'),
+          text(' / 단위 테스트 '),
+          inlineCode('400+'),
+          text(' 구축 — 배포 후 프론트엔드 프로덕션 버그 '),
+          inlineCode('1개월당 1~2건'),
+          text(' 수준으로 대폭 감소'),
+        ],
+        {
+          tone: 'success',
+          icon: '✅',
+        },
+      ),
+      callout(
+        [
+          text('시리즈 A '),
+          inlineCode('120억'),
+          text(' 투자 AI OCR/VLM 스타트업에서 글로벌 AI SaaS 프론트엔드 아키텍처·결제·품질 자동화 담당'),
+        ],
+        {
+          tone: 'info',
+          icon: '🚀',
+        },
+      ),
+      callout(
+        '비정형 N-depth OCR 결과를 Server-Driven UI로 구현 — 노드별 구독으로 대규모 문서에서도 지연 없는 편집 경험',
+        {
+          tone: 'tip',
+          icon: '⚡',
+        },
+      ),
 
       // Skills
       section('Skills'),
       tags([
-        { label: 'TypeScript', color: 'blue' },
+        { label: 'Next.js', color: 'blue' },
         { label: 'React', color: 'blue' },
-        { label: 'Next.js (app router)', color: 'blue' },
+        { label: 'TypeScript', color: 'blue' },
         { label: 'Zustand', color: 'green' },
-        { label: 'Tanstack Query', color: 'green' },
+        { label: 'TanStack Query', color: 'green' },
         { label: 'Playwright', color: 'orange' },
         { label: 'Vitest', color: 'orange' },
-        { label: 'Jest', color: 'orange' },
         { label: 'Storybook', color: 'pink' },
         { label: 'Paddle.js', color: 'yellow' },
         { label: 'Vercel', color: 'gray' },
         { label: 'Sentry', color: 'red' },
-        { label: 'Turborepo', color: 'purple' },
-        { label: 'Radix UI', color: 'purple' },
       ]),
 
-      // Work experience — verbatim from the source resume, placed first
+      // Work experience — Korea Deep Learning first
       section('Work Experience'),
 
       // ── Korea Deep Learning ──────────────────────────────────────────────
       heading('프론트엔드', 3),
       paragraph([colored('Korea Deep Learning Inc. · 정규직', META_GRAY)]),
       paragraph([colored('2026년 2월 - 현재 · 6개월', META_GRAY)]),
-      paragraph(
-        '시리즈 A 120억 원 투자를 유치한 AI OCR/VLM 스타트업에서 Next.js 기반 글로벌 AI SaaS의 ' +
-          '프론트엔드 아키텍처, 결제, 품질 자동화 및 성능 최적화를 담당하고 있습니다.',
-      ),
+      paragraph([
+        text('시리즈 A '),
+        inlineCode('120억 원'),
+        text(
+          ' 투자를 유치한 AI OCR/VLM 스타트업에서 Next.js 기반 글로벌 AI SaaS의 프론트엔드 아키텍처, 결제, 품질 자동화 및 성능 최적화를 담당하고 있습니다.',
+        ),
+      ]),
       paragraph([bold('AI 기반 개발 워크플로 구축')]),
       bulletedList(
         'Playwright 테스트 명세를 AI Agent가 자율 실행·판정하는 QA 도구를 오픈소스로 개발하고, ' +
@@ -134,13 +156,40 @@ const portfolioContent: SduiDocumentContent = {
           'AI 생성 코드가 사내 컨벤션과 디자인 시스템을 준수하도록 개발 워크플로에 적용',
       ),
       paragraph([bold('품질 자동화')]),
+      bulletedList([
+        text('사용자 시나리오와 BVA(경계값 분석) 기반으로 E2E 테스트 '),
+        inlineCode('400+'),
+        text(', 단위 테스트 '),
+        inlineCode('400+'),
+        text(' 구축 — 배포 후 프론트엔드 프로덕션 버그를 '),
+        inlineCode('1개월당 1~2건'),
+        text(' 수준으로 대폭 감소'),
+      ]),
+      paragraph([bold('아키텍처 & 성능')]),
+      bulletedList('비정형 N-depth OCR 결과를 재귀적 트리 구조의 Server-Driven UI로 구현', {
+        children: [
+          bulletedList([
+            text('→ 템플릿 오픈소스: '),
+            link('https://github.com/lodado/sdui-template', 'https://github.com/lodado/sdui-template'),
+          ]),
+        ],
+      }),
       bulletedList(
-        '사용자 시나리오와 BVA(경계값 분석) 기반으로 E2E 테스트 400+, 단위 테스트 400+ 구축 — ' +
-          '배포 후 프론트엔드 프로덕션 버그를 월 1~2회로 감소',
+        'OCR 데이터를 ID 기반으로 정규화하고 useSyncExternalStore 기반 노드별 구독 구조를 적용, ' +
+          '변경된 컴포넌트만 선택적으로 리렌더링해 대규모 문서에서도 지연 없는 편집 경험 확보',
       ),
+      bulletedList([
+        text('코드 스플리팅과 vendor chunk 분리로 초기 JavaScript 번들 '),
+        inlineCode('30%'),
+        text(' 감소, 웹폰트 서브셋 적용으로 폰트 리소스 '),
+        inlineCode('70%'),
+        text(' 감소'),
+      ]),
+      paragraph([bold('글로벌 결제')]),
+      bulletedList('Paddle.js 기반 글로벌 결제 연동 및 구독 플랜별 UI 노출·기능 접근 제어 로직 설계 (State pattern)'),
       paragraph([
         colored(
-          'React.js · Zustand · TanStack Query · Playwright · Vitest · Storybook · Paddle.js · Vercel · Sentry · Front-end 개발 외 보유기술 +1개',
+          'Next.js · React · TypeScript · Zustand · TanStack Query · Playwright · Vitest · Storybook · Paddle.js · Vercel · Sentry',
           META_GRAY,
         ),
       ]),

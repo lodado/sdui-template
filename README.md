@@ -35,6 +35,28 @@ Subscription-based React UI (only changed nodes re-render)
 | **① server JSON** | →   | **② renderer** | →   | **③ interactive UI** |
 | ----------------- | --- | -------------- | --- | -------------------- |
 
+**① Server JSON** — nested 3-level tree (`Container` → `Card` → `Counter`):
+
+```json
+{
+  "version": "1.0.0",
+  "root": {
+    "id": "page",
+    "type": "Container",
+    "children": [
+      {
+        "id": "card",
+        "type": "Card",
+        "state": { "title": "Dashboard" },
+        "children": [{ "id": "counter", "type": "Counter", "state": { "label": "Clicks", "count": 0 } }]
+      }
+    ]
+  }
+}
+```
+
+**② Renderer + ③ interactive UI** — register factories; containers recurse with `useRenderNode`:
+
 ```tsx
 'use client'
 
@@ -42,12 +64,30 @@ import {
   SduiLayoutRenderer,
   useSduiNodeSubscription,
   useSduiLayoutAction,
-  type ComponentFactory,
+  useRenderNode,
   type SduiLayoutDocument,
 } from '@lodado/sdui-template'
 import { z } from 'zod'
 
 const counterSchema = z.object({ label: z.string(), count: z.number().default(0) })
+const cardSchema = z.object({ title: z.string() })
+
+function Container({ id }: { id: string }) {
+  const { childrenIds } = useSduiNodeSubscription({ nodeId: id })
+  const { renderChildren } = useRenderNode({ nodeId: id })
+  return <section>{renderChildren(childrenIds)}</section>
+}
+
+function Card({ id }: { id: string }) {
+  const { state, childrenIds } = useSduiNodeSubscription({ nodeId: id, schema: cardSchema })
+  const { renderChildren } = useRenderNode({ nodeId: id })
+  return (
+    <article>
+      <h2>{state.title}</h2>
+      {renderChildren(childrenIds)}
+    </article>
+  )
+}
 
 function Counter({ id }: { id: string }) {
   const { state } = useSduiNodeSubscription({ nodeId: id, schema: counterSchema })
@@ -63,14 +103,30 @@ function Counter({ id }: { id: string }) {
 const document: SduiLayoutDocument = {
   version: '1.0.0',
   root: {
-    id: 'counter-1',
-    type: 'Counter',
-    state: { label: 'Clicks', count: 0 },
+    id: 'page',
+    type: 'Container',
+    children: [
+      {
+        id: 'card',
+        type: 'Card',
+        state: { title: 'Dashboard' },
+        children: [{ id: 'counter', type: 'Counter', state: { label: 'Clicks', count: 0 } }],
+      },
+    ],
   },
 }
 
 export default function Page() {
-  return <SduiLayoutRenderer document={document} components={{ Counter: (id) => <Counter id={id} /> }} />
+  return (
+    <SduiLayoutRenderer
+      document={document}
+      components={{
+        Container: (id) => <Container id={id} />,
+        Card: (id) => <Card id={id} />,
+        Counter: (id) => <Counter id={id} />,
+      }}
+    />
+  )
 }
 ```
 
