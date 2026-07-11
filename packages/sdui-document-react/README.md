@@ -43,7 +43,7 @@ const initialContent: SduiDocumentContent = {
       {
         id: 'intro',
         type: 'document.paragraph',
-        state: { content: [{ text: 'Hello document editor' }] },
+        state: { text: 'Hello document editor' },
       },
     ],
   },
@@ -79,6 +79,7 @@ export default function DocumentPage() {
 - [Styling & customization](#styling--customization)
 - [Interactions](#interactions)
 - [Exports](#exports)
+- [For AI assistants](#for-ai-assistants)
 - [Development](#development)
 
 ---
@@ -199,18 +200,28 @@ Tree transforms, schema validation, and patch application live in `@lodado/sdui-
   onTurnInto={(blockId, type, attrs) => console.log(blockId, type, attrs)}
   generateBlockId={() => crypto.randomUUID()}
   readOnly={false}
+  theme="swiss"
   className="my-document-editor"
 />
 ```
 
-| Prop              | Type                              | Description                    |
-| ----------------- | --------------------------------- | ------------------------------ |
-| `content`         | `SduiDocumentContent`             | Current document content       |
-| `onContentChange` | `(next, patches) => void`         | Called after editor changes    |
-| `onTurnInto`      | `(blockId, type, attrs?) => void` | Block type conversion callback |
-| `readOnly`        | `boolean`                         | Disable editing controls       |
-| `generateBlockId` | `() => string`                    | Custom block ID generator      |
-| `className`       | `string`                          | Root class name                |
+| Prop              | Type                              | Description                                           |
+| ----------------- | --------------------------------- | ----------------------------------------------------- |
+| `content`         | `SduiDocumentContent`             | Current document content                              |
+| `onContentChange` | `(next, patches) => void`         | Called after editor changes                           |
+| `onTurnInto`      | `(blockId, type, attrs?) => void` | Block type conversion callback                        |
+| `readOnly`        | `boolean`                         | Disable editing controls                              |
+| `theme`           | `'swiss' \| 'notion' \| string`   | Visual theme (`data-sdui-doc-theme`; default `swiss`) |
+| `generateBlockId` | `() => string`                    | Custom block ID generator                             |
+| `className`       | `string`                          | Root class name                                       |
+
+Read-only viewer:
+
+```tsx
+import { SduiDocumentViewer } from '@lodado/sdui-document-react'
+import '@lodado/sdui-document-react/styles/viewer.css'
+;<SduiDocumentViewer content={content} theme="swiss" />
+```
 
 ---
 
@@ -218,16 +229,31 @@ Tree transforms, schema validation, and patch application live in `@lodado/sdui-
 
 ### Block types (`BlockChrome`)
 
-| Type                 | Description          |
-| -------------------- | -------------------- |
-| `document.paragraph` | Body text            |
-| `document.heading`   | Heading (levels 1–3) |
-| `document.checklist` | Checkbox item        |
-| `document.callout`   | Highlighted callout  |
-| `document.divider`   | Horizontal rule      |
-| `document.image`     | Image block          |
-| `document.file`      | File attachment      |
-| `document.link`      | Document link        |
+| Type                                      | Description                |
+| ----------------------------------------- | -------------------------- |
+| `document.paragraph`                      | Body text                  |
+| `document.heading`                        | Heading (levels 1–3)       |
+| `document.bulletedList`                   | Bulleted list item         |
+| `document.numberedList`                   | Numbered list item         |
+| `document.checklist`                      | Checkbox item              |
+| `document.quote`                          | Block quote                |
+| `document.callout`                        | Highlighted callout        |
+| `document.code`                           | Code block                 |
+| `document.divider`                        | Horizontal rule            |
+| `document.toggle`                         | Collapsible section        |
+| `document.image`                          | Image block                |
+| `document.video`                          | Video block                |
+| `document.embed`                          | Embed block                |
+| `document.file`                           | File attachment            |
+| `document.link`                           | Document link              |
+| `document.bookmark`                       | URL bookmark               |
+| `document.columnList` / `document.column` | Multi-column layout        |
+| `document.collection`                     | Database / table / gallery |
+| `document.page`                           | Sub-page link              |
+| `document.toc`                            | Table of contents          |
+| `document.tags`                           | Tag chips                  |
+| `document.button`                         | Action button              |
+| `document.sdui`                           | Embedded SDUI layout block |
 
 Text blocks render static inline content until focused, then swap in `FocusedBlockEditor`.
 
@@ -337,12 +363,67 @@ Note: partial entry files don't declare the `@layer` order statement — if you 
 ## Exports
 
 - `SduiDocumentEditor`
+- `SduiDocumentViewer`
 - `BlockChrome`
 - `FocusedBlockEditor`
 - ProseMirror helpers from `focused-block/pm/*`
 - `InlineContentView`
 - `MARK_DEFINITIONS`
 - Selection toolbar utilities
+- `documentEditorComponent` / `documentViewerComponent` (SDUI node integration)
+
+---
+
+## For AI assistants
+
+> MCP (`@lodado/sdui-mcp`) covers **SDUI layout JSON** only. For block editor work, read this README and [docs/AI-ASSISTANT-GUIDE.md](../../docs/AI-ASSISTANT-GUIDE.md).
+
+### Setup checklist
+
+```tsx
+'use client' // Next.js App Router — editor is client-only
+
+import '@lodado/sdui-document-react/styles/index.css' // AFTER Tailwind/resets
+import { SduiDocumentEditor } from '@lodado/sdui-document-react'
+import type { SduiDocumentContent } from '@lodado/sdui-document'
+```
+
+1. Install both `@lodado/sdui-document-react` and `@lodado/sdui-document`
+2. Import CSS **after** Tailwind / global resets (cascade layer ordering)
+3. Use `state: { text: '...' }` on text blocks in initial content
+4. Handle `onContentChange(next, patches)` — persist **patches**, not just full content
+5. Use `readOnly` + `viewer.css` for preview routes
+
+### Architecture (do not break)
+
+| Layer                         | Owns                                                                    |
+| ----------------------------- | ----------------------------------------------------------------------- |
+| `@lodado/sdui-document`       | Block schema, `applyDocumentPatch`, permissions, `toSduiLayoutDocument` |
+| `@lodado/sdui-document-react` | Block chrome, dnd-kit, ProseMirror on focused block only, editor CSS    |
+| `@lodado/sdui-template`       | Rendering `document.sdui` embedded layouts (via SDUI node components)   |
+
+### Common AI mistakes
+
+- Forgetting CSS import → unstyled editor
+- Importing document CSS before Tailwind → flattened headings/lists
+- Using `SduiLayoutDocument` instead of `SduiDocumentContent`
+- Mutating `content` in place instead of using patches from `onContentChange`
+- Wrapping the whole tree in ProseMirror (only focused block uses PM)
+
+### Storybook references
+
+| Story path              | Purpose                        |
+| ----------------------- | ------------------------------ |
+| `Document/Catalog`      | Every block type rendered      |
+| `DocumentEditor`        | Interactive editor             |
+| `Document/Themes/Swiss` | Theme comparison               |
+| `Document/Adapter`      | `toSduiLayoutDocument` preview |
+
+Run locally: `pnpm storybook` (port 6006)
+
+### MCP for embedded SDUI blocks
+
+When authoring `document.sdui` blocks that embed layout JSON, connect `@lodado/sdui-mcp` — see [root README MCP section](../../README.md#mcp--ai-assistants) and [sdui-mcp README](../sdui-mcp/README.md).
 
 ---
 

@@ -28,12 +28,17 @@ This is a **pnpm + Turborepo** monorepo:
 packages/
   sdui-template/           # Core library (@lodado/sdui-template)
   sdui-template-component/ # Radix UI-based component library (@lodado/sdui-template-component)
+  sdui-document/           # Headless block document domain (@lodado/sdui-document)
+  sdui-document-react/     # Notion-like block editor (@lodado/sdui-document-react)
+  sdui-mcp/                # MCP server — compressed SDUI authoring knowledge
   sdui-design-files/       # Design system files
   ssr-testing/             # SSR testing utilities
 apps/
   docs/                    # Storybook documentation (port 6006)
   nextAuthOauthLoginExample/ # Next.js example app with OAuth
 ```
+
+**Agent guide:** [AGENTS.md](AGENTS.md) · **Full AI reference:** [docs/AI-ASSISTANT-GUIDE.md](docs/AI-ASSISTANT-GUIDE.md)
 
 ## Common Commands
 
@@ -163,6 +168,66 @@ interface SduiLayoutNode {
 
 ---
 
+## MCP & AI assistants
+
+### Connect MCP (this repo or consumer apps)
+
+**Claude Code:**
+
+```bash
+claude mcp add sdui -- npx -y @lodado/sdui-mcp
+```
+
+**Cursor** — `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "sdui": {
+      "command": "npx",
+      "args": ["-y", "@lodado/sdui-mcp"]
+    }
+  }
+}
+```
+
+MCP covers **SDUI layout JSON** only (`@lodado/sdui-template` + `@lodado/sdui-template-component`). Block documents use [AGENTS.md](AGENTS.md).
+
+### MCP tools (SDUI layout work)
+
+| Tool                   | When to use                                                                 |
+| ---------------------- | --------------------------------------------------------------------------- |
+| `sdui_get_guide`       | `syntax`, `architecture`, `types`, `components-overview`, or component name |
+| `sdui_list_components` | Discover component names                                                    |
+| `sdui_get_examples`    | Storybook document JSON for a component                                     |
+| `sdui_get_snapshot`    | Sync into `.ai/sdui/` (see `/sdui-sync` skill)                              |
+
+**Before authoring layout JSON:** call `syntax` → `components-overview` → per-component guide + examples.
+
+**Snapshot:** copy `packages/sdui-mcp/consumer/sdui-sync/SKILL.md` to `.claude/skills/sdui-sync/`, run `/sdui-sync`. Re-sync when `.ai/sdui/manifest.json` is older than 7 days.
+
+### Package selection
+
+| Task                                      | Package(s)                        |
+| ----------------------------------------- | --------------------------------- |
+| Layout JSON → React                       | `@lodado/sdui-template`           |
+| Ready-made Radix components               | `@lodado/sdui-template-component` |
+| Block document domain (patches, no React) | `@lodado/sdui-document`           |
+| Block editor UI                           | `@lodado/sdui-document-react`     |
+
+### Block document rules (summary)
+
+- Root block: `type: 'document.root'`; unique `id` on every block
+- Text blocks: `state.text` (string); patches via `applyDocumentPatch` (immutable)
+- Insert placement: `{ after: 'id' }` / `{ before: null }` — not array indices
+- Editor: import `@lodado/sdui-document-react/styles/index.css` **after** Tailwind
+- `onContentChange(next, patches)` — persist patches, not just full content
+- ProseMirror only on focused text block; domain logic stays in `@lodado/sdui-document`
+
+Full block types, patch schema, and examples: [AGENTS.md](AGENTS.md) · [docs/AI-ASSISTANT-GUIDE.md](docs/AI-ASSISTANT-GUIDE.md)
+
+---
+
 ## Working with SDUI Library
 
 When implementing components using the SDUI library (e.g., Storybook stories, example apps):
@@ -187,6 +252,7 @@ pnpm run test
 ```
 
 **Rules:**
+
 1. Run tests at the END of your response after all code changes are complete
 2. If tests **FAIL**, you MUST fix the issues and re-run tests until they pass
 3. Do NOT consider the task complete until all tests pass
