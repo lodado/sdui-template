@@ -37,7 +37,7 @@ const ViewerColumnContainers = ({ block, depth }: { block: SduiDocumentBlock; de
 
   if (block.type === COLUMN_LIST_BLOCK_TYPE) {
     return (
-      <div data-block-id={block.id} data-depth={depth} data-column-list>
+      <div data-block-id={block.id} data-block-type={block.type} data-depth={depth} data-column-list>
         {children.map((child) => (
           // eslint-disable-next-line no-use-before-define -- mutual recursion: containers render nested nodes
           <ViewerBlockNode key={child.id} block={child} depth={depth} />
@@ -49,7 +49,12 @@ const ViewerColumnContainers = ({ block, depth }: { block: SduiDocumentBlock; de
   const ratio = attributeRatio(block.attributes)
 
   return (
-    <div data-block-id={block.id} data-column style={ratio !== undefined ? { flexGrow: ratio } : undefined}>
+    <div
+      data-block-id={block.id}
+      data-block-type={block.type}
+      data-column
+      style={ratio !== undefined ? { flexGrow: ratio } : undefined}
+    >
       {children.map((child) => (
         // eslint-disable-next-line no-use-before-define -- mutual recursion: containers render nested nodes
         <ViewerBlockNode key={child.id} block={child} depth={depth} />
@@ -92,7 +97,7 @@ const ViewerBlockRow = ({ block, depth, listOrdinal }: ViewerBlockNodeProps) => 
   const ordinals = numberedListOrdinals(children)
 
   return (
-    <div data-block-id={block.id} data-depth={depth}>
+    <div data-block-id={block.id} data-block-type={block.type} data-depth={depth}>
       <div data-block-row>
         <div data-block-content data-align={resolveBlockAlign(block.attributes?.align)}>
           <BlockChrome

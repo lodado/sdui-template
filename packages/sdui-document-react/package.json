@@ -22,11 +22,12 @@
       "require": "./src/viewer/index.ts",
       "types": "./src/viewer/index.ts"
     },
-    "./src/styles/editor.css": "./src/styles/editor.css",
+    "./styles/*": "./src/styles/*",
     "./package.json": "./package.json"
   },
   "files": [
     "dist/**",
+    "src/styles/**/*.css",
     "README.md"
   ],
   "scripts": {
@@ -97,6 +98,7 @@
           "types": "./dist/types/viewer/index.d.ts"
         }
       },
+      "./styles/*": "./src/styles/*",
       "./package.json": "./package.json"
     },
     "main": "./dist/cjs/client/index.cjs",

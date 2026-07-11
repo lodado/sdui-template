@@ -1,0 +1,6 @@
+dist/
+knowledge/
+
+# Re-include src/build: the root .gitignore ignores any dir named "build",
+# but src/build/ is source, not a build artifact.
+!/src/build/

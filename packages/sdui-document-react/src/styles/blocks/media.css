@@ -1,0 +1,402 @@
+@layer sdui-doc.blocks {
+/* -------------------------------------------------------------- divider */
+
+/* A divider has no text line to pin to, so center it (and its handles) in the
+   row instead of the text-block flex-start default. */
+[data-sdui-document-editor] [data-block-row]:has(hr) {
+  align-items: center;
+}
+
+[data-sdui-document-editor] [data-block-row]:has(hr) > [data-drag-handle],
+[data-sdui-document-editor] [data-block-row]:has(hr) > [data-plus-handle] {
+  margin-top: 0;
+}
+
+[data-sdui-document-editor] hr {
+  position: relative;
+  height: 1em;
+  border: 0;
+  clear: both;
+  margin: 0;
+  width: 100%;
+}
+
+[data-sdui-document-editor] hr::before {
+  content: '';
+  display: block;
+  position: absolute;
+  border-top: 1px solid var(--sdui-doc-hr);
+  top: 0.5em;
+  left: 0;
+  right: 0;
+}
+
+[data-sdui-document-editor] hr.page-break {
+  page-break-after: always;
+}
+
+[data-sdui-document-editor] hr.page-break::before {
+  border-top: 1px dashed var(--sdui-doc-hr);
+}
+
+/* ---------------------------------------------------------------- image */
+
+[data-sdui-document-editor] .image {
+  line-height: 0;
+  text-align: center;
+  max-width: 100%;
+  clear: both;
+  position: relative;
+}
+
+[data-sdui-document-editor] .image img {
+  display: inline-block;
+  max-width: 100%;
+}
+
+/* wraps the <img> so the hover trigger positions against the image, not the
+   full-width block; inline-block collapses to the intrinsic image box */
+[data-sdui-document-editor] .image-frame {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+}
+
+/* Notion-style trigger — hidden until the image is hovered/focused or the
+   popover is open (editable mode only) */
+[data-sdui-document-editor] .image-controls-trigger {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 120ms ease;
+  background: var(--sdui-doc-menu-background);
+  box-shadow: var(--sdui-doc-menu-shadow);
+  color: var(--sdui-doc-text);
+  line-height: 1;
+}
+
+[data-sdui-document-editor] .image-frame:hover .image-controls-trigger,
+[data-sdui-document-editor] .image-controls-trigger:focus-visible,
+[data-sdui-document-editor] .image-controls-trigger[data-state='open'] {
+  opacity: 1;
+}
+
+/* popover surface + the alignment/width control group inside it */
+[data-sdui-document-editor] .image-controls-popover {
+  border-radius: 8px;
+  padding: 4px;
+  background: var(--sdui-doc-menu-background);
+  box-shadow: var(--sdui-doc-menu-shadow);
+  z-index: 40;
+}
+
+[data-sdui-document-editor] .image-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  align-items: center;
+  max-width: 240px;
+  font-size: 13px;
+}
+
+[data-sdui-document-editor] .image-controls button {
+  border: 0;
+  background: transparent;
+  border-radius: 4px;
+  padding: 2px 6px;
+  cursor: pointer;
+  color: var(--sdui-doc-text-secondary);
+  line-height: 1.2;
+}
+
+[data-sdui-document-editor] .image-controls button:hover {
+  background: var(--sdui-doc-background);
+  color: var(--sdui-doc-text);
+}
+
+/* Selected alignment reads clearly apart from a plain hover. */
+[data-sdui-document-editor] .image-controls button[data-active] {
+  background: color-mix(in srgb, var(--sdui-doc-accent) 12%, transparent);
+  color: var(--sdui-doc-accent);
+}
+
+[data-sdui-document-editor] .image-controls .image-width,
+[data-sdui-document-editor] .image-controls .image-alt {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--sdui-doc-text-secondary);
+}
+
+[data-sdui-document-editor] .image-controls .image-alt {
+  flex-basis: 100%;
+  margin-top: 2px;
+}
+
+[data-sdui-document-editor] .image-controls .image-alt-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+[data-sdui-document-editor] .image-controls .image-width input {
+  width: 56px;
+  border: 1px solid var(--sdui-doc-divider);
+  border-radius: 4px;
+  padding: 1px 4px;
+  font: inherit;
+  background: var(--sdui-doc-background);
+  color: var(--sdui-doc-text);
+}
+
+[data-sdui-document-editor] .image-controls .image-alt input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--sdui-doc-divider);
+  border-radius: 4px;
+  padding: 1px 4px;
+  font: inherit;
+  background: var(--sdui-doc-background);
+  color: var(--sdui-doc-text);
+}
+
+/* Edge drag-resize handles, revealed with the image frame (editable only). */
+[data-sdui-document-editor] .image-resize-handle {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 48px;
+  max-height: 60%;
+  border-radius: 6px;
+  background: var(--sdui-doc-accent);
+  opacity: 0;
+  transition: opacity 120ms ease;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+[data-sdui-document-editor] .image-resize-handle[data-image-resize-handle='left'] {
+  left: 6px;
+}
+
+[data-sdui-document-editor] .image-resize-handle[data-image-resize-handle='right'] {
+  right: 6px;
+}
+
+[data-sdui-document-editor] .image-frame:hover .image-resize-handle {
+  opacity: 0.85;
+}
+
+/* Touch/pen: the edge handles are invisible (no hover) yet still hit-test, so
+   they steal taps on the image's left/right edge. Remove them on coarse pointers
+   — the controls popover's width input is the touch path for resizing. */
+@media (pointer: coarse) {
+  [data-sdui-document-editor] .image-resize-handle {
+    display: none;
+  }
+}
+
+[data-sdui-document-editor] .caption {
+  border: 0;
+  display: block;
+  font-style: italic;
+  font-weight: normal;
+  font-size: 13px;
+  color: var(--sdui-doc-text-secondary);
+  padding: 8px 0 4px;
+  line-height: 16px;
+  text-align: center;
+  min-height: 1em;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Image lightbox — full-viewport preview overlay (body portal) */
+.image-openable {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+  font: inherit;
+  line-height: 0;
+}
+.image-openable > img {
+  display: block;
+  max-width: 100%;
+}
+.sdui-doc-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: var(--sdui-doc-z-lightbox);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4vmin;
+  background: var(--sdui-doc-lightbox-scrim);
+  animation: sdui-doc-lightbox-in var(--sdui-doc-dur-fast, 120ms) var(--sdui-doc-ease-out, ease-out);
+}
+.sdui-doc-lightbox-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: zoom-out;
+}
+.sdui-doc-lightbox-img {
+  position: relative;
+  z-index: 1;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  cursor: default;
+  pointer-events: none;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
+}
+.sdui-doc-lightbox-close {
+  position: fixed;
+  top: 16px;
+  right: 20px;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+}
+.sdui-doc-lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.26);
+}
+@keyframes sdui-doc-lightbox-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sdui-doc-lightbox {
+    animation: none;
+  }
+}
+
+.sdui-doc-bookmark--invalid,
+.sdui-doc-video--invalid,
+.sdui-doc-embed--invalid {
+  color: var(--sdui-doc-danger);
+  font-size: 13px;
+  padding: 8px;
+}
+
+/* --- video facade --- */
+.sdui-doc-video {
+  position: relative;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #000;
+  margin: 4px 0;
+}
+.sdui-doc-video iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.sdui-doc-video-facade {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  background: #000;
+}
+.sdui-doc-video-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+}
+.sdui-doc-video-bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #1a1a1a, #333);
+}
+.sdui-doc-video-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 22px;
+  padding-left: 4px;
+}
+.sdui-doc-video-play {
+  transition:
+    transform var(--sdui-doc-dur-fast, 120ms) var(--sdui-doc-ease-out, ease-out),
+    background var(--sdui-doc-dur-fast, 120ms) ease;
+}
+.sdui-doc-video-facade:hover .sdui-doc-video-play {
+  background: rgba(226, 40, 40, 0.85);
+  transform: translate(-50%, -50%) scale(1.08);
+}
+
+/* --- embed --- */
+.sdui-doc-embed {
+  margin: 4px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+.sdui-doc-embed iframe {
+  width: 100%;
+  border: 0;
+  display: block;
+}
+.sdui-doc-embed-fallback {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border: 1px dashed rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 12px 14px;
+  text-decoration: none;
+  color: inherit;
+  margin: 4px 0;
+}
+.sdui-doc-embed-fallback-label {
+  font-weight: 600;
+}
+.sdui-doc-embed-fallback-url {
+  font-size: 12px;
+  color: var(--sdui-doc-accent-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+}

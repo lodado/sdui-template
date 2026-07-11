@@ -1,0 +1,427 @@
+@layer sdui-doc.blocks {
+/* ----------------------------------------------------------- paragraph */
+
+[data-sdui-document-editor] p {
+  margin: 0;
+  padding: var(--sdui-doc-block-padding-y) var(--sdui-doc-block-padding-x);
+  min-height: 1.5em; /* one 24px line — padding brings the row to 30px */
+}
+
+/* ------------------------------------------------------------- heading */
+
+/* margins live on the row, not the heading — an asymmetric margin inside the
+   flex row would push the text off the vertical center (handle misalignment) */
+[data-sdui-document-editor] h1,
+[data-sdui-document-editor] h2,
+[data-sdui-document-editor] h3,
+[data-sdui-document-editor] h4 {
+  margin: 0;
+  padding: var(--sdui-doc-block-padding-y) var(--sdui-doc-block-padding-x);
+  line-height: inherit;
+  font-weight: 600;
+  cursor: text;
+  clear: both;
+}
+
+/* block spacing (Outline: heading margin-top 1em / bottom 0.25em of its own
+   font size) moved up to the row wrapper so centering stays symmetric */
+[data-sdui-document-editor] [data-block-row]:has(h1) {
+  margin-top: var(--sdui-doc-font-size-h1);
+  margin-bottom: calc(var(--sdui-doc-font-size-h1) * 0.25);
+}
+
+[data-sdui-document-editor] [data-block-row]:has(h2) {
+  margin-top: var(--sdui-doc-font-size-h2);
+  margin-bottom: calc(var(--sdui-doc-font-size-h2) * 0.25);
+}
+
+[data-sdui-document-editor] [data-block-row]:has(h3) {
+  margin-top: var(--sdui-doc-font-size-h3);
+  margin-bottom: calc(var(--sdui-doc-font-size-h3) * 0.25);
+}
+
+[data-sdui-document-editor] [data-block-row]:has(h4) {
+  margin-top: var(--sdui-doc-font-size-h4);
+  margin-bottom: calc(var(--sdui-doc-font-size-h4) * 0.25);
+}
+
+[data-sdui-document-editor] h1 {
+  font-size: var(--sdui-doc-font-size-h1);
+  font-weight: 700; /* Notion h1 is heavier than h2–h4 */
+  letter-spacing: -0.01em;
+}
+
+[data-sdui-document-editor] h2 {
+  font-size: var(--sdui-doc-font-size-h2);
+}
+
+[data-sdui-document-editor] h3 {
+  font-size: var(--sdui-doc-font-size-h3);
+}
+
+[data-sdui-document-editor] h4 {
+  font-size: var(--sdui-doc-font-size-h4);
+}
+
+/* ----------------------------------------------------------- checklist */
+
+/* flex-start pins the checkbox to the first text line on Shift-Enter
+   multiline items (Notion behavior); the wrapper span's inherited 24px line
+   box keeps the box centered on that line, same as the old single-line
+   centered position */
+[data-sdui-document-editor] [data-type='checkbox_item'] {
+  display: flex;
+  align-items: flex-start;
+  list-style: none;
+  padding: var(--sdui-doc-block-padding-y) var(--sdui-doc-block-padding-x);
+  min-height: var(--sdui-doc-block-min-height);
+}
+
+[data-sdui-document-editor] [data-type='checkbox_item'].checked .content {
+  color: var(--sdui-doc-text-tertiary);
+}
+
+[data-sdui-document-editor] [data-type='checkbox_item'] > .content {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+[data-sdui-document-editor] .checkbox {
+  /* height matches the first text line (1.5em) so the box centers against the
+     line instead of pinning to the top of the row */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  pointer-events: initial;
+  width: 16px;
+  height: 1.5em;
+  position: relative;
+  transition: transform 100ms ease-in-out;
+  opacity: 0.8;
+  margin: 0 0.5em 0 0;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+
+[data-sdui-document-editor] .checkbox[aria-checked='true'] {
+  opacity: 1;
+}
+
+[data-sdui-document-editor] .checkbox:active {
+  transform: scale(0.9);
+}
+
+[data-sdui-document-editor] .checkbox svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+  overflow: visible;
+}
+
+[data-sdui-document-editor] .checkbox-box {
+  fill: var(--sdui-doc-accent);
+  fill-opacity: 0;
+  stroke: var(--sdui-doc-text);
+  stroke-width: 2;
+  transition:
+    fill-opacity 100ms ease-in-out,
+    stroke 100ms ease-in-out;
+}
+
+[data-sdui-document-editor] .checkbox-tick {
+  fill: none;
+  stroke: var(--sdui-doc-accent-text);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 14;
+  stroke-dashoffset: 14;
+  transition: stroke-dashoffset 200ms ease-in-out;
+}
+
+[data-sdui-document-editor] .checkbox[aria-checked='true'] .checkbox-box {
+  fill-opacity: 1;
+  stroke: var(--sdui-doc-accent);
+}
+
+[data-sdui-document-editor] .checkbox[aria-checked='true'] .checkbox-tick {
+  stroke-dashoffset: 0;
+}
+
+/* ---------------------------------------------------------- inline marks */
+
+/* Outline Styles.ts mark rule — background comes inline from data-color (40%) */
+[data-sdui-document-editor] mark {
+  border-radius: 1px;
+  padding: 2px 0;
+  color: var(--sdui-doc-text);
+}
+
+[data-sdui-document-editor] mark a {
+  color: var(--sdui-doc-text);
+}
+
+[data-sdui-document-editor] code.inline {
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  border-radius: 4px;
+  border: 1px solid var(--sdui-doc-code-border);
+  background: var(--sdui-doc-code-background);
+  padding: 0.2em 0.4em;
+  font-family: var(--sdui-doc-font-mono);
+  font-size: 85%;
+  color: var(--sdui-doc-code-keyword);
+}
+
+/* Inline hyperlinks — standard blue + underline in every block context */
+[data-sdui-document-editor] a.sdui-doc-link {
+  color: var(--sdui-doc-link);
+  text-decoration: underline;
+  text-decoration-color: var(--sdui-doc-link);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.15em;
+  font-weight: inherit;
+  cursor: pointer;
+}
+
+[data-sdui-document-editor] .heading-content a.sdui-doc-link {
+  font-weight: inherit;
+}
+
+[data-sdui-document-editor] a.sdui-doc-link:hover,
+[data-sdui-document-editor] a.sdui-doc-link:focus-visible {
+  text-decoration-thickness: 1.5px;
+}
+
+[data-sdui-document-editor] a.sdui-doc-link:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--sdui-doc-link) 40%, transparent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ---- Notion list items ---- */
+.list-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 3px 2px;
+}
+.list-item > .list-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  min-width: 24px;
+  /* box == first text line (1.5em = 24px), pinned to the top of the item so it
+     stays on line 1 of wrapped content; flex-center puts the dot in the middle
+     of that first line. keep the glyph small — a large bullet's mass reads high
+     even when centered. */
+  height: 1.5em;
+  line-height: 1;
+  font-size: 1em;
+  user-select: none;
+}
+.list-item > .list-marker.list-marker-number {
+  font-size: 1em;
+  line-height: 1.5;
+  margin-top: 0;
+  justify-content: flex-start;
+  padding-left: 2px;
+}
+.list-item > .content {
+  flex: 1 1 0;
+  min-width: 0;
+  line-height: 1.5;
+}
+
+/* ---- Notion quote ---- */
+blockquote.quote-block {
+  margin: 4px 0;
+  padding: 3px 0 3px 14px;
+  border-left: 3px solid currentcolor;
+  font-size: 1em;
+  line-height: 1.5;
+}
+
+/* ---- Notion toggle ---- */
+.toggle-block {
+  display: flex;
+  align-items: flex-start;
+  padding: 3px 2px;
+}
+.toggle-block > span > .toggle-triangle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  border-radius: 3px;
+  cursor: pointer;
+  padding: 0;
+}
+.toggle-block > span > .toggle-triangle:hover {
+  background: rgba(55, 53, 47, 0.08);
+}
+.toggle-block > span > .toggle-triangle svg {
+  width: 12px;
+  height: 12px;
+  fill: currentcolor;
+  transform: rotate(90deg);
+  transition: transform 200ms ease-out;
+}
+.toggle-block > span > .toggle-triangle[data-collapsed] svg {
+  transform: rotate(0deg);
+}
+.toggle-block > .content {
+  flex: 1 1 0;
+  min-width: 0;
+  line-height: 1.5;
+}
+/* Toggle children: keep the 24px indent (drag-depth math) but add a subtle
+   vertical guide so the nesting reads as "belongs to this toggle" (Notion).
+   The line sits under the triangle center (~11px into the 24px handle gutter). */
+[data-sdui-document-editor] [data-nested-toggle] {
+  position: relative;
+}
+[data-sdui-document-editor] [data-nested-toggle]::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: 11px;
+  width: 1.5px;
+  border-radius: 1px;
+  background: var(--sdui-doc-divider);
+}
+
+.toggle-empty-placeholder {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  color: rgba(55, 53, 47, 0.5);
+  padding: 3px 2px;
+  border-radius: 4px;
+  user-select: none;
+  cursor: text;
+}
+
+.toggle-empty-placeholder:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--sdui-doc-text-tertiary) 10%, transparent);
+}
+
+.toggle-empty-placeholder:disabled {
+  cursor: default;
+}
+
+/* ---- Notion code block ---- */
+.code-block-wrapper {
+  position: relative;
+  margin: 4px 0;
+}
+.code-block-wrapper > .code-language {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 1;
+  font-size: 12px;
+  color: var(--sdui-doc-code-block-text);
+  opacity: 0;
+  transition: opacity 150ms ease-in;
+}
+.code-block-wrapper:hover > .code-language,
+.code-block-wrapper:focus-within > .code-language {
+  opacity: 1;
+}
+.code-block-wrapper > .code-language select {
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  color: inherit;
+  cursor: pointer;
+}
+.code-block-wrapper > .code-copy-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  border: 1px solid color-mix(in srgb, var(--sdui-doc-code-block-text) 30%, transparent);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--sdui-doc-code-block-background) 85%, var(--sdui-doc-surface));
+  color: var(--sdui-doc-code-block-text);
+  font-size: 12px;
+  line-height: 1;
+  padding: 4px 8px;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    background 150ms ease-in,
+    border-color 150ms ease-in,
+    opacity 150ms ease-in;
+}
+.code-block-wrapper:hover > .code-copy-button,
+.code-block-wrapper:focus-within > .code-copy-button {
+  opacity: 1;
+}
+.code-block-wrapper > .code-copy-button:hover,
+.code-block-wrapper > .code-copy-button:focus-visible,
+.code-block-wrapper > .code-copy-button.is-copied {
+  border-color: color-mix(in srgb, var(--sdui-doc-code-block-text) 55%, transparent);
+  background: var(--sdui-doc-surface);
+}
+.code-block-wrapper > pre.code-block {
+  margin: 0;
+  padding: 34px 16px 32px 32px;
+  background: var(--sdui-doc-code-block-background);
+  color: var(--sdui-doc-text);
+  border-radius: 4px;
+  overflow-x: auto;
+  tab-size: 2;
+}
+.code-block-wrapper > pre.code-block > code {
+  font-family: 'SFMono-Regular', Menlo, Consolas, 'PT Mono', 'Liberation Mono', Courier, monospace;
+  font-size: 85%;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+/* Line-wrap toggle off: horizontal scroll instead of wrapping */
+.code-block-wrapper > pre.code-block--nowrap > code {
+  white-space: pre;
+  word-break: normal;
+}
+.code-block-wrapper > .code-wrap-button {
+  position: absolute;
+  top: 8px;
+  right: 64px;
+  z-index: 1;
+  border: 1px solid color-mix(in srgb, var(--sdui-doc-code-block-text) 30%, transparent);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--sdui-doc-code-block-background) 85%, var(--sdui-doc-surface));
+  color: var(--sdui-doc-code-block-text);
+  font-size: 12px;
+  line-height: 1;
+  padding: 4px 8px;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    background 150ms ease-in,
+    border-color 150ms ease-in,
+    opacity 150ms ease-in;
+}
+.code-block-wrapper:hover > .code-wrap-button,
+.code-block-wrapper:focus-within > .code-wrap-button {
+  opacity: 1;
+}
+.code-block-wrapper > .code-wrap-button:hover,
+.code-block-wrapper > .code-wrap-button:focus-visible {
+  border-color: color-mix(in srgb, var(--sdui-doc-code-block-text) 55%, transparent);
+  background: var(--sdui-doc-surface);
+}
+
+}

@@ -1,4 +1,4 @@
-import './styles/editor.css'
+import './styles/index.css'
 
 export * from './block-types'
 export {

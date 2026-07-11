@@ -1,0 +1,915 @@
+@layer sdui-doc.chrome {
+/* ------------------------------------------- empty document / trailing */
+
+/* Outline ClickablePadding (app/components/ClickablePadding.ts): the space
+   below the last block reads as writable surface. Clicking it focuses the
+   trailing empty paragraph kept alive by the trailing-block invariant. */
+[data-sdui-document-editor] [data-editor-clickable-padding] {
+  min-height: var(--sdui-doc-clickable-padding-height, 50vh);
+  cursor: text;
+}
+
+/* Outline PlaceholderPlugin — CSS-only placeholder via ::before, shown when
+   the document is a single empty paragraph (Doc.ts placeholder condition).
+   Static view: the empty [data-inline-root] span. Focused view: the empty
+   inline-only ProseMirror doc (a lone trailing <br>). */
+[data-sdui-document-editor][data-doc-empty] [data-inline-root]:empty::before,
+[data-sdui-document-editor][data-doc-empty] .ProseMirror:has(> br.ProseMirror-trailingBreak:only-child)::before {
+  content: var(--sdui-doc-placeholder, 'Type something…');
+  color: var(--sdui-doc-text-tertiary);
+  pointer-events: none;
+  height: 0;
+  float: left;
+}
+
+/* Focused empty block (not the whole-doc-empty case above): prompt the slash
+   menu, Notion-style. Only one ProseMirror instance is mounted at a time, so
+   this matches the currently-focused block only. Lower specificity than the
+   [data-doc-empty] rule, so an empty document keeps its own placeholder. */
+[data-sdui-document-editor] .ProseMirror:has(> br.ProseMirror-trailingBreak:only-child)::before {
+  content: var(--sdui-doc-placeholder-focused, "Type '/' for commands…");
+  color: var(--sdui-doc-text-tertiary);
+  pointer-events: none;
+  height: 0;
+  float: left;
+}
+
+/* Heading placeholders — always visible when the heading is empty ("Heading N"),
+   matching both the static ([data-inline-root]:empty) and focused (empty PM)
+   views. Higher specificity than the generic focused rule above, so a focused
+   empty heading shows "Heading N" instead of the slash prompt. */
+[data-sdui-document-editor] .heading-content[data-level='1'] :is([data-inline-root]:empty, .ProseMirror:has(> br.ProseMirror-trailingBreak:only-child))::before {
+  content: var(--sdui-doc-heading-placeholder-1, 'Heading 1');
+}
+[data-sdui-document-editor] .heading-content[data-level='2'] :is([data-inline-root]:empty, .ProseMirror:has(> br.ProseMirror-trailingBreak:only-child))::before {
+  content: var(--sdui-doc-heading-placeholder-2, 'Heading 2');
+}
+[data-sdui-document-editor] .heading-content[data-level='3'] :is([data-inline-root]:empty, .ProseMirror:has(> br.ProseMirror-trailingBreak:only-child))::before {
+  content: var(--sdui-doc-heading-placeholder-3, 'Heading 3');
+}
+[data-sdui-document-editor] .heading-content[data-level='4'] :is([data-inline-root]:empty, .ProseMirror:has(> br.ProseMirror-trailingBreak:only-child))::before {
+  content: var(--sdui-doc-heading-placeholder-4, 'Heading 4');
+}
+[data-sdui-document-editor] .heading-content[data-level] [data-inline-root]:empty::before,
+[data-sdui-document-editor] .heading-content[data-level] .ProseMirror:has(> br.ProseMirror-trailingBreak:only-child)::before {
+  color: var(--sdui-doc-text-tertiary);
+  pointer-events: none;
+  height: 0;
+  float: left;
+}
+
+/* ------------------------------------------------- selection/drag chrome */
+
+/* Block selection: semi-transparent accent wash + rounded outline so a group
+   of selected blocks reads as one contiguous highlight, distinct from the
+   text-selection (browser-native) look. */
+[data-sdui-document-editor] [data-selected='true'] {
+  outline: 2px solid var(--sdui-doc-accent);
+  outline-offset: 1px;
+  border-radius: 4px;
+  background-color: color-mix(in srgb, var(--sdui-doc-accent) 12%, transparent);
+}
+
+/* Focused text block: faint accent wash so the active block reads apart from
+   the rest of the document without competing with the caret. */
+[data-sdui-document-editor] [data-focused] > [data-block-row] {
+  background-color: color-mix(in srgb, var(--sdui-doc-accent) 4%, transparent);
+  border-radius: 4px;
+}
+
+/* One-shot highlight when a block is created (Enter split, '+' or slash insert).
+   The data-just-inserted attr is dropped on the next focus change, so the
+   animation plays exactly once. */
+@keyframes sdui-doc-insert-highlight {
+  from {
+    background-color: color-mix(in srgb, var(--sdui-doc-accent) 14%, transparent);
+  }
+  to {
+    background-color: color-mix(in srgb, var(--sdui-doc-accent) 4%, transparent);
+  }
+}
+
+[data-sdui-document-editor] [data-just-inserted] > [data-block-row] {
+  animation: sdui-doc-insert-highlight 800ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-sdui-document-editor] [data-just-inserted] > [data-block-row] {
+    animation: none;
+  }
+
+  [data-sdui-document-editor] .sdui-doc-block-actions {
+    animation: none;
+  }
+
+  /* portfolio/collection blocks: show final state immediately */
+  .sdui-doc-gallery-slot,
+  .sdui-doc-collection-props-panel,
+  .sdui-doc-tags-edit,
+  .sdui-doc-peek-overlay,
+  .sdui-doc-peek-content[data-mode='center'],
+  .sdui-doc-peek-content[data-mode='side'],
+  .sdui-doc-peek-skeleton span {
+    animation: none;
+  }
+
+  .sdui-doc-gallery-card,
+  .sdui-doc-gallery-cover img,
+  .sdui-doc-gallery-cover-fill,
+  .sdui-doc-bookmark-thumb img,
+  .sdui-doc-timeline-row,
+  .sdui-doc-timeline-row::before,
+  .sdui-doc-video-play,
+  .sdui-doc-button,
+  .sdui-doc-collection-view-tab,
+  .sdui-doc-collection-view-tab::after {
+    transition: none;
+  }
+}
+
+[data-sdui-document-editor] [data-drag-handle] {
+  /* center the ⠿ glyph in the 24px box so it lines up with the first text line
+     (box top sits at padding-y; a 24px line box centers at the same point) */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: var(--sdui-doc-text-secondary);
+  background: none;
+  border: 0;
+  padding: 0;
+  border-radius: 4px;
+  /* native-pointer drag (useBlockPointerDrag): stop touch scroll/long-press from
+     hijacking the gesture so pointermove fires for the drag */
+  touch-action: none;
+  /* a long-press on the handle is a drag grab, not a text/callout selection —
+     suppress iOS selection magnifier and the tap-callout so the drag stays clean */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  /* hidden until the row is hovered (Notion/Outline behavior) — opacity, not
+     display, so the row never reflows and the handle stays a drop-zone-stable
+     flex item */
+  opacity: 0;
+  transition:
+    color 150ms cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    opacity 150ms ease-in-out;
+}
+
+[data-sdui-document-editor] [data-block-row]:hover > [data-drag-handle],
+[data-sdui-document-editor] [data-drag-handle][data-dragging='true'] {
+  opacity: 1;
+}
+
+/* '+' insert button — same hover-reveal contract as the drag handle */
+[data-sdui-document-editor] [data-plus-handle] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: var(--sdui-doc-text-secondary);
+  background: none;
+  border: 0;
+  padding: 0;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 150ms ease-in-out;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+[data-sdui-document-editor] [data-plus-handle]::before {
+  content: '+';
+  font-size: 16px;
+  line-height: 1;
+}
+
+[data-sdui-document-editor] [data-block-row]:hover > [data-plus-handle] {
+  opacity: 1;
+}
+
+[data-sdui-document-editor] [data-plus-handle]:hover,
+[data-sdui-document-editor] [data-plus-handle]:focus {
+  cursor: pointer;
+  color: var(--sdui-doc-text);
+  background: var(--sdui-doc-background-secondary);
+}
+
+@media (hover: none) and (pointer: coarse) {
+  [data-sdui-document-editor] [data-plus-handle] {
+    opacity: 1;
+  }
+}
+
+/* Touch-primary devices only (coarse pointer + no hover). Headless Firefox
+   reports (hover: none) with (pointer: fine), so require both — otherwise CI
+   and desktop-like environments keep the hover-reveal behavior.
+
+   These controls are otherwise revealed on :hover, which touch can only fake via
+   sticky-hover (appears on tap, vanishes on the next tap elsewhere) — so they
+   read as flickering, undiscoverable UI. Pin them visible on touch instead. */
+@media (hover: none) and (pointer: coarse) {
+  [data-sdui-document-editor] [data-drag-handle],
+  [data-sdui-document-editor] .image-controls-trigger {
+    opacity: 1;
+  }
+
+  /* code-block controls are styled unscoped (they render in readOnly too), so
+     the coarse override matches that scope to keep specificity high enough. */
+  .code-block-wrapper > .code-language,
+  .code-block-wrapper > .code-copy-button {
+    opacity: 1;
+  }
+}
+
+[data-sdui-document-editor] [data-drag-handle]:hover,
+[data-sdui-document-editor] [data-drag-handle]:focus {
+  cursor: pointer;
+  color: var(--sdui-doc-text);
+  background: var(--sdui-doc-background-secondary);
+}
+
+[data-sdui-document-editor] [data-drop-indicator] {
+  background: var(--sdui-doc-accent);
+}
+
+/* insertion caret painted while dragging inline text across blocks */
+[data-sdui-document-editor] [data-drop-caret] {
+  background: var(--sdui-doc-accent);
+  border-radius: 1px;
+}
+
+/* native element drags (image ghost, link drag) must never compete with the
+   text-selection drag or the ⠿ block drag — draggable=false plus the webkit
+   escape hatch */
+[data-sdui-document-editor] img,
+[data-sdui-document-editor] a {
+  -webkit-user-drag: none;
+}
+
+/* the ⠿ glyph lives in pseudo content: it can never join a text selection or
+   a copy (a real text node would — user-select:none alone does not keep it
+   out of Selection.toString() in Chromium) */
+[data-sdui-document-editor] [data-drag-handle] {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+[data-sdui-document-editor] [data-drag-handle]::before {
+  content: '⠿';
+}
+
+.sdui-doc-shortcut-tooltip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 260px;
+  padding: 5px 6px 5px 8px;
+  border-radius: 5px;
+  background: #191919;
+  color: #fff;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 8px 18px rgba(0, 0, 0, 0.18),
+    0 2px 5px rgba(0, 0, 0, 0.16);
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: nowrap;
+  z-index: var(--sdui-doc-z-tooltip);
+  animation: sdui-doc-tooltip-in 90ms ease-out;
+}
+
+.sdui-doc-shortcut-tooltip kbd {
+  min-width: 18px;
+  padding: 2px 5px;
+  border: 0;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.78);
+  font: inherit;
+  font-size: 11px;
+  text-align: center;
+}
+
+.sdui-doc-shortcut-tooltip-arrow {
+  fill: #191919;
+}
+
+@keyframes sdui-doc-tooltip-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* -------------------------------------------------------- selection toolbar
+   Portaled to <body> so rules are class-scoped, not editor-scoped.
+   Values from Outline FloatingToolbar/ToolbarMenu/ToolbarButton/theme.ts. */
+
+.sdui-doc-toolbar {
+  background: var(--sdui-doc-menu-background);
+  box-shadow: var(--sdui-doc-menu-shadow);
+  border-radius: 4px;
+  z-index: var(--sdui-doc-z-toolbar); /* Outline depths.editorToolbar */
+  animation: sdui-doc-toolbar-in 150ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes sdui-doc-toolbar-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.sdui-doc-toolbar-menu,
+.sdui-doc-toolbar-palette,
+.sdui-doc-toolbar-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  color: var(--sdui-doc-text-secondary);
+}
+
+/* ------------------------------------------------------------ link popover
+   Editable-mode click actions on an existing link (Open/Copy/Edit/Remove). */
+.sdui-doc-link-popover {
+  background: var(--sdui-doc-menu-background);
+  box-shadow: var(--sdui-doc-menu-shadow);
+  border-radius: 6px;
+  animation: sdui-doc-toolbar-in 150ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.sdui-doc-link-popover-menu {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  color: var(--sdui-doc-text-secondary);
+}
+
+.sdui-doc-link-popover-href {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--sdui-doc-text-secondary);
+}
+
+.sdui-doc-link-popover .sdui-doc-toolbar-button {
+  width: auto;
+  min-width: 0;
+  padding: 2px 8px;
+  font-size: 13px;
+}
+
+.sdui-doc-link-popover .sdui-doc-toolbar-button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.sdui-doc-toolbar-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: 14px;
+  border-radius: 4px;
+  opacity: 0.8;
+  cursor: pointer;
+  transition:
+    opacity 100ms ease-in-out,
+    background 100ms ease-in-out;
+}
+
+.sdui-doc-toolbar-button:hover,
+.sdui-doc-toolbar-button:focus-visible {
+  opacity: 1;
+}
+
+.sdui-doc-toolbar-button[data-active] {
+  opacity: 1;
+  background: var(--sdui-doc-accent);
+  color: var(--sdui-doc-accent-text);
+}
+
+.sdui-doc-toolbar-separator {
+  width: 1px;
+  height: 36px;
+  margin: -6px 2px;
+  background: color-mix(in srgb, var(--sdui-doc-text-tertiary) 25%, transparent);
+}
+
+.sdui-doc-toolbar-turninto-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+  opacity: 0.85;
+}
+
+.sdui-doc-toolbar-turninto-trigger:hover,
+.sdui-doc-toolbar-turninto-trigger:focus-visible {
+  opacity: 1;
+  background: color-mix(in srgb, var(--sdui-doc-text-tertiary) 15%, transparent);
+}
+
+.sdui-doc-block-menu-group-label {
+  padding: 6px 8px 2px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--sdui-doc-text-tertiary);
+  user-select: none;
+}
+
+.sdui-doc-toolbar-highlight-dot {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid currentcolor;
+}
+
+.sdui-doc-toolbar-swatch {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 1px solid var(--sdui-doc-divider);
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1;
+  color: var(--sdui-doc-text-secondary);
+}
+
+.sdui-doc-toolbar-swatch[data-active] {
+  outline: 2px solid var(--sdui-doc-accent);
+  outline-offset: 1px;
+}
+
+/* color toolbar button glyph — the "A" tints to the active text/bg color */
+.sdui-doc-toolbar-color-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+/* Notion-style unified color menu (text color + background color sections) */
+.sdui-doc-color-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 2px;
+  min-width: 200px;
+}
+
+.sdui-doc-color-heading {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sdui-doc-text-tertiary);
+}
+
+.sdui-doc-color-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.sdui-doc-color-swatch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--sdui-doc-divider);
+  border-radius: 6px;
+  cursor: pointer;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.sdui-doc-color-swatch[data-none] {
+  color: var(--sdui-doc-text-secondary);
+}
+
+.sdui-doc-color-swatch[data-active] {
+  outline: 2px solid var(--sdui-doc-accent);
+  outline-offset: 1px;
+}
+
+.sdui-doc-toolbar-link-input {
+  min-width: 200px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--sdui-doc-text);
+  font-size: 14px;
+  font-family: var(--sdui-doc-font);
+}
+
+/* -------------------------------------------------------------- block menu
+   Slash-command / '+'-button insert menu. Portaled to <body>, same surface
+   tokens as the selection toolbar. */
+
+.sdui-doc-block-menu {
+  background: var(--sdui-doc-menu-background);
+  box-shadow: var(--sdui-doc-menu-shadow);
+  border-radius: 4px;
+  z-index: var(--sdui-doc-z-toolbar);
+  animation: sdui-doc-toolbar-in 150ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.sdui-doc-block-menu-list {
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  max-height: 280px;
+  padding: 4px;
+  overflow-y: auto;
+}
+
+.sdui-doc-block-menu-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 5px 8px;
+  border: 0;
+  background: none;
+  border-radius: 4px;
+  color: var(--sdui-doc-text);
+  font-size: 14px;
+  font-family: var(--sdui-doc-font);
+  text-align: left;
+  cursor: pointer;
+}
+
+.sdui-doc-block-menu-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.sdui-doc-block-menu-title {
+  line-height: 1.35;
+}
+
+.sdui-doc-block-menu-desc {
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--sdui-doc-text-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sdui-doc-block-menu-option:hover .sdui-doc-block-menu-desc,
+.sdui-doc-block-menu-option[data-active] .sdui-doc-block-menu-desc {
+  color: inherit;
+  opacity: 0.8;
+}
+
+.sdui-doc-block-menu-option:hover,
+.sdui-doc-block-menu-option[data-active] {
+  background: var(--sdui-doc-accent);
+  color: var(--sdui-doc-accent-text);
+}
+
+.sdui-doc-block-menu-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  color: var(--sdui-doc-text-secondary);
+  font-size: 12px;
+}
+
+.sdui-doc-block-menu-option:hover .sdui-doc-block-menu-glyph,
+.sdui-doc-block-menu-option[data-active] .sdui-doc-block-menu-glyph {
+  color: inherit;
+}
+
+.sdui-doc-block-menu-empty {
+  padding: 8px 10px;
+  color: var(--sdui-doc-text-tertiary);
+  font-size: 13px;
+  font-family: var(--sdui-doc-font);
+}
+
+.sdui-doc-block-menu-link {
+  display: flex;
+  align-items: center;
+  padding: 6px;
+}
+
+/* ---------------------------------------------------- block-actions menu
+   Opened by clicking the ⠿ drag handle (turn into / duplicate / delete).
+   Same surface tokens as the slash menu; fixed-positioned against the handle
+   rect rather than portaled. */
+
+[data-sdui-document-editor] .sdui-doc-block-actions {
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+  padding: 4px;
+  border-radius: 4px;
+  background: var(--sdui-doc-menu-background);
+  box-shadow: var(--sdui-doc-menu-shadow);
+  animation: sdui-doc-toolbar-in 150ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.sdui-doc-block-actions .sdui-doc-block-menu-option {
+  width: 100%;
+}
+
+.sdui-doc-block-actions-chevron {
+  margin-left: auto;
+  color: var(--sdui-doc-text-tertiary);
+}
+
+.sdui-doc-block-actions-separator {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--sdui-doc-hr);
+}
+
+.sdui-doc-block-actions-back {
+  color: var(--sdui-doc-text-secondary);
+}
+
+/* --------------------------------------------------------- upload states
+   Image/file blocks between file pick and upload completion. */
+
+[data-sdui-document-editor] .image-uploading,
+[data-sdui-document-editor] .attachment-uploading,
+[data-sdui-document-editor] .image-error,
+[data-sdui-document-editor] .attachment-error {
+  padding: 12px;
+  border: 1px dashed var(--sdui-doc-divider);
+  border-radius: 4px;
+  color: var(--sdui-doc-text-secondary);
+  font-size: 14px;
+}
+
+[data-sdui-document-editor] .image-error,
+[data-sdui-document-editor] .attachment-error {
+  color: var(--sdui-doc-danger, #d33);
+  border-color: currentcolor;
+}
+
+/* --- collection toolbar (editor only) --- */
+.sdui-doc-collection-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+/* Notion-style underline tabs: transparent chrome, hover wash, active accent
+   underline that slides in via transform */
+.sdui-doc-collection-views {
+  display: inline-flex;
+  gap: 2px;
+}
+.sdui-doc-collection-view-tab {
+  position: relative;
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--sdui-doc-text-secondary, #787774);
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 4px 8px;
+  transition:
+    background var(--sdui-doc-dur-fast, 120ms) ease,
+    color var(--sdui-doc-dur-fast, 120ms) ease;
+}
+.sdui-doc-collection-view-tab:hover {
+  background: var(--sdui-doc-surface-hover, rgba(55, 53, 47, 0.06));
+  color: var(--sdui-doc-text, #37352f);
+}
+.sdui-doc-collection-view-tab::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--sdui-doc-text, #37352f);
+  transform: scaleX(0);
+  transition: transform var(--sdui-doc-dur-med, 200ms) var(--sdui-doc-ease-out, ease-out);
+}
+.sdui-doc-collection-view-tab[data-active] {
+  color: var(--sdui-doc-text, #37352f);
+}
+.sdui-doc-collection-view-tab[data-active]::after {
+  transform: scaleX(1);
+}
+.sdui-doc-collection-groupby {
+  font-size: 13px;
+  color: var(--sdui-text-muted, #6b6b6b);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.sdui-doc-collection-props-btn {
+  background: none;
+  border: none;
+  border-radius: 4px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 8px;
+  color: var(--sdui-doc-text-secondary, #787774);
+  transition: background var(--sdui-doc-dur-fast, 120ms) ease;
+}
+.sdui-doc-collection-props-btn:hover {
+  background: var(--sdui-doc-surface-hover, rgba(55, 53, 47, 0.06));
+  color: var(--sdui-doc-text, #37352f);
+}
+.sdui-doc-collection-props-panel {
+  background: var(--sdui-doc-background, #fff);
+  border-radius: 8px;
+  box-shadow: var(--sdui-doc-shadow-popover, 0 6px 24px rgba(0, 0, 0, 0.15));
+  padding: 10px;
+  width: 280px;
+  z-index: var(--sdui-doc-z-popover);
+  animation: sdui-doc-pop-in var(--sdui-doc-dur-fast, 120ms) var(--sdui-doc-ease-out, ease-out) both;
+}
+@keyframes sdui-doc-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.sdui-doc-collection-props-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 13px;
+}
+.sdui-doc-collection-props-row span:first-child {
+  flex: 1;
+}
+.sdui-doc-collection-props-type {
+  color: var(--sdui-text-muted, #9b9a97);
+  font-size: 11px;
+}
+.sdui-doc-collection-props-row button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--sdui-text-muted, #9b9a97);
+}
+.sdui-doc-collection-props-empty {
+  color: var(--sdui-text-muted, #9b9a97);
+  font-size: 13px;
+  margin: 0 0 8px;
+}
+.sdui-doc-collection-props-add {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  padding-top: 8px;
+}
+.sdui-doc-collection-props-add input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  padding: 3px 6px;
+  font: inherit;
+  font-size: 13px;
+}
+.sdui-doc-collection-props-add select,
+.sdui-doc-collection-props-add button {
+  font: inherit;
+  font-size: 13px;
+}
+
+/* Block-actions color submenu: section label + small palette swatches */
+.sdui-doc-block-actions-section-label {
+  padding: 6px 10px 2px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sdui-doc-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.sdui-doc-block-color-swatch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--sdui-doc-divider);
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--sdui-doc-text);
+}
+.sdui-doc-block-color-swatch--text-gray {
+  color: var(--sdui-doc-c-gray);
+}
+.sdui-doc-block-color-swatch--text-brown {
+  color: var(--sdui-doc-c-brown);
+}
+.sdui-doc-block-color-swatch--text-orange {
+  color: var(--sdui-doc-c-orange);
+}
+.sdui-doc-block-color-swatch--text-yellow {
+  color: var(--sdui-doc-c-yellow);
+}
+.sdui-doc-block-color-swatch--text-green {
+  color: var(--sdui-doc-c-green);
+}
+.sdui-doc-block-color-swatch--text-blue {
+  color: var(--sdui-doc-c-blue);
+}
+.sdui-doc-block-color-swatch--text-purple {
+  color: var(--sdui-doc-c-purple);
+}
+.sdui-doc-block-color-swatch--text-pink {
+  color: var(--sdui-doc-c-pink);
+}
+.sdui-doc-block-color-swatch--text-red {
+  color: var(--sdui-doc-c-red);
+}
+.sdui-doc-block-color-swatch--bg-default {
+  background: transparent;
+}
+.sdui-doc-block-color-swatch--bg-gray {
+  background: var(--sdui-doc-cbg-gray);
+}
+.sdui-doc-block-color-swatch--bg-brown {
+  background: var(--sdui-doc-cbg-brown);
+}
+.sdui-doc-block-color-swatch--bg-orange {
+  background: var(--sdui-doc-cbg-orange);
+}
+.sdui-doc-block-color-swatch--bg-yellow {
+  background: var(--sdui-doc-cbg-yellow);
+}
+.sdui-doc-block-color-swatch--bg-green {
+  background: var(--sdui-doc-cbg-green);
+}
+.sdui-doc-block-color-swatch--bg-blue {
+  background: var(--sdui-doc-cbg-blue);
+}
+.sdui-doc-block-color-swatch--bg-purple {
+  background: var(--sdui-doc-cbg-purple);
+}
+.sdui-doc-block-color-swatch--bg-pink {
+  background: var(--sdui-doc-cbg-pink);
+}
+.sdui-doc-block-color-swatch--bg-red {
+  background: var(--sdui-doc-cbg-red);
+}
+
+}

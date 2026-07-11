@@ -1,4 +1,4 @@
-import '../styles/editor.css'
+import '../styles/viewer.css'
 
 // Read-only viewer entry (`@lodado/sdui-document-react/viewer`). Everything
 // re-exported here must keep ProseMirror/dnd-kit out of the import graph —

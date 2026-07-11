@@ -1,0 +1,44 @@
+{
+  "name": "@lodado/sdui-mcp",
+  "version": "0.0.1",
+  "description": "MCP server serving compressed SDUI authoring knowledge for @lodado/sdui-template and @lodado/sdui-template-component",
+  "license": "MIT",
+  "author": {
+    "name": "lodado",
+    "url": "https://github.com/lodado"
+  },
+  "type": "module",
+  "bin": {
+    "sdui-mcp": "./dist/cli.js"
+  },
+  "main": "./dist/server.js",
+  "files": [
+    "dist/**",
+    "!dist/**/*.test.js",
+    "knowledge/**",
+    "consumer/**",
+    "README.md"
+  ],
+  "scripts": {
+    "build:ts": "tsc -p tsconfig.json",
+    "build": "pnpm build:ts && node dist/build/build-knowledge.js",
+    "test": "pnpm build:ts && node --test \"dist/**/*.test.js\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "clean": "rm -rf dist knowledge"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18.19.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.0.0-beta.3",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "2.0.0-beta.3",
+    "@types/node": "^26.1.1",
+    "typescript": "^5.9.3"
+  }
+}
