@@ -13,7 +13,6 @@ Guidance for AI coding assistants (Cursor, Claude Code, Windsurf, etc.) working 
 | Server sends UI as JSON → React renders it                 | `@lodado/sdui-template` (+ optional `@lodado/sdui-template-component`) | MCP `syntax` guide                                                               |
 | Block document **domain** (patches, permissions, no React) | `@lodado/sdui-document`                                                | [packages/sdui-document/README.md](packages/sdui-document/README.md)             |
 | Block document **editor UI**                               | `@lodado/sdui-document-react` + `@lodado/sdui-document`                | [packages/sdui-document-react/README.md](packages/sdui-document-react/README.md) |
-| Embed SDUI widgets inside a block document                 | `document.sdui` block + `@lodado/sdui-template`                        | This file + MCP                                                                  |
 | AI pulls compressed component guides at runtime            | `@lodado/sdui-mcp`                                                     | [packages/sdui-mcp/README.md](packages/sdui-mcp/README.md)                       |
 
 ```text
@@ -143,7 +142,7 @@ interface SduiDocumentBlock {
 
 ### Block types
 
-`document.root`, `document.paragraph`, `document.heading`, `document.bulletedList`, `document.numberedList`, `document.checklist`, `document.quote`, `document.callout`, `document.code`, `document.divider`, `document.toggle`, `document.image`, `document.video`, `document.embed`, `document.file`, `document.link`, `document.bookmark`, `document.columnList`, `document.column`, `document.collection`, `document.page`, `document.toc`, `document.tags`, `document.button`, `document.sdui`
+`document.root`, `document.paragraph`, `document.heading`, `document.bulletedList`, `document.numberedList`, `document.checklist`, `document.quote`, `document.callout`, `document.code`, `document.divider`, `document.toggle`, `document.image`, `document.video`, `document.embed`, `document.file`, `document.link`, `document.bookmark`, `document.columnList`, `document.column`, `document.collection`, `document.page`, `document.toc`, `document.tags`, `document.button`
 
 Registry: `packages/sdui-document/src/block-types/index.ts`
 
@@ -154,6 +153,8 @@ Registry: `packages/sdui-document/src/block-types/index.ts`
 Schema: `packages/sdui-document/src/blocks/schema/patch.ts`
 
 ### SDUI bridge
+
+One-directional only (block document → layout document). The reverse embedding (`document.sdui` block, `SduiLayoutBlock`) was removed — do not reintroduce.
 
 ```ts
 import { toSduiLayoutDocument } from '@lodado/sdui-document'
@@ -173,7 +174,6 @@ import { useState } from 'react'
 import { SduiDocumentEditor } from '@lodado/sdui-document-react'
 import type { SduiDocumentContent } from '@lodado/sdui-document'
 import '@lodado/sdui-document-react/styles/index.css' // AFTER Tailwind/resets
-
 ;<SduiDocumentEditor
   content={content}
   onContentChange={(next, patches) => {

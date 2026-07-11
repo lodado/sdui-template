@@ -1,290 +1,183 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code working in this repository. Written to be **self-sufficient**: a model that follows only this file should produce work matching this project's quality bar. When this file and code disagree, trust the code and update this file.
 
 ## Project Overview
 
-**@lodado/sdui-template** is a Server-Driven UI (SDUI) template library for React. It enables dynamic UI rendering where the server defines the UI structure via JSON documents, and the React client renders components accordingly.
+**@lodado/sdui-template** monorepo — Server-Driven UI (SDUI) libraries for React. The server ships UI structure as JSON; the React client renders it. Two independent product lines live here:
 
-### Key Use Cases
+1. **SDUI layout** (`sdui-template`, `sdui-template-component`) — JSON layout documents → `SduiLayoutRenderer` → React. Use cases: dashboard builders, dynamic forms, CMS pages, A/B layouts.
+2. **Block documents** (`sdui-document`, `sdui-document-react`) — Notion-like block editor. Headless domain (patches, permissions, ordering, collaboration) + React editor UI.
 
-- Dashboard builders with drag-and-drop widgets
-- Dynamic form generation from server schemas
-- CMS page builders
-- A/B testing with server-controlled layouts
+They are separate models. **Do not use `SduiLayoutDocument` for block content or vice versa.** The only bridge is one-directional: `toSduiLayoutDocument()` converts a block document into a layout document. The reverse embedding (`document.sdui` block, `SduiLayoutBlock`) was **removed** in commit `271aa56` — do not reintroduce it or reference it in docs.
 
-### Core Features
+## Monorepo Map
 
-- **Subscription-based rendering**: Only changed nodes re-render (ID-based subscriptions)
-- **Normalized data structure**: Uses normalizr for efficient lookups
-- **Type-safe**: Full TypeScript support with optional Zod validation
-- **Node references**: Components can reference and subscribe to other nodes' state changes
-
-## Monorepo Structure
-
-This is a **pnpm + Turborepo** monorepo:
+pnpm 9 + Turborepo. Node ≥ 18.19 locally, **Node 24 in CI**.
 
 ```text
 packages/
-  sdui-template/           # Core library (@lodado/sdui-template)
-  sdui-template-component/ # Radix UI-based component library (@lodado/sdui-template-component)
-  sdui-document/           # Headless block document domain (@lodado/sdui-document)
-  sdui-document-react/     # Notion-like block editor (@lodado/sdui-document-react)
-  sdui-mcp/                # MCP server — compressed SDUI authoring knowledge
-  sdui-design-files/       # Design system files
-  ssr-testing/             # SSR testing utilities
+  sdui-template/            # Core: SduiLayoutStore, renderer, hooks, Zod schemas
+  sdui-template-component/  # Radix-based component map (FSD layout: app/features/shared/widgets)
+  sdui-document/            # Headless block-document domain (NO React imports allowed)
+  sdui-document-react/      # Block editor UI (React chrome + ProseMirror on focused text block)
+  sdui-mcp/                 # MCP server serving compressed SDUI authoring knowledge
+  sdui-design-files/        # Design system files
+  ssr-testing/              # Playwright E2E lives here (playwright.config.ts)
+configs/                    # Shared jest/eslint configs
 apps/
-  docs/                    # Storybook documentation (port 6006)
-  nextAuthOauthLoginExample/ # Next.js example app with OAuth
+  docs/                     # Storybook (port 6006) — also the de-facto example/fixture source
+  nextAuthOauthLoginExample/ # Next.js OAuth example (needs GITHUB_CLIENT_*, NEXTAUTH_*, SUPABASE_* env)
+  reactGridLayoutExample/   # react-grid-layout integration example
 ```
 
-**Agent guide:** [AGENTS.md](AGENTS.md) · **Full AI reference:** [docs/AI-ASSISTANT-GUIDE.md](docs/AI-ASSISTANT-GUIDE.md)
+Dependency direction (never reverse it):
 
-## Common Commands
+```text
+sdui-document-react → sdui-document
+sdui-template-component → sdui-template
+sdui-document → sdui-template  (types + toSduiLayoutDocument only)
+```
+
+## Commands (verified 2026-07)
 
 ```bash
-# Install dependencies
 pnpm install
+pnpm dev              # turbo dev, parallel
+pnpm storybook        # port 6006
+pnpm build            # turbo build
+pnpm lint             # eslint --cache --fix
+pnpm typecheck
+pnpm test             # Jest, all packages — MANDATORY after any code change
+pnpm test:e2e         # Playwright (packages/ssr-testing)
 
-# Development
-pnpm dev              # Run all packages in dev mode (parallel)
-pnpm storybook        # Run Storybook on port 6006
-
-# Build
-pnpm build            # Build all packages
-
-# Quality
-pnpm lint             # Lint all packages with ESLint
-pnpm typecheck        # TypeScript type checking
-pnpm test             # Run Jest tests
-pnpm test:e2e         # Run E2E tests
-
-# Single package commands
-pnpm --filter @lodado/sdui-template build
+# Single package
 pnpm --filter @lodado/sdui-template test
-pnpm --filter sdui-template-storybook storybook
+pnpm --filter @lodado/sdui-mcp build   # REGENERATES knowledge/ — run after component/story changes
 
-# Publishing
-pnpm changeset        # Create a changeset for versioning
-pnpm release          # Build and publish packages
+# Versioning
+pnpm changeset        # required for any publishable package change
 ```
 
 ## Architecture
 
-### Core Library (`packages/sdui-template`)
+### SDUI layout core (`packages/sdui-template`)
 
-The library uses a **Facade Pattern** with specialized managers:
+Facade pattern:
 
 ```text
 SduiLayoutStore (Facade)
-├── SubscriptionManager   # Observer pattern for node subscriptions
-├── LayoutStateRepository # State storage with normalized entities
-├── DocumentManager       # Document caching and serialization
-└── VariablesManager      # Global variables management
+├── SubscriptionManager   # Observer pattern, ID-based node subscriptions
+├── LayoutStateRepository # Normalized entities (normalizr)
+├── DocumentManager       # Document caching/serialization
+└── VariablesManager      # Global variables
 ```
 
-**Key Files:**
+- Entry: [SduiLayoutStore.ts](packages/sdui-template/src/store/SduiLayoutStore.ts)
+- Hooks: [react-wrapper/hooks/](packages/sdui-template/src/react-wrapper/hooks/) — `useSduiNodeSubscription`, `useSduiLayoutAction`, `useRenderNode`, `useSduiNodeReference`
+- Data flow: JSON → normalize (nodes map + rootId) → `SduiLayoutRenderer` traverses → `store.updateNodeState(id, state)` notifies **only that node's subscribers**. This subscription model is the core value proposition — never introduce a change that re-renders the whole tree.
 
-- [SduiLayoutStore.ts](packages/sdui-template/src/store/SduiLayoutStore.ts) - Main store class with all public APIs
-- [hooks/](packages/sdui-template/src/react-wrapper/hooks/) - React hooks (`useSduiNodeSubscription`, `useSduiLayoutAction`, `useRenderNode`, `useSduiNodeReference`)
-- [schema/](packages/sdui-template/src/schema/) - Zod schemas for document/node validation
-- [normalize/](packages/sdui-template/src/utils/normalize/) - Normalizr-based normalization/denormalization
-
-### Data Flow
-
-1. **Document normalization**: JSON document → normalized entities (nodes map + rootId)
-2. **Component rendering**: `SduiLayoutRenderer` traverses nodes via `renderNode`
-3. **State updates**: `store.updateNodeState(id, state)` → notifies only that node's subscribers
-4. **Recursive rendering**: Container components use `useRenderNode` + `childrenIds` to render children
-
-### Document Schema
+### Layout document schema
 
 ```typescript
 interface SduiLayoutDocument {
-  version: string              // Required
+  version: string              // required
   metadata?: { id?, name?, ... }
-  root: SduiLayoutNode         // Required - root node
+  root: SduiLayoutNode         // required
   variables?: Record<string, unknown>
 }
-
 interface SduiLayoutNode {
-  id: string                   // Required - unique
-  type: string                 // Required - component type
-  state?: Record<string, unknown>
-  attributes?: Record<string, unknown>
+  id: string                   // required, unique in document
+  type: string                 // must match a components-registry key
+  state?: Record<string, unknown>      // dynamic, subscribable data
+  attributes?: Record<string, unknown> // static props (className, as, …)
   children?: SduiLayoutNode[]
-  reference?: string | string[] // Reference to other nodes
+  reference?: string | string[]        // subscribe to other nodes
 }
 ```
 
-## Code Quality Guidelines
+### Block documents (`packages/sdui-document`)
 
-### Component Design
+- Root block `type: 'document.root'`; `schemaVersion: '1.0' | '1.1'`; unique `id` per block.
+- Patches only: `applyDocumentPatch(content, patch)` — content is immutable, never mutate in place.
+- Patch types: `block.insert|update|delete|move|split|merge|setType`, `document.setTitle` — schema at [patch.ts](packages/sdui-document/src/blocks/schema/patch.ts).
+- Insert placement uses **anchors** (`after`, `before`, `fallbackAfter`), never array indices. Anchor resolution is strict: stale anchors throw `StaleAnchorError` (supports offline replay / collaboration outbox retries). If you touch anchor logic, keep it strict — silent fallback reintroduces the replay bugs this was built to prevent.
+- Block registry: [block-types/index.ts](packages/sdui-document/src/block-types/index.ts).
+- Client-side permissions are UX-only; re-check on server.
 
-- **Separate layers**: UI (render) / State / Domain Logic / Network (API)
-- **Side effect isolation**: Inject environment dependencies as parameters
-- **Strategy pattern**: Define business policies as interfaces, inject implementations
+### Block editor (`packages/sdui-document-react`)
 
-### Code Quality Principles
+- React owns block chrome; **ProseMirror mounts only on the focused text block** (performance — one PM instance, not N).
+- Domain logic stays in `@lodado/sdui-document`; the React package renders and dispatches patches.
+- CSS uses cascade layers (`@layer sdui-doc.*`); import `@lodado/sdui-document-react/styles/index.css` **after** Tailwind, or Preflight wins the cascade.
+- `onContentChange(next, patches)` — persist **patches**, not just full content (collaboration/undo depend on it).
+- Themes: `'swiss'` (default) and `'notion'`.
 
-#### Coupling
+## Conventions (each with the reason — do not drop the reason when editing)
 
-- Single responsibility: components change for one reason only
-- Allow strategic duplication over excessive coupling
-- Eliminate props drilling via composition or context redesign
+| Rule                                                                                                                       | Why                                                                                    |
+| -------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | -------- | ---- | ---- | ----- | ---- | -------------- | ----------------------------------------------------- |
+| Immutable updates everywhere (new objects, never mutate)                                                                   | Subscription diffing and patch replay both assume it                                   |
+| `state` vs `attributes` strictly separated in nodes                                                                        | `state` is subscribable/dynamic; `attributes` static — mixing breaks re-render scoping |
+| Every custom SDUI component ships a Zod schema                                                                             | Server JSON is untrusted input; schema is the boundary validation                      |
+| Compound components (Dialog, Dropdown, Tabs…) require `providerId`                                                         | Children resolve shared context by id, not React nesting                               |
+| No React imports in `sdui-document`                                                                                        | It runs server-side and in workers; React coupling was removed deliberately            |
+| Unique node/block `id`s                                                                                                    | Normalization keys and subscriptions collide otherwise                                 |
+| Conventional commits (`feat                                                                                                | fix                                                                                    | refactor | docs | test | chore | perf | ci(scope): …`) | commitlint enforces it; changelog generation reads it |
+| Branch names: `feat/*`, `refactor/*`, `fix/*`, `agent/*` (AI-driven work)                                                  | CI triggers on `main`/`dev`; PRs target `main`                                         |
+| Changeset required for publishable package changes                                                                         | `changeset publish` drives npm releases; no changeset = no release                     |
+| XSS: JSX `{}` bindings only; no `dangerouslySetInnerHTML` without DOMPurify; whitelist URL schemes `http/https/mailto/tel` | Server-driven JSON is an injection vector by design                                    |
+| Keyboard nav + WCAG AA contrast + visible focus on all components                                                          | Library ships to consumers who inherit our a11y bugs                                   |
 
-#### Cohesion
+## CI / Release Reality
 
-- Group by change unit: feature/domain-based file organization
-- Extract magic numbers to constants
-- Keep form validation/state/submit logic together
+- `intergrate_workflow.yml` (note the typo — keep filename) runs **test + Playwright e2e** on push/PR to `main`/`dev`.
+- npm publish runs **only** on push to `main` AND repo variable `ENABLE_NPM_RELEASE == 'true'`, after test+e2e pass. Publishing needs an NPM_TOKEN that can _create_ new `@lodado/*` packages.
+- Release = `pnpm release` (build → `changeset version` → `changeset publish`). Don't run it locally unless explicitly asked; CI owns publishing.
+- Storybook deploys via `deploy-storybook.yml` (manual `workflow_dispatch` available).
 
-#### Readability
+## Workflows — use these instead of improvising
 
-- Separate code by execution timing (render/effect/handler)
-- Use meaningful names for complex conditions
-- Maintain top-to-bottom reading flow
+| Task                                      | Use                                                                                   | Where                                        |
+| ----------------------------------------- | ------------------------------------------------------------------------------------- | -------------------------------------------- |
+| New/updated component from Figma          | `/figma-sync` (analysis → plan → impl → verify → report)                              | `.claude/commands/figma-sync.md`             |
+| Figma change as isolated PR               | `/figma-pr`                                                                           | `.claude/commands/figma-pr.md`               |
+| Add a brand-new SDUI component end-to-end | `sdui-component-new` skill                                                            | `.claude/skills/sdui-component-new/SKILL.md` |
+| Version/publish a package change          | `release-ship` skill                                                                  | `.claude/skills/release-ship/SKILL.md`       |
+| Code review before merge                  | `/review` (4 parallel agents, evidence-mandatory)                                     | `.claude/commands/review.md`                 |
+| Writing tests                             | `/test` (behavior-focused, a11y-aware)                                                | `.claude/commands/test.md`                   |
+| Authoring SDUI layout JSON                | MCP: `sdui_get_guide syntax` → `components-overview` → per-component guide + examples | `@lodado/sdui-mcp`                           |
+| Where does a new file go?                 | `FSD` skill (sdui-template-component only)                                            | `.claude/skills/FSD/SKILL.md`                |
 
-#### Predictability
+**MCP snapshot:** `.ai/sdui/` is the cached knowledge; re-sync via `/sdui-sync` when `manifest.json` is older than 7 days. MCP covers **layout JSON only**, never block-document APIs.
 
-- Use domain prefixes to avoid naming conflicts
-- Unify return types across similar functions
-- Make implicit dependencies explicit via parameters
+**After changing `sdui-template-component` or its stories:** run `pnpm --filter @lodado/sdui-mcp build` so MCP knowledge stays in sync with reality.
 
-### Security (XSS Prevention)
-
-- Use JSX `{}` bindings for dynamic values (auto-escapes)
-- Never use `dangerouslySetInnerHTML` without DOMPurify sanitization
-- Whitelist URL schemes: `http:`, `https:`, `mailto:`, `tel:`
-- Use React event props (`onClick={handler}`), never inline event strings
-- For Next.js: use per-request nonce with CSP headers
-
-### Accessibility
-
-- Ensure keyboard navigation for all features
-- Use semantic HTML tags
-- Maintain proper color contrast (WCAG AA)
-- Provide visible focus indicators
-
----
-
-## MCP & AI assistants
-
-### Connect MCP (this repo or consumer apps)
-
-**Claude Code:**
-
-```bash
-claude mcp add sdui -- npx -y @lodado/sdui-mcp
-```
-
-**Cursor** — `.cursor/mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "sdui": {
-      "command": "npx",
-      "args": ["-y", "@lodado/sdui-mcp"]
-    }
-  }
-}
-```
-
-MCP covers **SDUI layout JSON** only (`@lodado/sdui-template` + `@lodado/sdui-template-component`). Block documents use [AGENTS.md](AGENTS.md).
-
-### MCP tools (SDUI layout work)
-
-| Tool                   | When to use                                                                 |
-| ---------------------- | --------------------------------------------------------------------------- |
-| `sdui_get_guide`       | `syntax`, `architecture`, `types`, `components-overview`, or component name |
-| `sdui_list_components` | Discover component names                                                    |
-| `sdui_get_examples`    | Storybook document JSON for a component                                     |
-| `sdui_get_snapshot`    | Sync into `.ai/sdui/` (see `/sdui-sync` skill)                              |
-
-**Before authoring layout JSON:** call `syntax` → `components-overview` → per-component guide + examples.
-
-**Snapshot:** copy `packages/sdui-mcp/consumer/sdui-sync/SKILL.md` to `.claude/skills/sdui-sync/`, run `/sdui-sync`. Re-sync when `.ai/sdui/manifest.json` is older than 7 days.
-
-### Package selection
-
-| Task                                      | Package(s)                        |
-| ----------------------------------------- | --------------------------------- |
-| Layout JSON → React                       | `@lodado/sdui-template`           |
-| Ready-made Radix components               | `@lodado/sdui-template-component` |
-| Block document domain (patches, no React) | `@lodado/sdui-document`           |
-| Block editor UI                           | `@lodado/sdui-document-react`     |
-
-### Block document rules (summary)
-
-- Root block: `type: 'document.root'`; unique `id` on every block
-- Text blocks: `state.text` (string); patches via `applyDocumentPatch` (immutable)
-- Insert placement: `{ after: 'id' }` / `{ before: null }` — not array indices
-- Editor: import `@lodado/sdui-document-react/styles/index.css` **after** Tailwind
-- `onContentChange(next, patches)` — persist patches, not just full content
-- ProseMirror only on focused text block; domain logic stays in `@lodado/sdui-document`
-
-Full block types, patch schema, and examples: [AGENTS.md](AGENTS.md) · [docs/AI-ASSISTANT-GUIDE.md](docs/AI-ASSISTANT-GUIDE.md)
-
----
-
-## Working with SDUI Library
-
-When implementing components using the SDUI library (e.g., Storybook stories, example apps):
-
-1. **Always reference existing examples first** - Check `apps/docs/src/stories/` for Storybook story patterns
-2. **Study similar implementations** - Look at how other components use `SduiLayoutRenderer`, hooks, and document schemas
-3. **Follow established patterns** - Match the structure and conventions used in existing code
-
-Key example locations:
-
-- [apps/docs/src/stories/](apps/docs/src/stories/) - Storybook stories
-- [apps/nextAuthOauthLoginExample/](apps/nextAuthOauthLoginExample/) - Next.js integration example
-
----
-
-## Important: After Code Changes
-
-**You MUST run tests from the monorepo root after completing any code modifications:**
+## Mandatory: After Code Changes
 
 ```bash
-pnpm run test
+pnpm run test   # from repo root
 ```
 
-**Rules:**
+1. Run at the END, after all edits are complete.
+2. Tests FAIL → fix and re-run until green. Fix the implementation, not the test, unless the test is provably wrong.
+3. Task is not complete with failing tests. Report result: ✅ passed (N tests) / ❌ failed → fixed → passed.
 
-1. Run tests at the END of your response after all code changes are complete
-2. If tests **FAIL**, you MUST fix the issues and re-run tests until they pass
-3. Do NOT consider the task complete until all tests pass
-4. Report the final test result to the user:
-   - ✅ Tests passed (X tests)
-   - ❌ Tests failed → fix and retry
+## Operating Standard (quality bar — follow even when it feels slow)
 
-**This is mandatory. Never skip tests. Never leave failing tests.**
+1. **Read before writing.** Before editing any file, read it and at least one sibling that does the same job (an existing component, story, or block type). Match its structure exactly; this repo's consistency is deliberate.
+2. **Reuse ladder.** Existing helper in repo → stdlib → already-installed dependency → new code. Never add a dependency for something a few lines can do. Never re-implement what exists a few files over.
+3. **Evidence over assertion.** Every claim of "works/fixed/passing" requires having run the command and seen the output. Quote the actual test summary line. No claim without evidence.
+4. **Root cause, not symptom.** Before fixing a bug, grep all callers of the function you're changing. Fix at the shared point, not the reported path.
+5. **Smallest correct diff.** No drive-by refactors, no speculative abstractions, no config for values that never change. But smallest diff in the _right place_ — a small patch in the wrong layer is a second bug.
+6. **Layer discipline.** Domain logic → `sdui-document` / store logic → `sdui-template`. React packages render and dispatch. If your change adds React to a headless package or business rules to a component, stop and move it.
+7. **Ambiguity protocol.** If the task is ambiguous, state your interpretation in one line and proceed with the most conservative reading. Destructive or public-facing actions (delete, publish, force-push): stop and ask.
+8. **Verification loop.** `pnpm typecheck` after type-level changes; `pnpm lint` after new files; `pnpm test` always; stories in `apps/docs` updated whenever a component's public API changes.
+9. **Docs follow code.** If you change a public API, update: the package README, `AGENTS.md` (if schema/rules changed), stories, and MCP knowledge (`pnpm --filter @lodado/sdui-mcp build`). Stale docs in this repo have caused real bugs — commit `271aa56` removed APIs that docs still advertised.
+10. **Report format.** End every task with: what changed (files), what was verified (commands + results), what was NOT done (explicitly), open risks.
 
----
+## Token Notes
 
-## Token Optimization Guidelines
-
-### Context Efficiency
-
-- Request only the files you need, not the entire project
-- Limit queries to specific functions or line ranges
-- For large files (50KB+), reference only relevant sections
-
-### Compact Mode
-
-- Use `/compact` command to compress conversation history
-- Recommended during long sessions to reduce token usage
-
-### Task-Specific Strategies
-
-| Task            | Optimization Strategy              |
-| --------------- | ---------------------------------- |
-| Code generation | Generate in small, iterative units |
-| Debugging       | Include only error context         |
-| Code review     | Focus on structure and core logic  |
-
-### Files for Token Reduction
-
-- `.claudeignore` - Excludes unnecessary files from context (node_modules, dist, lock files, etc.)
+- `.claudeignore` excludes node_modules/dist/lock files.
+- Prefer reading specific symbols/line ranges over whole files.
+- `apps/docs/src/stories/` files are large (30–66KB) — read targeted sections only.
