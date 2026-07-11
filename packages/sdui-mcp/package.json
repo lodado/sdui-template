@@ -1,6 +1,6 @@
 {
   "name": "@lodado/sdui-mcp",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "MCP server serving compressed SDUI authoring knowledge for @lodado/sdui-template and @lodado/sdui-template-component",
   "license": "MIT",
   "author": {
