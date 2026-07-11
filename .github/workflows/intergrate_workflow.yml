@@ -20,7 +20,8 @@ jobs:
     secrets: inherit
 
   release:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # ponytail: opt in after NPM_TOKEN can create packages under the @lodado scope.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.ENABLE_NPM_RELEASE == 'true'
     needs:
       - test
       - e2e-test
