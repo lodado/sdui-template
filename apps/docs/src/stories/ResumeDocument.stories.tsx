@@ -213,7 +213,13 @@ const resumeContent: SduiDocumentContent = {
       ]),
       bulletedList([bold('지금 보고 계신 이 이력서가 이 에디터로 작성·렌더링·PDF 출력된 문서입니다')]),
       bulletedList('ProseMirror + React 기반 Notion형 블록 에디터 — 계층형 drag & drop, 컬럼 레이아웃, 컬렉션 뷰'),
-      bulletedList('이벤트 소싱 패턴으로 undo/redo 구현'),
+      bulletedList('이벤트 소싱 패턴으로 undo/redo 구현', {
+        children: [
+          bulletedList(
+            '저장된 스냅샷(base) + 이벤트 로그를 replay해 현재 문서를 구성하고, 저장 시 projection을 새 base로 커밋',
+          ),
+        ],
+      }),
       bulletedList('문서를 ID 기반으로 정규화하고 노드별 구독을 적용, 변경된 블록만 리렌더링'),
       bulletedList('CSS cascade layer 기반 테마 시스템 — 이 이력서의 Swiss 테마도 CSS 오버라이드만으로 구현'),
 
