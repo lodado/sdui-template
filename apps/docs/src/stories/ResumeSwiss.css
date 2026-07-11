@@ -78,3 +78,27 @@
     display: none !important;
   }
 }
+
+/* ---------------------------------------------------------- readability */
+
+/* Role heading (h3) needs more contrast against 14.5px body text. */
+.resume-swiss [data-sdui-doc-theme='swiss'] {
+  --sdui-doc-font-size-h3: 18px;
+}
+
+@media print {
+  /* Keep the Korean measure on the 82% column near 45 characters. */
+  .resume-swiss [data-sdui-doc-theme='swiss'] {
+    font-size: 13.5px;
+  }
+
+  /* Section transitions breathe on paper. */
+  .resume-swiss hr {
+    margin: 18px 0;
+  }
+
+  /* Bold sub-heading paragraphs keep their first bullet on the same page. */
+  .resume-swiss p:has(strong) {
+    break-after: avoid;
+  }
+}

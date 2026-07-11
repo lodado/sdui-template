@@ -56,12 +56,12 @@ const resumeContent: SduiDocumentContent = {
       // ── Korea Deep Learning ──────────────────────────────────────────────
       columnList([
         column([paragraph([colored('2026.02 — 현재', META_GRAY)]), paragraph([colored('6개월', META_GRAY)])], {
-          ratio: 1,
+          ratio: 18,
         }),
         column(
           [
             heading('Frontend Web Developer', 3),
-            paragraph([colored('Korea Deep Learning Inc. · 정규직', META_GRAY)]),
+            paragraph([bold('Korea Deep Learning Inc.'), colored(' · 정규직', META_GRAY)]),
             paragraph([
               text('시리즈 A '),
               inlineCode('120억 원'),
@@ -113,11 +113,11 @@ const resumeContent: SduiDocumentContent = {
                 '변경된 컴포넌트만 선택적으로 리렌더링해 대규모 문서에서도 지연 없는 편집 경험 확보',
             ),
             bulletedList([
-              text('코드 스플리팅과 vendor chunk 분리로 초기 JavaScript 번들 '),
+              text('초기 JavaScript 번들 '),
               inlineCode('68%'),
-              text(' 감소, 웹폰트 서브셋 적용으로 폰트 리소스 '),
+              text(' · 폰트 리소스 '),
               inlineCode('70%'),
-              text(' 감소'),
+              text(' 감소 — 코드 스플리팅, vendor chunk 분리, 웹폰트 서브셋 적용'),
             ]),
             paragraph([bold('글로벌 결제')]),
             bulletedList(
@@ -130,7 +130,7 @@ const resumeContent: SduiDocumentContent = {
               ),
             ]),
           ],
-          { ratio: 3.5 },
+          { ratio: 82 },
         ),
       ]),
 
@@ -140,15 +140,16 @@ const resumeContent: SduiDocumentContent = {
       columnList([
         column(
           [
-            paragraph([colored('2022년 10월 — 2026년 1월 · 3년 4개월', META_GRAY)]),
+            paragraph([colored('2022.10 — 2026.01', META_GRAY)]),
+            paragraph([colored('3년 4개월', META_GRAY)]),
             paragraph([colored('성남시 · 대면근무', META_GRAY)]),
           ],
-          { ratio: 1 },
+          { ratio: 18 },
         ),
         column(
           [
             heading('Frontend Web Developer', 3),
-            paragraph([colored('티맥스데이터 · 정규직', META_GRAY)]),
+            paragraph([bold('티맥스데이터'), colored(' · 정규직', META_GRAY)]),
             paragraph(
               '제품 전반에서 재사용할 수 있는 사내 디자인 시스템과 DB 모니터링 플랫폼의 프론트엔드 ' +
                 '아키텍처를 설계하고 구축했습니다.',
@@ -156,8 +157,9 @@ const resumeContent: SduiDocumentContent = {
             paragraph([bold('사내 디자인 시스템 구축')]),
             bulletedList('디자인 시스템을 제안하고 아키텍처 설계부터 컴포넌트 개발·배포 체계 구축까지 주도'),
             bulletedList('Turborepo, Changesets, Rollup 기반 ESM 모노레포 및 패키지 버전 관리 구조 설계'),
-            bulletedList('Storybook 기반 컴포넌트 문서화 및 UI 개발 협업 표준 정립'),
-            bulletedList('Jest, React Testing Library, GitLab Runner 기반 컴포넌트 테스트·배포 CI/CD 구축'),
+            bulletedList(
+              'Storybook 문서화, Jest·React Testing Library 테스트, GitLab Runner CI/CD로 컴포넌트 개발·배포 표준 정립',
+            ),
             bulletedList('가상화 기반 렌더링을 적용한 공통 대용량 Table 컴포넌트 설계'),
             bulletedList('Radix UI 기반 Compound Component Pattern을 적용해 확장 가능한 컴포넌트 API 구현'),
             paragraph([bold('SysMasterDB 8 프론트엔드 개발')]),
@@ -178,7 +180,7 @@ const resumeContent: SduiDocumentContent = {
               ),
             ]),
           ],
-          { ratio: 3.5 },
+          { ratio: 82 },
         ),
       ]),
 
