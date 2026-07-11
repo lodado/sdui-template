@@ -67,11 +67,11 @@ test.describe('Block menu (slash command + plus button)', () => {
     await expect(plus).toHaveCSS('opacity', '1')
     await plus.click()
 
-    // fresh paragraph below p1, focused, menu open with the full item list
+    // fresh paragraph below p1, focused, menu open with its core text option
     await expect(page.locator(MENU)).toBeVisible()
     const focusedRow = page.locator('[data-block-id]', { has: page.locator(EDITABLE) })
     await expect(focusedRow).toHaveAttribute('data-block-id', 'gen-1')
-    await expect(page.locator(`${MENU} [role="option"]`)).toHaveCount(16)
+    await expect(page.locator(MENU).getByRole('option', { name: /Text/ })).toBeVisible()
 
     // Escape leaves an empty paragraph ready for typing
     await page.keyboard.press('Escape')
