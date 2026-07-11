@@ -241,7 +241,7 @@ The server owns `document`. The client maps `type: 'Card'` to `components.Card`.
 
 ## MCP & AI assistants
 
-This monorepo ships **[@lodado/sdui-mcp](packages/sdui-mcp)** — an MCP (Model Context Protocol) server that feeds compressed authoring knowledge to AI coding tools. It covers **SDUI layout JSON** (`@lodado/sdui-template` + `@lodado/sdui-template-component`). For **block documents** (`@lodado/sdui-document`, `@lodado/sdui-document-react`), use the [AI Assistant Guide](docs/AI-ASSISTANT-GUIDE.md) and package READMEs.
+This monorepo ships **[@lodado/sdui-mcp](packages/sdui-mcp)** — an MCP (Model Context Protocol) server that feeds compressed authoring knowledge to AI coding tools. It covers **SDUI layout JSON** (`@lodado/sdui-template` + `@lodado/sdui-template-component`). For **block documents** (`@lodado/sdui-document`, `@lodado/sdui-document-react`), use [AGENTS.md](AGENTS.md) and package READMEs.
 
 ### Prerequisites
 
@@ -364,14 +364,14 @@ Run `/sdui-sync` in Claude Code. It writes `.ai/sdui/` (syntax, components, exam
 
 ### AI guide for all packages (including block documents)
 
-| Task                                             | Read first                                                                       |
-| ------------------------------------------------ | -------------------------------------------------------------------------------- |
-| SDUI layout JSON + components                    | MCP tools above                                                                  |
-| Block document domain (patches, permissions)     | [packages/sdui-document/README.md](packages/sdui-document/README.md)             |
-| Block editor UI (React)                          | [packages/sdui-document-react/README.md](packages/sdui-document-react/README.md) |
-| End-to-end AI workflows, block types, checklists | **[docs/AI-ASSISTANT-GUIDE.md](docs/AI-ASSISTANT-GUIDE.md)**                     |
-| Monorepo conventions for agents                  | [CLAUDE.md](CLAUDE.md)                                                           |
-| Live examples                                    | `pnpm storybook` → `apps/docs` (port 6006)                                       |
+| Task                                             | Read first                                                                            |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------- |
+| SDUI layout JSON + components                    | MCP tools above                                                                       |
+| Block document domain (patches, permissions)     | [packages/sdui-document/README.md](packages/sdui-document/README.md)                  |
+| Block editor UI (React)                          | [packages/sdui-document-react/README.md](packages/sdui-document-react/README.md)      |
+| End-to-end AI workflows, block types, checklists | **[AGENTS.md](AGENTS.md)** · [docs/AI-ASSISTANT-GUIDE.md](docs/AI-ASSISTANT-GUIDE.md) |
+| Monorepo conventions for agents                  | [CLAUDE.md](CLAUDE.md) · [AGENTS.md](AGENTS.md)                                       |
+| Live examples                                    | `pnpm storybook` → `apps/docs` (port 6006)                                            |
 
 Storybook paths for block documents:
 
