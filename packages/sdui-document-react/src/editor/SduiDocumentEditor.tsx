@@ -72,6 +72,12 @@ export type SduiDocumentEditorProps = {
   /** Injectable for deterministic tests; defaults to a random id. */
   generateBlockId?(): string
   className?: string
+  /**
+   * Visual theme, rendered as `data-sdui-doc-theme` on the root. Defaults to
+   * 'swiss'; pass 'notion' for the base Notion-like look. Theme CSS ships in
+   * styles/index.css (or import styles/themes/<name>.css standalone).
+   */
+  theme?: 'swiss' | 'notion' | (string & {})
   /** Optional imperative handle for host chrome (undo/redo/getContent). */
   apiRef?: Ref<SduiDocumentEditorApi>
 }
@@ -121,6 +127,7 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     readOnly = false,
     generateBlockId = defaultGenerateBlockId,
     className,
+    theme = 'swiss',
     apiRef,
   } = props
 
@@ -390,6 +397,7 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
           ref={containerRef}
           className={className}
           data-sdui-document-editor
+          data-sdui-doc-theme={theme}
           role="tree"
           tabIndex={-1}
           onKeyDown={handleSelectionKeyDown}

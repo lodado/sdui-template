@@ -248,17 +248,32 @@ All package CSS ships inside `sdui-doc.*` [cascade layers](https://developer.moz
 
 ### Entry points
 
-| Import                                            | Contents                                                                           |
-| ------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `@lodado/sdui-document-react/styles/index.css`    | Everything (viewer styles + editing chrome)                                        |
-| `@lodado/sdui-document-react/styles/viewer.css`   | Read-only viewer (no drag handles/toolbars/menus)                                  |
-| `@lodado/sdui-document-react/styles/tokens.css`   | CSS custom properties only (`--sdui-doc-*`)                                        |
-| `@lodado/sdui-document-react/styles/base.css`     | Block layout scaffolding (rows, columns, alignment)                                |
-| `@lodado/sdui-document-react/styles/blocks/*.css` | Per-block-group styles (typography, callout, media, attachments, collection, misc) |
-| `@lodado/sdui-document-react/styles/chrome.css`   | Editor-only UI (drag handles, toolbars, popovers)                                  |
-| `@lodado/sdui-document-react/styles/print.css`    | A4 print/PDF rules                                                                 |
+| Import                                                | Contents                                                                           |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `@lodado/sdui-document-react/styles/index.css`        | Everything (viewer styles + editing chrome)                                        |
+| `@lodado/sdui-document-react/styles/viewer.css`       | Read-only viewer (no drag handles/toolbars/menus)                                  |
+| `@lodado/sdui-document-react/styles/tokens.css`       | CSS custom properties only (`--sdui-doc-*`)                                        |
+| `@lodado/sdui-document-react/styles/base.css`         | Block layout scaffolding (rows, columns, alignment)                                |
+| `@lodado/sdui-document-react/styles/blocks/*.css`     | Per-block-group styles (typography, callout, media, attachments, collection, misc) |
+| `@lodado/sdui-document-react/styles/chrome.css`       | Editor-only UI (drag handles, toolbars, popovers)                                  |
+| `@lodado/sdui-document-react/styles/themes/swiss.css` | Swiss theme (the default look; included in index.css/viewer.css)                   |
+| `@lodado/sdui-document-react/styles/print.css`        | A4 print/PDF rules                                                                 |
 
-Layer order: `sdui-doc.tokens` → `sdui-doc.base` → `sdui-doc.blocks` → `sdui-doc.chrome` → `sdui-doc.print`.
+Layer order: `sdui-doc.tokens` → `sdui-doc.base` → `sdui-doc.blocks` → `sdui-doc.chrome` → `sdui-doc.themes` → `sdui-doc.print`.
+
+### Themes
+
+The editor and viewer take a `theme` prop, rendered as `data-sdui-doc-theme` on the root. Theme stylesheets live in the `sdui-doc.themes` layer, so they beat the base styles without `!important` while your unlayered CSS still wins over both.
+
+- **`swiss`** (default) — print-editorial: ink-on-paper palette, uppercase `h2` section labels on a 2px rule, hairline dividers, mono outline chips, square corners, monochrome editor chrome. Light-only by design (it pins its own ink/paper values even under `[data-theme='dark']`).
+- **`notion`** — the original Notion-like look. Any `theme` value without a matching stylesheet falls through to the base styles, so this is a plain opt-out.
+
+```tsx
+<SduiDocumentEditor content={content} />              {/* Swiss (default) */}
+<SduiDocumentEditor content={content} theme="notion" /> {/* base Notion look */}
+```
+
+To add your own theme, ship rules scoped under `[data-sdui-doc-theme='<name>']` in an `@layer sdui-doc.themes { … }` block and pass `theme="<name>"`.
 
 ### Recipe 1 — retheme with tokens
 
@@ -303,7 +318,7 @@ import '@lodado/sdui-document-react/styles/blocks/typography.css'
 // your own callout/media styles here
 ```
 
-Note: partial entry files don't declare the `@layer` order statement — if you cherry-pick, declare it once yourself: `@layer sdui-doc.tokens, sdui-doc.base, sdui-doc.blocks, sdui-doc.chrome, sdui-doc.print;`
+Note: partial entry files don't declare the `@layer` order statement — if you cherry-pick, declare it once yourself: `@layer sdui-doc.tokens, sdui-doc.base, sdui-doc.blocks, sdui-doc.chrome, sdui-doc.themes, sdui-doc.print;`
 
 ---
 

@@ -2,7 +2,7 @@
    All package CSS lives in `sdui-doc.*` cascade layers, so any unlayered
    consumer rule wins regardless of specificity. Import subsets directly
    (tokens.css, base.css, blocks/*.css) for finer control. */
-@layer sdui-doc.tokens, sdui-doc.base, sdui-doc.blocks, sdui-doc.chrome, sdui-doc.print;
+@layer sdui-doc.tokens, sdui-doc.base, sdui-doc.blocks, sdui-doc.chrome, sdui-doc.themes, sdui-doc.print;
 
 @import './tokens.css';
 @import './base.css';
@@ -13,4 +13,5 @@
 @import './blocks/collection.css';
 @import './blocks/misc.css';
 @import './chrome.css';
+@import './themes/swiss.css';
 @import './print.css';

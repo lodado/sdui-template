@@ -1,83 +1,11 @@
 /* -------------------------------------------------------------------------
- * Swiss / print-editorial theme for the Resume story.
+ * Resume story chrome — masthead, Sysmaster showcase, print extras.
  *
- * Everything is scoped under `.resume-swiss` so it cannot leak into other
- * stories. Package styles live in `@layer sdui-doc.*`, so these unlayered
- * rules always win — no !important needed. (See Document/Customization.)
+ * The document itself is styled by the package's Swiss theme (the default —
+ * see @lodado/sdui-document-react/styles/themes/swiss.css). Only the JSX
+ * pieces that live outside the editor are styled here, scoped under
+ * `.resume-swiss` so nothing leaks into other stories.
  * ------------------------------------------------------------------------- */
-
-.resume-swiss {
-  /* token overrides — ink & paper, zero accent color, zero radius/shadow */
-  --sdui-doc-font: 'Helvetica Neue', 'Apple SD Gothic Neo', Pretendard, -apple-system, sans-serif;
-  --sdui-doc-text: #111111;
-  --sdui-doc-text-secondary: #555555;
-  --sdui-doc-accent: #111111;
-  --sdui-doc-accent-strong: #000000;
-  --sdui-doc-accent-wash: rgba(17, 17, 17, 0.06);
-  --sdui-doc-link: #111111;
-  --sdui-doc-hr: #e5e5e5;
-  --sdui-doc-divider: #e5e5e5;
-  --sdui-doc-code: #111111;
-  --sdui-doc-code-background: transparent;
-  --sdui-doc-code-border: transparent;
-  /* inline code (`code.inline`) draws its text with the keyword token */
-  --sdui-doc-code-keyword: #111111;
-  --sdui-doc-font-size-h2: 12px;
-  --sdui-doc-font-size-h3: 16px;
-  --sdui-doc-radius-card: 0px;
-  --sdui-doc-radius-chip: 0px;
-  --sdui-doc-shadow-card: none;
-  --sdui-doc-shadow-card-hover: none;
-
-  color: #111;
-  font-family: var(--sdui-doc-font);
-  font-variant-numeric: tabular-nums;
-  print-color-adjust: exact;
-  -webkit-print-color-adjust: exact;
-}
-
-/* body copy — tighter than the 16px Notion default */
-.resume-swiss [data-sdui-document-editor] {
-  font-size: 14.5px;
-  line-height: 1.6;
-}
-
-/* section header (h2): small caps label sitting on a strong rule */
-.resume-swiss [data-sdui-document-editor] h2 {
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-weight: 700;
-  border-top: 2px solid #111;
-  padding-top: 10px;
-}
-.resume-swiss [data-sdui-document-editor] [data-block-row]:has(h2) {
-  margin-top: 44px;
-  margin-bottom: 10px;
-}
-
-/* role/company (h3) */
-.resume-swiss [data-sdui-document-editor] h3 {
-  font-weight: 600;
-}
-
-/* links: black, underlined */
-.resume-swiss [data-sdui-document-editor] a {
-  color: #111;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-/* inline code carries metrics — mono + semibold ink, no tint */
-.resume-swiss [data-sdui-document-editor] code {
-  padding: 0 1px;
-  font-weight: 600;
-}
-
-/* divider between entries: hairline */
-.resume-swiss [data-sdui-document-editor] hr {
-  border: none;
-  border-top: 1px solid #e5e5e5;
-}
 
 /* ------------------------------------------------------------- masthead */
 

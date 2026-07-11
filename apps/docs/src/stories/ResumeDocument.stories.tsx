@@ -1,4 +1,5 @@
-// Swiss/print-editorial theme — token + per-block overrides scoped to .resume-swiss.
+// Resume-only chrome (masthead, showcase, print extras) — the document itself
+// uses the package's default Swiss theme.
 import './ResumeSwiss.css'
 
 import {
@@ -28,7 +29,7 @@ import sysmasterDemo from './assets/sysmaster-demo.gif'
 /** Meta/secondary text — Swiss gray. */
 const META_GRAY = '#555555'
 
-/** Section heading (H2) — styled as an uppercase label over a 2px rule (see ResumeSwiss.css). */
+/** Section heading (H2) — the Swiss theme renders it as an uppercase label over a 2px rule. */
 const section = (title: string) => heading(title, 2)
 
 /* -------------------------------------------------------------------------- */
@@ -286,9 +287,9 @@ const meta: Meta<typeof SduiDocumentEditor> = {
     docs: {
       description: {
         component:
-          'A Swiss/print-editorial résumé authored with the `@lodado/sdui-document` builders, restyled ' +
-          'entirely through the supported customization surface — `--sdui-doc-*` token overrides and ' +
-          '`data-block-type` per-block rules scoped to `.resume-swiss` (see Document/Customization). ' +
+          'A Swiss/print-editorial résumé authored with the `@lodado/sdui-document` builders, rendered ' +
+          "by the package's default **Swiss theme** (see Document/Themes — " +
+          '`@lodado/sdui-document-react/styles/themes/swiss.css`). ' +
           'The masthead is story-level chrome; the body is document blocks (columnList period rails). ' +
           'The "PDF 저장" button expands all toggles, switches to a read-only render, and ' +
           'prints to A4 via the browser print pipeline (`@media print` in the editor CSS).',
@@ -564,7 +565,7 @@ export const Editable: Story = {
       description: {
         story:
           '편집 가능한 이력서. 텍스트 선택으로 포매팅 툴바, "PDF 저장"으로 read-only 전환 후 A4 인쇄. ' +
-          'Swiss 테마는 `.resume-swiss` 스코프의 토큰/블록 오버라이드로만 구현.',
+          'Swiss 테마는 패키지 기본 테마 (Document/Themes 참고).',
       },
     },
   },

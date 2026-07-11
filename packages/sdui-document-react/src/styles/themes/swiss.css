@@ -1,0 +1,273 @@
+/* ---------------------------------------------------------------------------
+ * Swiss / print-editorial theme — the package default.
+ *
+ * Activated by `data-sdui-doc-theme='swiss'` on the editor/viewer root (the
+ * `theme` prop; defaults to 'swiss'). Pass any other value (e.g. 'notion') to
+ * fall back to the base Notion-like look.
+ *
+ * Lives in the `sdui-doc.themes` layer: later than tokens/base/blocks/chrome,
+ * so every rule here wins over the defaults without `!important`, while
+ * `sdui-doc.print` (A4 layout) still wins at print time. Unlayered consumer
+ * CSS overrides everything here.
+ *
+ * Light-only by design: ink/paper values are set on the scope element itself,
+ * so they beat an inherited `[data-theme='dark']` palette. A dark Swiss
+ * variant is intentionally out of scope.
+ * ------------------------------------------------------------------------- */
+
+@layer sdui-doc.themes {
+
+/* ------------------------------------------------------------------ tokens */
+
+[data-sdui-doc-theme='swiss'] {
+  /* ink & paper — near black on white, zero accent color */
+  --sdui-doc-font: 'Helvetica Neue', 'Apple SD Gothic Neo', Pretendard, -apple-system, sans-serif;
+  --sdui-doc-text: #111111;
+  --sdui-doc-text-secondary: #555555;
+  --sdui-doc-text-tertiary: #999999;
+  --sdui-doc-background: #ffffff;
+  --sdui-doc-background-secondary: rgba(17, 17, 17, 0.05);
+  --sdui-doc-accent: #111111;
+  --sdui-doc-accent-text: #ffffff;
+  --sdui-doc-accent-strong: #000000;
+  --sdui-doc-accent-wash: rgba(17, 17, 17, 0.06);
+  --sdui-doc-link: #111111;
+  --sdui-doc-quote: #111111;
+  --sdui-doc-divider: #e5e5e5;
+  --sdui-doc-hr: #e5e5e5;
+
+  /* inline code carries metrics — mono ink, no tint. `code.inline` draws its
+     text with the *keyword* token, so both are pinned to ink. */
+  --sdui-doc-code: #111111;
+  --sdui-doc-code-background: transparent;
+  --sdui-doc-code-border: transparent;
+  --sdui-doc-code-keyword: #111111;
+  --sdui-doc-code-block-background: #f7f7f7;
+  --sdui-doc-code-block-text: #555555;
+
+  /* notices flatten to ink (structural rules below kill the tints) */
+  --sdui-doc-notice-info: #111111;
+  --sdui-doc-notice-tip: #111111;
+  --sdui-doc-notice-warning: #111111;
+  --sdui-doc-notice-success: #111111;
+  --sdui-doc-notice-text: #111111;
+
+  /* type scale — compact editorial ramp (h2 is an uppercase section label) */
+  --sdui-doc-font-size-h1: 26px;
+  --sdui-doc-font-size-h2: 12px;
+  --sdui-doc-font-size-h3: 16px;
+  --sdui-doc-font-size-h4: 14px;
+
+  /* chrome surfaces — hairline ring instead of soft shadows */
+  --sdui-doc-menu-background: #ffffff;
+  --sdui-doc-menu-shadow: 0 0 0 1px #111111;
+  --sdui-doc-surface-1: #f7f7f7;
+  --sdui-doc-surface-hover: rgba(17, 17, 17, 0.05);
+  --sdui-doc-border-light: #e5e5e5;
+  --sdui-doc-border-mid: #bbbbbb;
+  --sdui-doc-shadow-card: none;
+  --sdui-doc-shadow-card-hover: none;
+  --sdui-doc-shadow-popover: 0 0 0 1px #111111;
+  --sdui-doc-radius-card: 0px;
+  --sdui-doc-radius-chip: 0px;
+
+  /* selection / status — danger stays red (functional, not decorative) */
+  --sdui-doc-file-icon: #111111;
+  --sdui-doc-selection-handle: rgba(17, 17, 17, 0.5);
+  --sdui-doc-selection-handle-idle: rgba(17, 17, 17, 0.3);
+  --sdui-doc-border-hairline: rgba(0, 0, 0, 0.12);
+  --sdui-doc-border-hairline-strong: rgba(0, 0, 0, 0.2);
+  --sdui-doc-wash: rgba(0, 0, 0, 0.04);
+  --sdui-doc-wash-strong: rgba(0, 0, 0, 0.08);
+
+  /* collection chips — one mono outline colorway (structural rule below) */
+  --sdui-doc-chip-blue-bg: transparent;
+  --sdui-doc-chip-blue-text: #111111;
+  --sdui-doc-chip-green-bg: transparent;
+  --sdui-doc-chip-green-text: #111111;
+  --sdui-doc-chip-yellow-bg: transparent;
+  --sdui-doc-chip-yellow-text: #111111;
+  --sdui-doc-chip-orange-bg: transparent;
+  --sdui-doc-chip-orange-text: #111111;
+  --sdui-doc-chip-red-bg: transparent;
+  --sdui-doc-chip-red-text: #111111;
+  --sdui-doc-chip-purple-bg: transparent;
+  --sdui-doc-chip-purple-text: #111111;
+  --sdui-doc-chip-pink-bg: transparent;
+  --sdui-doc-chip-pink-text: #111111;
+
+  background: var(--sdui-doc-background);
+  color: var(--sdui-doc-text);
+  font-family: var(--sdui-doc-font);
+  font-size: 14.5px;
+  line-height: 1.6;
+  font-variant-numeric: tabular-nums;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+/* -------------------------------------------------------------- typography */
+
+/* h1: tight editorial display */
+[data-sdui-doc-theme='swiss'] h1 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* h2: uppercase section label sitting on a strong rule — the theme's identity */
+[data-sdui-doc-theme='swiss'] h2 {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  border-top: 2px solid #111;
+  padding-top: 10px;
+}
+[data-sdui-doc-theme='swiss'] [data-block-row]:has(h2) {
+  margin-top: 44px;
+  margin-bottom: 10px;
+}
+
+[data-sdui-doc-theme='swiss'] h3 {
+  font-weight: 600;
+}
+
+/* links: black, underlined */
+[data-sdui-doc-theme='swiss'] a.sdui-doc-link {
+  color: #111;
+  text-decoration-color: #111;
+  text-underline-offset: 2px;
+}
+
+/* inline code carries metrics — semibold ink, no pill */
+[data-sdui-doc-theme='swiss'] code.inline {
+  padding: 0 1px;
+  font-weight: 600;
+  border-radius: 0;
+}
+
+/* quote: strong left rule */
+[data-sdui-doc-theme='swiss'] blockquote.quote-block {
+  border-left: 2px solid #111;
+  padding-left: 16px;
+}
+
+/* code block: flat surface, hairline ring, square corners */
+[data-sdui-doc-theme='swiss'] .code-block-wrapper > pre.code-block {
+  border: 1px solid #e5e5e5;
+  border-radius: 0;
+}
+[data-sdui-doc-theme='swiss'] .code-block-wrapper > .code-copy-button,
+[data-sdui-doc-theme='swiss'] .code-block-wrapper > .code-wrap-button {
+  border-radius: 0;
+}
+
+/* toggle hover: grayscale wash (base hardcodes a warm Notion tint) */
+[data-sdui-doc-theme='swiss'] .toggle-block > span > .toggle-triangle:hover {
+  background: rgba(17, 17, 17, 0.06);
+}
+
+/* ----------------------------------------------------------------- callout */
+
+/* notices flatten: no tint, 1px ink border, square */
+[data-sdui-doc-theme='swiss'] .notice-block {
+  background: transparent;
+  border: 1px solid #111;
+  border-radius: 0;
+}
+[data-sdui-doc-theme='swiss'] .notice-block.tip,
+[data-sdui-doc-theme='swiss'] .notice-block.warning,
+[data-sdui-doc-theme='swiss'] .notice-block.success {
+  background: transparent;
+  border-color: #111;
+}
+
+/* ------------------------------------------------------------------- media */
+
+[data-sdui-doc-theme='swiss'] .image img,
+[data-sdui-doc-theme='swiss'] .sdui-doc-video,
+[data-sdui-doc-theme='swiss'] .sdui-doc-video iframe,
+[data-sdui-doc-theme='swiss'] .sdui-doc-video-facade,
+[data-sdui-doc-theme='swiss'] .sdui-doc-embed,
+[data-sdui-doc-theme='swiss'] .sdui-doc-embed-fallback,
+[data-sdui-doc-theme='swiss'] .sdui-doc-bookmark,
+[data-sdui-doc-theme='swiss'] .attachment {
+  border-radius: 0;
+}
+
+/* -------------------------------------------------------------- collection */
+
+/* gallery cards: shadow → hairline ink border */
+[data-sdui-doc-theme='swiss'] .sdui-doc-gallery-card {
+  border: 1px solid #111;
+}
+/* seeded gradient covers read as grayscale ramps (real images keep color) */
+[data-sdui-doc-theme='swiss'] .sdui-doc-gallery-cover-fill {
+  filter: grayscale(1);
+}
+[data-sdui-doc-theme='swiss'] .sdui-doc-board-column {
+  border-radius: 0;
+}
+
+/* chips: one mono outline colorway — beats every [data-color] variant by
+   layer order */
+[data-sdui-doc-theme='swiss'] .sdui-doc-chip {
+  background: transparent;
+  border: 1px solid #111;
+  border-radius: 0;
+  padding: 1px 7px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #111;
+}
+[data-sdui-doc-theme='swiss'] .sdui-doc-tags .sdui-doc-chip {
+  border: 1px solid #111;
+}
+[data-sdui-doc-theme='swiss'] .sdui-doc-prop-editor-options .sdui-doc-chip[data-active],
+[data-sdui-doc-theme='swiss'] .sdui-doc-tags-colors .sdui-doc-chip[data-active] {
+  border-color: #111;
+  background: #111;
+  color: #fff;
+}
+
+/* -------------------------------------------------------------------- misc */
+
+[data-sdui-doc-theme='swiss'] .inline-date {
+  border-radius: 0;
+}
+[data-sdui-doc-theme='swiss'] .sdui-doc-button {
+  border-radius: 0;
+}
+[data-sdui-doc-theme='swiss'] .sdui-doc-button[data-variant='outline'] {
+  border-color: #111;
+}
+
+/* ------------------------------------------------------------------ chrome */
+
+/* floating surfaces: square corners; the ink ring comes from the shadow tokens */
+[data-sdui-doc-theme='swiss'] .sdui-doc-toolbar,
+[data-sdui-doc-theme='swiss'] .sdui-doc-link-popover,
+[data-sdui-doc-theme='swiss'] .sdui-doc-block-menu,
+[data-sdui-doc-theme='swiss'] .sdui-doc-block-actions,
+[data-sdui-doc-theme='swiss'] .sdui-doc-prop-editor,
+[data-sdui-doc-theme='swiss'] .sdui-doc-tags-edit,
+[data-sdui-doc-theme='swiss'] .sdui-doc-button-edit,
+[data-sdui-doc-theme='swiss'] .sdui-doc-collection-props-panel,
+[data-sdui-doc-theme='swiss'] .emoji-picker,
+[data-sdui-doc-theme='swiss'] .image-controls-popover {
+  border-radius: 0;
+}
+
+/* selected blocks: thin ink outline, faint wash (the 12% accent wash reads
+   too heavy in mono) */
+[data-sdui-doc-theme='swiss'] [data-selected='true'] {
+  outline-width: 1px;
+  border-radius: 0;
+  background-color: rgba(17, 17, 17, 0.05);
+}
+[data-sdui-doc-theme='swiss'] [data-focused] > [data-block-row] {
+  border-radius: 0;
+}
+
+}
