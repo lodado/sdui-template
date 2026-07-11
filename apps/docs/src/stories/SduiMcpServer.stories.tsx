@@ -87,7 +87,7 @@ export const Install: Story = {
   name: 'Install',
   render: () => (
     <div style={shell}>
-      <CodeBlock label="Claude Code — one command">{'claude mcp add sdui -- npx -y @lodado/sdui-mcp'}</CodeBlock>
+      <CodeBlock label="Claude Code — one command">claude mcp add sdui -- npx -y @lodado/sdui-mcp</CodeBlock>
       <CodeBlock label="Share with the team — .mcp.json in the repo root">
         {JSON.stringify({ mcpServers: { sdui: { command: 'npx', args: ['-y', '@lodado/sdui-mcp'] } } }, null, 2)}
       </CodeBlock>
@@ -120,7 +120,7 @@ export const DirectToolUse: Story = {
           '→ then writes the SduiLayoutDocument JSON following those patterns',
         ].join('\n')}
       </CodeBlock>
-      <CodeBlock label="Or invoke the guided prompt">{'/sdui-author-document component=Dialog'}</CodeBlock>
+      <CodeBlock label="Or invoke the guided prompt">/sdui-author-document component=Dialog</CodeBlock>
     </div>
   ),
   parameters: {
@@ -145,7 +145,7 @@ export const SnapshotWorkflow: Story = {
           '   .claude/skills/sdui-sync/SKILL.md',
         ].join('\n')}
       </CodeBlock>
-      <CodeBlock label="2. Sync — writes .ai/sdui/ (re-syncs only changed files via sha1)">{'/sdui-sync'}</CodeBlock>
+      <CodeBlock label="2. Sync — writes .ai/sdui/ (re-syncs only changed files via sha1)">/sdui-sync</CodeBlock>
       <CodeBlock label="Result layout">
         {[
           '.ai/sdui/',
