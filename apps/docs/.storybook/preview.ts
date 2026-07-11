@@ -1,7 +1,10 @@
 import '@lodado/sdui-design-files/index.css'
 import '@lodado/sdui-design-files/layout.css'
-import '@lodado/sdui-document-react/styles/index.css'
+// globals.css pulls in Tailwind Preflight (@layer base). The document styles live
+// in @layer sdui-doc.* — later-declared layers win, so the document CSS must be
+// imported AFTER Tailwind or Preflight resets flatten headings/lists/margins.
 import '../src/globals.css'
+import '@lodado/sdui-document-react/styles/index.css'
 
 // Define process for browser environment (Storybook)
 if (typeof process === 'undefined') {

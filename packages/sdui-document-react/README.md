@@ -117,6 +117,19 @@ import '@lodado/sdui-document-react/styles/index.css' // full editor
 import '@lodado/sdui-document-react/styles/viewer.css'
 ```
 
+> **⚠️ Import order matters.** Document styles live in `@layer sdui-doc.*`. A cascade
+> layer loses to any later-declared layer, so if you use Tailwind, CSS resets, or any
+> `@layer` framework, **import the document CSS _after_ them** — otherwise their base
+> layer (e.g. Tailwind Preflight) will flatten headings, lists, and margins.
+>
+> ```tsx
+> import 'tailwindcss' // or your reset / globals
+> import '@lodado/sdui-document-react/styles/index.css' // must come AFTER
+> ```
+>
+> Note: this same layering is what lets you override document styles with a plain
+> unlayered rule — see [Styling & customization](#styling--customization).
+
 ---
 
 ## Quick start
