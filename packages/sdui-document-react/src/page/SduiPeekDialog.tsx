@@ -86,10 +86,8 @@ export const SduiPeekDialog = ({
             {resolved.status === 'error' && <p className="sdui-doc-peek-status">Failed to load this page.</p>}
             {resolved.status === 'ready' &&
               // A read-only peek is a preview: the lightweight viewer renders it
-              // without instantiating ProseMirror/dnd-kit. Embedded sdui blocks
-              // still render — SduiComponentsProvider flows through Radix's
-              // portal via React context. The full editor is used only for an
-              // editable peek.
+              // without instantiating ProseMirror/dnd-kit. The full editor is
+              // used only for an editable peek.
               (readOnly ? (
                 <SduiDocumentViewer key={documentId} content={resolved.document.content} />
               ) : (

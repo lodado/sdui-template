@@ -20,7 +20,6 @@ import { pageBlockModule } from './page/page'
 import { paragraphBlockModule } from './paragraph/paragraph'
 import { quoteBlockModule } from './quote/quote'
 import { rootBlockModule } from './root/root'
-import { sduiBlockModule } from './sdui/sdui'
 import { tagsBlockModule } from './tags/tags'
 import { tocBlockModule } from './toc/toc'
 import { toggleBlockModule } from './toggle/toggle'
@@ -63,7 +62,6 @@ export const BLOCK_TYPE_MODULES: readonly SduiBlockTypeModule[] = [
   embedBlockModule,
   tagsBlockModule,
   buttonBlockModule,
-  sduiBlockModule,
 ]
 
 export const blockModuleByType: Record<string, SduiBlockTypeModule> = BLOCK_TYPE_MODULES.reduce(
@@ -127,7 +125,6 @@ export { PAGE_BLOCK_TYPE } from './page/page.type'
 export { PARAGRAPH_BLOCK_TYPE } from './paragraph/paragraph.type'
 export { QUOTE_BLOCK_TYPE } from './quote/quote.type'
 export { ROOT_BLOCK_TYPE } from './root/root.type'
-export { isSduiBlock, SDUI_BLOCK_TYPE, type SduiBlock, type SduiBlockAttributes } from './sdui/sdui'
 export { type BlockAlign, blockAlignSchema, resolveBlockAlign } from './shared/align'
 export {
   isSafeCtaUrl,

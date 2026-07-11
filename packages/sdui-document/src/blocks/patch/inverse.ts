@@ -2,7 +2,7 @@ import { ensureFractionalContent, siblingAnchorsForBlock } from '../../ordering'
 import type { SduiDocumentContent, SduiDocumentPatch } from '../schema'
 import { assertNever, createDocumentBlock } from '../schema'
 import { findBlockById, findParent } from '../traverse'
-import { applyDocumentPatch, type ApplyDocumentPatchResult } from './apply'
+import { applyDocumentPatchCollect, type ApplyDocumentPatchResult, type PatchApplyOptions } from './apply'
 import { BlockNotFoundError } from './errors'
 
 function previousValuesOf(
@@ -150,23 +150,34 @@ export function computeInverse(content: SduiDocumentContent, patch: SduiDocument
 export function applyDocumentPatchWithInverse(
   content: SduiDocumentContent,
   patch: SduiDocumentPatch,
+  options?: PatchApplyOptions,
 ): ApplyDocumentPatchResult {
   const migrated = ensureFractionalContent(content)
   const inverse = computeInverse(migrated, patch)
+  const applied = applyDocumentPatchCollect(migrated, patch, options)
 
-  return { content: applyDocumentPatch(migrated, patch), inverse }
+  return {
+    content: applied.content,
+    inverse,
+    degraded: applied.degraded.map((report) => ({ ...report, patchIndex: 0 })),
+  }
 }
 
 export function applyDocumentPatchesWithInverse(
   content: SduiDocumentContent,
   patches: SduiDocumentPatch[],
+  options?: PatchApplyOptions,
 ): ApplyDocumentPatchResult {
   return patches.reduce<ApplyDocumentPatchResult>(
-    (acc, patch) => {
-      const result = applyDocumentPatchWithInverse(acc.content, patch)
+    (acc, patch, patchIndex) => {
+      const result = applyDocumentPatchWithInverse(acc.content, patch, options)
 
-      return { content: result.content, inverse: [...result.inverse, ...acc.inverse] }
+      return {
+        content: result.content,
+        inverse: [...result.inverse, ...acc.inverse],
+        degraded: [...acc.degraded, ...result.degraded.map((report) => ({ ...report, patchIndex }))],
+      }
     },
-    { content, inverse: [] },
+    { content, inverse: [], degraded: [] },
   )
 }

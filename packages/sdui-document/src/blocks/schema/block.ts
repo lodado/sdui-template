@@ -18,7 +18,6 @@ import { PAGE_BLOCK_TYPE } from '../../block-types/page/page.type'
 import { PARAGRAPH_BLOCK_TYPE } from '../../block-types/paragraph/paragraph.type'
 import { QUOTE_BLOCK_TYPE } from '../../block-types/quote/quote.type'
 import { ROOT_BLOCK_TYPE } from '../../block-types/root/root.type'
-import { SDUI_BLOCK_TYPE } from '../../block-types/sdui/sdui.type'
 import { TAGS_BLOCK_TYPE } from '../../block-types/tags/tags.type'
 import { TOC_BLOCK_TYPE } from '../../block-types/toc/toc.type'
 import { TOGGLE_BLOCK_TYPE } from '../../block-types/toggle/toggle.type'
@@ -61,7 +60,6 @@ export type SduiDocumentBlockType =
   | typeof EMBED_BLOCK_TYPE
   | typeof TAGS_BLOCK_TYPE
   | typeof BUTTON_BLOCK_TYPE
-  | typeof SDUI_BLOCK_TYPE
 
 export type SduiDocumentBlock = {
   id: SduiDocumentBlockId

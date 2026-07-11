@@ -5,7 +5,15 @@
  * preserves the original import surface so existing consumers stay unchanged.
  */
 export { findBlockById } from '../traverse'
-export { applyDocumentPatch, applyDocumentPatches, type ApplyDocumentPatchResult } from './apply'
+export {
+  type AnchorDegradeReport,
+  applyDocumentPatch,
+  applyDocumentPatches,
+  type ApplyDocumentPatchesReport,
+  applyDocumentPatchesWithReport,
+  type ApplyDocumentPatchResult,
+  type PatchApplyOptions,
+} from './apply'
 export {
   applyPatchesToDocument,
   applyPatchesToDocumentWithInverse,
