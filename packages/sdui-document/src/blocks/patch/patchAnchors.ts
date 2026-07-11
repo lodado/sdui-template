@@ -3,6 +3,12 @@ import type { SduiDocumentBlock } from '../schema/block'
 import type { SduiDocumentContent } from '../schema/document'
 import type { BlockPlacementAnchor } from '../schema/patch'
 
+/**
+ * How many neighbors to capture per direction as fallback anchors. Survives
+ * up to this many consecutive sibling deletions before degrading.
+ */
+const ANCHOR_FALLBACK_DEPTH = 3
+
 function findBlock(block: SduiDocumentBlock, blockId: string): SduiDocumentBlock | undefined {
   if (block.id === blockId) {
     return block
@@ -19,15 +25,34 @@ function sortedChildren(content: SduiDocumentContent, parentId: string) {
   return sortBlocksByPosition(parent?.children ?? [])
 }
 
-function fallbackBefore(content: SduiDocumentContent, parentId: string, blockId: string): string[] | undefined {
-  const siblings = sortedChildren(content, parentId)
-  const index = siblings.findIndex((sibling) => sibling.id === blockId)
-
-  if (index <= 0) {
+/** Up to `ANCHOR_FALLBACK_DEPTH` sibling ids before/after `index`, nearest first. */
+function neighborIds(siblings: SduiDocumentBlock[], index: number, direction: -1 | 1): string[] | undefined {
+  if (index < 0) {
     return undefined
   }
 
-  return [siblings[index - 1].id]
+  const ids: string[] = []
+  for (let step = 1; step <= ANCHOR_FALLBACK_DEPTH; step += 1) {
+    const neighbor = siblings[index + direction * step]
+    if (!neighbor) {
+      break
+    }
+    ids.push(neighbor.id)
+  }
+
+  return ids.length > 0 ? ids : undefined
+}
+
+function fallbacksAround(content: SduiDocumentContent, parentId: string, blockId: string) {
+  const siblings = sortedChildren(content, parentId)
+  const index = siblings.findIndex((sibling) => sibling.id === blockId)
+  const fallbackAfter = neighborIds(siblings, index, -1)
+  const fallbackBefore = neighborIds(siblings, index, 1)
+
+  return {
+    ...(fallbackAfter ? { fallbackAfter } : {}),
+    ...(fallbackBefore ? { fallbackBefore } : {}),
+  }
 }
 
 /** Place a block immediately after `afterBlockId` within `parentId`. */
@@ -36,11 +61,9 @@ export function anchorAfterBlock(
   parentId: string,
   afterBlockId: string,
 ): BlockPlacementAnchor {
-  const fallback = fallbackBefore(content, parentId, afterBlockId)
-
   return {
     after: afterBlockId,
-    ...(fallback ? { fallbackAfter: fallback } : {}),
+    ...fallbacksAround(content, parentId, afterBlockId),
   }
 }
 
@@ -50,13 +73,9 @@ export function anchorBeforeBlock(
   parentId: string,
   beforeBlockId: string,
 ): BlockPlacementAnchor {
-  const siblings = sortedChildren(content, parentId)
-  const index = siblings.findIndex((sibling) => sibling.id === beforeBlockId)
-  const prev = index > 0 ? siblings[index - 1].id : undefined
-
   return {
     before: beforeBlockId,
-    ...(prev ? { fallbackAfter: [prev] } : {}),
+    ...fallbacksAround(content, parentId, beforeBlockId),
   }
 }
 

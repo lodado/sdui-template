@@ -14,6 +14,7 @@ import {
   InvalidBlockTypeChangeError,
   ParentBlockNotFoundError,
   RootBlockCannotBeDeletedError,
+  StaleAnchorError,
 } from './errors'
 import { getBlockInline, stripUndefinedKeys, toInlineStatePatch } from './inlineState'
 import type { PatchWriteScope } from './writeScope'
@@ -41,7 +42,15 @@ export function insertBlockAtAnchor(
     throw new DuplicateBlockIdError(duplicate)
   }
 
-  const bounds = resolvePositionBounds(parent, anchor)
+  const bounds = resolvePositionBounds(parent, anchor, scope.anchorOptions.positionHints)
+  if (bounds.resolution === 'degraded') {
+    if (scope.anchorOptions.onAnchorMiss === 'throw') {
+      throw new StaleAnchorError(block.id, parentId)
+    }
+
+    scope.reportDegradedAnchor({ blockId: block.id, parentId })
+  }
+
   const position = generatePositionBetween(bounds.afterKey, bounds.beforeKey)
   const resolvedOrigin = origin ?? block.origin
 

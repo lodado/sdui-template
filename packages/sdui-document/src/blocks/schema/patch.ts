@@ -24,6 +24,8 @@ export type BlockPlacementAnchor = {
   before?: string | null
   /** When `after` was deleted, try these block ids in order. */
   fallbackAfter?: string[]
+  /** When `before` was deleted, try these block ids in order. */
+  fallbackBefore?: string[]
 }
 
 export type SduiDocumentPatch = SduiDocumentPatchBase &

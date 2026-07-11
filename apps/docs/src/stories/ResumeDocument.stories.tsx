@@ -1,5 +1,5 @@
-// Resume-only chrome (masthead, showcase, print extras) — the document itself
-// uses the package's default Swiss theme.
+// Resume-only chrome (masthead, print extras) — the document itself uses the
+// package's default Swiss theme.
 import './ResumeSwiss.css'
 
 import {
@@ -22,9 +22,6 @@ import {
 import { SduiDocumentEditor, type SduiDocumentEditorApi } from '@lodado/sdui-document-react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { type CSSProperties, useEffect, useRef, useState } from 'react'
-
-// TODO: 실제 Sysmaster 화면 녹화 gif로 교체 (같은 경로/파일명 sysmaster-demo.gif).
-import sysmasterDemo from './assets/sysmaster-demo.gif'
 
 /** Meta/secondary text — Swiss gray. */
 const META_GRAY = '#555555'
@@ -59,12 +56,12 @@ const resumeContent: SduiDocumentContent = {
       // ── Korea Deep Learning ──────────────────────────────────────────────
       columnList([
         column([paragraph([colored('2026.02 — 현재', META_GRAY)]), paragraph([colored('6개월', META_GRAY)])], {
-          ratio: 1,
+          ratio: 18,
         }),
         column(
           [
-            heading('프론트엔드', 3),
-            paragraph([colored('Korea Deep Learning Inc. · 정규직', META_GRAY)]),
+            heading('Frontend Web Developer', 3),
+            paragraph([bold('Korea Deep Learning Inc.'), colored(' · 정규직', META_GRAY)]),
             paragraph([
               text('시리즈 A '),
               inlineCode('120억 원'),
@@ -116,11 +113,11 @@ const resumeContent: SduiDocumentContent = {
                 '변경된 컴포넌트만 선택적으로 리렌더링해 대규모 문서에서도 지연 없는 편집 경험 확보',
             ),
             bulletedList([
-              text('코드 스플리팅과 vendor chunk 분리로 초기 JavaScript 번들 '),
+              text('초기 JavaScript 번들 '),
               inlineCode('68%'),
-              text(' 감소, 웹폰트 서브셋 적용으로 폰트 리소스 '),
+              text(' · 폰트 리소스 '),
               inlineCode('70%'),
-              text(' 감소'),
+              text(' 감소 — 코드 스플리팅, vendor chunk 분리, 웹폰트 서브셋 적용'),
             ]),
             paragraph([bold('글로벌 결제')]),
             bulletedList(
@@ -133,7 +130,7 @@ const resumeContent: SduiDocumentContent = {
               ),
             ]),
           ],
-          { ratio: 3.5 },
+          { ratio: 82 },
         ),
       ]),
 
@@ -141,13 +138,18 @@ const resumeContent: SduiDocumentContent = {
 
       // ── Tmax Data ────────────────────────────────────────────────────────
       columnList([
-        column([paragraph([colored('2022.10 — 2026.01', META_GRAY)]), paragraph([colored('3년 4개월', META_GRAY)])], {
-          ratio: 1,
-        }),
+        column(
+          [
+            paragraph([colored('2022.10 — 2026.01', META_GRAY)]),
+            paragraph([colored('3년 4개월', META_GRAY)]),
+            paragraph([colored('성남시 · 대면근무', META_GRAY)]),
+          ],
+          { ratio: 18 },
+        ),
         column(
           [
             heading('Frontend Web Developer', 3),
-            paragraph([colored('티맥스데이터 · 정규직 · 성남시 · 대면근무', META_GRAY)]),
+            paragraph([bold('티맥스데이터'), colored(' · 정규직', META_GRAY)]),
             paragraph(
               '제품 전반에서 재사용할 수 있는 사내 디자인 시스템과 DB 모니터링 플랫폼의 프론트엔드 ' +
                 '아키텍처를 설계하고 구축했습니다.',
@@ -155,30 +157,33 @@ const resumeContent: SduiDocumentContent = {
             paragraph([bold('사내 디자인 시스템 구축')]),
             bulletedList('디자인 시스템을 제안하고 아키텍처 설계부터 컴포넌트 개발·배포 체계 구축까지 주도'),
             bulletedList('Turborepo, Changesets, Rollup 기반 ESM 모노레포 및 패키지 버전 관리 구조 설계'),
-            bulletedList('Storybook 기반 컴포넌트 문서화 및 UI 개발 협업 표준 정립'),
-            bulletedList('Jest, React Testing Library, GitLab Runner 기반 컴포넌트 테스트·배포 CI/CD 구축'),
+            bulletedList(
+              'Storybook 문서화, Jest·React Testing Library 테스트, GitLab Runner CI/CD로 컴포넌트 개발·배포 표준 정립',
+            ),
             bulletedList('가상화 기반 렌더링을 적용한 공통 대용량 Table 컴포넌트 설계'),
             bulletedList('Radix UI 기반 Compound Component Pattern을 적용해 확장 가능한 컴포넌트 API 구현'),
-            paragraph([colored('React.js · JavaScript · HTML 외 보유기술 +4개', META_GRAY)]),
+            paragraph([bold('SysMasterDB 8 프론트엔드 개발')]),
+            paragraph('Grafana와 유사한 DB 모니터링 플랫폼의 프론트엔드 개발과 구조 개선을 담당했습니다.'),
+            bulletedList(
+              'JavaScript 레거시 코드를 TypeScript와 사내 디자인 시스템으로 마이그레이션해 타입 안정성과 UI 일관성 확보',
+            ),
+            bulletedList(
+              'Feature-Sliced Design 기반으로 폴더 구조와 모듈 경계를 재설계해 유지보수성과 신규 기능 확장성 개선',
+            ),
+            bulletedList(
+              '드래그 앤 드롭 기반 Server-Driven UI 대시보드 설계·구현 — 유저별 위젯 배치와 레이아웃을 서버 데이터로 동적 구성',
+            ),
+            paragraph([
+              colored(
+                'React · TypeScript · Storybook · Turborepo · Rollup · Jest · React Testing Library · GitLab CI/CD',
+                META_GRAY,
+              ),
+            ]),
           ],
-          { ratio: 3.5 },
+          { ratio: 82 },
         ),
       ]),
-    ],
-  }),
-}
 
-/**
- * Tail document — rendered as a second editor BELOW the Sysmaster showcase so
- * the featured card stays anchored to the Tmax entry. Merged with the main
- * document for PDF/JSON export (see mergeContents).
- */
-const tailContent: SduiDocumentContent = {
-  schemaVersion: '1.0',
-  root: createDocumentBlock({
-    id: 'resume-tail-root',
-    type: 'document.root',
-    children: [
       // Side projects & open source
       section('Side Projects & Open Source'),
       heading('Simmey (Web Service)', 3),
@@ -246,15 +251,6 @@ const tailContent: SduiDocumentContent = {
     ],
   }),
 }
-
-/** Concatenates the two on-screen documents into one for print/JSON export. */
-const mergeContents = (main: SduiDocumentContent, tail: SduiDocumentContent): SduiDocumentContent => ({
-  ...main,
-  root: {
-    ...main.root,
-    children: [...(main.root.children ?? []), ...(tail.root.children ?? [])],
-  },
-})
 
 /* -------------------------------------------------------------------------- */
 /* PDF export — collapsed toggle children are not rendered to the DOM, so the */
@@ -326,7 +322,7 @@ const badgeStyle: CSSProperties = {
   color: '#111',
 }
 
-/** Hides Storybook chrome/padding while printing; the gif showcase is screen-only. */
+/** Hides Storybook chrome/padding while printing. */
 const printResetCss = `
 @media print {
   body { padding: 0 !important; margin: 0 !important; background: #fff !important; }
@@ -361,99 +357,6 @@ const Masthead = () => (
   </header>
 )
 
-/* -------------------------------------------------------------------------- */
-/* Sysmaster DB 8 showcase — an embedded, autoplaying gif preview with a       */
-/* click-to-open detail dialog. Story-level React (not a document block): the  */
-/* gif animates natively as an <img>, the dialog is the native <dialog>        */
-/* element (no dependency). Screen-only; the PDF carries the document text.    */
-/* Styles live in ResumeSwiss.css (.sm-*).                                     */
-/* Reference: https://silver-blue-23c.notion.site/Sysmaster-DB-8-6af5a3a52a6b42cda8fa227869ac8e1a */
-/* -------------------------------------------------------------------------- */
-
-const SYSMASTER_NOTION_URL = 'https://silver-blue-23c.notion.site/Sysmaster-DB-8-6af5a3a52a6b42cda8fa227869ac8e1a'
-
-const SYSMASTER_BULLETS = [
-  '드래그 앤 드롭으로 레이아웃을 조정하는 인터랙션과 progress 애니메이션 구현',
-  'breakpoint 기반 반응형 대시보드',
-  '차트 렌더링 — Chart.js · Recharts · Canvas',
-]
-
-const SYSMASTER_CHIPS = ['React', 'Chart.js', 'Recharts', 'Canvas', 'Server-Driven UI']
-
-const SysmasterShowcase = () => {
-  const dialogRef = useRef<HTMLDialogElement>(null)
-  const openDialog = () => dialogRef.current?.showModal()
-
-  return (
-    <section className="sysmaster-showcase" aria-label="Sysmaster DB 8 데모">
-      <article className="sm-card">
-        {/* Left — embedded autoplaying gif. Click opens the detail dialog. */}
-        <button type="button" className="sm-media" onClick={openDialog} aria-label="Sysmaster 데모 크게 보기">
-          <img src={sysmasterDemo} alt="Sysmaster DB 8 대시보드 데모" />
-          <span className="sm-media__tag">Live Demo</span>
-        </button>
-
-        {/* Right — concise bullets. */}
-        <div className="sm-body">
-          <span className="sm-eyebrow">Featured · Tmax Data</span>
-          <h3 className="sm-title">Sysmaster DB 8 — 실시간 DB 모니터링</h3>
-          <p className="sm-lede">
-            Tibero DB 모니터링 프로그램의 실시간 Dashboard를 구현. 모니터링 항목을 drag &amp; drop으로 자유롭게
-            배치·관제.
-          </p>
-          <ul className="sm-bullets">
-            {SYSMASTER_BULLETS.map((line) => (
-              <li key={line}>{line}</li>
-            ))}
-          </ul>
-          <div className="sm-chips">
-            {SYSMASTER_CHIPS.map((chip) => (
-              <span key={chip} className="sm-chip">
-                {chip}
-              </span>
-            ))}
-          </div>
-          <button type="button" className="sm-cta" onClick={openDialog}>
-            상세 보기 →
-          </button>
-        </div>
-      </article>
-
-      <dialog ref={dialogRef} className="sm-dialog">
-        <div className="sm-dialog__inner">
-          <div className="sm-dialog__head">
-            <h3>Sysmaster DB 8</h3>
-            <button
-              type="button"
-              className="sm-dialog__close"
-              onClick={() => dialogRef.current?.close()}
-              aria-label="닫기"
-            >
-              ✕
-            </button>
-          </div>
-
-          <img src={sysmasterDemo} alt="Sysmaster DB 8 대시보드 데모 (확대)" />
-
-          <p style={{ margin: '0 0 12px', color: META_GRAY }}>
-            Tibero DB 모니터링 프로그램 SysmasterDB8의 실시간 Dashboard·Realtime Monitoring 화면을 구현했습니다.
-            모니터링 항목을 drag &amp; drop으로 자유롭게 배치하고 관제할 수 있습니다.
-          </p>
-          <ul style={{ margin: '0 0 16px', paddingLeft: 20, lineHeight: 1.7 }}>
-            {SYSMASTER_BULLETS.map((line) => (
-              <li key={line}>{line}</li>
-            ))}
-          </ul>
-
-          <a className="sm-link" href={SYSMASTER_NOTION_URL} target="_blank" rel="noreferrer">
-            Notion에서 전체 보기 →
-          </a>
-        </div>
-      </dialog>
-    </section>
-  )
-}
-
 /**
  * Storybook-only chrome: undo/redo/reset/export-JSON plus "PDF 저장". Printing
  * remounts a read-only editor seeded with the toggle-expanded snapshot, calls
@@ -461,25 +364,18 @@ const SysmasterShowcase = () => {
  */
 const ResumeFrame = ({ editable }: { editable: boolean }) => {
   const apiRef = useRef<SduiDocumentEditorApi>(null)
-  const tailApiRef = useRef<SduiDocumentEditorApi>(null)
   const [seedContent, setSeedContent] = useState(resumeContent)
-  const [seedTail, setSeedTail] = useState(tailContent)
   const [instanceKey, setInstanceKey] = useState(0)
   const [printDoc, setPrintDoc] = useState<SduiDocumentContent | null>(null)
 
   const exportPdf = () => {
-    const currentMain = apiRef.current?.getContent() ?? seedContent
-    const currentTail = tailApiRef.current?.getContent() ?? seedTail
-    setSeedContent(currentMain) // restore target after print
-    setSeedTail(currentTail)
-    setPrintDoc(expandToggles(mergeContents(currentMain, currentTail)))
+    const current = apiRef.current?.getContent() ?? seedContent
+    setSeedContent(current) // restore target after print
+    setPrintDoc(expandToggles(current))
   }
 
   const exportJson = () => {
-    const data = mergeContents(
-      apiRef.current?.getContent() ?? seedContent,
-      tailApiRef.current?.getContent() ?? seedTail,
-    )
+    const data = apiRef.current?.getContent() ?? seedContent
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const anchor = document.createElement('a')
@@ -547,9 +443,6 @@ const ResumeFrame = ({ editable }: { editable: boolean }) => {
       </div>
       <Masthead />
       <SduiDocumentEditor key={instanceKey} content={seedContent} apiRef={apiRef} readOnly={!editable} />
-      <SysmasterShowcase />
-      {/* ponytail: undo/redo buttons drive the main editor only; the tail editor keeps its own PM history */}
-      <SduiDocumentEditor key={`tail-${instanceKey}`} content={seedTail} apiRef={tailApiRef} readOnly={!editable} />
     </div>
   )
 }

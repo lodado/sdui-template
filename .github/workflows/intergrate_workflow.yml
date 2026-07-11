@@ -20,7 +20,8 @@ jobs:
     secrets: inherit
 
   release:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Requires NPM_TOKEN with permission to CREATE new @lodado/* packages (not only update existing).
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.ENABLE_NPM_RELEASE == 'true'
     needs:
       - test
       - e2e-test

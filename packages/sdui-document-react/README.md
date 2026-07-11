@@ -94,13 +94,12 @@ Block documents need a React editing surface, but bolting ProseMirror onto the e
 
 ## Layer comparison
 
-| Package                       | Responsibility                                            |
-| ----------------------------- | --------------------------------------------------------- |
-| `@lodado/sdui-template`       | Renders SDUI layout JSON into registered React components |
-| `@lodado/sdui-document`       | Block schema, patches, tree ops, markdown, permissions    |
-| `@lodado/sdui-document-react` | **This package** — React editor UI for block documents    |
+| Package                       | Responsibility                                         |
+| ----------------------------- | ------------------------------------------------------ |
+| `@lodado/sdui-document`       | Block schema, patches, tree ops, markdown, permissions |
+| `@lodado/sdui-document-react` | **This package** — React editor UI for block documents |
 
-Use both document packages when your product has a block editor that maps content into SDUI layouts or read-only previews.
+Pair it with `@lodado/sdui-document` when your product needs a block editor or read-only document viewer.
 
 ---
 
@@ -253,7 +252,6 @@ import '@lodado/sdui-document-react/styles/viewer.css'
 | `document.toc`                            | Table of contents          |
 | `document.tags`                           | Tag chips                  |
 | `document.button`                         | Action button              |
-| `document.sdui`                           | Embedded SDUI layout block |
 
 Text blocks render static inline content until focused, then swap in `FocusedBlockEditor`.
 
@@ -400,7 +398,6 @@ import type { SduiDocumentContent } from '@lodado/sdui-document'
 | ----------------------------- | ----------------------------------------------------------------------- |
 | `@lodado/sdui-document`       | Block schema, `applyDocumentPatch`, permissions, `toSduiLayoutDocument` |
 | `@lodado/sdui-document-react` | Block chrome, dnd-kit, ProseMirror on focused block only, editor CSS    |
-| `@lodado/sdui-template`       | Rendering `document.sdui` embedded layouts (via SDUI node components)   |
 
 ### Common AI mistakes
 
@@ -420,10 +417,6 @@ import type { SduiDocumentContent } from '@lodado/sdui-document'
 | `Document/Adapter`      | `toSduiLayoutDocument` preview |
 
 Run locally: `pnpm storybook` (port 6006)
-
-### MCP for embedded SDUI blocks
-
-When authoring `document.sdui` blocks that embed layout JSON, connect `@lodado/sdui-mcp` — see [root README MCP section](../../README.md#mcp--ai-assistants) and [sdui-mcp README](../sdui-mcp/README.md).
 
 ---
 

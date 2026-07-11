@@ -105,6 +105,7 @@ const placementAnchorFields = {
   after: z.string().min(1).nullable().optional(),
   before: z.string().min(1).nullable().optional(),
   fallbackAfter: z.array(z.string().min(1)).optional(),
+  fallbackBefore: z.array(z.string().min(1)).optional(),
 }
 
 const patchSchema = z.discriminatedUnion('type', [
