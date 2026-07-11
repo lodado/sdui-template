@@ -87,8 +87,8 @@
 }
 
 [data-sdui-document-editor] .checkbox {
-  /* height matches the first text line (1.5em) so the box centers against the
-     line instead of pinning to the top of the row */
+  /* height matches the first text line so the box centers against the line
+     instead of pinning to the top of the row (1lh tracks theme line-height) */
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -96,6 +96,7 @@
   pointer-events: initial;
   width: 16px;
   height: 1.5em;
+  height: 1lh;
   position: relative;
   transition: transform 100ms ease-in-out;
   opacity: 0.8;
@@ -205,7 +206,8 @@
 .list-item {
   display: flex;
   align-items: flex-start;
-  padding: 3px 2px;
+  padding: var(--sdui-doc-block-padding-y) var(--sdui-doc-block-padding-x);
+  min-height: var(--sdui-doc-block-min-height);
 }
 .list-item > .list-marker {
   display: flex;
@@ -213,18 +215,18 @@
   justify-content: center;
   width: 24px;
   min-width: 24px;
-  /* box == first text line (1.5em = 24px), pinned to the top of the item so it
-     stays on line 1 of wrapped content; flex-center puts the dot in the middle
-     of that first line. keep the glyph small — a large bullet's mass reads high
-     even when centered. */
+  /* box == first text line, pinned to the top of the item so it stays on line 1
+     of wrapped content; flex-center puts the dot in the middle of that line.
+     inherit + 1lh tracks theme line-height (e.g. Swiss 1.6) instead of a hard 1.5. */
   height: 1.5em;
-  line-height: 1;
+  height: 1lh;
+  line-height: inherit;
   font-size: 1em;
   user-select: none;
 }
 .list-item > .list-marker.list-marker-number {
   font-size: 1em;
-  line-height: 1.5;
+  line-height: inherit;
   margin-top: 0;
   justify-content: flex-start;
   padding-left: 2px;
@@ -232,7 +234,7 @@
 .list-item > .content {
   flex: 1 1 0;
   min-width: 0;
-  line-height: 1.5;
+  line-height: inherit;
 }
 
 /* ---- Notion quote ---- */
@@ -248,7 +250,8 @@ blockquote.quote-block {
 .toggle-block {
   display: flex;
   align-items: flex-start;
-  padding: 3px 2px;
+  padding: var(--sdui-doc-block-padding-y) var(--sdui-doc-block-padding-x);
+  min-height: var(--sdui-doc-block-min-height);
 }
 .toggle-block > span > .toggle-triangle {
   display: flex;
@@ -278,7 +281,7 @@ blockquote.quote-block {
 .toggle-block > .content {
   flex: 1 1 0;
   min-width: 0;
-  line-height: 1.5;
+  line-height: inherit;
 }
 /* Toggle children: keep the 24px indent (drag-depth math) but add a subtle
    vertical guide so the nesting reads as "belongs to this toggle" (Notion).
