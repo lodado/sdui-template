@@ -134,8 +134,11 @@
 [data-theme='dark'] {
   /* base — Notion dark palette (white-alpha text, Notion-blue link #529cca) */
   --sdui-doc-text: var(--color-text-default, rgba(255, 255, 255, 0.81));
-  --sdui-doc-text-secondary: var(--color-text-subtle, rgba(255, 255, 255, 0.46));
-  --sdui-doc-text-tertiary: var(--color-text-subtlest, rgba(255, 255, 255, 0.28));
+  /* secondary/tertiary alphas lifted from 0.46/0.28 (tertiary was 2.5:1, failed
+     WCAG AA on the #191919 surface) to 0.56/0.45 — 6.3:1 / 4.5:1, both AA,
+     hierarchy preserved (11.7 / 6.3 / 4.5). */
+  --sdui-doc-text-secondary: var(--color-text-subtle, rgba(255, 255, 255, 0.56));
+  --sdui-doc-text-tertiary: var(--color-text-subtlest, rgba(255, 255, 255, 0.45));
   --sdui-doc-background: var(--elevation-surface-default, #191919);
   --sdui-doc-background-secondary: rgba(255, 255, 255, 0.055);
   --sdui-doc-accent: var(--color-link-default, #2383e6);
@@ -150,7 +153,8 @@
   --sdui-doc-code-border: transparent;
   --sdui-doc-code-keyword: #eb5757;
   --sdui-doc-code-block-background: #252525;
-  --sdui-doc-code-block-text: rgba(255, 255, 255, 0.44);
+  /* 0.44 → 0.56: 4.1:1 (under AA) → 5.8:1 on the #252525 code surface */
+  --sdui-doc-code-block-text: rgba(255, 255, 255, 0.56);
 
   --sdui-doc-notice-text: #ffffff;
 
