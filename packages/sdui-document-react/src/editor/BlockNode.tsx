@@ -224,7 +224,7 @@ const BlockRow = ({ entry, depth, readOnly }: BlockViewProps) => {
             type="button"
             data-drag-handle
             aria-label={`Drag block ${block.id}`}
-            style={{ cursor: 'grab', border: 'none', background: 'transparent' }}
+            style={{ cursor: 'grab' }}
             onClick={(event) => {
               // Notion parity: plain click opens the block-actions menu (which
               // also selects the block); Shift+click extends the selection.

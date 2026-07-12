@@ -32,12 +32,11 @@
   align-items: flex-start;
   gap: 4px;
   min-height: var(--sdui-doc-block-min-height);
-  /* Reserve the handle gutter here (not via in-flow handles) so it exists in
-     BOTH edit and read mode — read mode drops the handles from the DOM, and an
-     in-flow gutter would collapse and shift every block left on mode switch.
-     Handles are positioned absolute inside this padding. Override to 0 on a
-     read-only-only surface where no mode toggle exists. */
-  padding-left: var(--sdui-doc-block-gutter, 56px);
+  /* No reserved gutter: content is full-width and identical in edit/read mode
+     (read mode drops the handles from the DOM, but there was never an in-flow
+     gutter to collapse, so nothing shifts). The +/⠿ handles overlay the block's
+     top-left on hover instead (see chrome.css) — masked by a page-bg chip so
+     the first line stays legible underneath. */
 }
 
 [data-sdui-document-editor] [data-block-content] {
