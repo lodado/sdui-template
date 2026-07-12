@@ -1,5 +1,11 @@
 # @lodado/sdui-document-react
 
+## 1.0.2
+
+### Patch Changes
+
+- Version bump for re-publish (no source changes since 1.0.1).
+
 ## 1.0.1
 
 ### Patch Changes
