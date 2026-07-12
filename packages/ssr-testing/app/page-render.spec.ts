@@ -1,4 +1,4 @@
-import { expect,test } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 /**
  * Page render tests.
@@ -23,9 +23,6 @@ test.describe('페이지 렌더링', () => {
 
   test('SDUI 레이아웃 컴포넌트들이 올바르게 렌더링된다', async ({ page }) => {
     await page.goto('/')
-
-    // Wait until the page fully loads
-    await page.waitForLoadState('networkidle')
 
     // Verify the GridLayout container
     const layoutContainer = page.locator('[data-testid="grid-layout"]').first()
@@ -52,7 +49,6 @@ test.describe('페이지 렌더링', () => {
 
   test('Toggle 컴포넌트의 초기 상태가 올바르게 설정된다', async ({ page }) => {
     await page.goto('/')
-    await page.waitForLoadState('networkidle')
 
     // First toggle: isChecked=false (check aria-checked - Radix Switch)
     const toggle1 = page.locator('[data-node-id="toggle-1"]')
@@ -72,7 +68,6 @@ test.describe('페이지 렌더링', () => {
 
   test('Toggle 컴포넌트가 클릭 시 상태가 변경된다', async ({ page }) => {
     await page.goto('/')
-    await page.waitForLoadState('networkidle')
 
     const toggle1 = page.locator('[data-node-id="toggle-1"]')
 
@@ -80,15 +75,12 @@ test.describe('페이지 렌더링', () => {
     await expect(toggle1).toBeVisible({ timeout: 10000 })
     await expect(toggle1).toHaveAttribute('aria-checked', 'false')
 
-    // Click to change state
+    // Click to change state (toHaveAttribute auto-retries until it flips)
     await toggle1.click()
-    // Briefly wait for the state change to apply
-    await page.waitForTimeout(100)
     await expect(toggle1).toHaveAttribute('aria-checked', 'true')
 
     // Click again to return to the original state
     await toggle1.click()
-    await page.waitForTimeout(100)
     await expect(toggle1).toHaveAttribute('aria-checked', 'false')
   })
 
