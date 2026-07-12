@@ -58,8 +58,11 @@ describe('SduiLayoutRenderer', () => {
 
         // Should render without errors
         expect(screen.getByText(/ID: level-0/i)).toBeInTheDocument()
-        // Performance check (should be under 200ms)
-        expect(duration).toBeLessThan(200)
+        // Pathological-regression guard, not a tight budget: this 11-node render
+        // is <10ms normally, but a wall-clock assertion flakes under CI load
+        // (turbo runs suites concurrently → CPU starvation). A generous ceiling
+        // still catches an O(n^2)/infinite-loop blowup without failing on jitter.
+        expect(duration).toBeLessThan(1000)
       })
     })
   })
