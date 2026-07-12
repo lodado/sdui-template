@@ -37,6 +37,7 @@
   ],
   "scripts": {
     "build": "rollup -c && tsc --emitDeclarationOnly --declarationMap false --declaration --declarationDir dist/types",
+    "postbuild": "node scripts/verify-dist-exports.mjs",
     "clean": "rm -rf .turbo dist .cache",
     "lint": "eslint \"src/**/*.ts*\"",
     "typecheck": "tsc -p tsconfig.json --noEmit",
