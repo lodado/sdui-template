@@ -250,6 +250,10 @@
   background: var(--sdui-doc-accent);
 }
 
+[data-theme='dark'] [data-sdui-document-editor] [data-drop-indicator] {
+  background: var(--color-border-selected, #669df1);
+}
+
 /* insertion caret painted while dragging inline text across blocks */
 [data-sdui-document-editor] [data-drop-caret] {
   background: var(--sdui-doc-accent);
