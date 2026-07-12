@@ -1,5 +1,41 @@
 # @lodado/sdui-document-react
 
+## 1.0.1
+
+### Patch Changes
+
+- c5023ff: fix(editor): stop content shifting between edit and read mode
+
+  The `+` and drag (⠿) block handles were in-flow flex children, so they reserved
+  a ~56px gutter only in edit mode — read mode drops them from the DOM and every
+  block jumped left on mode switch. The gutter is now reserved on `[data-block-row]`
+  itself (`padding-left: var(--sdui-doc-block-gutter, 56px)`, shared by editor and
+  viewer) and the handles are absolutely positioned inside it. Edit rendering is
+  unchanged; read mode now aligns to the same content column. Override
+  `--sdui-doc-block-gutter` (e.g. to `0`) on a read-only-only surface.
+
+- f009269: fix(a11y): raise dark-theme secondary/tertiary text contrast to WCAG AA
+
+  On the `[data-theme='dark']` surface (`#191919`), the muted text tokens were
+  too faint — `text-tertiary` sat at 2.5:1 (fails AA) and `code-block-text` at
+  4.1:1. Lifted the white-alpha fallbacks (secondary 0.46→0.56, tertiary
+  0.28→0.45, code-block-text 0.44→0.56) so all three clear 4.5:1 while keeping
+  the three-tier hierarchy (11.7 / 6.3 / 4.5). Design-system semantic tokens still
+  override the fallbacks when loaded; Swiss (light-only) is unaffected.
+
+- d135698: fix(build): stop dropping `cloneBlockWithNewIds` / `HIGHLIGHT_PALETTE` from the ESM dist
+
+  The main and `./viewer` entries were built in two separate `preserveModules`
+  Rollup passes that both wrote to `dist/es/client`. The viewer pass tree-shook
+  shared modules (`editor/blockContent.mjs`, `marks/highlight/palette.mjs`) down
+  to only the exports it used, then overwrote the main pass's complete versions —
+  leaving other chunks importing exports that no longer existed. Strict-ESM
+  consumers (Next 16 + Turbopack) failed to build; Storybook (Vite) masked it.
+
+  Both ES entries now build in a single Rollup pass, so shared chunks keep the
+  union of used exports. Added a `postbuild` guard (`verify-dist-exports.mjs`)
+  that fails the build on any dangling ESM import so this can't reach npm again.
+
 ## 1.0.0
 
 ### Major Changes

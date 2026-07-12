@@ -1,5 +1,14 @@
 # sdui-template-storybook
 
+## 0.1.8
+
+### Patch Changes
+
+- Updated dependencies [c5023ff]
+- Updated dependencies [f009269]
+- Updated dependencies [d135698]
+  - @lodado/sdui-document-react@1.0.1
+
 ## 0.1.7
 
 ### Patch Changes
