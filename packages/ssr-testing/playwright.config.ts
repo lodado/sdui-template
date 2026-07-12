@@ -10,8 +10,10 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
+  // Each CI shard is one runner; 50% uses its cores without oversubscribing.
+  workers: process.env.CI ? '50%' : undefined,
+  // blob on CI so sharded runs can be merged into one HTML report.
+  reporter: process.env.CI ? 'blob' : 'html',
 
   use: {
     // 3100: avoids dev servers/ssh tunnels commonly holding :3000
