@@ -39,6 +39,22 @@
      the first line stays legible underneath. */
 }
 
+/* Desktop: reserve the handle gutter so the +/⠿ handles sit LEFT of the text
+   instead of over it. Overlaid handles must be pointer-events:auto to stay
+   grabbable, so on hover they otherwise eat click/dbl-click selection on the
+   first word (a short word sits entirely under the 0..50px chip). Padding — not
+   in-flow handles — applies to read AND edit equally, so no mode shift. Below
+   768px the shipped full-width overlay stays (there may be no room for a gutter;
+   the (hover:none) block pins those handles visible). Gated on width, not
+   (hover)/(pointer): headless Firefox misreports those (see chrome.css).
+   ponytail: viewport media, not container — a narrow editor on a wide viewport
+   still reserves the gutter; fine, it just insets content there too. */
+@media (min-width: 768px) {
+  [data-sdui-document-editor] [data-block-row] {
+    padding-left: 52px;
+  }
+}
+
 [data-sdui-document-editor] [data-block-content] {
   flex: 1;
   min-width: 0;
