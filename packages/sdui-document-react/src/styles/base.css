@@ -27,10 +27,17 @@
    FIRST text line — with center, a Shift-Enter multiline block would drag
    them down to the block's vertical middle (Notion pins to line 1) */
 [data-sdui-document-editor] [data-block-row] {
+  position: relative; /* anchor for the absolutely-positioned +/⠿ handles */
   display: flex;
   align-items: flex-start;
   gap: 4px;
   min-height: var(--sdui-doc-block-min-height);
+  /* Reserve the handle gutter here (not via in-flow handles) so it exists in
+     BOTH edit and read mode — read mode drops the handles from the DOM, and an
+     in-flow gutter would collapse and shift every block left on mode switch.
+     Handles are positioned absolute inside this padding. Override to 0 on a
+     read-only-only surface where no mode toggle exists. */
+  padding-left: var(--sdui-doc-block-gutter, 56px);
 }
 
 [data-sdui-document-editor] [data-block-content] {

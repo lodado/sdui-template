@@ -133,6 +133,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  /* absolute inside the row's reserved gutter — out of flow so the row width /
+     content position is identical whether or not the handles are rendered */
+  position: absolute;
+  top: 0;
+  left: 28px;
   width: 24px;
   height: 24px;
   color: var(--sdui-doc-text-secondary);
@@ -149,8 +154,7 @@
   -webkit-user-select: none;
   -webkit-touch-callout: none;
   /* hidden until the row is hovered (Notion/Outline behavior) — opacity, not
-     display, so the row never reflows and the handle stays a drop-zone-stable
-     flex item */
+     display, so the handle stays a stable drop-zone hit-target when idle */
   opacity: 0;
   transition:
     color 150ms cubic-bezier(0.175, 0.885, 0.32, 1.275),
@@ -167,6 +171,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  /* absolute in the reserved gutter, left of the ⠿ handle (see [data-block-row]) */
+  position: absolute;
+  top: 0;
+  left: 2px;
   width: 24px;
   height: 24px;
   color: var(--sdui-doc-text-secondary);
