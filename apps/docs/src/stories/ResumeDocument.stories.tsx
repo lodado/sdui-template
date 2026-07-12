@@ -368,11 +368,20 @@ const Masthead = () => (
  * remounts a read-only editor seeded with the toggle-expanded snapshot, calls
  * window.print(), then restores the pre-print content on afterprint.
  */
-const ResumeFrame = ({ editable }: { editable: boolean }) => {
+const ResumeFrame = ({ editable: initialEditable }: { editable: boolean }) => {
   const apiRef = useRef<SduiDocumentEditorApi>(null)
   const [seedContent, setSeedContent] = useState(resumeContent)
   const [instanceKey, setInstanceKey] = useState(0)
   const [printDoc, setPrintDoc] = useState<SduiDocumentContent | null>(null)
+  const [editable, setEditable] = useState(initialEditable)
+
+  // Carry live edits across the read/edit switch and remount so ProseMirror
+  // mounts/unmounts cleanly for the new readOnly value (same pattern as print).
+  const toggleMode = () => {
+    setSeedContent(apiRef.current?.getContent() ?? seedContent)
+    setInstanceKey((key) => key + 1)
+    setEditable((value) => !value)
+  }
 
   const exportPdf = () => {
     const current = apiRef.current?.getContent() ?? seedContent
@@ -427,6 +436,9 @@ const ResumeFrame = ({ editable }: { editable: boolean }) => {
       <style>{printResetCss}</style>
       <div className="resume-toolbar" style={toolbarStyle}>
         <span style={badgeStyle}>{editable ? '편집 모드' : '읽기 모드'}</span>
+        <button type="button" onClick={toggleMode}>
+          {editable ? '읽기 모드로' : '편집 모드로'}
+        </button>
         {editable ? (
           <>
             <button type="button" onClick={() => apiRef.current?.undo()}>
