@@ -11,6 +11,7 @@ import React from 'react'
 import { z } from 'zod'
 
 import type { ComponentFactory } from '../../components/types'
+import { SduiLayoutRenderer } from '../../react-wrapper/components/SduiLayoutRenderer'
 import { useSduiLayoutAction, useSduiNodeSubscription } from '../../react-wrapper/hooks'
 import type { SduiLayoutDocument } from '../../schema'
 import { createTestDocument, defaultTestComponentFactory, renderWithSduiLayout } from '../utils/dev-utils'
@@ -48,9 +49,7 @@ const ToggleComponent: React.FC<{ nodeId: string; testPrefix?: string }> = ({ no
       <button onClick={handleToggle} type="button">
         {state?.label || `Toggle ${nodeId}`}
       </button>
-      <span data-testid={`${testPrefix}-toggle-state-${nodeId}`}>
-        {state?.isChecked ? 'ON' : 'OFF'}
-      </span>
+      <span data-testid={`${testPrefix}-toggle-state-${nodeId}`}>{state?.isChecked ? 'ON' : 'OFF'}</span>
     </div>
   )
 }
@@ -399,6 +398,74 @@ describe('Dynamic Document Merge', () => {
 
         // toggle-4 should start with initial state (OFF) - different ID means new component
         expect(screen.getByTestId('sdui-toggle-state-toggle-4')).toHaveTextContent('OFF')
+      })
+    })
+  })
+})
+
+describe('SduiLayoutRenderer: document prop changes after children mounted', () => {
+  const renderComponents = {
+    Container: defaultTestComponentFactory,
+    Toggle: ToggleComponentFactory,
+  }
+
+  describe('as is: renderer mounted with 3 toggles that have subscribed, user changes a state', () => {
+    describe('when: a new document is passed as the `document` prop (re-render)', () => {
+      it('to be: no setState-in-render warning, new node renders, existing state preserved', async () => {
+        const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+
+        const { rerender } = render(
+          <SduiLayoutRenderer document={createDocumentWithToggles(3)} components={renderComponents} />,
+        )
+
+        // Children mount + subscribe to the store
+        await waitFor(() => {
+          expect(screen.getByTestId('sdui-toggle-toggle-3')).toBeInTheDocument()
+        })
+
+        // Change toggle-1 so we can verify the merge preserves it
+        const user = userEvent.setup()
+        await user.click(screen.getByTestId('sdui-toggle-toggle-1').querySelector('button')!)
+        await waitFor(() => {
+          expect(screen.getByTestId('sdui-toggle-state-toggle-1')).toHaveTextContent('ON')
+        })
+
+        // Re-render with a NEW document prop while subscribers are mounted.
+        // Before the fix this ran mergeLayout during render → React warned
+        // "Cannot update a component while rendering a different component".
+        rerender(<SduiLayoutRenderer document={createDocumentWithToggles(4)} components={renderComponents} />)
+
+        // Merge applied in the commit-phase effect
+        await waitFor(() => {
+          expect(screen.getByTestId('sdui-toggle-toggle-4')).toBeInTheDocument()
+        })
+
+        // Existing state preserved across the prop-driven merge
+        expect(screen.getByTestId('sdui-toggle-state-toggle-1')).toHaveTextContent('ON')
+
+        const hasSetStateInRenderWarning = errorSpy.mock.calls
+          .map((call) => String(call[0]))
+          .some((message) => message.includes('Cannot update a component'))
+        expect(hasSetStateInRenderWarning).toBe(false)
+
+        errorSpy.mockRestore()
+      })
+    })
+  })
+
+  describe('as is: renderer given an invalid document (missing root.id)', () => {
+    describe('when: the invalid document is passed as a prop', () => {
+      it('to be: onError is called and the component does not crash', () => {
+        const onError = jest.fn()
+
+        // Cast: intentionally invalid input to exercise the error boundary path
+        const invalidDocument = { version: '1.0.0', root: { type: 'Container' } } as unknown as SduiLayoutDocument
+
+        expect(() =>
+          render(<SduiLayoutRenderer document={invalidDocument} components={renderComponents} onError={onError} />),
+        ).not.toThrow()
+
+        expect(onError).toHaveBeenCalledWith(expect.any(Error))
       })
     })
   })
