@@ -27,7 +27,7 @@
  * - Errors are passed to onError callback, component continues rendering if possible
  */
 
-import React, { useMemo, useRef } from 'react'
+import React, { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 
 import { componentMap } from '../../components/componentMap'
 import type { ComponentFactory } from '../../components/types'
@@ -36,6 +36,12 @@ import { SduiLayoutStore } from '../../store'
 import type { SduiLayoutStoreOptions } from '../../store/types'
 import { SduiLayoutProvider } from '../context'
 import { SduiLayoutRendererInner } from './SduiLayoutRendererInner'
+
+/**
+ * useLayoutEffect on the client (flush the store merge before paint to avoid a
+ * stale frame); useEffect on the server to silence the SSR-only warning.
+ */
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
 interface SduiLayoutRendererProps {
   /** SDUI Layout Document */
@@ -76,9 +82,13 @@ export const SduiLayoutRenderer: React.FC<SduiLayoutRendererProps> = ({
   effects,
 }) => {
   const storeRef = useRef<SduiLayoutStore | null>(null)
-  // Create store instance and update the document
-  // components and componentOverrides are set once, so they are excluded from deps
-  const store = useMemo(() => {
+  const appliedDocumentRef = useRef<SduiLayoutDocument | null>(null)
+
+  // Create the store and inject the initial layout during the first render.
+  // No child node has subscribed yet, so updateLayout notifies nobody — safe,
+  // and it keeps the initial (SSR / first-paint) content.
+  // components/componentOverrides are applied once at creation only.
+  if (storeRef.current === null) {
     try {
       // Document validation
       if (!document || !document.root) {
@@ -96,25 +106,38 @@ export const SduiLayoutRenderer: React.FC<SduiLayoutRendererProps> = ({
           ...componentOverrides?.byNodeId,
         },
       }
-      if (!storeRef.current) {
-        storeRef.current = new SduiLayoutStore(undefined, options)
-        storeRef.current.updateLayout(document)
-      } else {
-        storeRef.current.mergeLayout(document)
-      }
-
-      return storeRef.current
+      const store = new SduiLayoutStore(undefined, options)
+      store.updateLayout(document)
+      storeRef.current = store
     } catch (error) {
       if (onError) {
         onError(error instanceof Error ? error : new Error(String(error)))
       }
-      // Return empty store on error
-      if (storeRef.current === null) {
-        storeRef.current = new SduiLayoutStore()
-      }
-      return storeRef.current
+      // Fall back to an empty store on error
+      storeRef.current = new SduiLayoutStore()
     }
-  }, [document, components, componentOverrides])
+    appliedDocumentRef.current = document
+  }
+
+  // Subsequent document changes merge in the commit phase, never during render.
+  // A render-phase store write notifies already-mounted subscribers mid-render
+  // ("Cannot update a component while rendering a different component").
+  useIsomorphicLayoutEffect(() => {
+    if (appliedDocumentRef.current === document) {
+      return
+    }
+    appliedDocumentRef.current = document
+    try {
+      if (!document?.root?.id) {
+        throw new Error('Invalid document: root.id is required')
+      }
+      storeRef.current?.mergeLayout(document)
+    } catch (error) {
+      if (onError) {
+        onError(error instanceof Error ? error : new Error(String(error)))
+      }
+    }
+  }, [document])
 
   // Merge component map
   const mergedComponentMap = useMemo(() => {
@@ -126,7 +149,8 @@ export const SduiLayoutRenderer: React.FC<SduiLayoutRendererProps> = ({
 
   // Do not render if root.id is missing (error already passed to onError)
   const rootId = document?.root?.id
-  if (!rootId) {
+  const store = storeRef.current
+  if (!rootId || !store) {
     return null
   }
 
