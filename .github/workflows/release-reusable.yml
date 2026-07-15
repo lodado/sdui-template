@@ -5,6 +5,9 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - name: Check out source code
         uses: actions/checkout@v4
@@ -33,7 +36,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Run release
-        run: pnpm release
+      # With pending changesets: opens/updates a "Version Packages" PR that commits
+      # the version bumps + changelogs back to the repo (prevents local/npm drift).
+      # Without pending changesets (version PR merged): builds and publishes to npm.
+      - name: Create version PR or publish to npm
+        uses: changesets/action@v1
+        with:
+          version: pnpm changeset version
+          publish: pnpm release:publish
+          commit: 'chore(release): version packages'
+          title: 'chore(release): version packages'
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

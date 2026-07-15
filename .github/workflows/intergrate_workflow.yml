@@ -25,6 +25,9 @@ jobs:
     needs:
       - test
       - e2e-test
+    permissions:
+      contents: write
+      pull-requests: write
     uses: ./.github/workflows/release-reusable.yml
     secrets: inherit
 
