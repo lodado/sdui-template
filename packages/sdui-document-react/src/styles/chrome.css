@@ -212,21 +212,23 @@
   background: var(--sdui-doc-background-secondary);
 }
 
-@media (hover: none) and (pointer: coarse) {
-  [data-sdui-document-editor] [data-plus-handle] {
-    opacity: 1;
-  }
-}
-
 /* Touch-primary devices only (coarse pointer + no hover). Headless Firefox
    reports (hover: none) with (pointer: fine), so require both — otherwise CI
    and desktop-like environments keep the hover-reveal behavior.
 
-   These controls are otherwise revealed on :hover, which touch can only fake via
-   sticky-hover (appears on tap, vanishes on the next tap elsewhere) — so they
-   read as flickering, undiscoverable UI. Pin them visible on touch instead. */
+   Hover-reveal can't work on touch, but pinning the ⠿/+ handles visible on
+   EVERY block reads as clutter on a phone. Instead reveal them only on the
+   focused or selected block — the block the user just tapped — which is
+   deterministic where sticky-hover (appears on tap, vanishes on the next tap
+   elsewhere) is flickery. Content-level controls (image/code) stay pinned:
+   they exist once per media block, not once per row. */
 @media (hover: none) and (pointer: coarse) {
-  [data-sdui-document-editor] [data-drag-handle],
+  [data-sdui-document-editor] :is([data-focused], [data-selected='true']) > [data-block-row] > [data-plus-handle],
+  [data-sdui-document-editor] :is([data-focused], [data-selected='true']) > [data-block-row] > [data-drag-handle] {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
   [data-sdui-document-editor] .image-controls-trigger {
     opacity: 1;
   }
