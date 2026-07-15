@@ -1,5 +1,17 @@
 # ssr-testing
 
+## 0.1.8
+
+### Patch Changes
+
+- Updated dependencies [3d3dc12]
+- Updated dependencies [20b162a]
+- Updated dependencies [c682664]
+- Updated dependencies [889fe18]
+  - @lodado/sdui-document-react@1.0.5
+  - @lodado/sdui-template@1.0.7
+  - @lodado/sdui-template-component@1.0.7
+
 ## 0.1.7
 
 ### Patch Changes

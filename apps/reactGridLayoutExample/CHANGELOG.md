@@ -1,5 +1,13 @@
 # react-grid-layout-example
 
+## 0.1.6
+
+### Patch Changes
+
+- Updated dependencies [c682664]
+  - @lodado/sdui-template@1.0.7
+  - @lodado/sdui-template-component@1.0.7
+
 ## 0.1.5
 
 ### Patch Changes

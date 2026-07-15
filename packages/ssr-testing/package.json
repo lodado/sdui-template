@@ -1,6 +1,6 @@
 {
   "name": "ssr-testing",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "private": true,
   "scripts": {
     "dev-test": "next dev",
