@@ -1,5 +1,6 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 
+import { MOTION } from '../../lib/motion'
 import type { ButtonAppearance, ButtonSpacing } from './types'
 
 /**
@@ -16,8 +17,8 @@ import type { ButtonAppearance, ButtonSpacing } from './types'
  * - isSelected: true/false
  */
 export const buttonVariants = cva(
-  // Base styles
-  'inline-flex items-center justify-center rounded font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-border-focused)] cursor-pointer gap-1.5',
+  // Base styles — MOTION.pressable adds color transition + active press-scale
+  `inline-flex items-center justify-center rounded font-medium ${MOTION.pressable} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-border-focused)] cursor-pointer gap-1.5`,
   {
     variants: {
       appearance: {

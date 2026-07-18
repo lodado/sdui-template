@@ -1,5 +1,7 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 
+import { MOTION } from '../../lib/motion'
+
 /**
  * Checkbox variant configuration using class-variance-authority (ADS style)
  *
@@ -19,7 +21,9 @@ export const checkboxVariants = cva(
   [
     'relative inline-flex items-center justify-center shrink-0',
     'size-[14px] rounded-[2px]',
-    'cursor-pointer transition-all duration-200',
+    'cursor-pointer',
+    // Only color transitions animate (transform/layout must stay instant)
+    MOTION.colors,
     'appearance-none',
     '-webkit-appearance-none',
     // Focus ring - applies to all states

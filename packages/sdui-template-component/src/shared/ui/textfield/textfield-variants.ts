@@ -25,7 +25,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 export const textFieldVariants = cva(
   // Base styles - updated based on Figma design
   // Using ring instead of border-2 on focus to prevent layout shift
-  'flex w-full items-center gap-1.5 rounded-[3px] border border-solid text-sm leading-[1.429] transition-colors focus-within:ring-1 disabled:cursor-not-allowed disabled:opacity-50',
+  'flex w-full items-center gap-1.5 rounded-[3px] border border-solid text-sm leading-[1.429] transition-[color,background-color,border-color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-in-out)] focus-within:ring-1 disabled:cursor-not-allowed disabled:opacity-50',
   {
     variants: {
       size: {
