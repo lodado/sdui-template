@@ -299,7 +299,12 @@ const TextFieldHelpMessage = React.forwardRef<HTMLDivElement, TextFieldHelpMessa
       <div
         ref={ref}
         id={helpMessageId}
-        className={cn(helpMessageClasses, className)}
+        className={cn(
+          helpMessageClasses,
+          // Error message rises in with a fade; clears instantly (no exit)
+          displayError && 'animate-[sdui-error-in_var(--motion-duration-medium)_var(--motion-ease-out)]',
+          className,
+        )}
         role={displayError ? 'alert' : undefined}
         aria-live={displayError ? 'polite' : undefined}
         // eslint-disable-next-line react/jsx-props-no-spreading
