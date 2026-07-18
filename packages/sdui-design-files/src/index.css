@@ -3,6 +3,8 @@
  *
  * This file imports all design system CSS files:
  * - colors.css: Color variables and tokens
+ * - motion.css: Motion duration/easing tokens and keyframes
  */
 
 @import './colors.css';
+@import './motion.css';
