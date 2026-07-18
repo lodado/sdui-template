@@ -218,6 +218,39 @@ Each `*Container` component uses `@lodado/sdui-template` hooks (`useSduiNodeSubs
 
 ---
 
+## Motion
+
+Micro-interactions run on a small set of tokens defined in
+`@lodado/sdui-design-files/motion.css` and consumed through the `MOTION`
+fragments in `shared/lib/motion.ts`. Never hardcode a duration or easing —
+compose a `MOTION` fragment or reference a token so the system stays in one
+rhythm.
+
+| Token | Value | Use |
+| --- | --- | --- |
+| `--motion-duration-fast` | 100ms | hover/press feedback, small-surface exit |
+| `--motion-duration-medium` | 150ms | small-surface enter, large exit |
+| `--motion-duration-slow` | 250ms | large-surface enter (dialog) |
+| `--motion-ease-out` | `cubic-bezier(0.2, 0, 0, 1)` | decelerate — enter |
+| `--motion-ease-in` | `cubic-bezier(0.4, 0, 1, 1)` | accelerate — exit |
+| `--motion-ease-in-out` | `cubic-bezier(0.4, 0, 0.2, 1)` | color/state transition |
+| `--motion-ease-spring` | `cubic-bezier(0.16, 1, 0.3, 1)` | overshoot — toggle thumb, check pop |
+
+`MOTION` fragments: `surface` (floating enter/exit via Radix `data-state`),
+`overlay` (blanket fade), `colors` (hover/active color transition),
+`pressable` (color transition + active press-scale).
+
+Principles: animate `transform`/`opacity` only; enter uses ease-out, exit uses
+ease-in and runs faster; things that must feel instant (menu-item highlight,
+focus ring) are not animated.
+
+**Reduced motion:** `prefers-reduced-motion: reduce` zeroes the duration
+tokens, so every transition/animation completes instantly system-wide while
+state changes still apply. The one exception is the button loading spinner
+(Tailwind `animate-spin`), which keeps turning because it conveys progress.
+
+See `apps/docs/src/stories/Motion.stories.tsx` for the live token reference.
+
 ## Development
 
 ```bash
