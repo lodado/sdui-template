@@ -102,7 +102,7 @@ const DropdownCheckboxItem = ({
     >
       {showCheckbox && (
         <span className={cn(dropdownCheckboxVariants({ isChecked: isSelected, isDisabled: disabled }))}>
-          {isSelected && <CheckIcon />}
+          {isSelected && <CheckIcon className="animate-[sdui-check-pop_var(--motion-duration-medium)_var(--motion-ease-spring)]" />}
         </span>
       )}
       <span className="flex-1 truncate">{label}</span>

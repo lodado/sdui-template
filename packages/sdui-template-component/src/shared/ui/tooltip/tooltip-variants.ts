@@ -1,5 +1,7 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 
+import { MOTION } from '../../lib/motion'
+
 /**
  * Tooltip content variant configuration using class-variance-authority (ADS style)
  *
@@ -28,14 +30,9 @@ export const tooltipContentVariants = cva(
     'rounded-[3px]',
     // Z-index for overlay
     'z-50',
-    // Animation
-    'animate-in fade-in-0 zoom-in-95',
-    'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
-    // Side-specific animations
-    'data-[side=bottom]:slide-in-from-top-2',
-    'data-[side=left]:slide-in-from-right-2',
-    'data-[side=right]:slide-in-from-left-2',
-    'data-[side=top]:slide-in-from-bottom-2',
+    // Motion: scale-fade from the trigger side (Radix transform-origin), faster exit
+    'origin-[var(--radix-tooltip-content-transform-origin)]',
+    MOTION.surface,
     // Overflow
     'overflow-hidden',
     // Max width for long content
