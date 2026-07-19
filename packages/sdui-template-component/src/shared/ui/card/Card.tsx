@@ -35,12 +35,13 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
       nodeId,
       eventId,
       title,
+      isInteractive,
       ...props
     },
     ref,
   ) => {
     // Get variant classes
-    const variantClasses = cardVariants()
+    const variantClasses = cardVariants({ isInteractive })
 
     const mergedClassName = cn(variantClasses, className)
 

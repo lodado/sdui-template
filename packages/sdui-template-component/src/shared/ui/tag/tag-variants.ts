@@ -1,5 +1,6 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 
+import { MOTION } from '../../lib/motion'
 import type { TagColor } from './types'
 
 /**
@@ -24,7 +25,7 @@ export const tagVariants = cva(
     'h-5 px-1 rounded-[3px]',
     'border border-solid',
     'text-sm leading-5',
-    'transition-colors',
+    MOTION.colors,
     'whitespace-nowrap',
   ].join(' '),
   {

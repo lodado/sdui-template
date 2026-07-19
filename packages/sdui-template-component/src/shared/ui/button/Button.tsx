@@ -54,7 +54,11 @@ const ButtonContent = ({
   <>
     {isLoading && <LoadingSpinner />}
     {!isLoading && iconBefore && <IconWrapper position="before">{iconBefore}</IconWrapper>}
-    {children && <span className={cn(isLoading && 'opacity-0')}>{children}</span>}
+    {children && (
+      <span className={cn('transition-opacity duration-[var(--motion-duration-fast)]', isLoading && 'opacity-0')}>
+        {children}
+      </span>
+    )}
     {!isLoading && iconAfter && <IconWrapper position="after">{iconAfter}</IconWrapper>}
   </>
 )

@@ -1,5 +1,6 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 
+import { MOTION } from '../../lib/motion'
 import type { ToggleSize } from './types'
 
 /**
@@ -20,7 +21,7 @@ import type { ToggleSize } from './types'
 export const toggleVariants = cva(
   // Base styles - using Radix data-state for checked styling
   [
-    'relative inline-flex items-center rounded-full cursor-pointer transition-colors duration-200',
+    `relative inline-flex items-center rounded-full cursor-pointer ${MOTION.colors}`,
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-border-focused)]',
     // Radix data-state based colors
     'bg-[var(--color-background-neutral-bold-default,#292a2e)]',
@@ -66,7 +67,7 @@ export const toggleVariants = cva(
 export const toggleThumbVariants = cva(
   // Base styles - using Radix data-state for position
   [
-    'block bg-white rounded-full shadow-sm transition-transform duration-200',
+    'block bg-white rounded-full shadow-sm transition-transform duration-[var(--motion-duration-medium)] ease-[var(--motion-ease-spring)]',
     // Position based on state
     'translate-x-0.5',
     'data-[state=checked]:translate-x-[18px]',

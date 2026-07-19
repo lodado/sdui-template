@@ -124,7 +124,12 @@ const CheckboxIndicator = React.forwardRef<
   return (
     <div
       ref={ref}
-      className={cn('absolute inset-0 flex items-center justify-center text-white pointer-events-none', className)}
+      className={cn(
+        'absolute inset-0 flex items-center justify-center text-white pointer-events-none',
+        // Springs in when the mark appears; unmounts instantly on uncheck (no exit)
+        'animate-[sdui-check-pop_var(--motion-duration-medium)_var(--motion-ease-spring)]',
+        className,
+      )}
       {...props}
     >
       {indeterminate ? (

@@ -43,7 +43,7 @@ export const ToggleCheckIcon = ({
   <span
     className={cn(
       toggleIconVariants({ size, position: 'check' }),
-      'transition-opacity duration-200',
+      'transition-opacity duration-[var(--motion-duration-fast)]',
       'opacity-0 data-[state=checked]:opacity-100',
     )}
     data-state={iconDataState}
@@ -68,7 +68,7 @@ export const ToggleCrossIcon = ({
   <span
     className={cn(
       toggleIconVariants({ size, position: 'cross' }),
-      'transition-opacity duration-200',
+      'transition-opacity duration-[var(--motion-duration-fast)]',
       'opacity-100 data-[state=checked]:opacity-0',
     )}
     data-state={iconDataState}

@@ -1,5 +1,6 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 
+import { MOTION } from '../../shared/lib/motion'
 import type { DialogAppearance, DialogSize } from './types'
 
 /**
@@ -13,9 +14,8 @@ export const dialogOverlayVariants = cva(
   [
     'fixed inset-0 z-50',
     'bg-[rgba(5,12,31,0.46)]',
-    // Animation
-    'data-[state=open]:animate-in data-[state=closed]:animate-out',
-    'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+    // Motion: blanket fade, slower in / faster out
+    MOTION.overlay,
   ].join(' '),
   {
     variants: {},
@@ -44,13 +44,9 @@ export const dialogContentVariants = cva(
     'max-h-[85vh]',
     // Focus outline
     'focus:outline-none',
-    // Animation
-    'data-[state=open]:animate-in data-[state=closed]:animate-out',
-    'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
-    'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
-    'data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%]',
-    'data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]',
-    'duration-200',
+    // Motion: rise-in from slightly below, faster sink-out on close
+    'data-[state=open]:animate-[sdui-dialog-in_var(--motion-duration-slow)_var(--motion-ease-out)]',
+    'data-[state=closed]:animate-[sdui-dialog-out_var(--motion-duration-medium)_var(--motion-ease-in)]',
   ].join(' '),
   {
     variants: {
@@ -147,7 +143,7 @@ export const dialogCloseVariants = cva(
     'hover:bg-[var(--color-background-neutral-subtle-hovered,rgba(0,0,0,0.06))]',
     'active:bg-[var(--color-background-neutral-subtle-pressed,rgba(0,0,0,0.1))]',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-border-focused,#4688ec)]',
-    'transition-colors',
+    MOTION.pressable,
     'cursor-pointer',
   ].join(' '),
   {
@@ -212,7 +208,7 @@ export const dialogConfirmButtonVariants = cva(
     'px-3', // 12px
     'rounded-[4px]',
     'text-sm font-medium leading-5', // 14px, medium, 20px line-height
-    'transition-colors',
+    MOTION.pressable,
     'cursor-pointer',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
   ].join(' '),
@@ -280,7 +276,7 @@ export const dialogCancelButtonVariants = cva(
     'text-[var(--color-text-subtle,#505258)]',
     'hover:bg-[var(--color-background-neutral-subtle-hovered,rgba(0,0,0,0.06))]',
     'active:bg-[var(--color-background-neutral-subtle-pressed,rgba(0,0,0,0.1))]',
-    'transition-colors',
+    MOTION.pressable,
     'cursor-pointer',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
     'focus-visible:ring-[var(--color-border-focused,#4688ec)]',

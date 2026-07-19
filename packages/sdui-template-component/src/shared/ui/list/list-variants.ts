@@ -1,5 +1,6 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 
+import { MOTION } from '../../lib/motion'
 import type { ListIconColor } from './types'
 
 /**
@@ -11,7 +12,7 @@ import type { ListIconColor } from './types'
  */
 export const listVariants = cva(
   // Base styles
-  'flex w-full items-center gap-3 rounded-lg bg-[var(--elevation-surface-raised-default)] p-4 transition-colors disabled:pointer-events-none disabled:opacity-50',
+  `flex w-full items-center gap-3 rounded-lg bg-[var(--elevation-surface-raised-default)] p-4 ${MOTION.colors} disabled:pointer-events-none disabled:opacity-50`,
   {
     variants: {
       disabled: {

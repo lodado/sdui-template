@@ -1,0 +1,102 @@
+/**
+ * SDUI Design Files - Motion Tokens
+ *
+ * ADS/Framer motion principles: animate transform/opacity only,
+ * enter = ease-out, exit = ease-in (faster than enter).
+ * keyframes live in the global namespace, so the sdui- prefix is required.
+ */
+:root {
+  --motion-duration-fast: 100ms; /* hover/press feedback, small-surface exit */
+  --motion-duration-medium: 150ms; /* small-surface enter (tooltip/dropdown/popover), large exit */
+  --motion-duration-slow: 250ms; /* large-surface enter (dialog) */
+
+  --motion-ease-out: cubic-bezier(0.2, 0, 0, 1); /* decelerate - enter */
+  --motion-ease-in: cubic-bezier(0.4, 0, 1, 1); /* accelerate - exit */
+  --motion-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1); /* color/state transition */
+  --motion-ease-spring: cubic-bezier(0.16, 1, 0.3, 1); /* overshoot - toggle thumb, check pop */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-duration-fast: 0ms;
+    --motion-duration-medium: 0ms;
+    --motion-duration-slow: 0ms;
+  }
+}
+
+@keyframes sdui-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes sdui-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes sdui-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes sdui-pop-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+@keyframes sdui-dialog-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+@keyframes sdui-dialog-out {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -49%) scale(0.98);
+  }
+}
+@keyframes sdui-check-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes sdui-error-in {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

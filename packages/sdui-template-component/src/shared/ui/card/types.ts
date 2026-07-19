@@ -41,6 +41,8 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   eventId?: string
   /** Optional header text */
   title?: string
+  /** When true, the card responds to hover/press (use for clickable cards) */
+  isInteractive?: boolean
 }
 
 /**
