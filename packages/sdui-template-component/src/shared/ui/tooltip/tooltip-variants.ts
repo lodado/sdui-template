@@ -20,7 +20,7 @@ export const tooltipContentVariants = cva(
   // Base styles - ADS tooltip appearance
   [
     // Background and text
-    'bg-[var(--color-background-neutral-bold,#292a2e)]',
+    'bg-[var(--color-background-neutral-bold-default,#292a2e)]',
     'text-[var(--color-text-inverse,white)]',
     // Typography
     'text-xs leading-4',
@@ -56,7 +56,7 @@ export const tooltipContentVariants = cva(
  */
 export const tooltipArrowVariants = cva(
   // Base arrow styles
-  ['fill-[var(--color-background-neutral-bold,#292a2e)]'].join(' '),
+  ['fill-[var(--color-background-neutral-bold-default,#292a2e)]'].join(' '),
   {
     variants: {},
     defaultVariants: {},
