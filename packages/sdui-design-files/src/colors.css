@@ -338,7 +338,7 @@
   --color-chart-yellow-boldest-hovered: var(--yellow-yellow900, #533f04);
   --color-icon-brand: var(--brand-700, #0f766e);
   --color-icon-danger: var(--red-red700, #c9372c);
-  --color-icon-default: var(--neutral-opaque-neutral1000, #292a2e);
+  --color-icon-default: var(--neutral-opaque-neutral1000, #212623);
   --color-icon-disabled: var(--neutral-alpha-neutral400a, #080f214a);
   --color-icon-discovery: var(--purple-purple600, #af59e1);
   --color-icon-information: var(--blue-blue600, #357de8);
@@ -369,7 +369,7 @@
   --color-skeleton-subtle: var(--neutral-alpha-neutral100a, #17171708);
   --color-text-brand: var(--brand-700, #0f766e);
   --color-text-danger: var(--red-red800, #ae2e24);
-  --color-text-default: var(--neutral-opaque-neutral1000, #292a2e);
+  --color-text-default: var(--neutral-opaque-neutral1000, #212623);
   --color-text-disabled: var(--neutral-alpha-neutral400a, #080f214a);
   --color-text-discovery: var(--purple-purple800, #803fa5);
   --color-text-information: var(--blue-blue800, #1558bc);
@@ -424,7 +424,7 @@
   --elevation-surface-raised-default: var(--neutral-opaque-neutral0, #ffffff);
   --elevation-surface-raised-hovered: var(--neutral-opaque-neutral200, #f0f1f2);
   --elevation-surface-raised-pressed: var(--neutral-opaque-neutral300, #dddee1);
-  --elevation-surface-sunken-default: var(--neutral-opaque-neutral100, #f8f8f8);
+  --elevation-surface-sunken-default: var(--neutral-opaque-neutral100, #f4f7f6);
 }
 [data-theme='dark'] {
   /* color */
@@ -752,7 +752,7 @@
   --color-chart-yellow-boldest-hovered: var(--yellow-yellow200, #f5e989);
   --color-icon-brand: var(--brand-400, #45c7b6);
   --color-icon-danger: var(--red-red500, #f15b50);
-  --color-icon-default: var(--dark-neutral-opaque-dark-neutral1000, #cecfd2);
+  --color-icon-default: var(--dark-neutral-opaque-dark-neutral1000, #ccd1cf);
   --color-icon-disabled: var(--dark-neutral-alpha-dark-neutral400a, #e5e9f640);
   --color-icon-discovery: var(--purple-purple500, #bf63f3);
   --color-icon-information: var(--blue-blue500, #4688ec);
@@ -783,7 +783,7 @@
   --color-skeleton-subtle: var(--dark-neutral-alpha-dark-neutral100a, #bdbdbd0a);
   --color-text-brand: var(--brand-400, #45c7b6);
   --color-text-danger: var(--red-red300, #fd9891);
-  --color-text-default: var(--dark-neutral-opaque-dark-neutral1000, #cecfd2);
+  --color-text-default: var(--dark-neutral-opaque-dark-neutral1000, #ccd1cf);
   --color-text-disabled: var(--dark-neutral-alpha-dark-neutral400a, #e5e9f640);
   --color-text-discovery: var(--purple-purple300, #d8a0f7);
   --color-text-information: var(--blue-blue300, #8fb8f6);
@@ -829,16 +829,16 @@
   --elevation-shadow-raised-inner: #1e1f21;
   --elevation-shadow-raised-perimeter: #010404cc;
   --elevation-shadow-raised-spread: #010404cc;
-  --elevation-surface-default: var(--dark-neutral-opaque-dark-neutral100, #1f1f21);
-  --elevation-surface-hovered: var(--dark-neutral-opaque-dark-neutral200, #242528);
-  --elevation-surface-pressed: var(--dark-neutral-opaque-dark-neutral250, #2b2c2f);
-  --elevation-surface-overlay-default: var(--dark-neutral-opaque-dark-neutral250, #2b2c2f);
-  --elevation-surface-overlay-hovered: var(--dark-neutral-opaque-dark-neutral300, #303134);
-  --elevation-surface-overlay-pressed: var(--dark-neutral-opaque-dark-neutral350, #3d3f43);
-  --elevation-surface-raised-default: var(--dark-neutral-opaque-dark-neutral200, #242528);
-  --elevation-surface-raised-hovered: var(--dark-neutral-opaque-dark-neutral250, #2b2c2f);
-  --elevation-surface-raised-pressed: var(--dark-neutral-opaque-dark-neutral300, #303134);
-  --elevation-surface-sunken-default: var(--dark-neutral-opaque-dark-neutral0, #18191a);
+  --elevation-surface-default: var(--dark-neutral-opaque-dark-neutral100, #1d2220);
+  --elevation-surface-hovered: var(--dark-neutral-opaque-dark-neutral200, #222825);
+  --elevation-surface-pressed: var(--dark-neutral-opaque-dark-neutral250, #292e2c);
+  --elevation-surface-overlay-default: var(--dark-neutral-opaque-dark-neutral250, #292e2c);
+  --elevation-surface-overlay-hovered: var(--dark-neutral-opaque-dark-neutral300, #2e3431);
+  --elevation-surface-overlay-pressed: var(--dark-neutral-opaque-dark-neutral350, #3a403d);
+  --elevation-surface-raised-default: var(--dark-neutral-opaque-dark-neutral200, #222825);
+  --elevation-surface-raised-hovered: var(--dark-neutral-opaque-dark-neutral250, #292e2c);
+  --elevation-surface-raised-pressed: var(--dark-neutral-opaque-dark-neutral300, #2e3431);
+  --elevation-surface-sunken-default: var(--dark-neutral-opaque-dark-neutral0, #161918);
 }
 
 [data-theme='Default - Atlassian Fonts'] {

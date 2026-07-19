@@ -109,6 +109,46 @@ describe('non-brand semantics keep their original hues', () => {
   })
 })
 
+describe('tinted neutrals (brand-hued ink and surfaces)', () => {
+  /** teal tint = green channel strictly dominant */
+  const isGreenDominant = (hex: string): boolean => {
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16))
+    return g > r && g > b
+  }
+
+  it('light: ink text/icon share one green-dominant hex at >= 7:1 on white', () => {
+    const text = getHex(getDeclaration(lightBlock, '--color-text-default'))
+    const icon = getHex(getDeclaration(lightBlock, '--color-icon-default'))
+    expect(icon).toBe(text)
+    expect(isGreenDominant(text)).toBe(true)
+    expect(contrast(text, '#ffffff')).toBeGreaterThanOrEqual(7)
+  })
+
+  it('light: sunken surface is green-dominant mist', () => {
+    const sunken = getHex(getDeclaration(lightBlock, '--elevation-surface-sunken-default'))
+    expect(isGreenDominant(sunken)).toBe(true)
+  })
+
+  it('dark: text on default surface >= 7:1 and both green-dominant', () => {
+    const text = getHex(getDeclaration(darkBlock, '--color-text-default'))
+    const surface = getHex(getDeclaration(darkBlock, '--elevation-surface-default'))
+    expect(isGreenDominant(text)).toBe(true)
+    expect(isGreenDominant(surface)).toBe(true)
+    expect(contrast(text, surface)).toBeGreaterThanOrEqual(7)
+  })
+
+  it('dark: surface ladder brightens from sunken to pressed', () => {
+    const ladder = [
+      '--elevation-surface-sunken-default',
+      '--elevation-surface-default',
+      '--elevation-surface-hovered',
+      '--elevation-surface-pressed',
+    ].map((token) => luminance(getHex(getDeclaration(darkBlock, token))))
+    const ascending = [...ladder].sort((a, b) => a - b)
+    expect(ladder).toEqual(ascending)
+  })
+})
+
 describe('brand contrast (WCAG AA boundaries)', () => {
   const lightSurface = getHex(getDeclaration(lightBlock, '--color-text-inverse')) // #ffffff
   const darkSurface = getHex(getDeclaration(darkBlock, '--elevation-surface-default'))
