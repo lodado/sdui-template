@@ -1,5 +1,13 @@
 # sdui-template-storybook
 
+## 0.1.11
+
+### Patch Changes
+
+- Updated dependencies [2e2ad96]
+  - @lodado/sdui-design-files@1.1.0
+  - @lodado/sdui-template-component@1.1.0
+
 ## 0.1.10
 
 ### Patch Changes
