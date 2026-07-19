@@ -40,6 +40,12 @@ import {
   PopoverContentContainer,
   PopoverTriggerContainer,
 } from '../shared/ui/popover/PopoverContainer'
+import {
+  RadioContainer,
+  RadioGroupContainer,
+  RadioLabelContainer,
+  RadioRadioContainer,
+} from '../shared/ui/radio'
 import { TagContainer } from '../shared/ui/tag/TagContainer'
 import { Span, Text } from '../shared/ui/text'
 import { TextFieldContainer } from '../shared/ui/textfield/TextFieldContainer'
@@ -115,6 +121,14 @@ export function createSduiComponents(options: SduiComponentsOptions = {}): Recor
   Checkbox: (id, parentPath) => <CheckboxContainer id={id} parentPath={parentPath} />,
   CheckboxCheckbox: (id, parentPath) => <CheckboxCheckboxContainer id={id} parentPath={parentPath} />,
   CheckboxLabel: (id, parentPath) => <CheckboxLabelContainer id={id} parentPath={parentPath} />,
+
+  // Radio (compound pattern)
+  Radio: (id, parentPath) => <RadioContainer id={id} parentPath={parentPath} />,
+  RadioRadio: (id, parentPath) => <RadioRadioContainer id={id} parentPath={parentPath} />,
+  RadioLabel: (id, parentPath) => <RadioLabelContainer id={id} parentPath={parentPath} />,
+
+  // RadioGroup
+  RadioGroup: (id, parentPath) => <RadioGroupContainer id={id} parentPath={parentPath} />,
 
   // Dialog
   Dialog: (id, parentPath) => <DialogContainer id={id} parentPath={parentPath} />,
