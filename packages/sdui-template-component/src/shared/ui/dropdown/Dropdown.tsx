@@ -132,7 +132,7 @@ const DropdownMenuItem = ({
       {icon && <span className="shrink-0">{icon}</span>}
       <span className="flex-1 truncate">{label}</span>
       {isSelected && !icon && (
-        <span className="shrink-0 text-[var(--color-text-selected,#1868db)]">
+        <span className="shrink-0 text-[var(--color-text-selected,#0f766e)]">
           <CheckIcon className="w-3 h-3" />
         </span>
       )}
@@ -417,7 +417,7 @@ export const DropdownItem = ({
         <>
           <span className="flex-1 truncate">{label}</span>
           {isSelected && (
-            <span className="shrink-0 text-[var(--color-text-selected,#1868db)]">
+            <span className="shrink-0 text-[var(--color-text-selected,#0f766e)]">
               <CheckIcon className="w-3 h-3" />
             </span>
           )}

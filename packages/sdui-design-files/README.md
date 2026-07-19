@@ -84,7 +84,7 @@ import '@lodado/sdui-design-files/layout.css'
 
 ```css
 .button-primary {
-  background-color: var(--blue-blue700);
+  background-color: var(--color-background-brand-bold-default);
   color: var(--color-text-inverse);
 }
 ```
@@ -138,7 +138,27 @@ import { theme } from '@lodado/sdui-design-files/theme'
 | `--color-gray-900`  | `#3b3d42` | `--neutral-opaque-neutral900`  |
 | `--color-gray-1000` | `#292a2e` | `--neutral-opaque-neutral1000` |
 
-### Blue (primary brand)
+### Brand (Scan Teal)
+
+The only primitive ramp defined as real CSS variables. Brand, selected, link,
+and focus semantics resolve from it — light bold uses `700`, dark bold uses
+`400`. WCAG AA boundaries (4.5:1 text, 3:1 focus ring) are enforced by
+`src/__tests__/colors.test.ts`.
+
+| Token          | Hex       | Role                          |
+| -------------- | --------- | ----------------------------- |
+| `--brand-100`  | `#e6faf7` | selected/subtlest backgrounds |
+| `--brand-300`  | `#79d8cb` | dark focus ring               |
+| `--brand-400`  | `#45c7b6` | dark bold / brand text (dark) |
+| `--brand-500`  | `#0d9488` | light focus ring              |
+| `--brand-700`  | `#0f766e` | light bold / brand text       |
+| `--brand-900`  | `#123c38` | boldest hovered               |
+| `--brand-1000` | `#16302d` | boldest / dark subtlest bg    |
+
+### Blue (information)
+
+Information semantics stay on the blue ramp so system feedback never reads as
+branding; visited links stay purple.
 
 | Token              | Hex       | ADS reference    |
 | ------------------ | --------- | ---------------- |
