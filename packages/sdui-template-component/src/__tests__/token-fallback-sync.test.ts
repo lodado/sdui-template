@@ -15,12 +15,11 @@ const lightBlock = colorsCss.slice(0, colorsCss.indexOf("[data-theme='dark']"))
 
 // token name -> light-theme hex (fallback hex, or direct value)
 const lightValues = new Map<string, string>()
-for (const match of lightBlock.matchAll(/--((?:color|elevation)-[\w-]+):\s*([^;]+);/g)) {
-  const [, name, value] = match
-  if (lightValues.has(name)) continue
+Array.from(lightBlock.matchAll(/--((?:color|elevation)-[\w-]+):\s*([^;]+);/g)).forEach(([, name, value]) => {
+  if (lightValues.has(name)) return
   const hexes = value.match(/#[0-9a-fA-F]{3,8}\b/g)
   if (hexes) lightValues.set(name, hexes[hexes.length - 1].toLowerCase())
-}
+})
 
 const collectSourceFiles = (dir: string): string[] =>
   readdirSync(dir).flatMap((entry) => {
