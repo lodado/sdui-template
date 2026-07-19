@@ -96,7 +96,7 @@ export const dialogTitleVariants = cva(
   [
     'flex-1',
     'text-xl font-bold leading-6', // 20px, bold, 24px line-height
-    'text-[var(--color-text-default,#212623)]',
+    'text-[var(--color-text,#292a2e)]',
     'min-h-[32px] flex items-center',
   ].join(' '),
   {
@@ -142,7 +142,7 @@ export const dialogCloseVariants = cva(
     'text-[var(--color-text-subtle,#505258)]',
     'hover:bg-[var(--color-background-neutral-subtle-hovered,rgba(0,0,0,0.06))]',
     'active:bg-[var(--color-background-neutral-subtle-pressed,rgba(0,0,0,0.1))]',
-    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-border-focused,#0d9488)]',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-border-focused,#4688ec)]',
     MOTION.pressable,
     'cursor-pointer',
   ].join(' '),
@@ -165,7 +165,7 @@ export const dialogBodyVariants = cva(
     'px-6', // 24px horizontal
     'overflow-y-auto',
     'text-sm leading-5', // 14px, 20px line-height
-    'text-[var(--color-text-default,#212623)]',
+    'text-[var(--color-text,#292a2e)]',
   ].join(' '),
   {
     variants: {},
@@ -216,31 +216,31 @@ export const dialogConfirmButtonVariants = cva(
     variants: {
       appearance: {
         default: [
-          'bg-[var(--color-background-brand-bold-default,#0f766e)]',
+          'bg-[var(--color-background-brand-bold,#1868db)]',
           'text-[var(--color-text-inverse,white)]',
-          'hover:bg-[var(--color-background-brand-bold-hovered,#115e58)]',
-          'active:bg-[var(--color-background-brand-bold-pressed,#134c47)]',
-          'focus-visible:ring-[var(--color-border-focused,#0d9488)]',
+          'hover:bg-[var(--color-background-brand-bold-hovered,#0c4eb3)]',
+          'active:bg-[var(--color-background-brand-bold-pressed,#0a3d8c)]',
+          'focus-visible:ring-[var(--color-border-focused,#4688ec)]',
         ].join(' '),
         danger: [
-          'bg-[var(--color-background-danger-bold-default,#c9372c)]',
+          'bg-[var(--color-background-danger-bold,#ca3521)]',
           'text-[var(--color-text-inverse,white)]',
-          'hover:bg-[var(--color-background-danger-bold-hovered,#ae2e24)]',
-          'active:bg-[var(--color-background-danger-bold-pressed,#872821)]',
-          'focus-visible:ring-[var(--color-border-danger,#e2483d)]',
+          'hover:bg-[var(--color-background-danger-bold-hovered,#ae2e1c)]',
+          'active:bg-[var(--color-background-danger-bold-pressed,#942618)]',
+          'focus-visible:ring-[var(--color-border-danger,#f15b50)]',
         ].join(' '),
         warning: [
-          'bg-[var(--color-background-warning-bold-default,#fbc828)]',
-          'text-[var(--color-text-default,#212623)]',
-          'hover:bg-[var(--color-background-warning-bold-hovered,#fca700)]',
-          'active:bg-[var(--color-background-warning-bold-pressed,#f68909)]',
-          'focus-visible:ring-[var(--color-border-warning,#e06c00)]',
+          'bg-[var(--color-background-warning-bold,#cf9f02)]',
+          'text-[var(--color-text,#292a2e)]',
+          'hover:bg-[var(--color-background-warning-bold-hovered,#b38c00)]',
+          'active:bg-[var(--color-background-warning-bold-pressed,#997a00)]',
+          'focus-visible:ring-[var(--color-border-warning,#f5cd47)]',
         ].join(' '),
       } as Record<DialogAppearance, string>,
       isDisabled: {
         true: [
-          'bg-[var(--color-background-disabled,#17171708)]',
-          'text-[var(--color-text-disabled,#080f214a)]',
+          'bg-[var(--color-background-disabled,#f1f2f4)]',
+          'text-[var(--color-text-disabled,#8c8f97)]',
           'cursor-not-allowed',
           'pointer-events-none',
         ].join(' '),
@@ -279,7 +279,7 @@ export const dialogCancelButtonVariants = cva(
     MOTION.pressable,
     'cursor-pointer',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-    'focus-visible:ring-[var(--color-border-focused,#0d9488)]',
+    'focus-visible:ring-[var(--color-border-focused,#4688ec)]',
   ].join(' '),
   {
     variants: {},

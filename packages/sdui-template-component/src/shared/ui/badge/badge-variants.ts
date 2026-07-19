@@ -44,7 +44,7 @@ export const badgeVariants = cva(
         ].join(' '),
         primaryInverted: [
           'bg-[var(--elevation-surface-default,#ffffff)]',
-          'text-[var(--color-text-brand,#0f766e)]',
+          'text-[var(--color-text-brand,#1868db)]',
         ].join(' '),
         important: [
           'bg-[var(--red-red300,#fd9891)]',
@@ -52,11 +52,11 @@ export const badgeVariants = cva(
         ].join(' '),
         added: [
           'bg-[var(--color-background-success-default,#efffd6)]',
-          'text-[var(--color-text-default,#212623)]',
+          'text-[var(--color-text-default,#292a2e)]',
         ].join(' '),
         removed: [
           'bg-[var(--color-background-danger-default,#ffeceb)]',
-          'text-[var(--color-text-default,#212623)]',
+          'text-[var(--color-text-default,#292a2e)]',
         ].join(' '),
       } as Record<BadgeAppearance, string>,
     },

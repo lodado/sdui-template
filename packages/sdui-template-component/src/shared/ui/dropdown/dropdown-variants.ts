@@ -73,9 +73,9 @@ export const dropdownTriggerVariants = cva(
         isSelected: true,
         isDisabled: false,
         class: [
-          'bg-[var(--color-background-selected-default,#e6faf7)]',
-          'border-[var(--color-border-selected,#0f766e)]',
-          'text-[var(--color-text-selected,#0f766e)]',
+          'bg-[var(--color-background-selected-default,#e9f2fe)]',
+          'border-[var(--color-border-selected,#1868db)]',
+          'text-[var(--color-text-selected,#1868db)]',
         ].join(' '),
       },
       // Open state - same as selected
@@ -84,9 +84,9 @@ export const dropdownTriggerVariants = cva(
         isOpen: true,
         isDisabled: false,
         class: [
-          'bg-[var(--color-background-selected-default,#e6faf7)]',
-          'border-[var(--color-border-selected,#0f766e)]',
-          'text-[var(--color-text-selected,#0f766e)]',
+          'bg-[var(--color-background-selected-default,#e9f2fe)]',
+          'border-[var(--color-border-selected,#1868db)]',
+          'text-[var(--color-text-selected,#1868db)]',
         ].join(' '),
       },
       {
@@ -163,7 +163,7 @@ export const dropdownItemVariants = cva(
     'min-h-[32px] max-h-[52px]',
     'px-4 py-2', // 16px horizontal, 8px vertical
     'text-sm leading-5', // 14px, 20px line-height
-    'text-[var(--color-text-default,#212623)]',
+    'text-[var(--color-text-default,#292a2e)]',
     'cursor-pointer',
     // No transition on highlight: menu items must track the pointer instantly (native-menu feel)
     'outline-none',
@@ -188,7 +188,7 @@ export const dropdownItemVariants = cva(
         false: '',
       },
       isSelected: {
-        true: 'bg-[var(--color-background-selected-default,#e6faf7)]',
+        true: 'bg-[var(--color-background-selected-default,#e9f2fe)]',
         false: '',
       },
     },
@@ -220,14 +220,14 @@ export const dropdownCheckboxVariants = cva(
     'bg-[var(--color-background-input,white)]',
     'transition-colors',
     'shrink-0',
-    'focus-visible:ring-2 focus-visible:ring-[var(--color-border-focused,#0d9488)]',
+    'focus-visible:ring-2 focus-visible:ring-[var(--color-border-focused,#4688ec)]',
   ].join(' '),
   {
     variants: {
       isChecked: {
         true: [
-          'bg-[var(--color-background-brand-bold-default,#0f766e)]',
-          'border-[var(--color-background-brand-bold-default,#0f766e)]',
+          'bg-[var(--color-background-brand-bold-default,#1868db)]',
+          'border-[var(--color-background-brand-bold-default,#1868db)]',
           'text-white',
         ].join(' '),
         false: '',

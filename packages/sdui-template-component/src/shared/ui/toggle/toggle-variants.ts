@@ -27,8 +27,8 @@ export const toggleVariants = cva(
     'bg-[var(--color-background-neutral-bold-default,#292a2e)]',
     'data-[state=checked]:bg-[var(--color-background-success-bold-default,#5b7f24)]',
     // Hover states
-    'hover:bg-[var(--color-background-neutral-bold-hovered,#3b3d42)]',
-    'data-[state=checked]:hover:bg-[var(--color-background-success-bold-hovered,#4c6b1f)]',
+    'hover:bg-[var(--color-background-neutral-bold-hovered,#3d3e42)]',
+    'data-[state=checked]:hover:bg-[var(--color-background-success-bold-hovered,#4a6a1e)]',
     // Disabled state via Radix data-disabled
     'data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed data-[disabled]:pointer-events-none',
     'data-[disabled]:hover:bg-[var(--color-background-neutral-bold-default,#292a2e)]',
