@@ -1,9 +1,12 @@
 'use client'
 
 import { useSduiNodeSubscription } from '@lodado/sdui-template'
-import Image from 'next/image'
+import Image, { type ImageProps } from 'next/image'
+import React from 'react'
 
 import { logoStateSchema } from '../types'
+
+const CompatibleImage = Image as unknown as React.ComponentType<ImageProps>
 
 interface TitleLogoProps {
   id: string
@@ -22,7 +25,7 @@ export const TitleLogo = ({ id, parentPath = [] }: TitleLogoProps) => {
 
   return (
     <div className="relative shrink-0 flex items-center h-full" data-node-id={id} data-testid={`title-logo-${id}`}>
-      <Image
+      <CompatibleImage
         src={state.src}
         alt={state.alt}
         width={156}

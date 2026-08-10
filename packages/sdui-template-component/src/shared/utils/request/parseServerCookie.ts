@@ -1,5 +1,3 @@
-import { cache } from 'react'
-
 const rawParseServerCookie = async () => {
   const cookieString = (await import('next/headers'))
     .cookies()

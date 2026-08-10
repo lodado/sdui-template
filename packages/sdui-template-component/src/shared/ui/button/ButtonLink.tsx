@@ -26,6 +26,10 @@ export interface ButtonLinkProps
   eventId?: string
 }
 
+const CompatibleNextLink = NextLink as unknown as React.ForwardRefExoticComponent<
+  ButtonLinkProps & React.RefAttributes<HTMLAnchorElement>
+>
+
 /**
  * ButtonLink component
  *
@@ -49,7 +53,7 @@ export interface ButtonLinkProps
  * </ButtonLink>
  * ```
  */
-export const ButtonLink = React.forwardRef<React.ElementRef<typeof NextLink>, ButtonLinkProps>(
+export const ButtonLink = React.forwardRef<HTMLAnchorElement, ButtonLinkProps>(
   (
     {
       href,
@@ -75,9 +79,9 @@ export const ButtonLink = React.forwardRef<React.ElementRef<typeof NextLink>, Bu
         asChild
       >
         {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-        <NextLink href={href} ref={ref} {...props}>
+        <CompatibleNextLink href={href} ref={ref} {...props}>
           {children}
-        </NextLink>
+        </CompatibleNextLink>
       </Button>
     )
   },

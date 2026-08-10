@@ -2,12 +2,20 @@
 
 import { useSduiNodeSubscription } from '@lodado/sdui-template'
 import React from 'react'
-import type { FieldValues, Path } from 'react-hook-form'
+import type { ControllerProps, FieldValues, Path } from 'react-hook-form'
 import { Controller, useFormContext as useReactHookFormContext } from 'react-hook-form'
 
 import { TextField } from '../../shared/ui/textfield'
 import { useFormContext } from './FormContext'
 import { extractSchemaKeys, type FormFieldProps } from './types'
+
+interface CompatibleControllerComponent {
+  <TFieldValues extends FieldValues = FieldValues, TName extends Path<TFieldValues> = Path<TFieldValues>>(
+    props: ControllerProps<TFieldValues, TName>,
+  ): React.ReactElement
+}
+
+const CompatibleController = Controller as unknown as CompatibleControllerComponent
 
 /**
  * FormField Component
@@ -55,7 +63,7 @@ const FormField = <TFieldValues extends FieldValues = FieldValues>({
   const errorMessage = error?.message as string | undefined
 
   return (
-    <Controller
+    <CompatibleController
       control={control}
       name={fieldName}
       render={({ field }) => (
