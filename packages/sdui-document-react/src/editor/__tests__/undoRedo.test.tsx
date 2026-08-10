@@ -133,7 +133,7 @@ describe('document-level undo/redo (Mod-Z / Mod-Shift-Z / Mod-Y)', () => {
           ]),
         )
 
-        await user.click(screen.getByLabelText('Drag block p1'))
+        await user.click(container.querySelector<HTMLElement>('[data-block-id="p1"] [data-drag-handle]')!)
         await user.keyboard('{Backspace}')
         expect(blockIds(container)).toEqual(['divider-1', 'gen-1'])
 

@@ -34,7 +34,9 @@ function blockIds(container: HTMLElement): string[] {
 }
 
 function openMenu(blockId: string) {
-  fireEvent.contextMenu(screen.getByLabelText(`Drag block ${blockId}`))
+  const handle = document.querySelector<HTMLElement>(`[data-block-id="${blockId}"] [data-drag-handle]`)
+  if (!handle) throw new Error(`Missing drag handle for ${blockId}`)
+  fireEvent.contextMenu(handle)
 }
 
 describe('block-actions menu (⠿ handle)', () => {

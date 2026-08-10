@@ -1,5 +1,6 @@
 import { createDocumentBlock, type SduiDocumentContent } from '@lodado/sdui-document'
-import { act, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import React from 'react'
 
 import { SduiDocumentEditor } from '../SduiDocumentEditor'
@@ -52,5 +53,30 @@ describe('live drop gesture through the editor', () => {
 
     expect(screen.getByText('AAA')).toBeInTheDocument()
     expect(screen.getByText('BBB')).toBeInTheDocument()
+  })
+
+  it('restores the focused block when Escape cancels an active drag', async () => {
+    const user = userEvent.setup()
+    const { container } = render(<SduiDocumentEditor content={content()} />)
+    await user.click(screen.getByText('AAA'))
+
+    const handle = container.querySelector('[data-block-id="a"] [data-drag-handle]')
+    const bRow = container.querySelector('[data-block-id="b"] [data-block-row]')
+    const original = (document as unknown as { elementFromPoint?: unknown }).elementFromPoint
+    ;(document as unknown as { elementFromPoint: (x: number, y: number) => Element | null }).elementFromPoint = () =>
+      bRow as Element
+
+    fire('pointerdown', 10, 10, handle!)
+    fire('pointermove', 40, 200, window)
+    expect(container.querySelector('[contenteditable="true"]')).toBeNull()
+
+    fireEvent.keyDown(window, { key: 'Escape' })
+    ;(document as unknown as { elementFromPoint?: unknown }).elementFromPoint = original
+
+    expect(screen.getByTestId('focused-block-editor').closest('[data-block-id]')).toHaveAttribute(
+      'data-block-id',
+      'a',
+    )
+    expect(handle).not.toHaveAttribute('data-dragging')
   })
 })

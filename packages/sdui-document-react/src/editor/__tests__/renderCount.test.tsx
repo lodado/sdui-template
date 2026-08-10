@@ -97,10 +97,10 @@ describe('SduiDocumentEditor render granularity', () => {
     describe('when a drag handle is clicked to select p1 (EP: selection enters one row)', () => {
       it('to be: unrelated rows p2/p3 re-render zero times', async () => {
         const user = userEvent.setup()
-        render(<SduiDocumentEditor content={createContent()} />)
+        const { container } = render(<SduiDocumentEditor content={createContent()} />)
 
         const before = snapshotCounts()
-        await user.click(screen.getByLabelText('Drag block p1'))
+        await user.click(container.querySelector<HTMLElement>('[data-block-id="p1"] [data-drag-handle]')!)
 
         expect(renderCounts.p1).toBeGreaterThan(before.p1)
         expect(renderCounts.p2).toBe(before.p2)
@@ -129,9 +129,9 @@ describe('SduiDocumentEditor render granularity', () => {
     describe('when the selection is cleared with Escape (BVA: selection -> empty)', () => {
       it('to be: only the previously selected row re-renders', async () => {
         const user = userEvent.setup()
-        render(<SduiDocumentEditor content={createContent()} />)
+        const { container } = render(<SduiDocumentEditor content={createContent()} />)
 
-        await user.click(screen.getByLabelText('Drag block p1'))
+        await user.click(container.querySelector<HTMLElement>('[data-block-id="p1"] [data-drag-handle]')!)
         const before = snapshotCounts()
         await user.keyboard('{Escape}')
 

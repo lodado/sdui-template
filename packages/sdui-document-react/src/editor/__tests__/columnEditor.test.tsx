@@ -79,8 +79,8 @@ describe('SduiDocumentEditor column rendering', () => {
 
         // intro, left-1, left-2, right-1, outro = 5; split/col-left/col-right = 0
         expect(container.querySelectorAll('[data-drag-handle]')).toHaveLength(5)
-        expect(screen.queryByLabelText('Drag block split')).toBeNull()
-        expect(screen.queryByLabelText('Drag block col-left')).toBeNull()
+        expect(container.querySelector('[data-block-id="split"] > [data-block-row]')).toBeNull()
+        expect(container.querySelector('[data-block-id="col-left"] > [data-block-row]')).toBeNull()
       })
 
       it('to be: no block row chrome on containers (they are layout, not content)', () => {

@@ -223,8 +223,8 @@ const BlockRow = ({ entry, depth, readOnly }: BlockViewProps) => {
           <button
             type="button"
             data-drag-handle
-            aria-label={`Drag block ${block.id}`}
-            style={{ cursor: 'grab' }}
+            aria-label="Block actions and move handle"
+            aria-haspopup="menu"
             onClick={(event) => {
               // Notion parity: plain click opens the block-actions menu (which
               // also selects the block); Shift+click extends the selection.
@@ -242,9 +242,8 @@ const BlockRow = ({ entry, depth, readOnly }: BlockViewProps) => {
               handlers.openBlockActions(block.id, event.currentTarget.getBoundingClientRect())
             }}
             // pointerdown on this handle starts the drag (delegated on the
-            // container by useBlockPointerDrag); onClick still opens the menu.
-            aria-hidden="true"
-            tabIndex={-1}
+            // container by useBlockPointerDrag); keyboard activation opens the
+            // menu, whose Move up/down actions mirror the drag operation.
           />
         )}
         <div data-block-content data-align={resolveBlockAlign(block.attributes?.align)}>

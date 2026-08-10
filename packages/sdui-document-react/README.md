@@ -177,7 +177,7 @@ Tree transforms, schema validation, and patch application live in `@lodado/sdui-
 @lodado/sdui-document-react
   ├─ SduiDocumentEditor
   │   ├─ block tree rendering
-  │   ├─ block selection + dnd-kit drag/drop
+  │   ├─ block selection + pointer drag/drop
   │   ├─ patch publishing
   │   └─ readOnly / edit mode
   ├─ BlockChrome
@@ -350,11 +350,19 @@ Note: partial entry files don't declare the `@layer` order statement — if you 
 
 | Feature               | Implementation                                   |
 | --------------------- | ------------------------------------------------ |
-| Block drag & drop     | `@dnd-kit/core` with nested projection           |
+| Block drag & drop     | Handle-only pointer drag with nested projection  |
 | Block range selection | Editor-layer selection state                     |
 | Keyboard shortcuts    | Split, merge, indent, outdent, navigation        |
 | Selection toolbar     | Inline marks and link editing                    |
 | Patch output          | Semantic patches only — no DOM leakage to domain |
+
+The move handle deliberately separates click, drag, and text editing:
+
+- Click or keyboard activation opens the block-actions menu, including Move up/down actions.
+- Pointer movement must cross an activation threshold before dragging starts; content dragging remains text selection.
+- Column creation requires horizontal movement intent, so a straight vertical drag near the left gutter still reorders blocks.
+- The insertion indicator includes the document's trailing padding, making the final position a full-width drop target.
+- Escape cancels the drag and restores the previous focus or block selection.
 
 ---
 
@@ -397,7 +405,7 @@ import type { SduiDocumentContent } from '@lodado/sdui-document'
 | Layer                         | Owns                                                                    |
 | ----------------------------- | ----------------------------------------------------------------------- |
 | `@lodado/sdui-document`       | Block schema, `applyDocumentPatch`, permissions, `toSduiLayoutDocument` |
-| `@lodado/sdui-document-react` | Block chrome, dnd-kit, ProseMirror on focused block only, editor CSS    |
+| `@lodado/sdui-document-react` | Block chrome, pointer DnD, ProseMirror on focused block only, editor CSS |
 
 ### Common AI mistakes
 

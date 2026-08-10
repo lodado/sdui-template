@@ -95,7 +95,7 @@ describe('SduiDocumentEditor with complex nested document', () => {
         const { container } = render(<SduiDocumentEditor content={createNestedContent()} />)
 
         expect(container.querySelectorAll('[data-drag-handle]')).toHaveLength(9)
-        expect(screen.getByLabelText('Drag block a-1-1-1')).toBeInTheDocument()
+        expect(container.querySelector('[data-block-id="a-1-1-1"] [data-drag-handle]')).toBeInTheDocument()
       })
 
       it('to be: children sit in an indented container, one indent unit per level', () => {

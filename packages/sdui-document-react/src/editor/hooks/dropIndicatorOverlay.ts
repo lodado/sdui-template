@@ -4,7 +4,8 @@
 import type { ProjectedHorizontalBlockDrop, ProjectedNestedBlockDrop } from '@lodado/sdui-document'
 
 /** Either drop mode: vertical slot line (before/inside/after) or column-split edge line (left/right). */
-export type DropIndicatorProjection = ProjectedNestedBlockDrop | ProjectedHorizontalBlockDrop
+export type TerminalDropProjection = ProjectedNestedBlockDrop & { terminal: true }
+export type DropIndicatorProjection = ProjectedNestedBlockDrop | ProjectedHorizontalBlockDrop | TerminalDropProjection
 
 function isHorizontalProjection(projected: DropIndicatorProjection): projected is ProjectedHorizontalBlockDrop {
   return 'side' in projected
@@ -52,6 +53,23 @@ export function positionDropIndicatorOverlay(
   }
 
   const containerRect = container.getBoundingClientRect()
+
+  if ('terminal' in projected) {
+    const padding = container.querySelector<HTMLElement>('[data-editor-clickable-padding]')
+    if (!padding) {
+      overlay.style.display = 'none'
+      overlay.removeAttribute('data-drop-position')
+      return
+    }
+    const paddingRect = padding.getBoundingClientRect()
+    overlay.style.display = 'block'
+    overlay.style.transform = `translate(0px, ${paddingRect.top - containerRect.top}px)`
+    overlay.style.width = `${containerRect.width}px`
+    overlay.style.height = '2px'
+    overlay.setAttribute('data-drop-position', 'after')
+    return
+  }
+
   const rowRect = rowContent.getBoundingClientRect()
 
   // Horizontal (column split) drops paint a VERTICAL line hugging the row's

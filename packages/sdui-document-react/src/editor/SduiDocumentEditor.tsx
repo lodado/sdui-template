@@ -1,5 +1,5 @@
 import type { SduiDocumentContent, SduiDocumentPatch } from '@lodado/sdui-document'
-import { clearBlockSelection, findBlockById } from '@lodado/sdui-document'
+import { clearBlockSelection, createBlockSelection, findBlockById } from '@lodado/sdui-document'
 import {
   type MouseEvent as ReactMouseEvent,
   type Ref,
@@ -204,6 +204,7 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     storeRef.current = createEditorUIStore()
   }
   const store = storeRef.current
+  const [dragAnnouncement, setDragAnnouncement] = useState('')
 
   // useEditorHandlers is built before useSelectionKeyboard (which owns the
   // history step with caret landing), so a focused block's Mod-Z delegation
@@ -245,6 +246,7 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
   // Selection at drag start, captured before onDragStart clears it — lets a drag
   // that began on a selected block move the whole selection together.
   const dragSelectionRef = useRef<string[]>([])
+  const dragUiSnapshotRef = useRef<ReturnType<EditorUIStore['get']> | null>(null)
   useBlockPointerDrag({
     docRef,
     indentWidth: DRAG_INDENT_WIDTH,
@@ -252,9 +254,36 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
     indicatorRef,
     applyPatches,
     onDragStart: () => {
-      dragSelectionRef.current = store.get().selection.selectedIds
+      const currentUi = store.get()
+      dragUiSnapshotRef.current = currentUi
+      dragSelectionRef.current = currentUi.selection.selectedIds
       // Editing/selection state must not survive a drag: unmount commits the PM editor.
       store.set({ focus: null, selection: clearBlockSelection() })
+      setDragAnnouncement('Moving block.')
+    },
+    onDragFinish: (activeId, result) => {
+      const previous = dragUiSnapshotRef.current
+      dragUiSnapshotRef.current = null
+
+      if (result === 'cancelled' && previous) {
+        store.set({ focus: previous.focus, selection: previous.selection, blockActions: null })
+        if (previous.selection.selectedIds.length > 0) {
+          containerRef.current?.focus()
+        }
+        setDragAnnouncement('Block move cancelled.')
+        return
+      }
+
+      if (previous?.focus?.blockId === activeId) {
+        runtime.handlers.focusBlock(activeId, previous.focus.caret)
+      } else {
+        const selection = previous?.selection.selectedIds.includes(activeId)
+          ? previous.selection
+          : createBlockSelection(activeId)
+        store.set({ focus: null, selection, blockActions: null })
+        containerRef.current?.focus()
+      }
+      setDragAnnouncement('Block moved.')
     },
     getSelectedIds: () => dragSelectionRef.current,
   })
@@ -398,13 +427,17 @@ export const SduiDocumentEditor = (props: SduiDocumentEditorProps) => {
           className={className}
           data-sdui-document-editor
           data-sdui-doc-theme={theme}
-          role="tree"
+          role="region"
+          aria-label="Document editor"
           tabIndex={-1}
           onKeyDown={handleSelectionKeyDown}
           onClickCapture={handleLinkClickCapture}
           style={{ outline: 'none', position: 'relative' }}
         >
           <RootBlockList rootId={rootId} readOnly={readOnly} />
+          <div className="sdui-doc-sr-only" role="status" aria-live="polite">
+            {dragAnnouncement}
+          </div>
           {/* null leaf: paints data-doc-empty on the container via ref, no container re-render */}
           <DocEmptyFlag containerRef={containerRef} />
           {!readOnly && (

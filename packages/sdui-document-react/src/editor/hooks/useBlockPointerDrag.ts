@@ -18,6 +18,8 @@ import { appendMultiBlockMovePatches } from './multiBlockMove'
 
 /** Pointer travel (px) before a mouse/pen press becomes a drag — below this it stays a click. */
 export const ACTIVATION_DISTANCE = 4
+/** Horizontal travel required before an edge hover can create columns. */
+export const HORIZONTAL_INTENT_DISTANCE = 24
 /** Touch travel (px) before a press becomes a drag — wider than mouse to tolerate finger jitter on a tap. */
 export const TOUCH_ACTIVATION_DISTANCE = 10
 /** Hold (ms) on the handle before a stationary touch becomes a drag (long-press to drag). */
@@ -33,7 +35,7 @@ const SOURCE_OPACITY = '0.4'
 export type RowRect = { left: number; top: number; width: number; height: number }
 
 /** The block row under the pointer plus its measured content rect. */
-export type OverHit = { overId: string; rowRect: RowRect }
+export type OverHit = { overId: string; rowRect: RowRect; terminal?: boolean }
 
 type DropInput = {
   content: SduiDocumentContent
@@ -98,7 +100,11 @@ export function computeOverRatio(clientY: number, rowTop: number, rowHeight: num
 }
 
 // A column-split edge band takes precedence over the vertical slot projection.
-function projectHorizontal({ content, activeId, hit, pointerX }: DropInput) {
+function projectHorizontal({ content, activeId, hit, pointerX, startX }: DropInput) {
+  if (Math.abs(pointerX - startX) < HORIZONTAL_INTENT_DISTANCE) {
+    return null
+  }
+
   return projectHorizontalBlockDrop({
     content,
     activeId,
@@ -113,6 +119,10 @@ function projectHorizontal({ content, activeId, hit, pointerX }: DropInput) {
  * by tests, so the hit is passed as data rather than read from the DOM.
  */
 export function projectBlockDrop(input: DropInput): DropIndicatorProjection | null {
+  if (input.hit.terminal) {
+    return { overId: input.hit.overId, position: 'after', depth: 1, terminal: true }
+  }
+
   const horizontal = projectHorizontal(input)
   if (horizontal) {
     return horizontal
@@ -151,7 +161,7 @@ export function buildBlockDropPatches(input: DropInput): SduiDocumentPatch[] | n
     overId: hit.overId,
     offsetX: input.pointerX - input.startX,
     indentWidth: input.indentWidth,
-    overRatio: computeOverRatio(input.pointerY, hit.rowRect.top, hit.rowRect.height),
+    overRatio: hit.terminal ? 1 : computeOverRatio(input.pointerY, hit.rowRect.top, hit.rowRect.height),
   })
 
   return patch ? appendColumnCleanupPatches(content, [patch]) : null
@@ -164,7 +174,8 @@ type BlockPointerDragOptions = {
   /** Single absolutely-positioned indicator element inside the container. */
   indicatorRef: RefObject<HTMLElement>
   applyPatches(patches: SduiDocumentPatch[]): void
-  onDragStart(): void
+  onDragStart(activeId: string): void
+  onDragFinish(activeId: string, result: 'dropped' | 'cancelled'): void
   /** Current block-selection ids — a drag on a selected block moves them all. */
   getSelectedIds?(): string[]
 }
@@ -201,6 +212,7 @@ export function useBlockPointerDrag(options: BlockPointerDragOptions): void {
     let activated = false
     let ghost: HTMLElement | null = null
     let sourceRow: HTMLElement | null = null
+    let sourceHandle: HTMLElement | null = null
     let grabX = 0
     let grabY = 0
     // touch long-press timer (window handle); autoscroll rAF handle
@@ -216,6 +228,17 @@ export function useBlockPointerDrag(options: BlockPointerDragOptions): void {
 
     const hitTest = (x: number, y: number): OverHit | null => {
       const el = document.elementFromPoint(x, y)
+      const padding = el?.closest<HTMLElement>('[data-editor-clickable-padding]')
+      if (padding) {
+        const topLevelBlocks = Array.from(container.children).filter(
+          (child): child is HTMLElement => child instanceof HTMLElement && Boolean(child.dataset.blockId),
+        )
+        const lastBlock = topLevelBlocks[topLevelBlocks.length - 1]
+        if (!lastBlock?.dataset.blockId) {
+          return null
+        }
+        return { overId: lastBlock.dataset.blockId, rowRect: padding.getBoundingClientRect(), terminal: true }
+      }
       const row = el?.closest<HTMLElement>('[data-block-id]')
       const rowContent = row?.firstElementChild as HTMLElement | null // [data-block-row]
       if (!row || !rowContent || !row.dataset.blockId) {
@@ -247,6 +270,8 @@ export function useBlockPointerDrag(options: BlockPointerDragOptions): void {
       }
 
       const rect = source.getBoundingClientRect()
+      const containerStyle = getComputedStyle(container)
+      const sourceStyle = getComputedStyle(source)
       grabX = startX - rect.left
       grabY = startY - rect.top
 
@@ -263,7 +288,9 @@ export function useBlockPointerDrag(options: BlockPointerDragOptions): void {
         zIndex: '1000',
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
         borderRadius: '4px',
-        background: 'var(--sdui-doc-surface, #fff)',
+        background: containerStyle.getPropertyValue('--sdui-doc-surface').trim() || sourceStyle.backgroundColor,
+        color: sourceStyle.color,
+        font: sourceStyle.font,
       })
       ghost.appendChild(source.cloneNode(true))
       document.body.appendChild(ghost)
@@ -271,7 +298,7 @@ export function useBlockPointerDrag(options: BlockPointerDragOptions): void {
 
     const moveGhost = (x: number, y: number) => {
       if (ghost) {
-        ghost.style.transform = `translate(${x - grabX}px, ${y - grabY}px)`
+        ghost.style.transform = `translate(${x - grabX + 8}px, ${y - grabY + 8}px)`
       }
     }
 
@@ -349,10 +376,14 @@ export function useBlockPointerDrag(options: BlockPointerDragOptions): void {
 
       clearLongPress()
       activated = true
-      optsRef.current.onDragStart()
+      optsRef.current.onDragStart(activeId)
       createGhost()
       if (sourceRow) {
         sourceRow.style.opacity = SOURCE_OPACITY
+        sourceRow.setAttribute('data-dragging', 'true')
+      }
+      if (sourceHandle) {
+        sourceHandle.setAttribute('data-dragging', 'true')
       }
       document.body.style.cursor = 'grabbing'
       moveGhost(lastX, lastY)
@@ -369,8 +400,11 @@ export function useBlockPointerDrag(options: BlockPointerDragOptions): void {
       }
       if (sourceRow) {
         sourceRow.style.opacity = ''
+        sourceRow.removeAttribute('data-dragging')
         sourceRow = null
       }
+      sourceHandle?.removeAttribute('data-dragging')
+      sourceHandle = null
       document.body.style.cursor = ''
       activeId = null
       pointerId = null
@@ -424,6 +458,8 @@ export function useBlockPointerDrag(options: BlockPointerDragOptions): void {
       detachWindowListeners()
 
       const dropId = activeId
+      const wasActivated = activated
+      let didDrop = false
       // pointercancel (or an un-activated release) never drops.
       if (activated && dropId && event.type === 'pointerup') {
         const hit = hitTest(event.clientX, event.clientY)
@@ -434,6 +470,7 @@ export function useBlockPointerDrag(options: BlockPointerDragOptions): void {
             const selectedIds = optsRef.current.getSelectedIds?.() ?? []
             const patches = appendMultiBlockMovePatches(base, dropId, selectedIds, optsRef.current.docRef.current)
             optsRef.current.applyPatches(patches)
+            didDrop = true
           }
         }
         // Mouse fires a synchronous trailing click, caught by this once-listener
@@ -444,6 +481,9 @@ export function useBlockPointerDrag(options: BlockPointerDragOptions): void {
       }
 
       cleanup()
+      if (wasActivated && dropId) {
+        optsRef.current.onDragFinish(dropId, didDrop ? 'dropped' : 'cancelled')
+      }
     }
 
     // A live handle press must not surface a context menu: on touch the browser
@@ -460,8 +500,13 @@ export function useBlockPointerDrag(options: BlockPointerDragOptions): void {
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
+        const dragId = activeId
+        const wasActivated = activated
         detachWindowListeners()
         cleanup()
+        if (wasActivated && dragId) {
+          optsRef.current.onDragFinish(dragId, 'cancelled')
+        }
       }
     }
 
@@ -486,6 +531,7 @@ export function useBlockPointerDrag(options: BlockPointerDragOptions): void {
 
       activeId = row.dataset.blockId
       sourceRow = row
+      sourceHandle = handle
       pointerId = event.pointerId
       pointerType = event.pointerType || 'mouse'
       startX = event.clientX
@@ -522,7 +568,9 @@ export function useBlockPointerDrag(options: BlockPointerDragOptions): void {
       }
       if (sourceRow) {
         sourceRow.style.opacity = ''
+        sourceRow.removeAttribute('data-dragging')
       }
+      sourceHandle?.removeAttribute('data-dragging')
     }
   }, [options.containerRef, options.indentWidth])
 }

@@ -47,6 +47,10 @@ function blockIds(container: HTMLElement): string[] {
   )
 }
 
+function dragHandle(container: HTMLElement, blockId: string): HTMLButtonElement {
+  return container.querySelector(`[data-block-id="${blockId}"] [data-drag-handle]`) as HTMLButtonElement
+}
+
 describe('SduiDocumentEditor', () => {
   describe('as is: document with two paragraphs, nothing focused', () => {
     describe('when rendered', () => {
@@ -192,7 +196,7 @@ describe('SduiDocumentEditor', () => {
         const user = userEvent.setup()
         const { container } = renderEditor()
 
-        await user.click(screen.getByLabelText('Drag block p2'))
+        await user.click(dragHandle(container, 'p2'))
 
         expect(container.querySelector('[data-block-id="p2"]')).toHaveAttribute('data-selected', 'true')
         expect(container.querySelector('[data-block-id="p1"]')).not.toHaveAttribute('data-selected', 'true')
@@ -204,9 +208,9 @@ describe('SduiDocumentEditor', () => {
         const user = userEvent.setup()
         const { container } = renderEditor()
 
-        await user.click(screen.getByLabelText('Drag block p1'))
+        await user.click(dragHandle(container, 'p1'))
         await user.keyboard('{Shift>}')
-        await user.click(screen.getByLabelText('Drag block p2'))
+        await user.click(dragHandle(container, 'p2'))
         await user.keyboard('{/Shift}')
 
         expect(container.querySelector('[data-block-id="p1"]')).toHaveAttribute('data-selected', 'true')
@@ -219,7 +223,7 @@ describe('SduiDocumentEditor', () => {
         const user = userEvent.setup()
         const { container } = renderEditor()
 
-        await user.click(screen.getByLabelText('Drag block p2'))
+        await user.click(dragHandle(container, 'p2'))
         await user.keyboard('{Backspace}')
 
         expect(blockIds(container)).toEqual(['p1'])
@@ -232,7 +236,7 @@ describe('SduiDocumentEditor', () => {
         const user = userEvent.setup()
         const { container } = renderEditor()
 
-        await user.click(screen.getByLabelText('Drag block p1'))
+        await user.click(dragHandle(container, 'p1'))
         await user.keyboard('{Escape}')
 
         expect(container.querySelectorAll('[data-selected="true"]')).toHaveLength(0)
@@ -247,7 +251,9 @@ describe('SduiDocumentEditor', () => {
         const { container } = renderEditor()
 
         expect(container.querySelectorAll('[data-drag-handle]')).toHaveLength(2)
-        expect(screen.getByLabelText('Drag block p1')).toBeInTheDocument()
+        expect(dragHandle(container, 'p1')).toHaveAccessibleName('Block actions and move handle')
+        expect(dragHandle(container, 'p1')).toHaveAttribute('aria-haspopup', 'menu')
+        expect(dragHandle(container, 'p1').tabIndex).toBe(0)
       })
     })
 

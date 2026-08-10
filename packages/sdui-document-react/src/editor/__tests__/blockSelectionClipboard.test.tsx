@@ -1,10 +1,16 @@
 import type { SduiDocumentContent } from '@lodado/sdui-document'
 import { createDocumentBlock } from '@lodado/sdui-document'
-import { render, screen } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 
 import { SduiDocumentEditor } from '../SduiDocumentEditor'
+
+function dragHandle(blockId: string) {
+  const handle = document.querySelector<HTMLElement>(`[data-block-id="${blockId}"] [data-drag-handle]`)
+  if (!handle) throw new Error(`Missing drag handle for ${blockId}`)
+  return handle
+}
 
 function twoParagraphs(): SduiDocumentContent {
   return {
@@ -52,7 +58,7 @@ describe('block-selection clipboard', () => {
     const user = userEvent.setup()
     renderEditor()
 
-    await user.click(screen.getByLabelText('Drag block p1'))
+    await user.click(dragHandle('p1'))
     const store = dispatchClipboard('copy')
 
     expect(store.get('text/plain')).toContain('First')
@@ -62,7 +68,7 @@ describe('block-selection clipboard', () => {
     const user = userEvent.setup()
     const { onContentChange } = renderEditor()
 
-    await user.click(screen.getByLabelText('Drag block p1'))
+    await user.click(dragHandle('p1'))
     const store = dispatchClipboard('cut')
 
     expect(store.get('text/plain')).toContain('First')
@@ -74,7 +80,7 @@ describe('block-selection clipboard', () => {
     const user = userEvent.setup()
     const { onContentChange } = renderEditor()
 
-    await user.click(screen.getByLabelText('Drag block p1'))
+    await user.click(dragHandle('p1'))
     const store = new Map<string, string>([['text/plain', '# New heading\n\nA paragraph']])
     dispatchClipboard('paste', store)
 

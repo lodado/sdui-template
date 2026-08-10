@@ -108,7 +108,7 @@ describe('empty block creation (Outline trailing-block scenario)', () => {
         const user = userEvent.setup()
         const { container, onContentChange } = renderEditor(paragraphLast())
 
-        await user.click(screen.getByLabelText('Drag block p1'))
+        await user.click(container.querySelector<HTMLElement>('[data-block-id="p1"] [data-drag-handle]')!)
         await user.keyboard('{Backspace}')
 
         expect(blockIds(container)).toEqual(['divider-1', 'gen-1'])

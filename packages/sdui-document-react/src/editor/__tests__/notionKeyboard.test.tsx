@@ -35,7 +35,7 @@ describe('media block Enter', () => {
       createDocumentBlock({ id: 'p', type: 'document.paragraph', state: { text: 'after' } }),
     ])
 
-    await user.click(screen.getByLabelText('Drag block img')) // select the image block
+    await user.click(document.querySelector<HTMLElement>('[data-block-id="img"] [data-drag-handle]')!) // select the image block
     await user.keyboard('{Enter}')
 
     expect(allPatches()).toEqual(

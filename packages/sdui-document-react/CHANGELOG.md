@@ -1,5 +1,11 @@
 # @lodado/sdui-document-react
 
+## 1.0.6
+
+### Patch Changes
+
+- Make block dragging more predictable with accessible handles, horizontal-intent column drops, a terminal drop target, clearer drag feedback, and focus restoration after drop or cancellation.
+
 ## 1.0.5
 
 ### Patch Changes

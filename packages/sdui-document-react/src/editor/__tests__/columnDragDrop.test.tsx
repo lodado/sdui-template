@@ -1,6 +1,12 @@
 import { createDocumentBlock, findBlockById, type SduiDocumentContent } from '@lodado/sdui-document'
 
-import { buildBlockDropPatches, hasPassedThreshold, type OverHit, projectBlockDrop } from '../hooks/useBlockPointerDrag'
+import {
+  buildBlockDropPatches,
+  hasPassedThreshold,
+  HORIZONTAL_INTENT_DISTANCE,
+  type OverHit,
+  projectBlockDrop,
+} from '../hooks/useBlockPointerDrag'
 
 const INDENT_WIDTH = 24
 
@@ -24,14 +30,14 @@ function overRow(width: number): OverHit {
 }
 
 /** Drop `block-a` onto `block-b` at an absolute pointer X (no horizontal indent travel). */
-function dropAt(content: SduiDocumentContent, hit: OverHit, pointerX: number) {
+function dropAt(content: SduiDocumentContent, hit: OverHit, pointerX: number, startX = pointerX) {
   return buildBlockDropPatches({
     content,
     activeId: 'block-a',
     hit,
     pointerX,
     pointerY: 0,
-    startX: pointerX,
+    startX,
     indentWidth: INDENT_WIDTH,
   })
 }
@@ -65,7 +71,7 @@ describe('buildBlockDropPatches — column split vs vertical move', () => {
       it('to be: a column-split batch — over left, active right', () => {
         const content = createContent()
 
-        const patches = dropAt(content, overRow(200), 180)
+        const patches = dropAt(content, overRow(200), 180, 180 - HORIZONTAL_INTENT_DISTANCE)
 
         expect(patches).not.toBeNull()
         expect(patches![0]).toMatchObject({ type: 'block.insert', parentId: 'root' })
@@ -111,7 +117,7 @@ describe('buildBlockDropPatches — column split vs vertical move', () => {
       it('to be: a column split', () => {
         const content = createContent()
 
-        const patches = dropAt(content, overRow(800), 780)
+        const patches = dropAt(content, overRow(800), 780, 780 - HORIZONTAL_INTENT_DISTANCE)
 
         expect((patches![0] as { block: { type: string } }).block.type).toBe('document.columnList')
       })
@@ -137,6 +143,36 @@ describe('buildBlockDropPatches — column split vs vertical move', () => {
       })
     })
   })
+
+  describe('as is: the handle starts inside the LEFT edge band', () => {
+    describe('when the pointer moves vertically without horizontal intent', () => {
+      it('to be: a vertical move, never an accidental column split', () => {
+        const patches = dropAt(createContent(), overRow(800), 38, 38)
+
+        expect(patches).toHaveLength(1)
+        expect(patches![0]).toMatchObject({ type: 'block.move', blockId: 'block-a' })
+      })
+    })
+  })
+
+  describe('as is: the trailing editor padding', () => {
+    describe('when a block is dropped there', () => {
+      it('to be: a root-level move after the final block', () => {
+        const patches = buildBlockDropPatches({
+          content: createContent(),
+          activeId: 'block-a',
+          hit: { overId: 'block-b', rowRect: { left: 0, top: 0, width: 800, height: 200 }, terminal: true },
+          pointerX: 400,
+          pointerY: 10,
+          startX: 400,
+          indentWidth: INDENT_WIDTH,
+        })
+
+        expect(patches).toHaveLength(1)
+        expect(patches![0]).toMatchObject({ type: 'block.move', blockId: 'block-a', parentId: 'root', after: 'block-b' })
+      })
+    })
+  })
 })
 
 describe('projectBlockDrop — indicator projection branch', () => {
@@ -149,11 +185,47 @@ describe('projectBlockDrop — indicator projection branch', () => {
           hit: overRow(200),
           pointerX: 180,
           pointerY: 0,
-          startX: 180,
+          startX: 180 - HORIZONTAL_INTENT_DISTANCE,
           indentWidth: INDENT_WIDTH,
         })
 
         expect(projection).toMatchObject({ side: 'right' })
+      })
+    })
+  })
+
+  describe('as is: an edge-band hover without horizontal travel', () => {
+    describe('when the pointer stayed at its press X', () => {
+      it('to be: a vertical indicator projection', () => {
+        const projection = projectBlockDrop({
+          content: createContent(),
+          activeId: 'block-a',
+          hit: overRow(800),
+          pointerX: 38,
+          pointerY: 0,
+          startX: 38,
+          indentWidth: INDENT_WIDTH,
+        })
+
+        expect(projection).not.toHaveProperty('side')
+      })
+    })
+  })
+
+  describe('as is: a trailing-padding hover', () => {
+    describe('when the pointer is below the final row', () => {
+      it('to be: an explicit terminal indicator projection', () => {
+        expect(
+          projectBlockDrop({
+            content: createContent(),
+            activeId: 'block-a',
+            hit: { overId: 'block-b', rowRect: { left: 0, top: 0, width: 800, height: 200 }, terminal: true },
+            pointerX: 400,
+            pointerY: 10,
+            startX: 400,
+            indentWidth: INDENT_WIDTH,
+          }),
+        ).toMatchObject({ overId: 'block-b', position: 'after', depth: 1, terminal: true })
       })
     })
   })
