@@ -55,7 +55,7 @@ test.describe('컬럼 분할 (가로 드래그)', () => {
   })
 
   test('왼쪽 가장자리 드롭은 좌우가 뒤집힌다', async ({ page }) => {
-    await dragHandleToRowEdge(page, 'p3', 'p1', 0.05, 0.1)
+    await dragHandleToRowEdge(page, 'p3', 'p1', 0.06, 0)
 
     const columns = page.locator(`${EDITOR} [data-column-list] > [data-column]`)
     await expect(columns).toHaveCount(2)
