@@ -1,6 +1,6 @@
 {
   "name": "@lodado/eslint-plugin-sdui",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "ESLint rules that prevent SDUI hook data from being forwarded through multiple components",
   "license": "MIT",
   "author": "lodado",
