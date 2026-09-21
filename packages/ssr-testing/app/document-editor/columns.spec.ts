@@ -10,7 +10,13 @@ import { expect, test } from '@playwright/test'
  */
 const EDITOR = '[data-sdui-document-editor]'
 
-async function dragHandleToRowEdge(page: Page, activeId: string, overId: string, xRatio: number) {
+async function dragHandleToRowEdge(
+  page: Page,
+  activeId: string,
+  overId: string,
+  xRatio: number,
+  grabRatio = 0.5,
+) {
   const handle = page.locator(`[data-block-id="${activeId}"] [data-drag-handle]`)
   const targetRow = page.locator(`[data-block-id="${overId}"] [data-block-row]`).first()
   await page.locator(`[data-block-id="${activeId}"] [data-block-row]`).first().hover()
@@ -20,10 +26,12 @@ async function dragHandleToRowEdge(page: Page, activeId: string, overId: string,
     throw new Error('drag geometry unavailable')
   }
 
-  await page.mouse.move(handleBox.x + handleBox.width / 2, handleBox.y + handleBox.height / 2)
+  const grabX = handleBox.x + handleBox.width * grabRatio
+  const grabY = handleBox.y + handleBox.height / 2
+  await page.mouse.move(grabX, grabY)
   await page.mouse.down()
   // small initial move activates the pointer sensor before aiming at the edge
-  await page.mouse.move(handleBox.x + handleBox.width / 2 + 8, handleBox.y + handleBox.height / 2, { steps: 3 })
+  await page.mouse.move(grabX + 8, grabY, { steps: 3 })
   await page.mouse.move(targetBox.x + targetBox.width * xRatio, targetBox.y + targetBox.height / 2, { steps: 10 })
   await page.mouse.up()
 }
@@ -47,7 +55,7 @@ test.describe('컬럼 분할 (가로 드래그)', () => {
   })
 
   test('왼쪽 가장자리 드롭은 좌우가 뒤집힌다', async ({ page }) => {
-    await dragHandleToRowEdge(page, 'p3', 'p1', 0.06)
+    await dragHandleToRowEdge(page, 'p3', 'p1', 0.05, 0.1)
 
     const columns = page.locator(`${EDITOR} [data-column-list] > [data-column]`)
     await expect(columns).toHaveCount(2)
