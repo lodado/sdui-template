@@ -247,7 +247,7 @@ test.describe('Block drag and drop', () => {
    * 0.1 = top zone → before, 0.9 = bottom zone → after).
    */
   async function dragBlockOnto(page: Page, blockId: string, targetId: string, ratio: number) {
-    const handle = page.locator(`[data-drag-handle][aria-label="Drag block ${blockId}"]`)
+    const handle = page.locator(`[data-block-id="${blockId}"] [data-drag-handle]`)
     const targetRow = page.locator(`[data-block-id="${targetId}"] [data-block-row]`).first()
     const handleBox = await handle.boundingBox()
     const targetBox = await targetRow.boundingBox()
@@ -269,7 +269,7 @@ test.describe('Block drag and drop', () => {
   })
 
   test('드래그 핸들은 블록에 호버했을 때만 보인다', async ({ page }) => {
-    const handle = page.locator('[data-drag-handle][aria-label="Drag block p1"]')
+    const handle = page.locator('[data-block-id="p1"] [data-drag-handle]')
     const row = page.locator('[data-block-id="p1"] [data-block-row]').first()
     const otherRow = page.locator('[data-block-id="p3"] [data-block-row]').first()
 
