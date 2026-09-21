@@ -1,5 +1,18 @@
 # @lodado/sdui-template-component
 
+## 1.1.0
+
+### Minor Changes
+
+- 2e2ad96: Add a token-driven motion system and micro-interactions across the component library.
+
+  - **sdui-design-files:** new `motion.css` with duration/easing tokens, `sdui-*` keyframes, and a `prefers-reduced-motion` guard that zeroes durations system-wide.
+  - **sdui-template-component:** new `MOTION` class fragments; real enter/exit motion for tooltip, dropdown, popover, and dialog (replacing dead `tailwindcss-animate` classes that never ran); press feedback on buttons; spring check-pop on checkbox; spring toggle thumb; focus/error transitions on textfield; opt-in interactive card lift/press; token-driven hover on list and tag; fade-in form error messages.
+
+### Patch Changes
+
+- b163c13: Fix builds in mixed React 18/19 pnpm workspaces by normalizing third-party component types at the package boundary, and remove an unused React 19-only import.
+
 ## 1.0.7
 
 ### Patch Changes
