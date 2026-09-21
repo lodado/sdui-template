@@ -49,7 +49,7 @@
     "clean": "turbo run clean && rm -rf node_modules",
     "test": "turbo run test --concurrency=5",
     "test:e2e": "turbo run test:e2e --concurrency=5",
-    "lint": "turbo run lint  -- --cache --fix",
+    "lint": "turbo run lint -- --fix",
     "typecheck": "turbo run typecheck --concurrency=5",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "release": "turbo run build && changeset version && changeset publish --concurrency=5",
@@ -58,6 +58,7 @@
     "patch-notes": "changeset"
   },
   "devDependencies": {
+    "@lodado/eslint-plugin-sdui": "workspace:*",
     "@changesets/cli": "^2.27.1",
     "@commitlint/cli": "^17.8.1",
     "@commitlint/config-conventional": "^17.8.1",
