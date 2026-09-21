@@ -10,13 +10,7 @@ import { expect, test } from '@playwright/test'
  */
 const EDITOR = '[data-sdui-document-editor]'
 
-async function dragHandleToRowEdge(
-  page: Page,
-  activeId: string,
-  overId: string,
-  xRatio: number,
-  grabRatio = 0.5,
-) {
+async function dragHandleToRowEdge(page: Page, activeId: string, overId: string, xRatio: number) {
   const handle = page.locator(`[data-block-id="${activeId}"] [data-drag-handle]`)
   const targetRow = page.locator(`[data-block-id="${overId}"] [data-block-row]`).first()
   await page.locator(`[data-block-id="${activeId}"] [data-block-row]`).first().hover()
@@ -26,7 +20,7 @@ async function dragHandleToRowEdge(
     throw new Error('drag geometry unavailable')
   }
 
-  const grabX = handleBox.x + handleBox.width * grabRatio
+  const grabX = handleBox.x + handleBox.width / 2
   const grabY = handleBox.y + handleBox.height / 2
   await page.mouse.move(grabX, grabY)
   await page.mouse.down()
@@ -55,7 +49,11 @@ test.describe('컬럼 분할 (가로 드래그)', () => {
   })
 
   test('왼쪽 가장자리 드롭은 좌우가 뒤집힌다', async ({ page }) => {
-    await dragHandleToRowEdge(page, 'p3', 'p1', 0.06, 0.1)
+    // Arrange the active block one level deeper so the left-edge travel clears
+    // the horizontal intent threshold while staying inside the target edge band.
+    await dragHandleToRowEdge(page, 'p3', 'p2', 0.5)
+    await expect(page.locator('[data-block-id="p2"] [data-block-id="p3"]')).toBeVisible()
+    await dragHandleToRowEdge(page, 'p3', 'p1', 0.05)
 
     const columns = page.locator(`${EDITOR} [data-column-list] > [data-column]`)
     await expect(columns).toHaveCount(2)
