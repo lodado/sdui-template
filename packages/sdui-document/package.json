@@ -35,7 +35,7 @@
   "dependencies": {
     "fractional-indexing": "^4.0.0",
     "marked": "^15.0.12",
-    "zod": "^4.3.6"
+    "zod": "^4.6.6"
   },
   "devDependencies": {
     "@babel/runtime": "^7.23.4",
