@@ -24,7 +24,7 @@ jobs:
         run: npm install -g pnpm
 
       - name: Cache pnpm modules
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.pnpm-store
           key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -71,7 +71,7 @@ jobs:
         run: npm install -g pnpm
 
       - name: Cache pnpm modules
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.pnpm-store
           key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
