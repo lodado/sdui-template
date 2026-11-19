@@ -41,7 +41,7 @@
     "eslint-config-sdui-template": "workspace:*",
     "jest-config": "workspace:*",
     "rollup-config": "workspace:*",
-    "ts-jest": "29.0.5",
+    "ts-jest": "29.4.15",
     "tsconfig": "workspace:*"
   },
   "exports": {
@@ -114,6 +114,6 @@
     "types": "./dist/types/index.d.ts"
   },
   "dependencies": {
-    "@vanilla-extract/css": "^1.18.0"
+    "@vanilla-extract/css": "^1.21.3"
   }
 }
